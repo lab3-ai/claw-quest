@@ -24,6 +24,7 @@ import './styles/filters.css'
 import './styles/pager.css'
 import './styles/actor-sections.css'
 import './styles/forms.css'
+import './styles/status-dots.css'
 
 import { router } from './router'
 import { AuthProvider, useAuth } from '@/context/AuthContext'

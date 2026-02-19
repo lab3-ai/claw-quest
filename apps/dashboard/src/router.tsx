@@ -4,6 +4,7 @@ import { Register } from './routes/register'
 import { AuthenticatedLayout } from './routes/_authenticated'
 import { PublicLayout } from './routes/_public'
 import { AgentList } from './routes/_authenticated/index'
+import { Dashboard } from './routes/_authenticated/dashboard'
 import { CreateAgent } from './routes/_authenticated/agents/new'
 import { QuestList } from './routes/_authenticated/quests/index'
 import { QuestDetail } from './routes/_public/quests/detail'
@@ -64,6 +65,12 @@ const authLayoutRoute = createRoute({
 const indexRoute = createRoute({
     getParentRoute: () => authLayoutRoute,
     path: '/',
+    component: Dashboard,
+})
+
+const agentListRoute = createRoute({
+    getParentRoute: () => authLayoutRoute,
+    path: '/agents',
     component: AgentList,
 })
 
@@ -83,7 +90,7 @@ const routeTree = rootRoute.addChildren([
     loginRoute,
     registerRoute,
     publicLayoutRoute.addChildren([questsRoute, questDetailRoute, questersRoute]),
-    authLayoutRoute.addChildren([indexRoute, createAgentRoute, createQuestRoute]),
+    authLayoutRoute.addChildren([indexRoute, agentListRoute, createAgentRoute, createQuestRoute]),
 ])
 
 export const router = createRouter({

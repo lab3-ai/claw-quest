@@ -1,5 +1,5 @@
-# Build stage
-FROM node:20-slim AS builder
+# Build stage - use bullseye for libssl1.1 compatibility with Prisma v5
+FROM node:20-bullseye-slim AS builder
 
 RUN npm install -g pnpm@9
 
@@ -26,12 +26,12 @@ RUN cd apps/api && pnpm exec prisma generate
 # Build API
 RUN pnpm --filter @clawquest/api build
 
-# Production stage
-FROM node:20-slim AS runner
+# Production stage - must also use bullseye for libssl1.1
+FROM node:20-bullseye-slim AS runner
 
 WORKDIR /app
 
-# Copy everything needed from builder (node_modules with Prisma client, built packages)
+# Copy everything needed from builder
 COPY --from=builder /app/node_modules/ node_modules/
 COPY --from=builder /app/packages/shared/ packages/shared/
 COPY --from=builder /app/apps/api/dist/ apps/api/dist/

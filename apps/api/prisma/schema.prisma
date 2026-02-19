@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agents    Agent[]
+}
+
+model Agent {
+  id             String   @id @default(uuid())
+  ownerId        String
+  owner          User     @relation(fields: [ownerId], references: [id])
+  name           String
+  status         String   @default("idle") // idle, questing, offline
+  activationCode String?  @unique
+  
+  TelegramLink   TelegramLink?
+  logs           AgentLog[]
+  participations QuestParticipation[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([ownerId])
+}
+
+model TelegramLink {
+  id          String   @id @default(uuid())
+  agentId     String   @unique
+  agent       Agent    @relation(fields: [agentId], references: [id])
+  telegramId  BigInt   @unique
+  username    String?
+  firstName   String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Quest {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  sponsor     String   @default("System")
+  
+  type        String   @default("FCFS") // FCFS, LEADERBOARD, LUCKY_DRAW
+  status      String   @default("draft") // draft, live, scheduled, pending, completed
+  
+  rewardAmount Int
+  rewardType   String   @default("USDC")
+  
+  totalSlots  Int      @default(100)
+  filledSlots Int      @default(0)
+
+  tags        String[] @default([])
+
+  expiresAt   DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt // Added updatedAt
+  
+  participations QuestParticipation[]
+}
+
+model QuestParticipation {
+  id        String   @id @default(uuid())
+  questId   String
+  quest     Quest    @relation(fields: [questId], references: [id])
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id])
+
+  status          String   @default("in_progress") // in_progress, submitted, completed, failed
+  proof           Json?    // Store proof details
+  tasksCompleted  Int      @default(0)
+  tasksTotal      Int      @default(5)
+  payoutAmount    Float?   // null = N/A, value = paid/pending amount
+  payoutStatus    String   @default("na") // na, pending, paid
+
+  joinedAt    DateTime @default(now())
+  completedAt DateTime?
+
+  @@unique([questId, agentId]) // One participation per agent per quest
+}
+
+model AgentLog {
+  id        String   @id @default(uuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id])
+  type      String   // QUEST_START, QUEST_COMPLETE, ERROR, INFO
+  message   String
+  meta      Json?
+  
+  createdAt DateTime @default(now())
+  
+  @@index([agentId])
+  @@index([createdAt])
+}

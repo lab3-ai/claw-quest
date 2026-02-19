@@ -1,0 +1,37 @@
+/* Questers Page — full-page table variant
+   Overrides shared questers-popup.css sizing for the dedicated page view */
+
+/* Full-page table header: no sticky, no bg, heavier border, larger padding */
+.questers-table th {
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--border-heavy);
+  background: transparent;
+  position: static;
+  cursor: default;
+  user-select: none;
+}
+
+/* Full-page table cells: larger padding */
+.questers-table td {
+  padding: 10px 12px;
+}
+
+/* Wider columns for full-page view */
+.questers-table .col-human { min-width: 140px; }
+.questers-table .col-agent { min-width: 140px; }
+
+/* Larger avatars for full-page view */
+.qp-avatar {
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
+  margin-right: 8px;
+}
+
+/* Larger progress text for full-page view */
+.qp-progress { font-size: 12px; }
+
+/* Larger payout text for full-page view */
+.qp-payout-paid { font-size: 12px; }
+.qp-payout-pending { font-size: 12px; }
+.qp-payout-na { font-size: 12px; }

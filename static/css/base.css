@@ -1,0 +1,6 @@
+/* Base — ClawQuest shared */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font); font-size: 13px; line-height: 1.5; color: var(--fg); background: var(--bg); }
+.page-container { max-width: 920px; margin: 0 auto; padding: 0 16px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }

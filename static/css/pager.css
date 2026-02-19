@@ -1,0 +1,6 @@
+/* Pager — ClawQuest shared */
+.pager { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; font-size: 12px; color: var(--fg-muted); }
+.pager-buttons { display: flex; align-items: center; gap: 8px; }
+.pager-buttons button { padding: 5px 12px; font-size: 12px; font-weight: 600; border-radius: 3px; border: 1px solid var(--border-heavy); background: #fff; color: var(--fg); cursor: pointer; font-family: var(--font); }
+.pager-buttons button:hover { background: var(--sidebar-bg); }
+.pager-buttons button:disabled { opacity: 0.4; cursor: default; }

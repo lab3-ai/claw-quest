@@ -1,0 +1,37 @@
+{
+    "name": "@clawquest/api",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "tsx watch src/app.ts",
+        "build": "tsup src/app.ts --format cjs,esm",
+        "start": "node dist/app.js",
+        "db:migrate": "prisma migrate dev",
+        "db:deploy": "prisma migrate deploy",
+        "db:seed": "tsx prisma/seed.ts",
+        "db:studio": "prisma studio"
+    },
+    "dependencies": {
+        "@clawquest/shared": "workspace:*",
+        "@fastify/cors": "^9.0.1",
+        "@fastify/jwt": "^8.0.0",
+        "@fastify/swagger": "^8.14.0",
+        "@fastify/swagger-ui": "^3.0.0",
+        "@prisma/client": "^5.10.2",
+        "bcryptjs": "^3.0.3",
+        "dotenv": "^16.4.5",
+        "fastify": "^4.26.1",
+        "fastify-type-provider-zod": "^1.1.9",
+        "grammy": "^1.40.0",
+        "telegraf": "^4.16.3",
+        "zod": "^3.22.4"
+    },
+    "devDependencies": {
+        "@types/bcryptjs": "^3.0.0",
+        "@types/node": "^20.11.24",
+        "prisma": "^5.10.2",
+        "tsup": "^8.0.2",
+        "tsx": "^4.7.1",
+        "typescript": "^5.3.3"
+    }
+}

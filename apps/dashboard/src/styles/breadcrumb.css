@@ -1,0 +1,4 @@
+/* Breadcrumb — ClawQuest shared */
+.breadcrumb { padding: 12px 0; font-size: 12px; color: var(--fg-muted); display: flex; align-items: center; gap: 6px; }
+.breadcrumb a { color: var(--link); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }

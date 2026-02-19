@@ -1,0 +1,46 @@
+/* Variables — ClawQuest shared */
+:root {
+  --bg: #ffffff;
+  --fg: #232629;
+  --fg-muted: #6a737c;
+  --border: #d6d9dc;
+  --border-heavy: #babfc4;
+  --accent: #f48024;
+  --link: #0074cc;
+  --link-visited: #0055aa;
+  --green: #48a868;
+  --green-bg: #edf8f1;
+  --red: #c02d2d;
+  --red-bg: #fdf2f2;
+  --yellow: #e8a317;
+  --yellow-bg: #fdf7e8;
+  --tag-bg: #e1ecf4;
+  --tag-fg: #39739d;
+  --code-bg: #f6f6f6;
+  --sidebar-bg: #fafafb;
+
+  --human-fg: #be185d;
+  --human-bg: #fce7f3;
+  --human-border: #f9a8d4;
+  --agent-fg: #2563eb;
+  --agent-bg: #eff6ff;
+  --agent-border: #bfdbfe;
+  --skill-fg: #059669;
+  --skill-bg: #d1fae5;
+  --skill-border: #6ee7b7;
+  --social-fg: #be185d;
+  --social-bg: #fce7f3;
+
+  --stripe-fg: #635bff;
+  --stripe-bg: #f3f0ff;
+
+  --tone-quest: #f48024;
+  --tone-quest-dark: #d4711e;
+  --tone-quest-bg: #fff7f0;
+  --tone-agent: #2563eb;
+  --tone-agent-dark: #1d4ed8;
+  --tone-agent-bg: #eff6ff;
+
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Liberation Sans", sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "Liberation Mono", Menlo, Monaco, Consolas, monospace;
+}

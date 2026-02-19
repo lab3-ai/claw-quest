@@ -1,0 +1,318 @@
+/* ==============================================
+   DASHBOARD — Page-specific styles
+   ============================================== */
+
+/* === PAGE CONTAINER OVERRIDE === */
+.page-container { max-width: 1100px; }
+
+/* === DASHBOARD-SPECIFIC VARIABLES === */
+:root {
+  --yellow: #e8a317;
+  --yellow-bg: #fdf7e8;
+  --tone-quest: #f48024;
+  --tone-quest-dark: #d4711e;
+  --tone-quest-bg: #fff7f0;
+  --tone-agent: #2563eb;
+  --tone-agent-dark: #1d4ed8;
+  --tone-agent-bg: #eff6ff;
+}
+
+/* === MAIN TABS (My Quests / My Agents) === */
+.main-tabs { display: flex; gap: 0; }
+.main-tab {
+  padding: 10px 14px; font-size: 13px; font-weight: 500; color: var(--fg-muted);
+  cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  background: none; border-top: none; border-left: none; border-right: none;
+  font-family: var(--font); display: flex; align-items: center; gap: 6px;
+}
+.main-tab:hover { color: var(--fg); }
+.main-tab.active { color: var(--fg); font-weight: 600; }
+.main-tab.tone-quest.active { border-bottom-color: var(--tone-quest); }
+.main-tab.tone-agent.active { border-bottom-color: var(--tone-agent); }
+.main-tab .count {
+  font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px;
+  background: var(--border); color: #fff;
+}
+.main-tab.tone-quest.active .count { background: var(--tone-quest); }
+.main-tab.tone-agent.active .count { background: var(--tone-agent); }
+
+/* === TABS ROW === */
+.tabs-row {
+  display: flex; align-items: center;
+  border-bottom: 1px solid var(--border); margin-bottom: 0;
+}
+
+/* === INLINE FILTER === */
+.inline-filter { display: flex; align-items: center; gap: 0; font-size: 12px; color: var(--fg-muted); padding: 0 4px; }
+.inline-filter .filter-item {
+  cursor: pointer; padding: 10px 4px; border: none; background: none;
+  font-family: var(--font); font-size: 12px; color: var(--fg-muted);
+  white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.inline-filter .filter-item:hover { color: var(--fg); }
+.inline-filter .filter-item.active { color: var(--fg); font-weight: 600; }
+.inline-filter .filter-dot { padding: 0 4px; color: var(--border-heavy); user-select: none; font-size: 10px; align-self: center; }
+
+/* === FILTER BAR === */
+.filter-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+
+/* === QUEST CARD VIEW === */
+.quest-list { list-style: none; }
+.quest-item {
+  display: flex; gap: 16px; padding: 14px 0;
+  border-bottom: 1px solid var(--border); align-items: flex-start;
+}
+.quest-item:last-child { border-bottom: none; }
+
+/* Left: stats column */
+.quest-stats {
+  display: flex; flex-direction: column; align-items: flex-end;
+  gap: 8px; min-width: 120px; text-align: right; padding-top: 2px; flex-shrink: 0;
+}
+.quest-stat { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+.quest-stat-val {
+  font-size: 15px; font-weight: 700; color: var(--fg); line-height: 1.2;
+  font-family: var(--font-mono);
+}
+.quest-stat-val.reward { color: var(--green); }
+.quest-stat-val.subs-filled { color: var(--accent); }
+.quest-stat-label { font-size: 10px; color: var(--fg-muted); }
+
+/* Avatar crowd override in card view */
+.quest-stats .questers { justify-content: flex-end; }
+
+/* Middle: body */
+.quest-body { flex: 1; min-width: 0; }
+.quest-card-title {
+  font-size: 14px; font-weight: 600; margin-bottom: 4px; line-height: 1.35;
+}
+.quest-card-title a { color: var(--link); text-decoration: none; }
+.quest-card-title a:hover { color: #0063aa; text-decoration: underline; }
+.quest-card-excerpt {
+  font-size: 12px; color: var(--fg-muted); line-height: 1.5; margin-bottom: 8px;
+}
+.quest-card-meta {
+  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+}
+
+/* Right: time col */
+.quest-time-col {
+  display: flex; flex-direction: column; align-items: flex-end;
+  min-width: 90px; text-align: right; padding-top: 2px; flex-shrink: 0; gap: 2px;
+}
+.quest-time-val { font-size: 13px; font-weight: 600; color: var(--fg); }
+.quest-time-val.warning { color: var(--yellow); }
+.quest-time-val.urgent  { color: var(--red); }
+.quest-time-val.muted   { color: var(--fg-muted); font-weight: 400; }
+.quest-time-lbl { font-size: 10px; color: var(--fg-muted); }
+
+/* === VIEW PANEL === */
+.view-panel { display: none; }
+.view-panel.active { display: block; }
+
+/* === QUEST TIME (date display) === */
+.quest-time { font-size: 11px; color: var(--fg-muted); }
+
+/* === ACTION GROUP === */
+.action-group { display: flex; gap: 4px; justify-content: flex-end; flex-wrap: wrap; }
+
+/* === TONE BUTTONS === */
+.btn-quest { background: var(--tone-quest); color: #fff; border-color: var(--tone-quest-dark); }
+.btn-quest:hover { background: var(--tone-quest-dark); }
+.btn-agent { background: var(--tone-agent); color: #fff; border-color: var(--tone-agent-dark); }
+.btn-agent:hover { background: var(--tone-agent-dark); }
+.btn-danger { background: #fff; color: var(--red); border-color: var(--red); }
+.btn-danger:hover { background: var(--red-bg); }
+
+/* === DASHBOARD BADGES === */
+.badge-draft { background: var(--sidebar-bg); color: var(--fg-muted); border: 1px solid var(--border); }
+.badge-pending { background: var(--yellow-bg); color: var(--yellow); }
+.badge-scheduled { background: var(--tag-bg); color: var(--tag-fg); }
+.badge-live { background: var(--green-bg); color: var(--green); }
+.badge-completed { background: var(--sidebar-bg); color: var(--fg-muted); }
+.badge-rejected { background: var(--red-bg); color: var(--red); }
+.badge-cancelled { background: var(--red-bg); color: var(--red); }
+.badge-crypto { background: #f0f7ff; color: var(--link); }
+.badge-fiat { background: #f3f0ff; color: #635bff; }
+.badge-pending-claim { background: #fff4e6; color: #d97706; border: 1px dashed #d97706; }
+
+/* === AGENT TABLE === */
+.agent-table { width: 100%; border-collapse: collapse; }
+.agent-table th {
+  text-align: left; padding: 8px 10px; font-size: 11px; font-weight: 600;
+  color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.3px;
+  border-bottom: 2px solid var(--border); background: var(--sidebar-bg);
+}
+.agent-table td {
+  padding: 10px 10px; font-size: 12px; border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.agent-table tr.agent-row { cursor: pointer; }
+.agent-table tr.agent-row:hover td { background: #fafbfc; }
+.agent-table .col-agent { min-width: 180px; }
+.agent-table .col-skill-status { width: 110px; }
+.agent-table .col-skills { min-width: 180px; }
+.agent-table .col-quests { width: 90px; text-align: center; }
+.agent-table .col-registered { width: 110px; }
+.agent-table .col-expand { width: 30px; text-align: center; }
+
+.agent-name { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--fg); }
+.agent-id { font-size: 11px; color: var(--fg-muted); }
+.agent-skill-connected { color: var(--green); font-weight: 600; font-size: 11px; }
+.agent-skill-disconnected { color: var(--red); font-weight: 600; font-size: 11px; }
+
+/* === SKILL CHIPS === */
+.skill-chip {
+  display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 6px;
+  border-radius: 3px; background: var(--skill-bg); color: var(--skill-fg);
+  font-family: var(--font-mono); margin-right: 3px; margin-bottom: 2px;
+}
+.skill-chip-more {
+  display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 3px;
+  background: var(--sidebar-bg); color: var(--fg-muted); font-weight: 500;
+}
+
+/* === EXPAND ICON === */
+.expand-icon {
+  font-size: 11px; color: var(--fg-muted); transition: transform 0.15s;
+  display: inline-block;
+}
+.expand-icon.open { transform: rotate(90deg); }
+
+/* === AGENT DETAIL (expandable) === */
+.agent-detail-row td { padding: 0; background: var(--sidebar-bg); }
+.agent-detail-row.hidden { display: none; }
+.agent-detail {
+  padding: 14px 16px 14px 26px; border-bottom: 1px solid var(--border);
+}
+.agent-detail-section { margin-bottom: 14px; }
+.agent-detail-section:last-child { margin-bottom: 0; }
+.agent-detail-title {
+  font-size: 11px; font-weight: 600; color: var(--fg-muted);
+  text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px;
+}
+
+/* === DETAIL SKILL TABLE === */
+.detail-skill-table { width: 100%; border-collapse: collapse; }
+.detail-skill-table th {
+  text-align: left; padding: 4px 8px; font-size: 10px; font-weight: 600;
+  color: var(--fg-muted); border-bottom: 1px solid var(--border);
+}
+.detail-skill-table td {
+  padding: 5px 8px; font-size: 11px; border-bottom: 1px solid #eee;
+}
+.detail-skill-table .skill-name { font-family: var(--font-mono); font-weight: 600; color: var(--fg); }
+
+/* === DETAIL QUEST TABLE === */
+.detail-quest-table { width: 100%; border-collapse: collapse; }
+.detail-quest-table th {
+  text-align: left; padding: 4px 8px; font-size: 10px; font-weight: 600;
+  color: var(--fg-muted); border-bottom: 1px solid var(--border);
+}
+.detail-quest-table td {
+  padding: 5px 8px; font-size: 11px; border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+.detail-quest-table a { color: var(--link); text-decoration: none; font-weight: 500; }
+.detail-quest-table a:hover { text-decoration: underline; }
+
+/* === PAYOUT BADGES === */
+.payout-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 3px;
+}
+.payout-paid { background: var(--green-bg); color: var(--green); }
+.payout-pending { background: var(--yellow-bg); color: var(--yellow); }
+.payout-na { color: var(--fg-muted); }
+
+/* === REGISTER AGENT MODAL === */
+.modal-backdrop {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4); z-index: 300; display: none;
+  align-items: center; justify-content: center;
+}
+.modal-backdrop.visible { display: flex; }
+.modal {
+  background: #fff; border-radius: 3px; border: 1px solid var(--border);
+  width: 560px; max-height: 80vh; overflow-y: auto;
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+}
+.modal-header h2 { font-size: 16px; font-weight: 600; }
+.modal-close {
+  background: none; border: none; font-size: 18px; color: var(--fg-muted);
+  cursor: pointer; padding: 2px 6px; line-height: 1;
+}
+.modal-close:hover { color: var(--fg); }
+.modal-body { padding: 20px; }
+.modal-subtitle {
+  font-size: 12px; color: var(--fg-muted); margin-bottom: 16px; line-height: 1.5;
+}
+
+/* === PLATFORM CARDS (modal) === */
+.platform-list { display: flex; flex-direction: column; gap: 8px; }
+.platform-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border: 1px solid var(--border); border-radius: 3px;
+  cursor: pointer; transition: border-color 0.1s;
+}
+.platform-card:hover { border-color: var(--border-heavy); }
+.platform-card.active { border-color: var(--accent); background: #fffaf5; }
+.platform-card.disabled { opacity: 0.5; cursor: default; }
+.platform-card.disabled:hover { border-color: var(--border); }
+.platform-icon {
+  width: 36px; height: 36px; border-radius: 3px; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700; background: var(--sidebar-bg); flex-shrink: 0;
+}
+.platform-info { flex: 1; }
+.platform-name { font-size: 13px; font-weight: 600; color: var(--fg); }
+.platform-desc { font-size: 11px; color: var(--fg-muted); margin-top: 1px; }
+.platform-badge-coming {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 2px 6px; border-radius: 3px;
+  background: var(--sidebar-bg); color: var(--fg-muted); border: 1px solid var(--border);
+}
+
+/* === INSTALL GUIDE (inside modal) === */
+.install-guide { margin-top: 16px; display: none; }
+.install-guide.visible { display: block; }
+.install-step {
+  display: flex; gap: 10px; margin-bottom: 14px;
+}
+.install-step-num {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--accent);
+  color: #fff; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  margin-top: 1px;
+}
+.install-step-content { flex: 1; }
+.install-step-title { font-size: 12px; font-weight: 600; color: var(--fg); margin-bottom: 4px; }
+.install-step-desc { font-size: 11px; color: var(--fg-muted); line-height: 1.5; }
+.install-cmd-block {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #1e1e2e; color: #cdd6f4; border-radius: 3px;
+  padding: 10px 12px; font-family: var(--font-mono); font-size: 12px;
+  margin-top: 6px;
+}
+.install-cmd-block .cmd-text { user-select: all; }
+.install-cmd-block .cmd-prompt { color: #a6adc8; margin-right: 6px; }
+.install-cmd-block .copy-btn {
+  background: rgba(255,255,255,0.1); border: none; color: #cdd6f4;
+  padding: 3px 8px; border-radius: 3px; font-size: 10px; cursor: pointer;
+  font-family: var(--font); font-weight: 600;
+}
+.install-cmd-block .copy-btn:hover { background: rgba(255,255,255,0.2); }
+
+/* === EMPTY STATE === */
+.empty-state {
+  text-align: center; padding: 48px 20px; color: var(--fg-muted);
+}
+.empty-state .icon { font-size: 32px; margin-bottom: 10px; }
+.empty-state .msg { font-size: 14px; margin-bottom: 12px; }
+.empty-state .hint { font-size: 12px; color: var(--fg-muted); }

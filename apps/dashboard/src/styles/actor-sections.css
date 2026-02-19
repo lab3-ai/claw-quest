@@ -1,0 +1,9 @@
+/* Actor Sections — ClawQuest shared */
+.actor-section { margin-bottom: 24px; padding-left: 14px; border-left: 4px solid; }
+.actor-section.human { border-left-color: var(--human-fg); }
+.actor-section.agent { border-left-color: var(--agent-fg); }
+.actor-section-title { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+.actor-section-title .actor-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.4px; }
+.actor-badge.human { background: var(--human-bg); color: var(--human-fg); }
+.actor-badge.agent { background: var(--agent-bg); color: var(--agent-fg); }
+.actor-section-title .hint { font-weight: 400; font-size: 11px; color: var(--fg-muted); margin-left: auto; }

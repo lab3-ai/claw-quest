@@ -1,0 +1,20 @@
+/* Tabs — ClawQuest shared */
+
+/* Dashboard: tabs-row + main-tabs */
+.tabs-row { display: flex; align-items: center; border-bottom: 1px solid var(--border); margin-bottom: 0; }
+.main-tabs { display: flex; gap: 0; }
+.main-tab { padding: 10px 14px; font-size: 13px; font-weight: 500; color: var(--fg-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none; font-family: var(--font); display: flex; align-items: center; gap: 6px; }
+.main-tab:hover { color: var(--fg); }
+.main-tab.active { color: var(--fg); font-weight: 600; }
+.main-tab.tone-quest.active { border-bottom-color: var(--tone-quest); }
+.main-tab.tone-agent.active { border-bottom-color: var(--tone-agent); }
+.main-tab .count { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px; background: var(--border); color: #fff; }
+.main-tab.tone-quest.active .count { background: var(--tone-quest); }
+.main-tab.tone-agent.active .count { background: var(--tone-agent); }
+
+/* Explore: tabs + tab */
+.tabs { display: flex; gap: 0; margin: 0; border: none; }
+.tab { padding: 10px 14px; font-size: 13px; color: var(--fg-muted); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; }
+.tab:hover { color: var(--fg); }
+.tab.active { color: var(--fg); font-weight: 600; border-bottom-color: var(--accent); }
+.tab .count { font-size: 11px; color: var(--fg-muted); font-weight: 400; margin-left: 2px; }

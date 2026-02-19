@@ -1,0 +1,139 @@
+import { z } from 'zod';
+
+// --- Domain Constants ---
+
+export const AGENT_STATUS = {
+    IDLE: 'idle',
+    QUESTING: 'questing',
+    OFFLINE: 'offline',
+} as const;
+
+export type AgentStatus = (typeof AGENT_STATUS)[keyof typeof AGENT_STATUS];
+
+// --- Zod Schemas ---
+
+export const AgentSchema = z.object({
+    id: z.string().uuid(),
+    name: z.string().min(1).max(50),
+    status: z.enum([AGENT_STATUS.IDLE, AGENT_STATUS.QUESTING, AGENT_STATUS.OFFLINE]),
+    ownerId: z.string().uuid(),
+    activationCode: z.string().optional(),
+});
+
+export const CreateAgentSchema = AgentSchema.pick({ name: true });
+
+// --- Quest Types ---
+export const QUEST_STATUS = {
+    DRAFT: 'draft',
+    LIVE: 'live',
+    SCHEDULED: 'scheduled',
+    PENDING: 'pending',
+    COMPLETED: 'completed',
+} as const;
+
+export const QUEST_TYPE = {
+    FCFS: 'FCFS', // First Come First Served
+    LEADERBOARD: 'LEADERBOARD',
+    LUCKY_DRAW: 'LUCKY_DRAW',
+} as const;
+
+export const LinkAgentSchema = z.object({
+    activationCode: z.string().min(1),
+});
+
+export const QuestSchema = z.object({
+    id: z.string().uuid(),
+    title: z.string(),
+    description: z.string(),
+    sponsor: z.string(),
+    type: z.nativeEnum(QUEST_TYPE),
+    status: z.nativeEnum(QUEST_STATUS),
+    rewardAmount: z.number(),
+    rewardType: z.string(), // e.g. 'USDC', 'USD', 'XP'
+    totalSlots: z.number(),
+    filledSlots: z.number(),
+    tags: z.array(z.string()).default([]),
+    questers: z.number().default(0), // count of active participations
+    questerNames: z.array(z.string()).default([]), // first few agent names for avatar stack
+    questerDetails: z.array(z.object({
+        agentName: z.string(),
+        humanHandle: z.string(), // owner email prefix (e.g. "alice" from "alice@example.com")
+    })).default([]),
+    expiresAt: z.string().datetime().nullable(), // ISO string
+    createdAt: z.string().datetime(), // ISO string for API
+});
+
+// --- QuestParticipation (Questers list) ---
+export const QuestParticipationSchema = z.object({
+    id: z.string().uuid(),
+    rank: z.number(),
+    agentName: z.string(),
+    humanHandle: z.string(),
+    status: z.enum(['in_progress', 'submitted', 'completed', 'failed']),
+    tasksCompleted: z.number(),
+    tasksTotal: z.number(),
+    payoutAmount: z.number().nullable(),
+    payoutStatus: z.enum(['na', 'pending', 'paid']),
+    joinedAt: z.string().datetime(),
+    completedAt: z.string().datetime().nullable(),
+});
+export type QuestParticipation = z.infer<typeof QuestParticipationSchema>;
+
+export const QuestersResponseSchema = z.object({
+    questId: z.string().uuid(),
+    questTitle: z.string(),
+    questType: z.nativeEnum(QUEST_TYPE),
+    questRewardAmount: z.number(),
+    questRewardType: z.string(),
+    totalQuesters: z.number(),
+    doneQuesters: z.number(),
+    inProgressQuesters: z.number(),
+    tasksTotal: z.number(),
+    participations: z.array(QuestParticipationSchema),
+    page: z.number(),
+    pageSize: z.number(),
+    totalPages: z.number(),
+});
+export type QuestersResponse = z.infer<typeof QuestersResponseSchema>;
+
+export type Agent = z.infer<typeof AgentSchema>;
+export type CreateAgentDto = z.infer<typeof CreateAgentSchema>;
+export type Quest = z.infer<typeof QuestSchema>;
+
+// --- API Responses ---
+
+export interface ApiResponse<T> {
+    data?: T;
+    error?: {
+        message: string;
+        code: string;
+    };
+}
+
+// --- Auth Schemas ---
+
+export const RegisterSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
+export const LoginSchema = z.object({
+    email: z.string().email(),
+    password: z.string(),
+});
+
+export const UserSchema = z.object({
+    id: z.string().uuid(),
+    email: z.string().email(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+});
+
+export type RegisterDto = z.infer<typeof RegisterSchema>;
+export type LoginDto = z.infer<typeof LoginSchema>;
+export type UserDto = z.infer<typeof UserSchema>;
+
+export interface AuthResponse {
+    token: string;
+    user: UserDto;
+}

@@ -1,0 +1,16 @@
+/* Tooltips — ClawQuest shared */
+
+/* Dashboard-style tooltip */
+.has-tooltip { position: relative; cursor: help; display: inline-flex; align-items: center; gap: 4px; }
+.has-tooltip .tip { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--fg); color: #fff; font-size: 11px; font-weight: 400; line-height: 1.4; padding: 6px 10px; border-radius: 3px; white-space: nowrap; z-index: 50; pointer-events: none; }
+.has-tooltip .tip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 4px solid transparent; border-top-color: var(--fg); }
+.has-tooltip:hover .tip { display: block; }
+.tip-icon { display: inline-flex; align-items: center; justify-content: center; width: 13px; height: 13px; border-radius: 50%; border: 1px solid var(--border-heavy); font-size: 9px; font-weight: 700; color: var(--fg-muted); line-height: 1; flex-shrink: 0; }
+
+/* Create-quest-style tooltip */
+.label-with-tip { display: flex; align-items: center; gap: 4px; }
+.tip-trigger { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--border-heavy); background: none; color: var(--fg-muted); font-size: 9px; font-weight: 700; cursor: help; position: relative; font-family: var(--font); line-height: 1; padding: 0; flex-shrink: 0; }
+.tip-trigger:hover { border-color: var(--link); color: var(--link); }
+.tip-trigger:hover .tip-content { display: block; }
+.tip-content { display: none; position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); width: max-content; max-width: 220px; padding: 6px 10px; font-size: 11px; font-weight: 400; line-height: 1.4; color: #fff; background: var(--fg); border-radius: 3px; white-space: normal; z-index: 10; pointer-events: none; text-align: left; }
+.tip-content::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: var(--fg); }

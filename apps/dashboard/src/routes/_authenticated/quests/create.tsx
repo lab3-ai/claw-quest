@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext"
 import "@/styles/pages/create-quest.css"
 import "@/styles/actor-sections.css"
 import "@/styles/forms.css"
+import "@/styles/token-display.css"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
@@ -32,13 +33,11 @@ interface FormData {
     network: string
     token: string
     type: QuestType
-    fcfsTotal: string
-    fcfsWinners: string
-    drawTotal: string
-    drawWinners: string
+    // Shared across all distribution types
+    total: string
+    winners: string
+    // Lucky Draw only
     drawTime: string
-    lbTotal: string
-    lbWinners: string
 }
 
 // ─── Network / Token data (matching JS template exactly) ─────────────────────
@@ -301,9 +300,8 @@ export function CreateQuest() {
     const [form, setForm] = useState<FormData>({
         title: "", description: "", startAt: "", endAt: "",
         rail: "crypto", network: "Base", token: "USDC", type: "FCFS",
-        fcfsTotal: "100.00", fcfsWinners: "50",
-        drawTotal: "100.00", drawWinners: "10", drawTime: "",
-        lbTotal: "100.00", lbWinners: "10",
+        total: "100.00", winners: "50",
+        drawTime: "",
     })
     const [activePlatform, setActivePlatform] = useState<string | null>(null)
     const [humanTasks, setHumanTasks] = useState<SocialEntry[]>([])
@@ -356,8 +354,8 @@ export function CreateQuest() {
     // ── Submit mutation ───────────────────────────────────────────────────────
     const mutation = useMutation({
         mutationFn: async () => {
-            const total = parseFloat(form.type === "FCFS" ? form.fcfsTotal : form.type === "LUCKY_DRAW" ? form.drawTotal : form.lbTotal) || 0
-            const slots = parseInt(form.type === "FCFS" ? form.fcfsWinners : form.type === "LUCKY_DRAW" ? form.drawWinners : form.lbWinners) || 50
+            const total = parseFloat(form.total) || 0
+            const slots = parseInt(form.winners) || 50
             const res = await fetch(`${API_BASE}/quests`, {
                 method: "POST",
                 headers: {
@@ -391,14 +389,14 @@ export function CreateQuest() {
         tasks: humanTasks.length > 0 || requiredSkills.length > 0,
     }
 
-    const activeTotal = parseFloat(form.type === "FCFS" ? form.fcfsTotal : form.type === "LUCKY_DRAW" ? form.drawTotal : form.lbTotal) || 0
-    const activeWinners = parseInt(form.type === "FCFS" ? form.fcfsWinners : form.type === "LUCKY_DRAW" ? form.drawWinners : form.lbWinners) || 1
+    const activeTotal = parseFloat(form.total) || 0
+    const activeWinners = parseInt(form.winners) || 1
     const perWinner = activeWinners > 0 ? (activeTotal / activeWinners).toFixed(2) : "0.00"
 
     const tokenLabel = getTokenSymbol(form.rail, form.token, form.network)
 
-    // LB payouts — calc full set, display truncated if > 20
-    const lbWinnersNum = Math.min(Math.max(parseInt(form.lbWinners) || 2, 2), 100)
+    // LB payouts — clamp winners 2-100, calc full set, display truncated if > 20
+    const lbWinnersNum = Math.min(Math.max(activeWinners, 2), 100)
     const lbPayouts = calcLbPayouts(activeTotal, lbWinnersNum)
 
     const durationDays = form.startAt && form.endAt
@@ -596,39 +594,65 @@ export function CreateQuest() {
                                                 id={opt.id}
                                                 name="payout"
                                                 checked={form.type === opt.val}
-                                                onChange={() => set("type", opt.val)}
+                                                onChange={() => {
+                                                    setForm(prev => {
+                                                        let winners = prev.winners
+                                                        if (opt.val === "LEADERBOARD") {
+                                                            const n = parseInt(winners) || 2
+                                                            winners = String(Math.min(100, Math.max(2, n)))
+                                                        }
+                                                        return { ...prev, type: opt.val, winners }
+                                                    })
+                                                }}
                                             />
                                             <label htmlFor={opt.id}>{opt.label}</label>
                                         </div>
                                     ))}
                                 </div>
 
+                                {/* Shared: Total Reward + Winners — shown for all modes */}
+                                <div style={{ marginTop: 12 }}>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label className="form-label">Total Reward ({tokenLabel})</label>
+                                            <input
+                                                className="form-input form-input-mono"
+                                                type="text"
+                                                value={form.total}
+                                                onChange={e => set("total", e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">
+                                                Number of Winners
+                                                {form.type === "LEADERBOARD" && (
+                                                    <span style={{ fontSize: 10, color: "var(--fg-muted)", marginLeft: 4 }}>(min 2, max 100)</span>
+                                                )}
+                                            </label>
+                                            <input
+                                                className="form-input"
+                                                type="number"
+                                                min={form.type === "LEADERBOARD" ? 2 : 1}
+                                                max={form.type === "LEADERBOARD" ? 100 : undefined}
+                                                value={form.winners}
+                                                onChange={e => {
+                                                    let v = e.target.value
+                                                    if (form.type === "LEADERBOARD") {
+                                                        const n = parseInt(v) || 2
+                                                        v = String(Math.min(100, Math.max(2, n)))
+                                                    }
+                                                    set("winners", v)
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {/* FCFS fields */}
                                 {form.type === "FCFS" && (
-                                    <div className="conditional visible" style={{ marginTop: 12 }}>
+                                    <div className="conditional visible" style={{ marginTop: 4 }}>
                                         <div className="form-hint" style={{ marginBottom: 8 }}>
                                             First N eligible agents get paid immediately.
-                                        </div>
-                                        <div className="form-row">
-                                            <div className="form-group">
-                                                <label className="form-label">Total Amount ({tokenLabel})</label>
-                                                <input
-                                                    className="form-input form-input-mono"
-                                                    type="text"
-                                                    value={form.fcfsTotal}
-                                                    onChange={e => set("fcfsTotal", e.target.value)}
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label className="form-label">Number of Winners</label>
-                                                <input
-                                                    className="form-input"
-                                                    type="number"
-                                                    min="1"
-                                                    value={form.fcfsWinners}
-                                                    onChange={e => set("fcfsWinners", e.target.value)}
-                                                />
-                                            </div>
                                         </div>
                                         <div className="form-calc">
                                             Per winner: <strong>{perWinner} {tokenLabel}</strong>
@@ -638,39 +662,18 @@ export function CreateQuest() {
 
                                 {/* Lucky Draw fields */}
                                 {form.type === "LUCKY_DRAW" && (
-                                    <div className="conditional visible" style={{ marginTop: 12 }}>
+                                    <div className="conditional visible" style={{ marginTop: 4 }}>
                                         <div className="form-hint" style={{ marginBottom: 8 }}>
                                             All eligible submissions enter a raffle. N winners drawn at end.
                                         </div>
-                                        <div className="form-row-3">
-                                            <div className="form-group">
-                                                <label className="form-label">Total Amount ({tokenLabel})</label>
-                                                <input
-                                                    className="form-input form-input-mono"
-                                                    type="text"
-                                                    value={form.drawTotal}
-                                                    onChange={e => set("drawTotal", e.target.value)}
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label className="form-label">Num Winners</label>
-                                                <input
-                                                    className="form-input"
-                                                    type="number"
-                                                    min="1"
-                                                    value={form.drawWinners}
-                                                    onChange={e => set("drawWinners", e.target.value)}
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label className="form-label">Draw Time</label>
-                                                <input
-                                                    className="form-input"
-                                                    type="datetime-local"
-                                                    value={form.drawTime}
-                                                    onChange={e => set("drawTime", e.target.value)}
-                                                />
-                                            </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Draw Time</label>
+                                            <input
+                                                className="form-input"
+                                                type="datetime-local"
+                                                value={form.drawTime}
+                                                onChange={e => set("drawTime", e.target.value)}
+                                            />
                                         </div>
                                         <div className="form-calc">
                                             Per winner: <strong>{perWinner} {tokenLabel}</strong>
@@ -680,39 +683,9 @@ export function CreateQuest() {
 
                                 {/* Leaderboard fields */}
                                 {form.type === "LEADERBOARD" && (
-                                    <div className="conditional visible" style={{ marginTop: 12 }}>
+                                    <div className="conditional visible" style={{ marginTop: 4 }}>
                                         <div className="form-hint" style={{ marginBottom: 8 }}>
                                             All verified submissions ranked by completion time. At quest end, top N get tiered rewards (1st gets more than 2nd, etc.).
-                                        </div>
-                                        <div className="form-row">
-                                            <div className="form-group">
-                                                <label className="form-label">Total Amount ({tokenLabel})</label>
-                                                <input
-                                                    className="form-input form-input-mono"
-                                                    type="text"
-                                                    value={form.lbTotal}
-                                                    onChange={e => set("lbTotal", e.target.value)}
-                                                />
-                                            </div>
-                                            <div className="form-group">
-                                                <label className="form-label">
-                                                    Number of Winners{" "}
-                                                    <span style={{ fontSize: 10, color: "var(--fg-muted)" }}>(max 100)</span>
-                                                </label>
-                                                <input
-                                                    className="form-input"
-                                                    type="number"
-                                                    min="2"
-                                                    max="100"
-                                                    value={form.lbWinners}
-                                                    onChange={e => {
-                                                        let v = parseInt(e.target.value) || 2
-                                                        if (v > 100) v = 100
-                                                        if (v < 2) v = 2
-                                                        set("lbWinners", String(v))
-                                                    }}
-                                                />
-                                            </div>
                                         </div>
                                         <div className="form-group">
                                             <label className="form-label">Payout Structure ({tokenLabel})</label>

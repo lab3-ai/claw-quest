@@ -20,8 +20,8 @@ RUN pnpm install --frozen-lockfile
 # Build shared package first
 RUN pnpm --filter @clawquest/shared build
 
-# Generate Prisma client
-RUN cd apps/api && npx prisma generate
+# Generate Prisma client (use pnpm exec to use pinned v5, not npx which resolves to v7)
+RUN cd apps/api && pnpm exec prisma generate
 
 # Build API
 RUN pnpm --filter @clawquest/api build
@@ -47,7 +47,7 @@ COPY apps/api/prisma/ apps/api/prisma/
 RUN pnpm install --frozen-lockfile --prod
 
 # Re-generate Prisma client in prod image
-RUN cd apps/api && npx prisma generate
+RUN cd apps/api && pnpm exec prisma generate
 
 # Copy built API output
 COPY --from=builder /app/apps/api/dist/ apps/api/dist/
@@ -57,4 +57,4 @@ EXPOSE 3000
 WORKDIR /app/apps/api
 
 # Run migrations then start
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/app.js"]
+CMD ["sh", "-c", "pnpm exec prisma migrate deploy && node dist/app.js"]

@@ -66,17 +66,11 @@
 .toggle-switch.on::after { left: 18px; }
 
 /* === TEMPLATE PICKER === */
+/* .platform-grid + .platform-btn base styles live in forms.css (shared) */
 .template-picker { margin-bottom: 10px; }
-.platform-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-.platform-btn {
-  display: flex; align-items: center; gap: 5px;
-  padding: 6px 12px; border: 1px solid var(--border-heavy); border-radius: 3px;
-  background: #fff; color: var(--fg); font-size: 12px; font-weight: 500;
-  cursor: pointer; font-family: var(--font); transition: all 0.1s;
-}
-.platform-btn:hover { border-color: var(--human-fg); color: var(--human-fg); background: var(--human-bg); }
-.platform-btn.active { border-color: var(--human-fg); color: var(--human-fg); background: var(--human-bg); font-weight: 600; }
-.platform-btn .icon { font-size: 14px; line-height: 1; display: inline-flex; align-items: center; }
+/* Human section override: pink hover/active */
+.actor-section.human .platform-btn:hover { border-color: var(--human-fg); color: var(--human-fg); background: var(--human-bg); }
+.actor-section.human .platform-btn.active { border-color: var(--human-fg); color: var(--human-fg); background: var(--human-bg); }
 
 /* === ACTION TEMPLATES === */
 .action-templates { display: none; }

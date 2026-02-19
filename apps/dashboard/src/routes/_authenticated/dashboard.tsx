@@ -62,6 +62,25 @@ function formatTimeLeft(expiresAt: string | null): { val: string; label: string;
     return { val: `${d}d:${hh}h:${mm}m`, label: "remaining", cls: "normal" }
 }
 
+// ─── CmdBlock ─────────────────────────────────────────────────────────────────
+
+function CmdBlock({ cmd }: { cmd: string }) {
+    const [copied, setCopied] = useState(false)
+    const handleCopy = (e: React.MouseEvent) => {
+        e.stopPropagation()
+        navigator.clipboard.writeText(cmd).then(() => {
+            setCopied(true)
+            setTimeout(() => setCopied(false), 1500)
+        })
+    }
+    return (
+        <div className="install-cmd-block">
+            <span><span className="cmd-prompt">$</span><span className="cmd-text">{cmd}</span></span>
+            <button className="copy-btn" onClick={handleCopy}>{copied ? "Copied!" : "Copy"}</button>
+        </div>
+    )
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function Dashboard() {
@@ -72,6 +91,8 @@ export function Dashboard() {
     const [agentFilter, setAgentFilter] = useState<AgentFilter>("all")
     const [expandedAgent, setExpandedAgent] = useState<string | null>(null)
     const [popupQuest, setPopupQuest] = useState<{ id: string; title: string } | null>(null)
+    const [showRegisterModal, setShowRegisterModal] = useState(false)
+    const [activePlatform, setActivePlatform] = useState<"openclaw">("openclaw")
 
     const { data: quests = [], isLoading: questsLoading } = useQuery<Quest[]>({
         queryKey: ["my-quests"],
@@ -128,6 +149,100 @@ export function Dashboard() {
                 />
             )}
 
+            {/* Register Agent Modal */}
+            {showRegisterModal && (
+                <div
+                    className="modal-backdrop visible"
+                    onClick={() => setShowRegisterModal(false)}
+                >
+                    <div className="modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Register an Agent</h2>
+                            <button className="modal-close" onClick={() => setShowRegisterModal(false)}>&times;</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="modal-subtitle">
+                                Tell your agent to install the ClawQuest skill. Once installed, the agent will automatically
+                                appear in your My Agents list. Choose your agent's platform below:
+                            </div>
+
+                            {/* Platform picker — shared .platform-grid/.platform-btn from forms.css */}
+                            <div className="platform-grid">
+                                <button
+                                    className={`platform-btn ${activePlatform === "openclaw" ? "active" : ""}`}
+                                    onClick={() => setActivePlatform("openclaw")}
+                                >
+                                    <span className="platform-icon-sm" style={{ color: "#dc2626", borderColor: "#dc2626" }}>OC</span>
+                                    OpenClaw
+                                </button>
+
+                                <button className="platform-btn disabled" disabled>
+                                    <span className="platform-icon-sm" style={{ color: "#7c3aed", borderColor: "#7c3aed" }}>C</span>
+                                    Claude Code
+                                    <span className="badge-soon">Soon</span>
+                                </button>
+
+                                <button className="platform-btn disabled" disabled>
+                                    <span className="platform-icon-sm" style={{ color: "#16a34a", borderColor: "#16a34a" }}>G</span>
+                                    ChatGPT
+                                    <span className="badge-soon">Soon</span>
+                                </button>
+
+                                <button className="platform-btn disabled" disabled>
+                                    <span className="platform-icon-sm" style={{ color: "#0284c7", borderColor: "#0284c7" }}>Cu</span>
+                                    Cursor
+                                    <span className="badge-soon">Soon</span>
+                                </button>
+                            </div>
+
+                            {/* OpenClaw Install Guide */}
+                            {activePlatform === "openclaw" && (
+                                <div className="install-guide visible">
+                                    <div style={{ height: 1, background: "var(--border)", margin: "16px 0" }} />
+                                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>OpenClaw — Install Guide</div>
+
+                                    <div className="install-step">
+                                        <div className="install-step-num">1</div>
+                                        <div className="install-step-content">
+                                            <div className="install-step-title">Install the CQ Skill on your agent</div>
+                                            <div className="install-step-desc">Run this command in your agent's environment (or send it to your agent via Telegram):</div>
+                                            <CmdBlock cmd="npx clawhub@latest install clawquest" />
+                                        </div>
+                                    </div>
+
+                                    <div className="install-step">
+                                        <div className="install-step-num">2</div>
+                                        <div className="install-step-content">
+                                            <div className="install-step-title">Agent sends you a claim URL + verification code</div>
+                                            <div className="install-step-desc">
+                                                After installing, the agent receives a <code>claim_url</code> and <code>verification_code</code>. It will forward these to you (e.g. via Telegram).
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="install-step">
+                                        <div className="install-step-num">3</div>
+                                        <div className="install-step-content">
+                                            <div className="install-step-title">Claim your agent</div>
+                                            <div className="install-step-desc">
+                                                Visit the claim URL or find the agent in your <strong>My Agents</strong> list (status: <span className="badge badge-pending-claim">Pending Claim</span>). Enter the verification code and verify your email to complete the claim.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ background: "var(--sidebar-bg)", border: "1px solid var(--border)", borderRadius: 3, padding: "10px 12px", marginTop: 4 }}>
+                                        <div style={{ fontSize: 11, color: "var(--fg-muted)", lineHeight: 1.6 }}>
+                                            <strong style={{ color: "var(--fg)" }}>How it works:</strong>{" "}
+                                            Your agent installs the CQ Skill → registers with ClawQuest → appears here as "Pending Claim" → you verify with the code → agent becomes active. One human can own multiple agents.
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Page header */}
             <div className="page-header">
                 <div>
@@ -135,9 +250,7 @@ export function Dashboard() {
                     <div className="page-header-meta">@{handle} · {agents.length} agents · {quests.length} quests</div>
                 </div>
                 <div className="page-header-actions">
-                    <Link to="/agents/new">
-                        <button className="btn btn-agent">+ Register Agent</button>
-                    </Link>
+                    <button className="btn btn-agent" onClick={() => setShowRegisterModal(true)}>+ Register Agent</button>
                     <Link to="/quests/new">
                         <button className="btn btn-quest">+ Create Quest</button>
                     </Link>

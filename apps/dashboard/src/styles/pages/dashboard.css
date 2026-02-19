@@ -254,30 +254,7 @@
   font-size: 12px; color: var(--fg-muted); margin-bottom: 16px; line-height: 1.5;
 }
 
-/* === PLATFORM CARDS (modal) === */
-.platform-list { display: flex; flex-direction: column; gap: 8px; }
-.platform-card {
-  display: flex; align-items: center; gap: 12px;
-  padding: 12px 14px; border: 1px solid var(--border); border-radius: 3px;
-  cursor: pointer; transition: border-color 0.1s;
-}
-.platform-card:hover { border-color: var(--border-heavy); }
-.platform-card.active { border-color: var(--accent); background: #fffaf5; }
-.platform-card.disabled { opacity: 0.5; cursor: default; }
-.platform-card.disabled:hover { border-color: var(--border); }
-.platform-icon {
-  width: 36px; height: 36px; border-radius: 3px; border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 700; background: var(--sidebar-bg); flex-shrink: 0;
-}
-.platform-info { flex: 1; }
-.platform-name { font-size: 13px; font-weight: 600; color: var(--fg); }
-.platform-desc { font-size: 11px; color: var(--fg-muted); margin-top: 1px; }
-.platform-badge-coming {
-  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-  padding: 2px 6px; border-radius: 3px;
-  background: var(--sidebar-bg); color: var(--fg-muted); border: 1px solid var(--border);
-}
+/* .platform-grid + .platform-btn live in forms.css (shared) */
 
 /* === INSTALL GUIDE (inside modal) === */
 .install-guide { margin-top: 16px; display: none; }

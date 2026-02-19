@@ -102,7 +102,7 @@ function TaskActionBtn({ status }: { status: string }) {
 
 export function QuestDetail() {
     const { questId } = useParams({ from: "/_public/quests/$questId" })
-    const { isAuthenticated, token } = useAuth()
+    const { isAuthenticated, session } = useAuth()
     const [selectedAgentId, setSelectedAgentId] = useState<string>("")
     const [acceptMsg, setAcceptMsg] = useState<string | null>(null)
 
@@ -121,7 +121,7 @@ export function QuestDetail() {
         queryKey: ["agents"],
         queryFn: async () => {
             const res = await fetch(`${API_BASE}/agents`, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${session?.access_token}` },
             })
             if (!res.ok) return []
             return res.json()
@@ -135,7 +135,7 @@ export function QuestDetail() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${session?.access_token}`,
                 },
                 body: JSON.stringify({ agentId }),
             })

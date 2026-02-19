@@ -1,6 +1,7 @@
 import { createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/react-router'
 import { Login } from './routes/login'
 import { Register } from './routes/register'
+import { AuthCallback } from './routes/auth/callback'
 import { AuthenticatedLayout } from './routes/_authenticated'
 import { PublicLayout } from './routes/_public'
 import { AgentList } from './routes/_authenticated/index'
@@ -27,6 +28,12 @@ const registerRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/register',
     component: Register,
+})
+
+const authCallbackRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/auth/callback',
+    component: AuthCallback,
 })
 
 // Public layout (topbar with Log in button)
@@ -89,6 +96,7 @@ const createQuestRoute = createRoute({
 const routeTree = rootRoute.addChildren([
     loginRoute,
     registerRoute,
+    authCallbackRoute,
     publicLayoutRoute.addChildren([questsRoute, questDetailRoute, questersRoute]),
     authLayoutRoute.addChildren([indexRoute, agentListRoute, createAgentRoute, createQuestRoute]),
 ])

@@ -62,7 +62,7 @@ function sortQuests(quests: Quest[], tab: Tab): Quest[] {
 }
 
 export function QuestList() {
-    const { token } = useAuth()
+    const { session } = useAuth()
     const [tab, setTab] = useState<Tab>("featured")
     const [view, setView] = useState<View>("card")
     const [popupQuest, setPopupQuest] = useState<{ id: string; title: string } | null>(null)
@@ -71,7 +71,7 @@ export function QuestList() {
         queryKey: ["quests"],
         queryFn: async () => {
             const headers: HeadersInit = {}
-            if (token) headers.Authorization = `Bearer ${token}`
+            if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`
             const res = await fetch(`${import.meta.env.VITE_API_URL}/quests`, { headers })
             if (!res.ok) throw new Error("Failed to fetch quests")
             return res.json() as Promise<Quest[]>

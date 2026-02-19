@@ -54,7 +54,7 @@ const SKILL_SUGGESTIONS = [
 
 export function CreateQuest() {
     const navigate = useNavigate()
-    const { token } = useAuth()
+    const { session } = useAuth()
     const [tab, setTab] = useState<Tab>("details")
     const [form, setForm] = useState<FormData>({
         title: "",
@@ -117,7 +117,7 @@ export function CreateQuest() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                    ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
                 },
                 body: JSON.stringify(payload),
             })

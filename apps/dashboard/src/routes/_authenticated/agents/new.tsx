@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription }
 export function CreateAgent() {
     const [name, setName] = useState("")
     const [loading, setLoading] = useState(false)
-    const { token } = useAuth()
+    const { session } = useAuth()
     const navigate = useNavigate()
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -21,7 +21,7 @@ export function CreateAgent() {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${session?.access_token}`
                 },
                 body: JSON.stringify({ name }),
             })

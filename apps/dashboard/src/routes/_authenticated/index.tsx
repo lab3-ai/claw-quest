@@ -6,13 +6,13 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import type { Agent } from "@clawquest/shared"
 
 export function AgentList() {
-    const { token } = useAuth()
+    const { session } = useAuth()
 
     const { data: agents, isLoading, error } = useQuery({
         queryKey: ["agents"],
         queryFn: async () => {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/agents`, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${session?.access_token}` },
             })
             if (!res.ok) throw new Error("Failed to fetch agents")
             return res.json() as Promise<Agent[]>

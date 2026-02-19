@@ -46,7 +46,7 @@ export function AuthenticatedLayout() {
                             <div className="user-dropdown">
                                 <a href="#">Profile</a>
                                 <a href="#">Settings</a>
-                                <a className="logout" onClick={logout} style={{ cursor: "pointer" }}>Log out</a>
+                                <a className="logout" onClick={() => logout()} style={{ cursor: "pointer" }}>Log out</a>
                             </div>
                         )}
                     </div>

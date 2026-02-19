@@ -1,72 +1,78 @@
 import { useState } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
-import { useAuth } from "@/context/AuthContext"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from "@/components/ui/card"
-import type { AuthResponse } from "@clawquest/shared"
+import { supabase } from "@/lib/supabase"
 
 export function Register() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
+    const [success, setSuccess] = useState("")
     const [loading, setLoading] = useState(false)
-    const { login } = useAuth()
     const navigate = useNavigate()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
         setError("")
+        setSuccess("")
 
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            })
+        const { error: signUpError } = await supabase.auth.signUp({ email, password })
 
-            const data: AuthResponse = await res.json()
-
-            if (!res.ok) {
-                throw new Error((data as any).message || "Registration failed")
-            }
-
-            login(data.token, data.user)
-            navigate({ to: "/" })
-        } catch (err: any) {
-            setError(err.message)
-        } finally {
-            setLoading(false)
+        if (signUpError) {
+            setError(signUpError.message)
+        } else {
+            setSuccess("Check your email for a confirmation link!")
+            setTimeout(() => navigate({ to: "/login" }), 3000)
         }
+
+        setLoading(false)
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-            <Card className="w-[350px]">
-                <CardHeader>
-                    <CardTitle>Register</CardTitle>
-                    <CardDescription>Create a new account to start your journey.</CardDescription>
-                </CardHeader>
-                <form onSubmit={handleSubmit}>
-                    <CardContent className="space-y-4">
-                        {error && <div className="text-red-500 text-sm">{error}</div>}
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
+        <div className="login-page">
+            <div className="topbar">
+                <Link to="/quests" className="topbar-logo">
+                    Claw<span>Quest</span>
+                </Link>
+                <div className="topbar-nav">
+                    <Link to="/quests">Quests</Link>
+                </div>
+            </div>
+
+            <div className="login-page-center">
+                <div className="login-modal" style={{ position: "static", width: 380 }}>
+                    <div className="login-modal-logo">
+                        Claw<span>Quest</span>
+                    </div>
+                    <div className="login-modal-subtitle">Create your account</div>
+
+                    {error && (
+                        <div style={{ background: "var(--red-bg)", color: "var(--red)", padding: "8px 12px", borderRadius: "3px", fontSize: "12px", marginBottom: "16px", textAlign: "left" }}>
+                            {error}
+                        </div>
+                    )}
+                    {success && (
+                        <div style={{ background: "var(--green-bg)", color: "var(--green)", padding: "8px 12px", borderRadius: "3px", fontSize: "12px", marginBottom: "16px", textAlign: "left" }}>
+                            {success}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit}>
+                        <div className="login-form-group">
+                            <label className="login-label">Email</label>
+                            <input
+                                className="login-input"
                                 type="email"
-                                placeholder="m@example.com"
+                                placeholder="you@example.com"
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input
-                                id="password"
+                        <div className="login-form-group">
+                            <label className="login-label">Password</label>
+                            <input
+                                className="login-input"
                                 type="password"
                                 minLength={8}
                                 required
@@ -74,20 +80,31 @@ export function Register() {
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
-                    </CardContent>
-                    <CardFooter className="flex flex-col space-y-2">
-                        <Button type="submit" className="w-full" disabled={loading}>
-                            {loading ? "Creating account..." : "Register"}
-                        </Button>
-                        <div className="text-sm text-center">
-                            Already have an account?{" "}
-                            <Link to="/login" className="underline">
-                                Login
-                            </Link>
-                        </div>
-                    </CardFooter>
-                </form>
-            </Card>
+
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            style={{ width: "100%", padding: "10px", fontSize: "13px", marginTop: "8px" }}
+                            disabled={loading}
+                        >
+                            {loading ? "Creating account..." : "Create account"}
+                        </button>
+                    </form>
+
+                    <div className="login-modal-divider" />
+
+                    <div className="login-modal-hint">
+                        Already have an account?{" "}
+                        <Link to="/login" style={{ color: "var(--link)" }}>Sign in</Link>
+                    </div>
+                </div>
+            </div>
+
+            <div className="footer" style={{ maxWidth: 920, margin: "0 auto", padding: "24px 16px" }}>
+                <span>ClawQuest v0.1 beta</span>
+                <a href="#">API Docs</a>
+                <a href="#">Telegram Bot</a>
+            </div>
         </div>
     )
 }

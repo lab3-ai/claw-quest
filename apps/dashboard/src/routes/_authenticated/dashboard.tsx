@@ -65,7 +65,7 @@ function formatTimeLeft(expiresAt: string | null): { val: string; label: string;
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function Dashboard() {
-    const { token, user } = useAuth()
+    const { session, user } = useAuth()
     const [mainTab, setMainTab] = useState<MainTab>("quests")
     const [questFilter, setQuestFilter] = useState<QuestFilter>("all")
     const [questView, setQuestView] = useState<"card" | "list">("card")
@@ -77,7 +77,7 @@ export function Dashboard() {
         queryKey: ["my-quests"],
         queryFn: async () => {
             const res = await fetch(`${API_BASE}/quests`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
             })
             if (!res.ok) return []
             return res.json()
@@ -88,12 +88,12 @@ export function Dashboard() {
         queryKey: ["agents"],
         queryFn: async () => {
             const res = await fetch(`${API_BASE}/agents`, {
-                headers: { Authorization: `Bearer ${token!}` },
+                headers: { Authorization: `Bearer ${session?.access_token}` },
             })
             if (!res.ok) return []
             return res.json()
         },
-        enabled: !!token,
+        enabled: !!session?.access_token,
     })
 
     // Quest filter counts

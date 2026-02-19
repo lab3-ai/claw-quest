@@ -1,86 +1,67 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { UserDto } from '@clawquest/shared';
+import React, { createContext, useContext, useState, useEffect } from 'react'
+import type { Session, User } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabase'
 
 interface AuthState {
-    token: string | null;
-    user: UserDto | null;
-    isAuthenticated: boolean;
-    isLoading: boolean;
+    session: Session | null
+    user: User | null
+    isAuthenticated: boolean
+    isLoading: boolean
 }
 
 interface AuthContextType extends AuthState {
-    login: (token: string, user: UserDto) => void;
-    logout: () => void;
+    logout: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [state, setState] = useState<AuthState>({
-        token: null,
+        session: null,
         user: null,
         isAuthenticated: false,
         isLoading: true,
-    });
+    })
 
     useEffect(() => {
-        // Load from localStorage on mount
-        const token = localStorage.getItem('token');
-        const userStr = localStorage.getItem('user');
+        // Get initial session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setState({
+                session,
+                user: session?.user ?? null,
+                isAuthenticated: !!session,
+                isLoading: false,
+            })
+        })
 
-        if (token && userStr) {
-            try {
-                const user = JSON.parse(userStr);
-                setState({
-                    token,
-                    user,
-                    isAuthenticated: true,
-                    isLoading: false,
-                });
-            } catch (e) {
-                // Invalid data
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                setState((prev) => ({ ...prev, isLoading: false }));
-            }
-        } else {
-            setState((prev) => ({ ...prev, isLoading: false }));
-        }
-    }, []);
+        // Listen for auth state changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setState({
+                session,
+                user: session?.user ?? null,
+                isAuthenticated: !!session,
+                isLoading: false,
+            })
+        })
 
-    const login = (token: string, user: UserDto) => {
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(user));
-        setState({
-            token,
-            user,
-            isAuthenticated: true,
-            isLoading: false,
-        });
-    };
+        return () => subscription.unsubscribe()
+    }, [])
 
-    const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setState({
-            token: null,
-            user: null,
-            isAuthenticated: false,
-            isLoading: false,
-        });
-    };
+    const logout = async () => {
+        await supabase.auth.signOut()
+    }
 
     return (
-        <AuthContext.Provider value={{ ...state, login, logout }}>
+        <AuthContext.Provider value={{ ...state, logout }}>
             {children}
         </AuthContext.Provider>
-    );
+    )
 }
 
 export function useAuth() {
-    const context = useContext(AuthContext);
+    const context = useContext(AuthContext)
     if (context === undefined) {
-        throw new Error('useAuth must be used within an AuthProvider');
+        throw new Error('useAuth must be used within an AuthProvider')
     }
-    return context;
+    return context
 }

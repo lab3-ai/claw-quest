@@ -28,6 +28,25 @@
 .textarea-wrapper { position: relative; }
 .textarea-wrapper .char-count { position: absolute; bottom: 6px; right: 8px; font-size: 10px; color: var(--fg-muted); font-family: var(--font-mono); pointer-events: none; }
 
+/* === PLATFORM ICON (standalone — usable anywhere) === */
+.platform-icon-sm {
+  width: 18px; height: 18px; border-radius: 2px; border: 1px solid currentColor;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 8px; font-weight: 800; flex-shrink: 0;
+}
+/* Per-platform colour tokens */
+.platform-icon-sm.oc      { color: #dc2626; }
+.platform-icon-sm.claude  { color: #7c3aed; }
+.platform-icon-sm.chatgpt { color: #16a34a; }
+.platform-icon-sm.cursor  { color: #0284c7; }
+
+/* badge-soon — standalone */
+.badge-soon {
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+  padding: 1px 5px; border-radius: 2px;
+  background: var(--sidebar-bg); color: var(--fg-muted); border: 1px solid var(--border);
+}
+
 /* === PLATFORM BUTTON PICKER (shared — used in create-quest & register-agent modal) === */
 .platform-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .platform-btn {
@@ -40,13 +59,4 @@
 .platform-btn.active { border-color: var(--accent); color: var(--accent); background: #fffaf5; font-weight: 600; }
 .platform-btn.disabled { opacity: 0.45; cursor: default; pointer-events: none; }
 .platform-btn .icon { font-size: 14px; line-height: 1; display: inline-flex; align-items: center; }
-.platform-btn .platform-icon-sm {
-  width: 18px; height: 18px; border-radius: 2px; border: 1px solid currentColor;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 8px; font-weight: 800; flex-shrink: 0;
-}
-.platform-btn .badge-soon {
-  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
-  padding: 1px 5px; border-radius: 2px; margin-left: 2px;
-  background: var(--sidebar-bg); color: var(--fg-muted); border: 1px solid var(--border);
-}
+/* badge-soon inside platform-btn — inherits base, no extra needed */

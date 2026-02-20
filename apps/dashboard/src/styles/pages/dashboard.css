@@ -256,6 +256,32 @@
 
 /* .platform-grid + .platform-btn live in forms.css (shared) */
 
+/* === PLATFORM SELECT (custom dropdown — Register Agent modal) === */
+.platform-select-trigger {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border: 1px solid var(--border-heavy); border-radius: 3px;
+  background: #fff; cursor: pointer; font-size: 13px; color: var(--fg);
+  user-select: none; transition: border-color 0.15s;
+}
+.platform-select-trigger:hover { border-color: var(--link); }
+.platform-select-trigger.open { border-color: var(--link); box-shadow: 0 0 0 3px rgba(0,116,204,0.15); }
+.platform-select-chevron { font-size: 9px; color: var(--fg-muted); margin-left: 2px; }
+
+.platform-select-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: #fff; border: 1px solid var(--border-heavy); border-radius: 3px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1); z-index: 200; overflow: hidden;
+}
+.platform-select-option {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; font-size: 13px; color: var(--fg);
+  cursor: pointer; transition: background 0.1s;
+}
+.platform-select-option:hover:not(.disabled) { background: var(--sidebar-bg); }
+.platform-select-option.selected { background: #fff8f4; }
+.platform-select-option.disabled { opacity: 0.5; cursor: not-allowed; }
+.platform-select-option + .platform-select-option { border-top: 1px solid var(--border); }
+
 /* === INSTALL GUIDE (inside modal) === */
 .install-guide { margin-top: 16px; display: none; }
 .install-guide.visible { display: block; }

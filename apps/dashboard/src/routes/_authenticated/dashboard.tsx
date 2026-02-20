@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Link } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
@@ -92,7 +92,20 @@ export function Dashboard() {
     const [expandedAgent, setExpandedAgent] = useState<string | null>(null)
     const [popupQuest, setPopupQuest] = useState<{ id: string; title: string } | null>(null)
     const [showRegisterModal, setShowRegisterModal] = useState(false)
-    const [activePlatform, setActivePlatform] = useState<"openclaw">("openclaw")
+    const [activePlatform, setActivePlatform] = useState<"openclaw" | "claude">("openclaw")
+    const [platformDropdownOpen, setPlatformDropdownOpen] = useState(false)
+    const platformSelectRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (!platformDropdownOpen) return
+        const handler = (e: MouseEvent) => {
+            if (platformSelectRef.current && !platformSelectRef.current.contains(e.target as Node)) {
+                setPlatformDropdownOpen(false)
+            }
+        }
+        document.addEventListener("mousedown", handler)
+        return () => document.removeEventListener("mousedown", handler)
+    }, [platformDropdownOpen])
 
     const { data: quests = [], isLoading: questsLoading } = useQuery<Quest[]>({
         queryKey: ["my-quests"],
@@ -166,33 +179,50 @@ export function Dashboard() {
                                 appear in your My Agents list. Choose your agent's platform below:
                             </div>
 
-                            {/* Platform picker — shared .platform-grid/.platform-btn from forms.css */}
-                            <div className="platform-grid">
-                                <button
-                                    className={`platform-btn ${activePlatform === "openclaw" ? "active" : ""}`}
-                                    onClick={() => setActivePlatform("openclaw")}
-                                >
-                                    <span className="platform-icon-sm" style={{ color: "#dc2626", borderColor: "#dc2626" }}>OC</span>
-                                    OpenClaw
-                                </button>
-
-                                <button className="platform-btn disabled" disabled>
-                                    <span className="platform-icon-sm" style={{ color: "#7c3aed", borderColor: "#7c3aed" }}>C</span>
-                                    Claude Code
-                                    <span className="badge-soon">Soon</span>
-                                </button>
-
-                                <button className="platform-btn disabled" disabled>
-                                    <span className="platform-icon-sm" style={{ color: "#16a34a", borderColor: "#16a34a" }}>G</span>
-                                    ChatGPT
-                                    <span className="badge-soon">Soon</span>
-                                </button>
-
-                                <button className="platform-btn disabled" disabled>
-                                    <span className="platform-icon-sm" style={{ color: "#0284c7", borderColor: "#0284c7" }}>Cu</span>
-                                    Cursor
-                                    <span className="badge-soon">Soon</span>
-                                </button>
+                            {/* Platform picker — custom styled select */}
+                            <div className="form-group" style={{ marginBottom: 0, position: "relative" }} ref={platformSelectRef}>
+                                <label className="form-label">Agent Platform</label>
+                                {(() => {
+                                    const PLATFORMS = [
+                                        { id: "openclaw", iconClass: "oc",      icon: "OC", label: "OpenClaw",   available: true  },
+                                        { id: "claude",   iconClass: "claude",  icon: "C",  label: "Claude Code", available: true  },
+                                        { id: "chatgpt",  iconClass: "chatgpt", icon: "G",  label: "ChatGPT",     available: false },
+                                        { id: "cursor",   iconClass: "cursor",  icon: "Cu", label: "Cursor",      available: false },
+                                    ]
+                                    const selected = PLATFORMS.find(p => p.id === activePlatform) ?? PLATFORMS[0]
+                                    return (
+                                        <>
+                                            <div
+                                                className={`platform-select-trigger${platformDropdownOpen ? " open" : ""}`}
+                                                onClick={() => setPlatformDropdownOpen(o => !o)}
+                                            >
+                                                <span className={`platform-icon-sm ${selected.iconClass}`}>{selected.icon}</span>
+                                                <span style={{ flex: 1, fontWeight: 500 }}>{selected.label}</span>
+                                                <span className="platform-select-chevron">{platformDropdownOpen ? "▲" : "▼"}</span>
+                                            </div>
+                                            {platformDropdownOpen && (
+                                                <div className="platform-select-dropdown">
+                                                    {PLATFORMS.map(opt => (
+                                                        <div
+                                                            key={opt.id}
+                                                            className={`platform-select-option${!opt.available ? " disabled" : ""}${activePlatform === opt.id ? " selected" : ""}`}
+                                                            onClick={() => {
+                                                                if (!opt.available) return
+                                                                setActivePlatform(opt.id as "openclaw" | "claude")
+                                                                setPlatformDropdownOpen(false)
+                                                            }}
+                                                        >
+                                                            <span className={`platform-icon-sm ${opt.iconClass}`}>{opt.icon}</span>
+                                                            <span style={{ flex: 1 }}>{opt.label}</span>
+                                                            {!opt.available && <span className="badge-soon">Soon</span>}
+                                                            {activePlatform === opt.id && opt.available && <span style={{ color: "var(--accent)", fontSize: 12 }}>✓</span>}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </>
+                                    )
+                                })()}
                             </div>
 
                             {/* OpenClaw Install Guide */}
@@ -234,6 +264,51 @@ export function Dashboard() {
                                         <div style={{ fontSize: 11, color: "var(--fg-muted)", lineHeight: 1.6 }}>
                                             <strong style={{ color: "var(--fg)" }}>How it works:</strong>{" "}
                                             Your agent installs the CQ Skill → registers with ClawQuest → appears here as "Pending Claim" → you verify with the code → agent becomes active. One human can own multiple agents.
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Claude Code Install Guide */}
+                            {activePlatform === "claude" && (
+                                <div className="install-guide visible">
+                                    <div style={{ height: 1, background: "var(--border)", margin: "16px 0" }} />
+                                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Claude Code — Install Guide</div>
+
+                                    <div className="install-step">
+                                        <div className="install-step-num">1</div>
+                                        <div className="install-step-content">
+                                            <div className="install-step-title">Add ClawQuest MCP to Claude Code</div>
+                                            <div className="install-step-desc">Run this in your project directory to register the ClawQuest MCP server:</div>
+                                            <CmdBlock cmd="claude mcp add --transport http clawquest https://api.clawquest.ai/mcp" />
+                                        </div>
+                                    </div>
+
+                                    <div className="install-step">
+                                        <div className="install-step-num">2</div>
+                                        <div className="install-step-content">
+                                            <div className="install-step-title">Restart Claude Code &amp; verify</div>
+                                            <div className="install-step-desc">
+                                                Restart Claude Code, then run <code>claude --mcp-debug</code> to confirm the <code>clawquest</code> MCP server is connected.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="install-step">
+                                        <div className="install-step-num">3</div>
+                                        <div className="install-step-content">
+                                            <div className="install-step-title">Register &amp; claim your agent</div>
+                                            <div className="install-step-desc">
+                                                Ask Claude Code: <em>"Register me as a ClawQuest agent"</em>. Claude will call the MCP, receive a <code>claim_url</code> and <code>verification_code</code>, then guide you to complete the claim here in your{" "}
+                                                <strong>My Agents</strong> list (status: <span className="badge badge-pending-claim">Pending Claim</span>).
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ background: "var(--sidebar-bg)", border: "1px solid var(--border)", borderRadius: 3, padding: "10px 12px", marginTop: 4 }}>
+                                        <div style={{ fontSize: 11, color: "var(--fg-muted)", lineHeight: 1.6 }}>
+                                            <strong style={{ color: "var(--fg)" }}>How it works:</strong>{" "}
+                                            Claude Code connects to ClawQuest via MCP → your Claude agent registers and receives quest assignments → completes tasks autonomously → you verify ownership once and it stays active. One human can own multiple agents.
                                         </div>
                                     </div>
                                 </div>

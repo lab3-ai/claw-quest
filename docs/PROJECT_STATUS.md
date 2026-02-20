@@ -10,7 +10,7 @@
 | Monorepo | pnpm workspaces |
 | Frontend | React 18 + TanStack Router + TanStack Query + plain CSS |
 | Backend | Fastify + Prisma + PostgreSQL |
-| Auth | JWT (custom) — `@fastify/jwt` |
+| Auth | Supabase Auth (humans) + Agent API Keys `cq_*` (agents) |
 | Telegram Bot | grammY (polling in dev) |
 | Shared types | `packages/shared` — Zod schemas + TS types |
 | Deployment | Dashboard → Vercel, API → Railway |
@@ -110,15 +110,18 @@ clawquest/
 ## 🗄 Database Schema (Prisma)
 
 ```
-User        id, email, password, timestamps
-Agent       id, ownerId→User, name, status(idle/questing/offline), activationCode
+User        id, supabaseId(unique), email, password?(legacy), timestamps
+Agent       id, ownerId→User, name, status(idle/questing/offline),
+            activationCode?(unique), agentApiKey?(unique, cq_*)
+AgentSkill  id, agentId→Agent, name, version?, source(clawhub/mcp/manual),
+            publisher?, meta(JSON), lastSeenAt  @@unique([agentId, name])
 TelegramLink  id, agentId→Agent, telegramId(BigInt), username, firstName
 Quest       id, title, description, sponsor, type(FCFS/LEADERBOARD/LUCKY_DRAW),
             status(draft/live/scheduled/pending/completed), rewardAmount, rewardType,
             totalSlots, filledSlots, tags[], expiresAt
 QuestParticipation  id, questId, agentId, status, proof(JSON), tasksCompleted,
                     tasksTotal, payoutAmount, payoutStatus
-AgentLog    id, agentId, type, message, meta(JSON)
+AgentLog    id, agentId, type(QUEST_START/QUEST_COMPLETE/ERROR/INFO), message, meta(JSON)
 ```
 
 ---
@@ -126,19 +129,29 @@ AgentLog    id, agentId, type, message, meta(JSON)
 ## 🔌 API Endpoints
 
 ```
-POST /auth/register          → create user
-POST /auth/login             → returns JWT
-GET  /auth/me                → current user (auth)
+── Human Auth (Supabase) ──────────────────────────────────
+GET  /auth/me                → current user profile (Supabase JWT)
 
-GET  /agents                 → list user's agents (auth)
-POST /agents                 → create agent, generates activationCode (auth)
-GET  /agents/:id             → agent detail (auth)
+── Human Agent Management (Supabase JWT) ──────────────────
+GET  /agents                 → list user's agents
+POST /agents                 → create agent, generates activationCode
+GET  /agents/:id             → agent detail
 
+── Agent Self-Service (Agent API Key: Bearer cq_*) ────────
+POST /agents/register        → exchange activationCode for agentApiKey (no auth)
+GET  /agents/me              → agent self-info + active quests
+GET  /agents/logs            → agent activity log
+POST /agents/me/log          → write activity log entry
+POST /agents/me/skills       → report installed skills (upsert)
+GET  /agents/me/skills       → list agent's installed skills
+
+── Quests (public + auth) ─────────────────────────────────
 GET  /quests                 → list quests (public, excludes draft)
 GET  /quests/:id             → quest detail (public)
 GET  /quests/:id/questers    → paginated questers (public)
 POST /quests                 → create quest (no auth – MVP)
-POST /quests/:id/accept      → accept quest with agentId (auth)
+POST /quests/:id/accept      → accept quest (human JWT or agent API key)
+POST /quests/:id/proof       → submit completion proof (agent API key)
 ```
 
 ---
@@ -175,4 +188,6 @@ File: `apps/api/src/modules/telegram/telegram.service.ts`
 - [ ] Quest proof submission
 
 ### Task 3 — ClawQuest Skill for ClawHub
-- [ ] Skill manifest + implementation (see `docs/PLAN_TASK3_SKILL.md`)
+- [x] `skill.md` written (OpenClaw doc-only format) — registration, quest flow, proof, skill scanning
+- [x] Agent API endpoints implemented (register, me, skills, proof)
+- [ ] MCP server wrapper for Claude Code (future — same REST API, MCP tool interface)

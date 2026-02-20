@@ -195,7 +195,7 @@ export function QuestList() {
                                         <td className="quest-budget">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</td>
                                         <td className="tbl-name">
                                             <div className="tbl-name-title">
-                                                <a className="quest-title-link" href={`/quests/${quest.id}`}>{quest.title}</a>
+                                                <Link className="quest-title-link" to="/quests/$questId" params={{ questId: quest.id }}>{quest.title}</Link>
                                             </div>
                                             <div className="tbl-name-desc">{quest.description}</div>
                                             <div className="tbl-name-sponsor">by <strong>{quest.sponsor}</strong></div>

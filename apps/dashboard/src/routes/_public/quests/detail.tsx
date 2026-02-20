@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useParams, Link } from "@tanstack/react-router"
-import { useQuery, useMutation } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { Quest } from "@clawquest/shared"
 import { useAuth } from "@/context/AuthContext"
 import { AVATAR_COLORS, getInitials } from "@/components/avatarUtils"
@@ -103,6 +103,7 @@ function TaskActionBtn({ status }: { status: string }) {
 export function QuestDetail() {
     const { questId } = useParams({ from: "/_public/quests/$questId" })
     const { isAuthenticated, session } = useAuth()
+    const queryClient = useQueryClient()
     const [selectedAgentId, setSelectedAgentId] = useState<string>("")
     const [acceptMsg, setAcceptMsg] = useState<string | null>(null)
 
@@ -115,6 +116,11 @@ export function QuestDetail() {
             if (!res.ok) throw new Error("Failed to fetch quest")
             return res.json()
         },
+        initialData: () => {
+            const cached = queryClient.getQueryData<Quest[]>(["quests"])
+            return cached?.find(q => q.id === questId)
+        },
+        staleTime: 60_000,
     })
 
     const { data: agents } = useQuery<{ id: string; name: string; status: string }[]>({

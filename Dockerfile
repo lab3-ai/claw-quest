@@ -8,6 +8,9 @@ WORKDIR /app
 # Copy workspace config
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json ./
 
+# Copy skill.md for API to serve
+COPY skill.md ./
+
 # Copy shared package
 COPY packages/shared/ packages/shared/
 
@@ -39,6 +42,7 @@ COPY --from=builder /app/apps/api/package.json apps/api/
 COPY --from=builder /app/apps/api/prisma/ apps/api/prisma/
 COPY --from=builder /app/apps/api/node_modules/ apps/api/node_modules/
 COPY --from=builder /app/package.json ./
+COPY --from=builder /app/skill.md ./
 
 EXPOSE 3000
 

@@ -160,6 +160,22 @@ if (TELEGRAM_BOT_TOKEN) {
     console.warn('⚠️  Missing TELEGRAM_BOT_TOKEN — Telegram bot will not start');
 }
 
+// Serve skill.md for agents to read
+import { readFileSync, existsSync } from 'fs';
+import { resolve } from 'path';
+
+const skillPaths = [
+    resolve(process.cwd(), '../../skill.md'),   // Railway: /app/apps/api -> /app/skill.md
+    resolve(process.cwd(), 'skill.md'),          // if cwd is repo root
+    resolve(__dirname, '../../../skill.md'),      // relative to dist/
+];
+const skillPath = skillPaths.find(p => existsSync(p));
+const skillContent = skillPath ? readFileSync(skillPath, 'utf-8') : '# skill.md not found';
+
+server.get('/skill.md', async (_request, reply) => {
+    reply.type('text/plain; charset=utf-8').send(skillContent);
+});
+
 // Health Check
 server.get('/health', async () => {
     return { status: 'ok', datetime: new Date().toISOString() };

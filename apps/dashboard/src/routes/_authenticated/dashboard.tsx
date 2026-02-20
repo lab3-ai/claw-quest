@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { QuestersPopup } from "@/components/QuestersPopup"
+import { PlatformIcon } from "@/components/PlatformIcon"
 import { AVATAR_COLORS, getInitials } from "@/components/avatarUtils"
 import type { Quest } from "@clawquest/shared"
 import "@/styles/pages/dashboard.css"
@@ -184,10 +185,10 @@ export function Dashboard() {
                                 <label className="form-label">Agent Platform</label>
                                 {(() => {
                                     const PLATFORMS = [
-                                        { id: "openclaw", iconClass: "oc",      icon: "OC", label: "OpenClaw",   available: true  },
-                                        { id: "claude",   iconClass: "claude",  icon: "C",  label: "Claude Code", available: true  },
-                                        { id: "chatgpt",  iconClass: "chatgpt", icon: "G",  label: "ChatGPT",     available: false },
-                                        { id: "cursor",   iconClass: "cursor",  icon: "Cu", label: "Cursor",      available: false },
+                                        { id: "openclaw", label: "OpenClaw",    available: true  },
+                                        { id: "claude",   label: "Claude Code", available: true  },
+                                        { id: "chatgpt",  label: "ChatGPT",     available: false },
+                                        { id: "cursor",   label: "Cursor",      available: false },
                                     ]
                                     const selected = PLATFORMS.find(p => p.id === activePlatform) ?? PLATFORMS[0]
                                     return (
@@ -196,7 +197,7 @@ export function Dashboard() {
                                                 className={`platform-select-trigger${platformDropdownOpen ? " open" : ""}`}
                                                 onClick={() => setPlatformDropdownOpen(o => !o)}
                                             >
-                                                <span className={`platform-icon-sm ${selected.iconClass}`}>{selected.icon}</span>
+                                                <PlatformIcon name={selected.id as any} size={18} colored />
                                                 <span style={{ flex: 1, fontWeight: 500 }}>{selected.label}</span>
                                                 <span className="platform-select-chevron">{platformDropdownOpen ? "▲" : "▼"}</span>
                                             </div>
@@ -212,7 +213,7 @@ export function Dashboard() {
                                                                 setPlatformDropdownOpen(false)
                                                             }}
                                                         >
-                                                            <span className={`platform-icon-sm ${opt.iconClass}`}>{opt.icon}</span>
+                                                            <PlatformIcon name={opt.id as any} size={18} colored />
                                                             <span style={{ flex: 1 }}>{opt.label}</span>
                                                             {!opt.available && <span className="badge-soon">Soon</span>}
                                                             {activePlatform === opt.id && opt.available && <span style={{ color: "var(--accent)", fontSize: 12 }}>✓</span>}

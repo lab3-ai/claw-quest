@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate, Link } from "@tanstack/react-router"
 import { useMutation } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
+import { PlatformIcon } from "@/components/PlatformIcon"
 import "@/styles/pages/create-quest.css"
 import "@/styles/actor-sections.css"
 import "@/styles/forms.css"
@@ -97,7 +98,14 @@ const TOKEN_COLORS: Record<string, string> = {
 
 // ─── Platform / action data ────────────────────────────────────────────────────
 
-const PLATFORM_ICONS: Record<string, string> = { X: "𝕏", Discord: "🎮", Telegram: "✈" }
+const PLATFORM_ICON_KEYS: Record<string, "x" | "discord" | "telegram"> = {
+    X: "x", Discord: "discord", Telegram: "telegram",
+}
+function PlatformBtnIcon({ platform }: { platform: string }) {
+    const key = PLATFORM_ICON_KEYS[platform]
+    if (!key) return <span>{platform[0]}</span>
+    return <PlatformIcon name={key} size={15} colored />
+}
 
 type ActionDef = {
     type: string
@@ -319,7 +327,7 @@ export function CreateQuest() {
             platform,
             action: action.label,
             actionType: action.type,
-            icon: PLATFORM_ICONS[platform] ?? platform,
+            icon: platform,
             params: {},
             requireTagFriends: false,
         }])
@@ -769,7 +777,7 @@ export function CreateQuest() {
                                                     className={`platform-btn ${activePlatform === p ? "active" : ""}`}
                                                     onClick={() => setActivePlatform(activePlatform === p ? null : p)}
                                                 >
-                                                    <span className="icon">{PLATFORM_ICONS[p]}</span> {p}
+                                                    <span className="icon"><PlatformBtnIcon platform={p} /></span> {p}
                                                 </button>
                                             ))}
                                         </div>
@@ -806,7 +814,7 @@ export function CreateQuest() {
                                                         className="social-entry-header"
                                                         onClick={() => setExpandedTask(expandedTask === i ? null : i)}
                                                     >
-                                                        <span className="entry-icon">{task.icon}</span>
+                                                        <span className="entry-icon"><PlatformBtnIcon platform={task.platform} /></span>
                                                         <span className="entry-label">{task.action}</span>
                                                         <span className="entry-platform">{task.platform}</span>
                                                         <button

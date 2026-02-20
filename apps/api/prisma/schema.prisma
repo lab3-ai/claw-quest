@@ -8,13 +8,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  supabaseId  String?  @unique  // Supabase Auth user UUID
+  email       String   @unique
+  password    String?            // Legacy — kept for backward compat
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  agents    Agent[]
+  agents      Agent[]
 }
 
 model Agent {
@@ -24,15 +25,18 @@ model Agent {
   name           String
   status         String   @default("idle") // idle, questing, offline
   activationCode String?  @unique
-  
+  agentApiKey    String?  @unique  // issued on /agents/register — used by agents as Bearer token
+
   TelegramLink   TelegramLink?
   logs           AgentLog[]
   participations QuestParticipation[]
-  
+  skills         AgentSkill[]
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   @@index([ownerId])
+  @@index([agentApiKey])
 }
 
 model TelegramLink {
@@ -90,6 +94,25 @@ model QuestParticipation {
   completedAt DateTime?
 
   @@unique([questId, agentId]) // One participation per agent per quest
+}
+
+model AgentSkill {
+  id        String   @id @default(uuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id])
+
+  name      String   // e.g. "sponge-wallet", "onchain-actions"
+  version   String?  // e.g. "1.0.0" — null if unknown (Claude Code)
+  source    String   @default("unknown") // "clawhub", "mcp", "manual"
+  publisher String?  // e.g. "paysponge", "openclaw", "leeknowsai"
+  meta      Json?    // extra metadata (tool names for MCP, description, etc.)
+
+  lastSeenAt DateTime @default(now()) // updated each time agent re-reports
+  createdAt  DateTime @default(now())
+
+  @@unique([agentId, name]) // one record per skill per agent
+  @@index([agentId])
+  @@index([name])
 }
 
 model AgentLog {

@@ -1,12 +1,47 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { CreateAgentSchema, AgentSchema } from '@clawquest/shared';
 import { z } from 'zod';
+import { randomBytes } from 'crypto';
+
+// ─── Helper ──────────────────────────────────────────────────────────────────
+
+function generateAgentApiKey(): string {
+    return 'cq_' + randomBytes(24).toString('hex'); // e.g. cq_a3f9b2...
+}
+
+// ─── Agent Auth Helper ────────────────────────────────────────────────────────
+// Agents authenticate with "Authorization: Bearer cq_<key>" — separate from human JWT.
+// Returns { agentId, ownerId } or sends 401 and returns null.
+
+async function authenticateAgent(
+    server: FastifyInstance,
+    request: FastifyRequest,
+    reply: FastifyReply
+): Promise<{ agentId: string; ownerId: string } | null> {
+    const auth = request.headers.authorization;
+    if (!auth?.startsWith('Bearer cq_')) {
+        reply.status(401).send({ error: 'Missing or invalid agent API key' });
+        return null;
+    }
+    const apiKey = auth.slice(7); // strip "Bearer "
+    const agent = await server.prisma.agent.findUnique({
+        where: { agentApiKey: apiKey },
+        select: { id: true, ownerId: true },
+    });
+    if (!agent) {
+        reply.status(401).send({ error: 'Invalid agent API key' });
+        return null;
+    }
+    return { agentId: agent.id, ownerId: agent.ownerId };
+}
+
+// ─── Routes ──────────────────────────────────────────────────────────────────
 
 export async function agentsRoutes(app: FastifyInstance) {
     const server = app.withTypeProvider<ZodTypeProvider>();
 
-    // List Agents
+    // ── List Agents (human JWT) ───────────────────────────────────────────────
     server.get(
         '/',
         {
@@ -15,9 +50,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 tags: ['Agents'],
                 summary: 'List user agents',
                 security: [{ bearerAuth: [] }],
-                response: {
-                    200: z.array(AgentSchema),
-                },
+                response: { 200: z.array(AgentSchema) },
             },
         },
         async (request) => {
@@ -34,7 +67,7 @@ export async function agentsRoutes(app: FastifyInstance) {
         }
     );
 
-    // Create Agent
+    // ── Create Agent (human JWT) ──────────────────────────────────────────────
     server.post(
         '/',
         {
@@ -44,9 +77,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 summary: 'Create a new agent',
                 security: [{ bearerAuth: [] }],
                 body: CreateAgentSchema,
-                response: {
-                    201: AgentSchema,
-                },
+                response: { 201: AgentSchema },
             },
         },
         async (request, reply) => {
@@ -55,7 +86,6 @@ export async function agentsRoutes(app: FastifyInstance) {
                 data: {
                     name,
                     ownerId: request.user.id,
-                    // Generate a random activation code (simple 6-char string)
                     activationCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
                 },
             });
@@ -63,7 +93,7 @@ export async function agentsRoutes(app: FastifyInstance) {
         }
     );
 
-    // Get Agent Details
+    // ── Get Agent Details (human JWT) ─────────────────────────────────────────
     server.get(
         '/:id',
         {
@@ -73,9 +103,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 summary: 'Get agent details',
                 security: [{ bearerAuth: [] }],
                 params: z.object({ id: z.string().uuid() }),
-                response: {
-                    200: AgentSchema,
-                },
+                response: { 200: AgentSchema },
             },
         },
         async (request, reply) => {
@@ -83,12 +111,327 @@ export async function agentsRoutes(app: FastifyInstance) {
             const agent = await server.prisma.agent.findFirst({
                 where: { id, ownerId: request.user.id },
             });
-
             if (!agent) {
                 return reply.status(404).send({ message: 'Agent not found', code: 'NOT_FOUND' } as any);
             }
-
             return agent as any;
+        }
+    );
+
+    // ── POST /agents/register — agent exchanges activationCode for agentApiKey ─
+    // No auth required. The activationCode IS the one-time credential.
+    // Human creates agent on Dashboard → copies activationCode → gives to their agent.
+    // Agent calls this endpoint once → receives agentApiKey (store in ~/.clawquest/credentials.json).
+    server.post(
+        '/register',
+        {
+            schema: {
+                tags: ['Agents'],
+                summary: 'Exchange activation code for agent API key (no auth required)',
+                body: z.object({
+                    activationCode: z.string().min(4).max(12),
+                    name: z.string().min(1).max(50).optional(),
+                }),
+                response: {
+                    200: z.object({
+                        agentId: z.string().uuid(),
+                        agentApiKey: z.string(),
+                        name: z.string(),
+                        ownerId: z.string().uuid(),
+                        message: z.string(),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const { activationCode, name } = request.body;
+
+            const agent = await server.prisma.agent.findUnique({
+                where: { activationCode: activationCode.toUpperCase() },
+            });
+
+            if (!agent) {
+                return reply.status(404).send({ error: 'Invalid or expired activation code' } as any);
+            }
+
+            // Issue a fresh agentApiKey, consume the activationCode
+            const agentApiKey = generateAgentApiKey();
+
+            const updated = await server.prisma.agent.update({
+                where: { id: agent.id },
+                data: {
+                    agentApiKey,
+                    activationCode: null, // one-time use — clear it
+                    ...(name ? { name } : {}),
+                },
+            });
+
+            await server.prisma.agentLog.create({
+                data: {
+                    agentId: agent.id,
+                    type: 'INFO',
+                    message: 'Agent registered via activation code',
+                    meta: { method: 'activation_code' },
+                },
+            });
+
+            return {
+                agentId: updated.id,
+                agentApiKey,
+                name: updated.name,
+                ownerId: updated.ownerId,
+                message: `✅ Agent "${updated.name}" registered. Store agentApiKey safely — it won't be shown again.`,
+            };
+        }
+    );
+
+    // ── GET /agents/me — agent self-info (agent API key) ─────────────────────
+    server.get(
+        '/me',
+        {
+            schema: {
+                tags: ['Agents'],
+                summary: 'Get current agent info (agent API key auth)',
+                security: [{ bearerAuth: [] }],
+                response: {
+                    200: z.object({
+                        agentId: z.string().uuid(),
+                        name: z.string(),
+                        status: z.string(),
+                        ownerId: z.string().uuid(),
+                        activeQuests: z.array(z.object({
+                            participationId: z.string(),
+                            questId: z.string(),
+                            questTitle: z.string(),
+                            status: z.string(),
+                            tasksCompleted: z.number(),
+                            tasksTotal: z.number(),
+                            joinedAt: z.string(),
+                        })),
+                        completedQuestsCount: z.number(),
+                        createdAt: z.string(),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const ctx = await authenticateAgent(server, request, reply);
+            if (!ctx) return;
+
+            const agent = await server.prisma.agent.findUnique({
+                where: { id: ctx.agentId },
+                include: {
+                    participations: {
+                        where: { status: { in: ['in_progress', 'submitted'] } },
+                        include: { quest: { select: { title: true } } },
+                        orderBy: { joinedAt: 'desc' },
+                    },
+                    _count: {
+                        select: { participations: { where: { status: 'completed' } } },
+                    },
+                },
+            });
+
+            if (!agent) return reply.status(404).send({ error: 'Agent not found' } as any);
+
+            return {
+                agentId: agent.id,
+                name: agent.name,
+                status: agent.status,
+                ownerId: agent.ownerId,
+                activeQuests: agent.participations.map(p => ({
+                    participationId: p.id,
+                    questId: p.questId,
+                    questTitle: p.quest.title,
+                    status: p.status,
+                    tasksCompleted: p.tasksCompleted,
+                    tasksTotal: p.tasksTotal,
+                    joinedAt: p.joinedAt.toISOString(),
+                })),
+                completedQuestsCount: agent._count.participations,
+                createdAt: agent.createdAt.toISOString(),
+            };
+        }
+    );
+
+    // ── GET /agents/logs — agent activity log (agent API key) ─────────────────
+    server.get(
+        '/logs',
+        {
+            schema: {
+                tags: ['Agents'],
+                summary: 'Get agent activity logs (agent API key auth)',
+                security: [{ bearerAuth: [] }],
+                querystring: z.object({ limit: z.coerce.number().min(1).max(100).default(50) }),
+                response: {
+                    200: z.array(z.object({
+                        id: z.string(),
+                        type: z.string(),
+                        message: z.string(),
+                        meta: z.any().nullable(),
+                        createdAt: z.string(),
+                    })),
+                },
+            },
+        },
+        async (request, reply) => {
+            const ctx = await authenticateAgent(server, request, reply);
+            if (!ctx) return;
+
+            const { limit } = request.query as { limit: number };
+            const logs = await server.prisma.agentLog.findMany({
+                where: { agentId: ctx.agentId },
+                orderBy: { createdAt: 'desc' },
+                take: limit,
+            });
+            return logs.map(l => ({ ...l, meta: l.meta ?? null, createdAt: l.createdAt.toISOString() }));
+        }
+    );
+
+    // ── POST /agents/me/log — agent writes activity log (agent API key) ───────
+    server.post(
+        '/me/log',
+        {
+            schema: {
+                tags: ['Agents'],
+                summary: 'Write an activity log entry (agent API key auth)',
+                security: [{ bearerAuth: [] }],
+                body: z.object({
+                    type: z.enum(['QUEST_START', 'QUEST_COMPLETE', 'ERROR', 'INFO']),
+                    message: z.string().min(1).max(500),
+                    meta: z.record(z.any()).optional(),
+                }),
+                response: { 201: z.object({ id: z.string(), createdAt: z.string() }) },
+            },
+        },
+        async (request, reply) => {
+            const ctx = await authenticateAgent(server, request, reply);
+            if (!ctx) return;
+
+            const { type, message, meta } = request.body;
+            const log = await server.prisma.agentLog.create({
+                data: { agentId: ctx.agentId, type, message, meta: meta ?? null },
+            });
+            return reply.code(201).send({ id: log.id, createdAt: log.createdAt.toISOString() });
+        }
+    );
+
+    // ── POST /agents/me/skills — report installed skills (upsert) ─────────────
+    // Agent scans its own environment and reports what skills it has.
+    // Uses upsert: creates new records or updates lastSeenAt for existing ones.
+    const SkillEntrySchema = z.object({
+        name: z.string().min(1).max(100),         // e.g. "sponge-wallet"
+        version: z.string().max(20).optional(),    // e.g. "1.0.0"
+        source: z.enum(['clawhub', 'mcp', 'manual']).default('clawhub'),
+        publisher: z.string().max(100).optional(), // e.g. "paysponge"
+        meta: z.record(z.any()).optional(),         // tool names, descriptions, etc.
+    });
+
+    server.post(
+        '/me/skills',
+        {
+            schema: {
+                tags: ['Agents'],
+                summary: 'Report installed skills (agent API key auth)',
+                security: [{ bearerAuth: [] }],
+                body: z.object({ skills: z.array(SkillEntrySchema).min(1).max(50) }),
+                response: {
+                    200: z.object({
+                        synced: z.number(),
+                        skills: z.array(z.object({
+                            name: z.string(),
+                            version: z.string().nullable(),
+                            source: z.string(),
+                            publisher: z.string().nullable(),
+                            lastSeenAt: z.string(),
+                        })),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const ctx = await authenticateAgent(server, request, reply);
+            if (!ctx) return;
+
+            const { skills } = request.body;
+            const now = new Date();
+
+            const results = await Promise.all(
+                skills.map(s =>
+                    server.prisma.agentSkill.upsert({
+                        where: { agentId_name: { agentId: ctx.agentId, name: s.name } },
+                        create: {
+                            agentId: ctx.agentId,
+                            name: s.name,
+                            version: s.version ?? null,
+                            source: s.source ?? 'clawhub',
+                            publisher: s.publisher ?? null,
+                            meta: s.meta ?? null,
+                            lastSeenAt: now,
+                        },
+                        update: {
+                            version: s.version ?? undefined,
+                            source: s.source ?? undefined,
+                            publisher: s.publisher ?? undefined,
+                            meta: s.meta ?? undefined,
+                            lastSeenAt: now,
+                        },
+                    })
+                )
+            );
+
+            return {
+                synced: results.length,
+                skills: results.map(r => ({
+                    name: r.name,
+                    version: r.version,
+                    source: r.source,
+                    publisher: r.publisher,
+                    lastSeenAt: r.lastSeenAt.toISOString(),
+                })),
+            };
+        }
+    );
+
+    // ── GET /agents/me/skills — list agent's installed skills ─────────────────
+    server.get(
+        '/me/skills',
+        {
+            schema: {
+                tags: ['Agents'],
+                summary: 'List agent installed skills (agent API key auth)',
+                security: [{ bearerAuth: [] }],
+                response: {
+                    200: z.array(z.object({
+                        name: z.string(),
+                        version: z.string().nullable(),
+                        source: z.string(),
+                        publisher: z.string().nullable(),
+                        meta: z.any().nullable(),
+                        lastSeenAt: z.string(),
+                        createdAt: z.string(),
+                    })),
+                },
+            },
+        },
+        async (request, reply) => {
+            const ctx = await authenticateAgent(server, request, reply);
+            if (!ctx) return;
+
+            const skills = await server.prisma.agentSkill.findMany({
+                where: { agentId: ctx.agentId },
+                orderBy: { name: 'asc' },
+            });
+
+            return skills.map(s => ({
+                name: s.name,
+                version: s.version,
+                source: s.source,
+                publisher: s.publisher,
+                meta: s.meta ?? null,
+                lastSeenAt: s.lastSeenAt.toISOString(),
+                createdAt: s.createdAt.toISOString(),
+            }));
         }
     );
 }

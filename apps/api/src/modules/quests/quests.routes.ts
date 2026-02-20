@@ -237,73 +237,149 @@ export async function questsRoutes(server: FastifyInstance) {
         }
     );
 
-    // Accept Quest (Agent)
+    // ── Accept Quest — supports both human JWT and agent API key ────────────────
+    // Agent API key: Authorization: Bearer cq_<key> — agentId resolved from key
+    // Human JWT:     Authorization: Bearer <jwt>    — agentId must be provided in body
     server.post(
         '/:id/accept',
         {
-            onRequest: [server.authenticate],
             schema: {
                 tags: ['Quests'],
-                summary: 'Accept a quest as an agent',
+                summary: 'Accept a quest (human JWT or agent API key)',
                 params: z.object({ id: z.string().uuid() }),
-                body: z.object({ agentId: z.string().uuid() }),
+                body: z.object({ agentId: z.string().uuid().optional() }),
                 response: {
-                    200: z.object({ message: z.string(), participationId: z.string() })
-                }
-            }
+                    200: z.object({ message: z.string(), participationId: z.string() }),
+                },
+            },
         },
         async (request, reply) => {
             const { id } = request.params as any;
-            const { agentId } = request.body as any;
-            const userId = request.user.id; // from auth token
+            const auth = request.headers.authorization ?? '';
+            let agentId: string;
 
-            // Verify agent ownership
-            const agent = await server.prisma.agent.findFirst({
-                where: { id: agentId, ownerId: userId }
-            });
-
-            if (!agent) {
-                return reply.status(403).send({ message: 'Agent not found or not owned by you' } as any);
+            if (auth.startsWith('Bearer cq_')) {
+                // Agent API key path — resolve agentId from key
+                const apiKey = auth.slice(7);
+                const agent = await server.prisma.agent.findUnique({
+                    where: { agentApiKey: apiKey },
+                    select: { id: true },
+                });
+                if (!agent) return reply.status(401).send({ message: 'Invalid agent API key' } as any);
+                agentId = agent.id;
+            } else {
+                // Human Supabase token path — verify ownership
+                try { await app.authenticate(request, reply); } catch { return reply.status(401).send({ message: 'Unauthorized' } as any); }
+                const { agentId: bodyAgentId } = request.body as any;
+                if (!bodyAgentId) return reply.status(400).send({ message: 'agentId required for human auth' } as any);
+                const owned = await server.prisma.agent.findFirst({
+                    where: { id: bodyAgentId, ownerId: (request as any).user.id },
+                    select: { id: true },
+                });
+                if (!owned) return reply.status(403).send({ message: 'Agent not found or not owned by you' } as any);
+                agentId = bodyAgentId;
             }
 
-            // Check if quest exists and is available
             const quest = await server.prisma.quest.findUnique({ where: { id } });
             if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any);
-
             if (quest.status !== 'live') return reply.status(400).send({ message: 'Quest is not live' } as any);
             if (quest.filledSlots >= quest.totalSlots) return reply.status(400).send({ message: 'Quest is full' } as any);
 
-            // Check existing participation
             const existing = await server.prisma.questParticipation.findUnique({
-                where: {
-                    questId_agentId: { questId: id, agentId }
-                }
+                where: { questId_agentId: { questId: id, agentId } },
             });
-
             if (existing) return reply.status(400).send({ message: 'Agent already accepted this quest' } as any);
 
-            // Create participation
             const participation = await server.prisma.questParticipation.create({
-                data: {
-                    questId: id,
-                    agentId,
-                    status: 'in_progress'
-                }
+                data: { questId: id, agentId, status: 'in_progress' },
             });
 
-            // Increment filled slots (optimistic, simplified)
-            await server.prisma.quest.update({
-                where: { id },
-                data: { filledSlots: { increment: 1 } }
-            });
-
-            // Update Agent status?
-            await server.prisma.agent.update({
-                where: { id: agentId },
-                data: { status: 'questing' }
-            });
+            await Promise.all([
+                server.prisma.quest.update({ where: { id }, data: { filledSlots: { increment: 1 } } }),
+                server.prisma.agent.update({ where: { id: agentId }, data: { status: 'questing' } }),
+                server.prisma.agentLog.create({
+                    data: { agentId, type: 'QUEST_START', message: `Accepted quest: ${quest.title}`, meta: { questId: id } },
+                }),
+            ]);
 
             return { message: 'Quest accepted', participationId: participation.id };
+        }
+    );
+
+    // ── POST /quests/:id/proof — submit completion proof (agent API key) ──────
+    // proof is a flexible JSON object — structure depends on quest task types:
+    //   Social: { taskType: "follow_x", proofUrl: "https://x.com/..." }
+    //   Agent:  { taskType: "skill_result", result: "..." }
+    server.post(
+        '/:id/proof',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Submit quest completion proof (agent API key auth)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                body: z.object({
+                    proof: z.array(z.object({
+                        taskType: z.string(),
+                        proofUrl: z.string().url().optional(),
+                        result: z.string().optional(),
+                        meta: z.record(z.any()).optional(),
+                    })).min(1),
+                }),
+                response: {
+                    200: z.object({
+                        message: z.string(),
+                        participationId: z.string(),
+                        status: z.string(),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const auth = request.headers.authorization ?? '';
+            if (!auth.startsWith('Bearer cq_')) {
+                return reply.status(401).send({ error: 'Agent API key required' } as any);
+            }
+            const apiKey = auth.slice(7);
+            const agent = await server.prisma.agent.findUnique({
+                where: { agentApiKey: apiKey },
+                select: { id: true },
+            });
+            if (!agent) return reply.status(401).send({ error: 'Invalid agent API key' } as any);
+
+            const { id: questId } = request.params as any;
+            const { proof } = request.body as any;
+
+            const participation = await server.prisma.questParticipation.findUnique({
+                where: { questId_agentId: { questId, agentId: agent.id } },
+            });
+            if (!participation) return reply.status(404).send({ error: 'No active participation for this quest' } as any);
+            if (participation.status === 'completed') return reply.status(400).send({ error: 'Quest already completed' } as any);
+
+            const updated = await server.prisma.questParticipation.update({
+                where: { id: participation.id },
+                data: {
+                    proof,
+                    status: 'submitted',
+                    tasksCompleted: proof.length,
+                    completedAt: new Date(),
+                },
+            });
+
+            await server.prisma.agentLog.create({
+                data: {
+                    agentId: agent.id,
+                    type: 'QUEST_COMPLETE',
+                    message: `Submitted proof for quest`,
+                    meta: { questId, participationId: participation.id, proofCount: proof.length },
+                },
+            });
+
+            return {
+                message: '✅ Proof submitted. Awaiting operator verification.',
+                participationId: updated.id,
+                status: updated.status,
+            };
         }
     );
 }

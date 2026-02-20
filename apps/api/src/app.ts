@@ -1,10 +1,9 @@
 import Fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
-import jwt from '@fastify/jwt';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { serializerCompiler, validatorCompiler, ZodTypeProvider } from 'fastify-type-provider-zod';
-import { z } from 'zod';
+import { createClient } from '@supabase/supabase-js';
 
 // Load env vars
 import 'dotenv/config';
@@ -14,18 +13,25 @@ import { authRoutes } from './modules/auth/auth.routes';
 import { agentsRoutes } from './modules/agents/agents.routes';
 import { questsRoutes } from './modules/quests/quests.routes';
 
-// Type extensions
+// ─── Supabase Admin Client ──────────────────────────────────────────────────
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    console.warn('⚠️  Missing SUPABASE_URL / SUPABASE_ANON_KEY — auth will not work');
+}
+
+const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ─── Type extensions ────────────────────────────────────────────────────────
 declare module 'fastify' {
     interface FastifyInstance {
         authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
         prisma: PrismaClient;
+        supabase: typeof supabaseAdmin;
     }
-}
-
-declare module '@fastify/jwt' {
-    interface FastifyJWT {
-        payload: { id: string; email: string };
-        user: { id: string; email: string };
+    interface FastifyRequest {
+        user: { id: string; email: string; supabaseId: string };
     }
 }
 
@@ -45,22 +51,67 @@ server.register(cors, {
     ],
 });
 
-server.register(jwt, {
-    secret: process.env.JWT_SECRET || 'supersecret',
-});
+// ─── Supabase Auth Middleware ────────────────────────────────────────────────
+// Verifies the Supabase access_token sent by the frontend,
+// then finds-or-creates a Prisma User row so route handlers get `request.user.id`.
 
 server.decorate('authenticate', async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-        await request.jwtVerify();
-    } catch (err) {
-        reply.send(err);
+    const authHeader = request.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+        return reply.status(401).send({ message: 'Missing or invalid Authorization header' });
     }
+
+    const token = authHeader.slice(7);
+
+    // Verify the token with Supabase Auth API
+    const { data, error } = await supabaseAdmin.auth.getUser(token);
+
+    if (error || !data.user) {
+        return reply.status(401).send({ message: 'Invalid or expired token' });
+    }
+
+    const supabaseUser = data.user;
+
+    // Find or create local Prisma user
+    let user = await server.prisma.user.findUnique({
+        where: { supabaseId: supabaseUser.id },
+    });
+
+    if (!user) {
+        // Also check by email (for legacy seeded users)
+        user = await server.prisma.user.findUnique({
+            where: { email: supabaseUser.email! },
+        });
+
+        if (user) {
+            // Link existing user to Supabase
+            user = await server.prisma.user.update({
+                where: { id: user.id },
+                data: { supabaseId: supabaseUser.id },
+            });
+        } else {
+            // Create new Prisma user
+            user = await server.prisma.user.create({
+                data: {
+                    supabaseId: supabaseUser.id,
+                    email: supabaseUser.email!,
+                },
+            });
+        }
+    }
+
+    request.user = {
+        id: user.id,
+        email: user.email,
+        supabaseId: supabaseUser.id,
+    };
 });
 
-// Database
+// ─── Database ───────────────────────────────────────────────────────────────
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 server.decorate('prisma', prisma);
+server.decorate('supabase', supabaseAdmin);
 
 server.register(swagger, {
     openapi: {

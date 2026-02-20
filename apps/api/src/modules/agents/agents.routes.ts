@@ -453,6 +453,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                         agentId: z.string().uuid(),
                         agentApiKey: z.string(),
                         verificationToken: z.string(),
+                        verifyUrl: z.string(),
                         message: z.string(),
                     }),
                 },
@@ -505,6 +506,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 agentId: agent.id,
                 agentApiKey,
                 verificationToken,
+                verifyUrl,
                 message: `Agent "${name}" created. Verification link sent to Telegram. Store agentApiKey safely.`,
             });
         }

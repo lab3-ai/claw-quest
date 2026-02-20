@@ -81,7 +81,12 @@ export class TelegramService {
     }
 
     public async startPolling() {
-        console.log('🤖 Telegram Bot started in Polling mode...');
-        this.bot.start();
+        console.log('🤖 Telegram Bot starting in Polling mode...');
+        this.bot.catch((err) => {
+            console.error('Telegram bot error (non-fatal):', err.message);
+        });
+        await this.bot.start({
+            onStart: () => console.log('🤖 Telegram Bot polling active'),
+        });
     }
 }

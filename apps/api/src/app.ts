@@ -152,7 +152,10 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 if (TELEGRAM_BOT_TOKEN) {
     const telegramService = new TelegramService(server, TELEGRAM_BOT_TOKEN);
     server.decorate('telegram', telegramService);
-    telegramService.startPolling();
+    telegramService.startPolling().catch((err) => {
+        console.error('⚠️  Telegram bot polling failed (non-fatal):', err.message);
+        // Don't crash the server — bot can still send messages via API
+    });
 } else {
     console.warn('⚠️  Missing TELEGRAM_BOT_TOKEN — Telegram bot will not start');
 }

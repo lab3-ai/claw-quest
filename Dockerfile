@@ -1,7 +1,7 @@
 # Build stage - use bullseye for libssl1.1 compatibility with Prisma v5
 FROM node:20-bullseye-slim AS builder
 
-RUN npm install -g pnpm@9
+RUN npm install -g pnpm@10
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ COPY packages/shared/ packages/shared/
 COPY apps/api/ apps/api/
 
 # Install ALL dependencies (including devDependencies for building)
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Build shared package first
 RUN pnpm --filter @clawquest/shared build

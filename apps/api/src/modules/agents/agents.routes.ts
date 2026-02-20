@@ -18,7 +18,7 @@ async function authenticateAgent(
     server: FastifyInstance,
     request: FastifyRequest,
     reply: FastifyReply
-): Promise<{ agentId: string; ownerId: string } | null> {
+): Promise<{ agentId: string; ownerId: string | null } | null> {
     const auth = request.headers.authorization;
     if (!auth?.startsWith('Bearer cq_')) {
         reply.status(401).send({ error: 'Missing or invalid agent API key' });
@@ -33,7 +33,7 @@ async function authenticateAgent(
         reply.status(401).send({ error: 'Invalid agent API key' });
         return null;
     }
-    return { agentId: agent.id, ownerId: agent.ownerId };
+    return { agentId: agent.id, ownerId: agent.ownerId as string | null };
 }
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
@@ -198,7 +198,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                         agentId: z.string().uuid(),
                         name: z.string(),
                         status: z.string(),
-                        ownerId: z.string().uuid(),
+                        ownerId: z.string().uuid().nullable(),
                         activeQuests: z.array(z.object({
                             participationId: z.string(),
                             questId: z.string(),
@@ -432,6 +432,147 @@ export async function agentsRoutes(app: FastifyInstance) {
                 lastSeenAt: s.lastSeenAt.toISOString(),
                 createdAt: s.createdAt.toISOString(),
             }));
+        }
+    );
+
+    // ── POST /agents/self-register — agent-first registration (no auth) ─────
+    // Agent calls this to create itself, gets agentApiKey back.
+    // Sends verification link to human via Telegram bot.
+    server.post(
+        '/self-register',
+        {
+            schema: {
+                tags: ['Agents'],
+                summary: 'Agent self-registration (no auth required)',
+                body: z.object({
+                    name: z.string().min(1).max(50),
+                    telegramChatId: z.string().min(1), // Telegram chat ID of the human owner
+                }),
+                response: {
+                    201: z.object({
+                        agentId: z.string().uuid(),
+                        agentApiKey: z.string(),
+                        verificationToken: z.string(),
+                        message: z.string(),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const { name, telegramChatId } = request.body;
+
+            const agentApiKey = generateAgentApiKey();
+            const verificationToken = randomBytes(32).toString('hex');
+            const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+
+            const agent = await server.prisma.agent.create({
+                data: {
+                    name,
+                    ownerId: null,
+                    agentApiKey,
+                    verificationToken,
+                    verificationExpiresAt,
+                },
+            });
+
+            await server.prisma.agentLog.create({
+                data: {
+                    agentId: agent.id,
+                    type: 'INFO',
+                    message: 'Agent self-registered, awaiting human verification',
+                    meta: { method: 'self-register', telegramChatId },
+                },
+            });
+
+            // Send verification link via Telegram
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            const verifyUrl = `${frontendUrl}/verify?token=${verificationToken}`;
+
+            try {
+                if (app.telegram) {
+                    await app.telegram.bot.api.sendMessage(
+                        telegramChatId,
+                        `🤖 Agent "${name}" wants to join ClawQuest!\n\n` +
+                        `Click below to claim this agent:\n${verifyUrl}\n\n` +
+                        `This link expires in 24 hours.`,
+                    );
+                }
+            } catch (err) {
+                server.log.warn({ err, telegramChatId }, 'Failed to send Telegram verification message');
+            }
+
+            return reply.code(201).send({
+                agentId: agent.id,
+                agentApiKey,
+                verificationToken,
+                message: `Agent "${name}" created. Verification link sent to Telegram. Store agentApiKey safely.`,
+            });
+        }
+    );
+
+    // ── POST /agents/verify — human claims an agent (human JWT) ─────────────
+    server.post(
+        '/verify',
+        {
+            onRequest: [app.authenticate],
+            schema: {
+                tags: ['Agents'],
+                summary: 'Claim a self-registered agent (human JWT)',
+                security: [{ bearerAuth: [] }],
+                body: z.object({
+                    verificationToken: z.string().min(1),
+                }),
+                response: {
+                    200: z.object({
+                        agentId: z.string().uuid(),
+                        name: z.string(),
+                        message: z.string(),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const { verificationToken } = request.body;
+
+            const agent = await server.prisma.agent.findUnique({
+                where: { verificationToken },
+            });
+
+            if (!agent) {
+                return reply.status(404).send({ error: 'Invalid or expired verification token' } as any);
+            }
+
+            if (agent.ownerId) {
+                return reply.status(400).send({ error: 'Agent already claimed' } as any);
+            }
+
+            if (agent.verificationExpiresAt && agent.verificationExpiresAt < new Date()) {
+                return reply.status(410).send({ error: 'Verification token expired' } as any);
+            }
+
+            const updated = await server.prisma.agent.update({
+                where: { id: agent.id },
+                data: {
+                    ownerId: request.user.id,
+                    verificationToken: null,
+                    verificationExpiresAt: null,
+                },
+            });
+
+            await server.prisma.agentLog.create({
+                data: {
+                    agentId: agent.id,
+                    type: 'INFO',
+                    message: `Agent claimed by ${request.user.email}`,
+                    meta: { method: 'verification', userId: request.user.id },
+                },
+            });
+
+            return {
+                agentId: updated.id,
+                name: updated.name,
+                message: `Agent "${updated.name}" is now yours!`,
+            };
         }
     );
 }

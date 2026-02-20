@@ -19,13 +19,15 @@ model User {
 }
 
 model Agent {
-  id             String   @id @default(uuid())
-  ownerId        String
-  owner          User     @relation(fields: [ownerId], references: [id])
-  name           String
-  status         String   @default("idle") // idle, questing, offline
-  activationCode String?  @unique
-  agentApiKey    String?  @unique  // issued on /agents/register — used by agents as Bearer token
+  id                    String    @id @default(uuid())
+  ownerId               String?
+  owner                 User?     @relation(fields: [ownerId], references: [id])
+  name                  String
+  status                String    @default("idle") // idle, questing, offline
+  activationCode        String?   @unique
+  agentApiKey           String?   @unique  // issued on /agents/register — used by agents as Bearer token
+  verificationToken     String?   @unique  // for agent-first registration claim flow
+  verificationExpiresAt DateTime?           // 24h expiry for verification token
 
   TelegramLink   TelegramLink?
   logs           AgentLog[]
@@ -37,6 +39,7 @@ model Agent {
 
   @@index([ownerId])
   @@index([agentApiKey])
+  @@index([verificationToken])
 }
 
 model TelegramLink {
@@ -67,6 +70,7 @@ model Quest {
   filledSlots Int      @default(0)
 
   tags        String[] @default([])
+  requiredSkills String[] @default([]) // skill names agent must have to accept
 
   expiresAt   DateTime?
   

@@ -61,11 +61,12 @@ export async function questsRoutes(server: FastifyInstance) {
             return quests.map(({ _count, participations, ...q }) => ({
                 ...q,
                 tags: q.tags ?? [],
+                requiredSkills: (q as any).requiredSkills ?? [],
                 questers: _count.participations,
                 questerNames: participations.map(p => p.agent.name),
                 questerDetails: participations.map(p => ({
                     agentName: p.agent.name,
-                    humanHandle: p.agent.owner.email.split('@')[0],
+                    humanHandle: p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
                 })),
                 expiresAt: q.expiresAt ? q.expiresAt.toISOString() : null,
                 createdAt: q.createdAt.toISOString(),
@@ -115,11 +116,12 @@ export async function questsRoutes(server: FastifyInstance) {
             return {
                 ...q,
                 tags: q.tags ?? [],
+                requiredSkills: (q as any).requiredSkills ?? [],
                 questers: _count.participations,
                 questerNames: participations.map(p => p.agent.name),
                 questerDetails: participations.map(p => ({
                     agentName: p.agent.name,
-                    humanHandle: p.agent.owner.email.split('@')[0],
+                    humanHandle: p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
                 })),
                 expiresAt: q.expiresAt ? q.expiresAt.toISOString() : null,
                 createdAt: q.createdAt.toISOString(),
@@ -193,7 +195,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     id: p.id,
                     rank: offset + i + 1,
                     agentName: p.agent.name,
-                    humanHandle: p.agent.owner.email.split('@')[0],
+                    humanHandle: p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
                     status: p.status as any,
                     tasksCompleted: p.tasksCompleted,
                     tasksTotal: p.tasksTotal,
@@ -284,6 +286,25 @@ export async function questsRoutes(server: FastifyInstance) {
             if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any);
             if (quest.status !== 'live') return reply.status(400).send({ message: 'Quest is not live' } as any);
             if (quest.filledSlots >= quest.totalSlots) return reply.status(400).send({ message: 'Quest is full' } as any);
+
+            // ── Skill Gate: check agent has all required skills ─────────────
+            const requiredSkills = (quest as any).requiredSkills as string[] ?? [];
+            if (requiredSkills.length > 0) {
+                const agentSkills = await server.prisma.agentSkill.findMany({
+                    where: { agentId, name: { in: requiredSkills } },
+                    select: { name: true },
+                });
+                const agentSkillNames = new Set(agentSkills.map(s => s.name));
+                const missingSkills = requiredSkills.filter(s => !agentSkillNames.has(s));
+
+                if (missingSkills.length > 0) {
+                    return reply.status(403).send({
+                        message: `Agent is missing required skills: ${missingSkills.join(', ')}. Report your skills via POST /agents/me/skills before accepting this quest.`,
+                        missingSkills,
+                        requiredSkills,
+                    } as any);
+                }
+            }
 
             const existing = await server.prisma.questParticipation.findUnique({
                 where: { questId_agentId: { questId: id, agentId } },

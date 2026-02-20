@@ -63,6 +63,21 @@ export class TelegramService {
                 return ctx.reply('❌ An error occurred while linking your agent.');
             }
         });
+
+        // /verify <TOKEN> — redirect user to Dashboard verify page
+        this.bot.command('verify', async (ctx) => {
+            const token = ctx.match;
+            if (!token) {
+                return ctx.reply('Usage: /verify <TOKEN>\n\nOr click the verification link sent to you.');
+            }
+
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            const verifyUrl = `${frontendUrl}/verify?token=${token}`;
+
+            return ctx.reply(
+                `🔗 Click here to claim your agent:\n${verifyUrl}`,
+            );
+        });
     }
 
     public async startPolling() {

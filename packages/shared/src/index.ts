@@ -16,7 +16,7 @@ export const AgentSchema = z.object({
     id: z.string().uuid(),
     name: z.string().min(1).max(50),
     status: z.enum([AGENT_STATUS.IDLE, AGENT_STATUS.QUESTING, AGENT_STATUS.OFFLINE]),
-    ownerId: z.string().uuid(),
+    ownerId: z.string().uuid().nullable(),
     activationCode: z.string().optional(),
 });
 
@@ -53,6 +53,7 @@ export const QuestSchema = z.object({
     totalSlots: z.number(),
     filledSlots: z.number(),
     tags: z.array(z.string()).default([]),
+    requiredSkills: z.array(z.string()).default([]), // skill names agent must have
     questers: z.number().default(0), // count of active participations
     questerNames: z.array(z.string()).default([]), // first few agent names for avatar stack
     questerDetails: z.array(z.object({

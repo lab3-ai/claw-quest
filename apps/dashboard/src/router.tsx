@@ -11,6 +11,7 @@ import { QuestList } from './routes/_authenticated/quests/index'
 import { QuestDetail } from './routes/_public/quests/detail'
 import { QuestersPage } from './routes/_public/quests/questers'
 import { CreateQuest } from './routes/_authenticated/quests/create'
+import { VerifyAgent } from './routes/_authenticated/verify'
 
 // Root route
 const rootRoute = createRootRoute({
@@ -93,12 +94,18 @@ const createQuestRoute = createRoute({
     component: CreateQuest,
 })
 
+const verifyRoute = createRoute({
+    getParentRoute: () => authLayoutRoute,
+    path: '/verify',
+    component: VerifyAgent,
+})
+
 const routeTree = rootRoute.addChildren([
     loginRoute,
     registerRoute,
     authCallbackRoute,
     publicLayoutRoute.addChildren([questsRoute, questDetailRoute, questersRoute]),
-    authLayoutRoute.addChildren([indexRoute, agentListRoute, createAgentRoute, createQuestRoute]),
+    authLayoutRoute.addChildren([indexRoute, agentListRoute, createAgentRoute, createQuestRoute, verifyRoute]),
 ])
 
 export const router = createRouter({

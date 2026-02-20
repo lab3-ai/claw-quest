@@ -29,6 +29,7 @@ declare module 'fastify' {
         authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
         prisma: PrismaClient;
         supabase: typeof supabaseAdmin;
+        telegram: TelegramService;
     }
     interface FastifyRequest {
         user: { id: string; email: string; supabaseId: string };
@@ -48,7 +49,9 @@ server.register(cors, {
     origin: [
         'http://localhost:5173',
         'https://clawquest-nu.vercel.app',
-        'https://clawquest-ai.vercel.app'
+        'https://clawquest-ai.vercel.app',
+        'https://clawquest.ai',
+        'https://www.clawquest.ai',
     ],
 });
 
@@ -144,6 +147,15 @@ server.register(questsRoutes, { prefix: '/quests' });
 
 // Telegram Bot (Polling for local dev)
 import { TelegramService } from './modules/telegram/telegram.service';
+
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+if (TELEGRAM_BOT_TOKEN) {
+    const telegramService = new TelegramService(server, TELEGRAM_BOT_TOKEN);
+    server.decorate('telegram', telegramService);
+    telegramService.startPolling();
+} else {
+    console.warn('⚠️  Missing TELEGRAM_BOT_TOKEN — Telegram bot will not start');
+}
 
 // Health Check
 server.get('/health', async () => {

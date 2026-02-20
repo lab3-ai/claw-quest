@@ -47,7 +47,8 @@ server.setSerializerCompiler(serializerCompiler);
 server.register(cors, {
     origin: [
         'http://localhost:5173',
-        'https://clawquest-nu.vercel.app'
+        'https://clawquest-nu.vercel.app',
+        'https://clawquest-ai.vercel.app'
     ],
 });
 

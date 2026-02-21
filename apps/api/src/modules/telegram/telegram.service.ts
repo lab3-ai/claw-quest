@@ -11,32 +11,50 @@ export class TelegramService {
 
     private initializeCommands() {
         this.bot.command('start', async (ctx) => {
-            const activationCode = ctx.match; // Payload from /start <code_payload>
+            const payload = ctx.match; // Payload from /start <payload>
 
-            if (!activationCode) {
-                return ctx.reply('Welcome to ClawQuest! 🦁\nTo link your agent, go to the Dashboard and get your Activation Code, then send: /start <CODE>');
+            if (!payload) {
+                return ctx.reply(
+                    'Welcome to ClawQuest! 🦁\n\n' +
+                    'I help you claim AI agents registered on ClawQuest.\n\n' +
+                    'Your agent will give you a link — click it and I\'ll handle the rest!'
+                );
             }
 
-            await ctx.reply('🔍 Searching for your agent...');
+            // ── Handle verify_<token> deeplink (agent-first flow) ───────
+            if (payload.startsWith('verify_')) {
+                const token = payload.slice(7); // strip "verify_"
+                return this.handleVerifyDeeplink(ctx, token);
+            }
 
-            try {
-                // Find agent by activation code
-                const agent = await this.server.prisma.agent.findUnique({
-                    where: { activationCode: activationCode.toUpperCase() },
-                    include: { TelegramLink: true },
-                });
+            // ── Handle activation code (human-first flow) ───────────────
+            return this.handleActivationCode(ctx, payload);
+        });
+    }
 
-                if (!agent) {
-                    return ctx.reply('❌ Invalid activation code. Please check and try again.');
-                }
+    private async handleVerifyDeeplink(ctx: any, token: string) {
+        try {
+            const agent = await this.server.prisma.agent.findUnique({
+                where: { verificationToken: token },
+            });
 
-                if (agent.TelegramLink) {
-                    // Already linked?
-                    // Optional: Check if it's the same user. If so, just say hi.
-                    return ctx.reply(`⚠️ This agent is already linked to a Telegram account.`);
-                }
+            if (!agent) {
+                return ctx.reply('❌ Invalid or expired verification link. Ask your agent to register again.');
+            }
 
-                // Link Agent
+            if (agent.ownerId) {
+                return ctx.reply(`✅ Agent *${agent.name}* is already claimed!`, { parse_mode: 'Markdown' });
+            }
+
+            if (agent.verificationExpiresAt && agent.verificationExpiresAt < new Date()) {
+                return ctx.reply('❌ This verification link has expired. Ask your agent to register again.');
+            }
+
+            // Create TelegramLink if not exists
+            const existingLink = await this.server.prisma.telegramLink.findUnique({
+                where: { agentId: agent.id },
+            });
+            if (!existingLink) {
                 await this.server.prisma.telegramLink.create({
                     data: {
                         agentId: agent.id,
@@ -45,39 +63,60 @@ export class TelegramService {
                         firstName: ctx.from?.first_name,
                     },
                 });
-
-                // Clear activation code so it can't be reused? 
-                // Or keep it? Privacy wise better to clear or rotate. 
-                // For MVP, let's keep it simple, maybe rotate it optionally. 
-                // But strict security => clear it.
-                // Let's clear it to prevent re-use.
-                await this.server.prisma.agent.update({
-                    where: { id: agent.id },
-                    data: { activationCode: null }
-                });
-
-                return ctx.reply(`✅ Success! You are now linked to Agent: *${agent.name}*`, { parse_mode: 'Markdown' });
-
-            } catch (error) {
-                this.server.log.error(error);
-                return ctx.reply('❌ An error occurred while linking your agent.');
-            }
-        });
-
-        // /verify <TOKEN> — redirect user to Dashboard verify page
-        this.bot.command('verify', async (ctx) => {
-            const token = ctx.match;
-            if (!token) {
-                return ctx.reply('Usage: /verify <TOKEN>\n\nOr click the verification link sent to you.');
             }
 
+            // Send Dashboard verify link
             const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
             const verifyUrl = `${frontendUrl}/verify?token=${token}`;
 
             return ctx.reply(
-                `🔗 Click here to claim your agent:\n${verifyUrl}`,
+                `🤖 Agent *${agent.name}* wants to join you on ClawQuest!\n\n` +
+                `👉 [Click here to claim this agent](${verifyUrl})\n\n` +
+                `_Log in to ClawQuest Dashboard to complete verification._`,
+                { parse_mode: 'Markdown' },
             );
-        });
+        } catch (error) {
+            this.server.log.error(error);
+            return ctx.reply('❌ An error occurred. Please try again.');
+        }
+    }
+
+    private async handleActivationCode(ctx: any, code: string) {
+        await ctx.reply('🔍 Searching for your agent...');
+
+        try {
+            const agent = await this.server.prisma.agent.findUnique({
+                where: { activationCode: code.toUpperCase() },
+                include: { TelegramLink: true },
+            });
+
+            if (!agent) {
+                return ctx.reply('❌ Invalid activation code. Please check and try again.');
+            }
+
+            if (agent.TelegramLink) {
+                return ctx.reply(`⚠️ This agent is already linked to a Telegram account.`);
+            }
+
+            await this.server.prisma.telegramLink.create({
+                data: {
+                    agentId: agent.id,
+                    telegramId: BigInt(ctx.from?.id || 0),
+                    username: ctx.from?.username,
+                    firstName: ctx.from?.first_name,
+                },
+            });
+
+            await this.server.prisma.agent.update({
+                where: { id: agent.id },
+                data: { activationCode: null },
+            });
+
+            return ctx.reply(`✅ Success! You are now linked to Agent: *${agent.name}*`, { parse_mode: 'Markdown' });
+        } catch (error) {
+            this.server.log.error(error);
+            return ctx.reply('❌ An error occurred while linking your agent.');
+        }
     }
 
     public async startPolling() {

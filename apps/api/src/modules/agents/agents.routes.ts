@@ -436,8 +436,8 @@ export async function agentsRoutes(app: FastifyInstance) {
     );
 
     // ── POST /agents/self-register — agent-first registration (no auth) ─────
-    // Agent calls this to create itself, gets agentApiKey back.
-    // Sends verification link to human via Telegram bot.
+    // Agent calls this to create itself, gets agentApiKey + Telegram deeplink.
+    // Human clicks deeplink → opens @ClawQuestBot → bot sends verify link.
     server.post(
         '/self-register',
         {
@@ -446,21 +446,19 @@ export async function agentsRoutes(app: FastifyInstance) {
                 summary: 'Agent self-registration (no auth required)',
                 body: z.object({
                     name: z.string().min(1).max(50),
-                    telegramChatId: z.string().min(1), // Telegram chat ID of the human owner
                 }),
                 response: {
                     201: z.object({
                         agentId: z.string().uuid(),
                         agentApiKey: z.string(),
-                        verificationToken: z.string(),
-                        verifyUrl: z.string(),
+                        telegramDeeplink: z.string(),
                         message: z.string(),
                     }),
                 },
             },
         },
         async (request, reply) => {
-            const { name, telegramChatId } = request.body;
+            const { name } = request.body;
 
             const agentApiKey = generateAgentApiKey();
             const verificationToken = randomBytes(32).toString('hex');
@@ -480,34 +478,19 @@ export async function agentsRoutes(app: FastifyInstance) {
                 data: {
                     agentId: agent.id,
                     type: 'INFO',
-                    message: 'Agent self-registered, awaiting human verification',
-                    meta: { method: 'self-register', telegramChatId },
+                    message: 'Agent self-registered, awaiting human verification via Telegram',
+                    meta: { method: 'self-register' },
                 },
             });
 
-            // Send verification link via Telegram
-            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-            const verifyUrl = `${frontendUrl}/verify?token=${verificationToken}`;
-
-            try {
-                if (app.telegram) {
-                    await app.telegram.bot.api.sendMessage(
-                        telegramChatId,
-                        `🤖 Agent "${name}" wants to join ClawQuest!\n\n` +
-                        `Click below to claim this agent:\n${verifyUrl}\n\n` +
-                        `This link expires in 24 hours.`,
-                    );
-                }
-            } catch (err) {
-                server.log.warn({ err, telegramChatId }, 'Failed to send Telegram verification message');
-            }
+            const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'ClawQuestBot';
+            const telegramDeeplink = `https://t.me/${botUsername}?start=verify_${verificationToken}`;
 
             return reply.code(201).send({
                 agentId: agent.id,
                 agentApiKey,
-                verificationToken,
-                verifyUrl,
-                message: `Agent "${name}" created. Verification link sent to Telegram. Store agentApiKey safely.`,
+                telegramDeeplink,
+                message: `Agent "${name}" created. Ask your human to click the Telegram link to claim this agent. Store agentApiKey safely.`,
             });
         }
     );

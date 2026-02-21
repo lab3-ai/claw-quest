@@ -27,7 +27,11 @@ model Agent {
   activationCode        String?   @unique
   agentApiKey           String?   @unique  // issued on /agents/register — used by agents as Bearer token
   verificationToken     String?   @unique  // for agent-first registration claim flow
-  verificationExpiresAt DateTime?           // 24h expiry for verification token
+  verificationExpiresAt DateTime?           // 48h expiry for verification token
+
+  claimedAt             DateTime?           // null = unclaimed
+  claimedVia            String?             // "telegram" | "email" | "supabase"
+  claimEmail            String?             // email used to claim (if email flow)
 
   TelegramLink   TelegramLink?
   logs           AgentLog[]
@@ -45,13 +49,15 @@ model Agent {
 model TelegramLink {
   id          String   @id @default(uuid())
   agentId     String   @unique
-  agent       Agent    @relation(fields: [agentId], references: [id])
-  telegramId  BigInt   @unique
+  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  telegramId  BigInt               // one Telegram user can claim multiple agents
   username    String?
   firstName   String?
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([telegramId])
 }
 
 model Quest {
@@ -59,13 +65,13 @@ model Quest {
   title       String
   description String
   sponsor     String   @default("System")
-  
+
   type        String   @default("FCFS") // FCFS, LEADERBOARD, LUCKY_DRAW
   status      String   @default("draft") // draft, live, scheduled, pending, completed
-  
+
   rewardAmount Int
   rewardType   String   @default("USDC")
-  
+
   totalSlots  Int      @default(100)
   filledSlots Int      @default(0)
 
@@ -73,19 +79,30 @@ model Quest {
   requiredSkills String[] @default([]) // skill names agent must have to accept
 
   expiresAt   DateTime?
-  
+
+  // Ownership / claim fields
+  creatorTelegramId   BigInt?             // Telegram user who claimed this quest
+  creatorEmail        String?             // Email of creator (alternative identity)
+  creatorUserId       String?             // Optional — linked Supabase user
+  claimToken          String?   @unique   // Token for claiming ownership
+  claimTokenExpiresAt DateTime?           // 48h expiry
+  claimedAt           DateTime?           // null = unclaimed
+
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt // Added updatedAt
-  
+  updatedAt   DateTime @updatedAt
+
   participations QuestParticipation[]
+
+  @@index([claimToken])
+  @@index([creatorTelegramId])
 }
 
 model QuestParticipation {
   id        String   @id @default(uuid())
   questId   String
-  quest     Quest    @relation(fields: [questId], references: [id])
+  quest     Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
   agentId   String
-  agent     Agent    @relation(fields: [agentId], references: [id])
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
   status          String   @default("in_progress") // in_progress, submitted, completed, failed
   proof           Json?    // Store proof details
@@ -103,7 +120,7 @@ model QuestParticipation {
 model AgentSkill {
   id        String   @id @default(uuid())
   agentId   String
-  agent     Agent    @relation(fields: [agentId], references: [id])
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
   name      String   // e.g. "sponge-wallet", "onchain-actions"
   version   String?  // e.g. "1.0.0" — null if unknown (Claude Code)
@@ -122,13 +139,13 @@ model AgentSkill {
 model AgentLog {
   id        String   @id @default(uuid())
   agentId   String
-  agent     Agent    @relation(fields: [agentId], references: [id])
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
   type      String   // QUEST_START, QUEST_COMPLETE, ERROR, INFO
   message   String
   meta      Json?
-  
+
   createdAt DateTime @default(now())
-  
+
   @@index([agentId])
   @@index([createdAt])
 }

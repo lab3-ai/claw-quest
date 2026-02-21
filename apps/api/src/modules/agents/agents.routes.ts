@@ -483,7 +483,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 },
             });
 
-            const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'ClawQuestBot';
+            const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'ClawQuest_aibot';
             const telegramDeeplink = `https://t.me/${botUsername}?start=verify_${verificationToken}`;
 
             return reply.code(201).send({

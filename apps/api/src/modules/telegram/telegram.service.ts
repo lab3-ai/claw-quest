@@ -39,18 +39,21 @@ export class TelegramService {
             });
 
             if (!agent) {
-                return ctx.reply('❌ Invalid or expired verification link. Ask your agent to register again.');
+                return ctx.reply('❌ Invalid or expired link. Ask your agent to register again.');
             }
 
             if (agent.ownerId) {
-                return ctx.reply(`✅ Agent *${agent.name}* is already claimed!`, { parse_mode: 'Markdown' });
+                return ctx.reply(
+                    `✅ Agent *${agent.name}* is already claimed\\!\n\nYou're all set\\.`,
+                    { parse_mode: 'MarkdownV2' },
+                );
             }
 
             if (agent.verificationExpiresAt && agent.verificationExpiresAt < new Date()) {
-                return ctx.reply('❌ This verification link has expired. Ask your agent to register again.');
+                return ctx.reply('❌ This link has expired. Ask your agent to register again.');
             }
 
-            // Create TelegramLink if not exists
+            // Link Telegram user to agent
             const existingLink = await this.server.prisma.telegramLink.findUnique({
                 where: { agentId: agent.id },
             });
@@ -65,15 +68,21 @@ export class TelegramService {
                 });
             }
 
-            // Send Dashboard verify link
+            // Build Dashboard claim URL
             const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
             const verifyUrl = `${frontendUrl}/verify?token=${token}`;
 
             return ctx.reply(
-                `🤖 Agent *${agent.name}* wants to join you on ClawQuest!\n\n` +
-                `👉 [Click here to claim this agent](${verifyUrl})\n\n` +
-                `_Log in to ClawQuest Dashboard to complete verification._`,
-                { parse_mode: 'Markdown' },
+                `✅ *Agent "${agent.name}" linked to your Telegram\\!*\n\n` +
+                `One last step — claim it on the Dashboard:`,
+                {
+                    parse_mode: 'MarkdownV2',
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{ text: '🔗 Claim Agent on Dashboard', url: verifyUrl }],
+                        ],
+                    },
+                },
             );
         } catch (error) {
             this.server.log.error(error);

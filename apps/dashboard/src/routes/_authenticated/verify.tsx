@@ -1,15 +1,16 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "@tanstack/react-router"
 import { useAuth } from "@/context/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from "@/components/ui/card"
 
 export function VerifyAgent() {
-    const [status, setStatus] = useState<"loading" | "ready" | "claiming" | "success" | "error">("loading")
+    const [status, setStatus] = useState<"claiming" | "success" | "error">("claiming")
     const [agentName, setAgentName] = useState("")
     const [errorMsg, setErrorMsg] = useState("")
     const { session } = useAuth()
     const navigate = useNavigate()
+    const claimedRef = useRef(false)
 
     const params = new URLSearchParams(window.location.search)
     const token = params.get("token")
@@ -20,40 +21,62 @@ export function VerifyAgent() {
             setErrorMsg("No verification token provided.")
             return
         }
-        setStatus("ready")
-    }, [token])
-
-    const handleClaim = async () => {
-        if (!token || !session?.access_token) return
-        setStatus("claiming")
-
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/agents/verify`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${session.access_token}`,
-                },
-                body: JSON.stringify({ verificationToken: token }),
-            })
-
-            if (!res.ok) {
-                const data = await res.json().catch(() => ({}))
-                throw new Error(data.error || "Failed to claim agent")
-            }
-
-            const data = await res.json()
-            setAgentName(data.name)
-            setStatus("success")
-        } catch (err: any) {
-            setStatus("error")
-            setErrorMsg(err.message || "Something went wrong")
+        if (!session?.access_token) {
+            return // wait for auth
         }
+        if (claimedRef.current) return
+        claimedRef.current = true
+
+        // Auto-claim immediately
+        const claim = async () => {
+            try {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/agents/verify`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${session.access_token}`,
+                    },
+                    body: JSON.stringify({ verificationToken: token }),
+                })
+
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}))
+                    throw new Error(data.error || "Failed to claim agent")
+                }
+
+                const data = await res.json()
+                setAgentName(data.name)
+                setStatus("success")
+            } catch (err: any) {
+                setStatus("error")
+                setErrorMsg(err.message || "Something went wrong")
+            }
+        }
+
+        claim()
+    }, [token, session?.access_token])
+
+    if (status === "claiming") {
+        return (
+            <div className="max-w-md mx-auto mt-20">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Claiming Agent...</CardTitle>
+                        <CardDescription>
+                            Linking this agent to your account.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </CardContent>
+                </Card>
+            </div>
+        )
     }
 
     if (status === "success") {
         return (
-            <div className="max-w-md mx-auto">
+            <div className="max-w-md mx-auto mt-20">
                 <Card>
                     <CardHeader>
                         <CardTitle>Agent Claimed!</CardTitle>
@@ -72,37 +95,16 @@ export function VerifyAgent() {
     }
 
     return (
-        <div className="max-w-md mx-auto">
+        <div className="max-w-md mx-auto mt-20">
             <Card>
                 <CardHeader>
-                    <CardTitle>Claim Agent</CardTitle>
-                    <CardDescription>
-                        {status === "error"
-                            ? errorMsg
-                            : "An agent wants to join your account. Click below to claim it."}
-                    </CardDescription>
+                    <CardTitle>Claim Failed</CardTitle>
+                    <CardDescription>{errorMsg}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    {token && status !== "error" && (
-                        <p className="text-sm text-muted-foreground">
-                            Token: {token.slice(0, 8)}...{token.slice(-8)}
-                        </p>
-                    )}
-                </CardContent>
                 <CardFooter>
-                    {status === "error" ? (
-                        <Button variant="outline" className="w-full" onClick={() => navigate({ to: "/" })}>
-                            Back to Dashboard
-                        </Button>
-                    ) : (
-                        <Button
-                            className="w-full"
-                            onClick={handleClaim}
-                            disabled={status === "claiming"}
-                        >
-                            {status === "claiming" ? "Claiming..." : "Claim This Agent"}
-                        </Button>
-                    )}
+                    <Button variant="outline" className="w-full" onClick={() => navigate({ to: "/" })}>
+                        Back to Dashboard
+                    </Button>
                 </CardFooter>
             </Card>
         </div>

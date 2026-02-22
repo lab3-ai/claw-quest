@@ -200,8 +200,7 @@ export async function updateQuest(
 // ─── Status transitions ───────────────────────────────────────────────────────
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
-    draft: ['pending_funding', 'cancelled'],
-    pending_funding: ['live', 'scheduled', 'draft'], // draft = payment failed/abandoned
+    draft: ['live', 'scheduled', 'cancelled'],
     live: ['completed', 'expired', 'cancelled'],
     scheduled: ['live', 'cancelled'],
     // terminal states — no transitions out
@@ -223,10 +222,10 @@ export function formatQuestResponse(
     count?: number,
 ) {
     const questers = count ?? 0;
-    const names = participations?.map((p: any) => p.agent.name) ?? [];
+    const names = participations?.map((p: any) => p.agent.agentname) ?? [];
     const details = participations?.map((p: any) => ({
-        agentName: p.agent.name,
-        humanHandle: p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
+        agentName: p.agent.agentname,
+        humanHandle: p.agent.owner?.username ?? p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
     })) ?? [];
 
     return {
@@ -237,6 +236,7 @@ export function formatQuestResponse(
         questers,
         questerNames: names,
         questerDetails: details,
+        startAt: quest.startAt ? quest.startAt.toISOString() : null,
         expiresAt: quest.expiresAt ? quest.expiresAt.toISOString() : null,
         createdAt: quest.createdAt.toISOString(),
     };

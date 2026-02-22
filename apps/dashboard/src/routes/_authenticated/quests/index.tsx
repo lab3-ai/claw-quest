@@ -36,8 +36,9 @@ function statusBadgeClass(status: string) {
         live: "badge-live",
         completed: "badge-completed",
         draft: "badge-draft",
-        pending: "badge-pending",
         scheduled: "badge-scheduled",
+        expired: "badge-expired",
+        cancelled: "badge-cancelled",
     }
     return map[status] ?? "badge-live"
 }
@@ -105,7 +106,7 @@ export function QuestList() {
     ]
 
     return (
-        <>
+        <div className="quest-explore-page">
             {popupQuest && (
                 <QuestersPopup
                     questId={popupQuest.id}
@@ -263,6 +264,6 @@ export function QuestList() {
                     </table>
                 </div>
             )}
-        </>
+        </div>
     )
 }

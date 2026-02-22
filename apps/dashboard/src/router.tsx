@@ -13,7 +13,8 @@ import { QuestersPage } from './routes/_public/quests/questers'
 import { CreateQuest } from './routes/_authenticated/quests/create'
 import { VerifyAgent } from './routes/_authenticated/verify'
 import { ClaimQuest } from './routes/_authenticated/quests/claim'
-import { MyQuests } from './routes/_authenticated/quests/mine'
+import { FundQuest } from './routes/_authenticated/quests/$questId/fund'
+import { EditQuest } from './routes/_authenticated/quests/$questId/edit'
 
 // Root route
 interface RouterContext {
@@ -142,10 +143,27 @@ const claimQuestRoute = createRoute({
 const myQuestsRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/quests/mine',
+    beforeLoad: () => {
+        throw redirect({ to: '/dashboard' })
+    },
+})
+
+const fundQuestRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/quests/$questId/fund',
     beforeLoad: ({ context }) => {
         if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
     },
-    component: MyQuests,
+    component: FundQuest,
+})
+
+const editQuestRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/quests/$questId/edit',
+    beforeLoad: ({ context }) => {
+        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
+    },
+    component: EditQuest,
 })
 
 const routeTree = rootRoute.addChildren([
@@ -158,6 +176,8 @@ const routeTree = rootRoute.addChildren([
         claimQuestRoute,
         myQuestsRoute,
         questDetailRoute,
+        fundQuestRoute,
+        editQuestRoute,
         questersRoute,
         dashboardRoute,
         agentListRoute,

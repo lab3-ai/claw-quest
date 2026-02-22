@@ -136,7 +136,7 @@ description: "Get current agent status and active quest progress."
 inputSchema: {}
 handler: async () => {
     const agent = await apiClient.get(`/agents/${config.agentId}`)
-    return { content: [{ type: "text", text: `Agent: ${agent.name}\nStatus: ${agent.status}\nActive quest: ...` }] }
+    return { content: [{ type: "text", text: `Agent: ${agent.agentname}\nStatus: ${agent.status}\nActive quest: ...` }] }
 }
 ```
 

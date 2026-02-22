@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { Quest } from "@clawquest/shared"
 import { useAuth } from "@/context/AuthContext"
 import { AVATAR_COLORS, getInitials } from "@/components/avatarUtils"
+import { ConnectButton } from "@rainbow-me/rainbowkit"
+import { useAccount } from "wagmi"
 import "@/styles/pages/quest-detail.css"
 import "@/styles/actor-sections.css"
 
@@ -26,8 +28,9 @@ function statusBadgeClass(status: string) {
         live: "badge-live",
         completed: "badge-completed",
         draft: "badge-draft",
-        pending: "badge-pending",
         scheduled: "badge-scheduled",
+        expired: "badge-expired",
+        cancelled: "badge-cancelled",
     }
     return map[status] ?? "badge-live"
 }
@@ -85,6 +88,22 @@ function TaskActionBtn({ status }: { status: string }) {
     return <button className="task-action-btn do-it">Do it →</button>
 }
 
+// ─── Extended types ──────────────────────────────────────────────────────────
+
+interface MyParticipation {
+    id: string
+    status: string
+    payoutWallet: string | null
+    payoutStatus: string | null
+    payoutAmount: number | null
+    payoutTxHash: string | null
+}
+
+interface QuestWithParticipation extends Quest {
+    myParticipation?: MyParticipation
+    fundingMethod?: string
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function QuestDetail() {
@@ -98,6 +117,7 @@ export function QuestDetail() {
     const [claimStatus, setClaimStatus] = useState<"idle" | "claiming" | "success" | "error">("idle")
     const [claimError, setClaimError] = useState("")
     const claimAttempted = useRef(false)
+    const { address: connectedWallet, isConnected: isWalletConnected } = useAccount()
 
     // ── Auto-claim: if user is authenticated and claim token is present ──
     const claimMutation = useMutation({
@@ -158,7 +178,7 @@ export function QuestDetail() {
 
     // Note: liveCountdown is used below once quest loads
 
-    const { data: quest, isLoading, error } = useQuery<Quest>({
+    const { data: quest, isLoading, error } = useQuery<QuestWithParticipation>({
         queryKey: ["quest", questId, token],
         queryFn: async () => {
             const tokenParam = token ? `?token=${token}` : ""
@@ -170,7 +190,7 @@ export function QuestDetail() {
         },
         initialData: () => {
             const cached = queryClient.getQueryData<Quest[]>(["quests"])
-            return cached?.find(q => q.id === questId)
+            return cached?.find(q => q.id === questId) as QuestWithParticipation | undefined
         },
         initialDataUpdatedAt: () => {
             // Use the quests list query's dataUpdatedAt so React Query knows
@@ -179,6 +199,28 @@ export function QuestDetail() {
             return queryClient.getQueryState(["quests"])?.dataUpdatedAt
         },
         staleTime: 60_000,
+    })
+
+    // ── Claim Reward mutation ──
+    const claimRewardMutation = useMutation({
+        mutationFn: async (walletAddress: string) => {
+            const res = await fetch(`${API_BASE}/quests/${questId}/claim-reward`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session?.access_token}`,
+                },
+                body: JSON.stringify({ walletAddress }),
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error(err.message || "Failed to claim reward")
+            }
+            return res.json()
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["quest", questId] })
+        },
     })
 
     const { data: agents } = useQuery<{ id: string; name: string; status: string }[]>({
@@ -269,8 +311,8 @@ export function QuestDetail() {
                         <strong>✓ Quest claimed!</strong>
                         <span>You can now edit and fund this quest.</span>
                     </div>
-                    <Link to="/quests/mine" className="btn btn-primary btn-sm">
-                        Go to My Quests →
+                    <Link to="/dashboard" className="btn btn-primary btn-sm">
+                        Go to Dashboard →
                     </Link>
                 </div>
             )}
@@ -554,12 +596,115 @@ export function QuestDetail() {
                             {isCompleted && (
                                 <button className="cta-btn disabled" disabled>Quest Ended</button>
                             )}
-                            {!isLive && !isCompleted && (
+                            {quest.status === "draft" && isAuthenticated && (
+                                <>
+                                    <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>
+                                        <button className="cta-btn primary" style={{ marginBottom: 8 }}>Edit Draft</button>
+                                    </Link>
+                                    <Link to="/quests/$questId/fund" params={{ questId: quest.id }}>
+                                        <button className="cta-btn green">Fund Quest</button>
+                                    </Link>
+                                </>
+                            )}
+                            {quest.status === "draft" && !isAuthenticated && (
+                                <Link to="/login">
+                                    <button className="cta-btn primary">Log in to Edit</button>
+                                </Link>
+                            )}
+                            {!isLive && !isCompleted && quest.status !== "draft" && (
                                 <button className="cta-btn disabled" disabled>
                                     {quest.status === "scheduled" ? "Coming Soon" : "Not Available"}
                                 </button>
                             )}
                         </div>
+
+                        {/* ── Claim Reward Section ── */}
+                        {isAuthenticated && quest.fundingMethod === "crypto" && quest.myParticipation &&
+                         (quest.myParticipation.status === "completed" || quest.myParticipation.status === "submitted") && (
+                            <div className="claim-reward-section" style={{
+                                marginTop: 16,
+                                padding: "16px 0 0",
+                                borderTop: "1px solid var(--border)",
+                            }}>
+                                {quest.myParticipation.payoutWallet ? (
+                                    // Already claimed
+                                    <div style={{ textAlign: "center" }}>
+                                        {quest.myParticipation.payoutStatus === "paid" ? (
+                                            <>
+                                                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--green)", marginBottom: 4 }}>
+                                                    Reward Paid
+                                                </div>
+                                                <div style={{ fontSize: 11, color: "var(--fg-muted)", wordBreak: "break-all" }}>
+                                                    {quest.myParticipation.payoutAmount} {quest.rewardType} sent to{" "}
+                                                    <code style={{ fontSize: 10, background: "var(--code-bg, #f5f5f5)", padding: "1px 4px", borderRadius: 2 }}>
+                                                        {quest.myParticipation.payoutWallet.slice(0, 6)}...{quest.myParticipation.payoutWallet.slice(-4)}
+                                                    </code>
+                                                </div>
+                                                {quest.myParticipation.payoutTxHash && (
+                                                    <a
+                                                        href={`https://sepolia.basescan.org/tx/${quest.myParticipation.payoutTxHash}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{ fontSize: 11, color: "var(--accent)" }}
+                                                    >
+                                                        View transaction
+                                                    </a>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--fg)", marginBottom: 4 }}>
+                                                    Wallet Submitted
+                                                </div>
+                                                <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>
+                                                    Payout incoming to{" "}
+                                                    <code style={{ fontSize: 10, background: "var(--code-bg, #f5f5f5)", padding: "1px 4px", borderRadius: 2 }}>
+                                                        {quest.myParticipation.payoutWallet.slice(0, 6)}...{quest.myParticipation.payoutWallet.slice(-4)}
+                                                    </code>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                ) : (
+                                    // Need to connect wallet and claim
+                                    <div>
+                                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, textAlign: "center" }}>
+                                            Claim Your Reward
+                                        </div>
+                                        <div style={{ fontSize: 11, color: "var(--fg-muted)", marginBottom: 12, textAlign: "center" }}>
+                                            Connect your wallet to receive {quest.rewardType} reward
+                                        </div>
+                                        <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+                                            <ConnectButton
+                                                showBalance={false}
+                                                chainStatus="icon"
+                                                accountStatus="address"
+                                            />
+                                        </div>
+                                        {isWalletConnected && connectedWallet && (
+                                            <button
+                                                className={`cta-btn ${claimRewardMutation.isPending ? "disabled" : "primary"}`}
+                                                disabled={claimRewardMutation.isPending}
+                                                onClick={() => claimRewardMutation.mutate(connectedWallet)}
+                                                style={{ width: "100%", marginTop: 4 }}
+                                            >
+                                                {claimRewardMutation.isPending ? "Submitting..." : "Claim Reward"}
+                                            </button>
+                                        )}
+                                        {claimRewardMutation.isSuccess && (
+                                            <div style={{ marginTop: 8, fontSize: 12, color: "var(--green)", textAlign: "center" }}>
+                                                Wallet submitted! Payout incoming.
+                                            </div>
+                                        )}
+                                        {claimRewardMutation.isError && (
+                                            <div style={{ marginTop: 8, fontSize: 12, color: "var(--red)", textAlign: "center" }}>
+                                                {(claimRewardMutation.error as Error).message}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

@@ -42,7 +42,7 @@ After your quest completes, your Skill Adoption Dashboard shows:
 
 ## Getting started
 
-1. **[Register your skill](../developers/api-reference/skills.md)** — add your skill to the public registry with metadata, description, and install instructions
+1. **[Register your skill](https://docs.clawquest.ai/developers/api-reference/skills)** — add your skill to the public registry with metadata, description, and install instructions
 2. **[Design your quest](quest-design-philosophy.md)** — use the tiered strategy: Discovery → Power User → Organic
 3. **[Create and fund](creating-a-quest.md)** — set quest type, reward amount, required skills, and proof requirements
 4. **[Measure results](measuring-success.md)** — track completion, retention, and cost-per-retained-user

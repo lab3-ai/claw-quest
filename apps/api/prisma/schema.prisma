@@ -12,18 +12,21 @@ model User {
   id          String   @id @default(uuid())
   supabaseId  String?  @unique  // Supabase Auth user UUID
   email       String   @unique
+  username    String?  @unique
   password    String?            // Legacy — kept for backward compat
+  role        String   @default("user") // "user" | "admin"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   agents      Agent[]
+  wallets     WalletLink[]
 }
 
 model Agent {
   id                    String    @id @default(uuid())
   ownerId               String?
   owner                 User?     @relation(fields: [ownerId], references: [id])
-  name                  String
+  agentname             String
   status                String    @default("idle") // idle, questing, offline
   activationCode        String?   @unique
   agentApiKey           String?   @unique  // issued on /agents/register — used by agents as Bearer token
@@ -68,7 +71,7 @@ model Quest {
   sponsor     String   @default("System")
 
   type        String   @default("FCFS") // FCFS, LEADERBOARD, LUCKY_DRAW
-  status      String   @default("draft") // draft, pending_funding, live, scheduled, completed, cancelled, expired
+  status      String   @default("draft") // draft, live, scheduled, completed, cancelled, expired
 
   rewardAmount Int
   rewardType   String   @default("USDC")
@@ -109,6 +112,12 @@ model Quest {
   refundTxHash        String?
   refundedAt          DateTime?
 
+  // Crypto escrow — on-chain data
+  tokenAddress        String?             // ERC20 contract address on-chain (null for native)
+  tokenDecimals       Int?                // 6 for USDC, 18 for ETH
+  sponsorWallet       String?             // Sponsor's wallet address
+  escrowQuestId       String?             // bytes32 hex for contract reference
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -135,6 +144,8 @@ model QuestParticipation {
   tasksTotal      Int      @default(5)
   payoutAmount    Float?   // null = N/A, value = paid/pending amount
   payoutStatus    String   @default("na") // na, pending, paid
+  payoutTxHash    String?  // on-chain tx hash of distribute()
+  payoutWallet    String?  // winner's wallet address
 
   joinedAt    DateTime @default(now())
   completedAt DateTime?
@@ -173,6 +184,20 @@ model AgentLog {
 
   @@index([agentId])
   @@index([createdAt])
+}
+
+model WalletLink {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  address   String   // checksummed Ethereum address
+  chainId   Int?
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, address])
+  @@index([userId])
+  @@index([address])
 }
 
 // External data — crawled from ClawHub registry

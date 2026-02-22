@@ -81,10 +81,10 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const { name } = request.body;
+            const { agentname } = request.body;
             const agent = await server.prisma.agent.create({
                 data: {
-                    name,
+                    agentname,
                     ownerId: request.user.id,
                     activationCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
                 },
@@ -130,13 +130,13 @@ export async function agentsRoutes(app: FastifyInstance) {
                 summary: 'Exchange activation code for agent API key (no auth required)',
                 body: z.object({
                     activationCode: z.string().min(4).max(12),
-                    name: z.string().min(1).max(50).optional(),
+                    agentname: z.string().min(1).max(50).optional(),
                 }),
                 response: {
                     200: z.object({
                         agentId: z.string().uuid(),
                         agentApiKey: z.string(),
-                        name: z.string(),
+                        agentname: z.string(),
                         ownerId: z.string().uuid(),
                         message: z.string(),
                     }),
@@ -144,7 +144,7 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const { activationCode, name } = request.body;
+            const { activationCode, agentname } = request.body;
 
             const agent = await server.prisma.agent.findUnique({
                 where: { activationCode: activationCode.toUpperCase() },
@@ -162,7 +162,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 data: {
                     agentApiKey,
                     activationCode: null, // one-time use — clear it
-                    ...(name ? { name } : {}),
+                    ...(agentname ? { agentname } : {}),
                 },
             });
 
@@ -178,9 +178,9 @@ export async function agentsRoutes(app: FastifyInstance) {
             return {
                 agentId: updated.id,
                 agentApiKey,
-                name: updated.name,
+                agentname: updated.agentname,
                 ownerId: updated.ownerId,
-                message: `✅ Agent "${updated.name}" registered. Store agentApiKey safely — it won't be shown again.`,
+                message: `✅ Agent "${updated.agentname}" registered. Store agentApiKey safely — it won't be shown again.`,
             };
         }
     );
@@ -196,7 +196,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 response: {
                     200: z.object({
                         agentId: z.string().uuid(),
-                        name: z.string(),
+                        agentname: z.string(),
                         status: z.string(),
                         ownerId: z.string().uuid().nullable(),
                         activeQuests: z.array(z.object({
@@ -236,7 +236,7 @@ export async function agentsRoutes(app: FastifyInstance) {
 
             return {
                 agentId: agent.id,
-                name: agent.name,
+                agentname: agent.agentname,
                 status: agent.status,
                 ownerId: agent.ownerId,
                 activeQuests: agent.participations.map(p => ({
@@ -445,7 +445,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 tags: ['Agents'],
                 summary: 'Agent self-registration (no auth required)',
                 body: z.object({
-                    name: z.string().min(1).max(50),
+                    agentname: z.string().min(1).max(50),
                 }),
                 response: {
                     201: z.object({
@@ -458,7 +458,7 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const { name } = request.body;
+            const { agentname } = request.body;
 
             const agentApiKey = generateAgentApiKey();
             const verificationToken = 'agent_' + randomBytes(32).toString('hex');
@@ -466,7 +466,7 @@ export async function agentsRoutes(app: FastifyInstance) {
 
             const agent = await server.prisma.agent.create({
                 data: {
-                    name,
+                    agentname,
                     ownerId: null,
                     agentApiKey,
                     verificationToken,
@@ -490,7 +490,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 agentId: agent.id,
                 agentApiKey,
                 telegramDeeplink,
-                message: `Agent "${name}" created. Ask your human to click the Telegram link to claim this agent. Store agentApiKey safely.`,
+                message: `Agent "${agentname}" created. Ask your human to click the Telegram link to claim this agent. Store agentApiKey safely.`,
             });
         }
     );
@@ -510,7 +510,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 response: {
                     200: z.object({
                         agentId: z.string().uuid(),
-                        name: z.string(),
+                        agentname: z.string(),
                         message: z.string(),
                     }),
                 },
@@ -555,8 +555,8 @@ export async function agentsRoutes(app: FastifyInstance) {
 
             return {
                 agentId: updated.id,
-                name: updated.name,
-                message: `Agent "${updated.name}" is now yours!`,
+                agentname: updated.agentname,
+                message: `Agent "${updated.agentname}" is now yours!`,
             };
         }
     );

@@ -12,7 +12,7 @@ interface QuestSeed {
     description: string;
     sponsor: string;
     type: 'FCFS' | 'LEADERBOARD' | 'LUCKY_DRAW';
-    status: 'draft' | 'live' | 'scheduled' | 'pending' | 'completed';
+    status: 'draft' | 'live' | 'scheduled' | 'completed';
     rewardAmount: number;
     rewardType: string;
     totalSlots: number;
@@ -88,13 +88,13 @@ async function main() {
     // Bulk-create agents
     console.log(`🤖 Creating ${TOTAL_AGENTS} agents...`);
     await prisma.agent.createMany({
-        data: allAgentNames.map(name => ({ name, ownerId: user.id, status: 'idle' })),
+        data: allAgentNames.map(agentname => ({ agentname, ownerId: user.id, status: 'idle' })),
     });
 
     const agents = await prisma.agent.findMany({
         where: { ownerId: user.id },
         orderBy: { createdAt: 'asc' },
-        select: { id: true, name: true },
+        select: { id: true, agentname: true },
     });
     console.log(`✅ ${agents.length} agents ready\n`);
 
@@ -315,7 +315,7 @@ async function main() {
         {
             title: 'Generate AI art collection on Canva',
             description: 'Pending funding: Use the Canva skill to generate a 10-piece AI art collection. Auto-verified via Canva API.',
-            sponsor: 'Canva', type: 'FCFS', status: 'pending',
+            sponsor: 'Canva', type: 'FCFS', status: 'draft',
             rewardAmount: 750, rewardType: 'USDT',
             totalSlots: 40, tags: ['skill', 'canva', 'ai-art', 'design'],
             expiresAt: new Date(now + 15 * DAY), questerCount: 0,

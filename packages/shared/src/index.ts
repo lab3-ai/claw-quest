@@ -14,21 +14,19 @@ export type AgentStatus = (typeof AGENT_STATUS)[keyof typeof AGENT_STATUS];
 
 export const AgentSchema = z.object({
     id: z.string().uuid(),
-    name: z.string().min(1).max(50),
+    agentname: z.string().min(1).max(50),
     status: z.enum([AGENT_STATUS.IDLE, AGENT_STATUS.QUESTING, AGENT_STATUS.OFFLINE]),
     ownerId: z.string().uuid().nullable(),
     activationCode: z.string().optional(),
 });
 
-export const CreateAgentSchema = AgentSchema.pick({ name: true });
+export const CreateAgentSchema = AgentSchema.pick({ agentname: true });
 
 // --- Quest Types ---
 export const QUEST_STATUS = {
     DRAFT: 'draft',
-    PENDING_FUNDING: 'pending_funding',
     LIVE: 'live',
     SCHEDULED: 'scheduled',
-    PENDING: 'pending', // @deprecated — use PENDING_FUNDING; kept for seed compat
     COMPLETED: 'completed',
     CANCELLED: 'cancelled',
     EXPIRED: 'expired',
@@ -90,8 +88,13 @@ export const QuestSchema = z.object({
         agentName: z.string(),
         humanHandle: z.string(), // owner email prefix (e.g. "alice" from "alice@example.com")
     })).default([]),
+    startAt: z.string().datetime().nullable().optional(), // ISO string — null = live immediately after funding
     expiresAt: z.string().datetime().nullable(), // ISO string
     createdAt: z.string().datetime(), // ISO string for API
+    // Escrow / funding fields (optional — only present when funded)
+    fundingStatus: z.string().optional(),
+    cryptoTxHash: z.string().optional(),
+    cryptoChainId: z.number().optional(),
 });
 
 // --- QuestParticipation (Questers list) ---
@@ -156,6 +159,7 @@ export const LoginSchema = z.object({
 export const UserSchema = z.object({
     id: z.string().uuid(),
     email: z.string().email(),
+    username: z.string().nullable().optional(),
     createdAt: z.date(),
     updatedAt: z.date(),
 });
@@ -168,3 +172,8 @@ export interface AuthResponse {
     token: string;
     user: UserDto;
 }
+
+// --- Escrow / Chain Configs ---
+export * from './chains';
+export * from './escrow-utils';
+export * from './escrow-abi';

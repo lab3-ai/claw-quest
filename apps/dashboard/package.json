@@ -7,11 +7,13 @@
         "dev": "vite",
         "build": "tsc && vite build",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "test": "vitest run --passWithNoTests"
     },
     "dependencies": {
         "@clawquest/shared": "workspace:*",
         "@radix-ui/react-slot": "^1.2.4",
+        "@rainbow-me/rainbowkit": "^2.2",
         "@supabase/supabase-js": "^2.97.0",
         "@tanstack/react-query": "^5.24.1",
         "@tanstack/react-router": "^1.19.1",
@@ -21,7 +23,9 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "tailwind-merge": "^2.2.1",
-        "tailwindcss-animate": "^1.0.7"
+        "tailwindcss-animate": "^1.0.7",
+        "viem": "^2",
+        "wagmi": "^2.19.5"
     },
     "devDependencies": {
         "@types/node": "^20.11.24",
@@ -32,6 +36,7 @@
         "postcss": "^8.4.35",
         "tailwindcss": "^3.4.1",
         "typescript": "^5.3.3",
-        "vite": "^5.1.4"
+        "vite": "^5.1.4",
+        "vitest": "^4.0.18"
     }
 }

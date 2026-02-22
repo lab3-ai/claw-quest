@@ -6,6 +6,8 @@ import { QuestersPopup } from "@/components/QuestersPopup"
 import { PlatformIcon } from "@/components/PlatformIcon"
 import { AVATAR_COLORS, getInitials } from "@/components/avatarUtils"
 import type { Quest } from "@clawquest/shared"
+
+type MineQuest = Quest & { fundingStatus?: string; previewToken?: string }
 import "@/styles/pages/dashboard.css"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
@@ -28,7 +30,7 @@ interface Agent {
     }[]
 }
 
-type QuestFilter = "all" | "live" | "scheduled" | "pending" | "draft" | "completed"
+type QuestFilter = "all" | "draft" | "live" | "scheduled" | "completed"
 type AgentFilter = "all" | "claimed" | "pending"
 type MainTab = "quests" | "agents"
 
@@ -44,7 +46,7 @@ function typeBadgeClass(type: string) {
 function statusBadgeClass(status: string) {
     const map: Record<string, string> = {
         live: "badge-live", completed: "badge-completed", draft: "badge-draft",
-        pending: "badge-pending", scheduled: "badge-scheduled",
+        scheduled: "badge-scheduled", expired: "badge-expired", cancelled: "badge-cancelled",
     }
     return map[status] ?? ""
 }
@@ -108,15 +110,16 @@ export function Dashboard() {
         return () => document.removeEventListener("mousedown", handler)
     }, [platformDropdownOpen])
 
-    const { data: quests = [], isLoading: questsLoading } = useQuery<Quest[]>({
+    const { data: quests = [], isLoading: questsLoading } = useQuery<MineQuest[]>({
         queryKey: ["my-quests"],
         queryFn: async () => {
-            const res = await fetch(`${API_BASE}/quests`, {
+            const res = await fetch(`${API_BASE}/quests/mine`, {
                 headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
             })
             if (!res.ok) return []
             return res.json()
         },
+        enabled: !!session?.access_token,
     })
 
     const { data: agents = [], isLoading: agentsLoading } = useQuery<Agent[]>({
@@ -134,14 +137,15 @@ export function Dashboard() {
     // Quest filter counts
     const questCounts = {
         all: quests.length,
+        draft: quests.filter(q => q.status === "draft").length,
         live: quests.filter(q => q.status === "live").length,
         scheduled: quests.filter(q => q.status === "scheduled").length,
-        pending: quests.filter(q => q.status === "pending").length,
-        draft: quests.filter(q => q.status === "draft").length,
-        completed: quests.filter(q => q.status === "completed").length,
+        completed: quests.filter(q => q.status === "completed" || q.status === "expired" || q.status === "cancelled").length,
     }
 
-    const filteredQuests = questFilter === "all" ? quests : quests.filter(q => q.status === questFilter)
+    const filteredQuests = questFilter === "all" ? quests
+        : questFilter === "completed" ? quests.filter(q => q.status === "completed" || q.status === "expired" || q.status === "cancelled")
+        : quests.filter(q => q.status === questFilter)
 
     // Agent filter counts
     const claimedAgents = agents.filter(a => !a.activationCode)
@@ -357,7 +361,7 @@ export function Dashboard() {
                     {/* Filter + view toggle */}
                     <div className="filter-bar">
                         <div className="inline-filter">
-                            {(["all", "live", "scheduled", "pending", "draft", "completed"] as QuestFilter[]).map((f, i, arr) => (
+                            {(["all", "draft", "live", "scheduled", "completed"] as QuestFilter[]).map((f, i, arr) => (
                                 <>
                                     {questCounts[f] > 0 && (
                                         <button
@@ -416,6 +420,10 @@ export function Dashboard() {
                             {filteredQuests.map(quest => {
                                 const time = formatTimeLeft(quest.expiresAt ?? null)
                                 const slotsLeft = quest.totalSlots - quest.filledSlots
+                                const isDraft = quest.status === "draft"
+                                const titleLinkProps = isDraft && quest.previewToken
+                                    ? { to: "/quests/$questId" as const, params: { questId: quest.id }, search: { token: quest.previewToken } }
+                                    : { to: "/quests/$questId" as const, params: { questId: quest.id } }
                                 return (
                                     <li key={quest.id} className="quest-item" data-status={quest.status}>
                                         <div className="quest-stats">
@@ -464,7 +472,7 @@ export function Dashboard() {
 
                                         <div className="quest-body">
                                             <div className="quest-card-title">
-                                                <Link to="/quests/$questId" params={{ questId: quest.id }}>
+                                                <Link {...titleLinkProps}>
                                                     {quest.title}
                                                 </Link>
                                             </div>
@@ -483,8 +491,16 @@ export function Dashboard() {
                                         </div>
 
                                         <div className="quest-time-col">
-                                            <span className={`quest-time-val ${time.cls}`}>{time.val}</span>
-                                            {time.label && <span className="quest-time-lbl">{time.label}</span>}
+                                            {isDraft && quest.fundingStatus === "pending" ? (
+                                                <Link to="/quests/$questId/fund" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Fund</Link>
+                                            ) : isDraft ? (
+                                                <Link {...titleLinkProps} className="btn btn-sm btn-secondary">View Draft</Link>
+                                            ) : (
+                                                <>
+                                                    <span className={`quest-time-val ${time.cls}`}>{time.val}</span>
+                                                    {time.label && <span className="quest-time-lbl">{time.label}</span>}
+                                                </>
+                                            )}
                                         </div>
                                     </li>
                                 )
@@ -509,6 +525,10 @@ export function Dashboard() {
                                 {filteredQuests.map(quest => {
                                     const time = formatTimeLeft(quest.expiresAt ?? null)
                                     const slotsLeft = quest.totalSlots - quest.filledSlots
+                                    const isDraft = quest.status === "draft"
+                                    const titleLinkProps = isDraft && quest.previewToken
+                                        ? { to: "/quests/$questId" as const, params: { questId: quest.id }, search: { token: quest.previewToken } }
+                                        : { to: "/quests/$questId" as const, params: { questId: quest.id } }
                                     return (
                                         <tr key={quest.id} data-status={quest.status}>
                                             <td className="col-reward">
@@ -516,7 +536,7 @@ export function Dashboard() {
                                             </td>
                                             <td className="col-title">
                                                 <div>
-                                                    <Link to="/quests/$questId" params={{ questId: quest.id }} className="quest-title-link">
+                                                    <Link {...titleLinkProps} className="quest-title-link">
                                                         {quest.title}
                                                     </Link>
                                                 </div>
@@ -550,8 +570,16 @@ export function Dashboard() {
                                                 )}
                                             </td>
                                             <td className="col-time">
-                                                <div className={`tbl-time ${time.cls}`}>{time.val}</div>
-                                                {time.label && <div className="tbl-time-label">{time.label}</div>}
+                                                {isDraft ? (
+                                                    isDraft && quest.fundingStatus === "pending"
+                                                        ? <Link to="/quests/$questId/fund" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Fund</Link>
+                                                        : <Link {...titleLinkProps} className="btn btn-sm btn-secondary">View Draft</Link>
+                                                ) : (
+                                                    <>
+                                                        <div className={`tbl-time ${time.cls}`}>{time.val}</div>
+                                                        {time.label && <div className="tbl-time-label">{time.label}</div>}
+                                                    </>
+                                                )}
                                             </td>
                                             <td className="col-status">
                                                 <span className={`badge ${statusBadgeClass(quest.status)}`}>

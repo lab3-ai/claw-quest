@@ -62,7 +62,7 @@ async function handleStatus(server: FastifyInstance, ctx: BotContext) {
             telegramLinks.forEach((link, i) => {
                 const agent = link.agent;
                 const activeQuest = agent.participations[0];
-                message += `${i + 1}. ${agent.name} \u2014 Status: ${agent.status}`;
+                message += `${i + 1}. ${agent.agentname} \u2014 Status: ${agent.status}`;
                 if (activeQuest) {
                     message += `\n   Active quest: "${activeQuest.quest.title}"`;
                 }

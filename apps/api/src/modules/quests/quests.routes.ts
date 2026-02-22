@@ -25,6 +25,7 @@ const CreateQuestSchema = QuestSchema.omit({
     description: z.string().default(''),
     sponsor: z.string().default('System'),
     status: z.nativeEnum(QUEST_STATUS).default(QUEST_STATUS.DRAFT),
+    startAt: z.string().datetime().optional(),
     expiresAt: z.string().datetime().optional(),
     tags: z.array(z.string()).default([]),
     tasks: z.array(QuestTaskSchema).default([]),
@@ -71,8 +72,8 @@ export async function questsRoutes(server: FastifyInstance) {
                         select: {
                             agent: {
                                 select: {
-                                    name: true,
-                                    owner: { select: { email: true } },
+                                    agentname: true,
+                                    owner: { select: { email: true, username: true } },
                                 },
                             },
                         },
@@ -87,11 +88,12 @@ export async function questsRoutes(server: FastifyInstance) {
                 requiredSkills: (q as any).requiredSkills ?? [],
                 tasks: (q.tasks as any) ?? [],
                 questers: _count.participations,
-                questerNames: participations.map(p => p.agent.name),
+                questerNames: participations.map(p => p.agent.agentname),
                 questerDetails: participations.map(p => ({
-                    agentName: p.agent.name,
-                    humanHandle: p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
+                    agentName: p.agent.agentname,
+                    humanHandle: p.agent.owner?.username ?? p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
                 })),
+                startAt: q.startAt ? q.startAt.toISOString() : null,
                 expiresAt: q.expiresAt ? q.expiresAt.toISOString() : null,
                 createdAt: q.createdAt.toISOString(),
             }));
@@ -115,6 +117,14 @@ export async function questsRoutes(server: FastifyInstance) {
                         fundingRequired: z.boolean().optional(),
                         previewToken: z.string().optional(),
                         fundUrl: z.string().optional(),
+                        myParticipation: z.object({
+                            id: z.string(),
+                            status: z.string(),
+                            payoutWallet: z.string().nullable(),
+                            payoutStatus: z.string().nullable(),
+                            payoutAmount: z.number().nullable(),
+                            payoutTxHash: z.string().nullable(),
+                        }).optional(),
                     }),
                 },
             },
@@ -132,8 +142,8 @@ export async function questsRoutes(server: FastifyInstance) {
                         include: {
                             agent: {
                                 select: {
-                                    name: true,
-                                    owner: { select: { email: true } },
+                                    agentname: true,
+                                    owner: { select: { email: true, username: true } },
                                 },
                             },
                         },
@@ -147,7 +157,7 @@ export async function questsRoutes(server: FastifyInstance) {
             }
 
             // Draft access control: require token or creator auth
-            if (quest.status === 'draft' || quest.status === 'pending_funding') {
+            if (quest.status === 'draft') {
                 let hasAccess = false;
 
                 // Check preview token
@@ -189,7 +199,46 @@ export async function questsRoutes(server: FastifyInstance) {
 
             // Public quest (live, completed, etc.)
             const { _count, participations, ...q } = quest;
-            return formatQuestResponse(q, participations, _count.participations);
+            const response: any = formatQuestResponse(q, participations, _count.participations);
+
+            // Include user's participation if authenticated
+            const authHeader = request.headers.authorization;
+            if (authHeader?.startsWith('Bearer ') && !authHeader.startsWith('Bearer cq_')) {
+                try {
+                    await (server as any).authenticate(request, reply);
+                    const user = (request as any).user;
+                    if (user?.id) {
+                        const userAgents = await server.prisma.agent.findMany({
+                            where: { ownerId: user.id },
+                            select: { id: true },
+                        });
+                        const agentIds = userAgents.map((a: any) => a.id);
+                        if (agentIds.length > 0) {
+                            const myParticipation = await server.prisma.questParticipation.findFirst({
+                                where: {
+                                    questId: id,
+                                    agentId: { in: agentIds },
+                                },
+                                orderBy: { joinedAt: 'desc' },
+                            });
+                            if (myParticipation) {
+                                response.myParticipation = {
+                                    id: myParticipation.id,
+                                    status: myParticipation.status,
+                                    payoutWallet: myParticipation.payoutWallet,
+                                    payoutStatus: myParticipation.payoutStatus,
+                                    payoutAmount: myParticipation.payoutAmount,
+                                    payoutTxHash: myParticipation.payoutTxHash,
+                                };
+                            }
+                        }
+                    }
+                } catch {
+                    // Not authenticated — that's fine, return without myParticipation
+                }
+            }
+
+            return response;
         }
     );
 
@@ -228,7 +277,7 @@ export async function questsRoutes(server: FastifyInstance) {
             const [allParticipations, totalCount] = await Promise.all([
                 server.prisma.questParticipation.findMany({
                     where: { questId: id, ...statusFilter },
-                    include: { agent: { select: { name: true, owner: { select: { email: true } } } } },
+                    include: { agent: { select: { agentname: true, owner: { select: { email: true, username: true } } } } },
                     orderBy: [{ completedAt: 'asc' }, { joinedAt: 'asc' }],
                     skip: (page - 1) * pageSize,
                     take: pageSize,
@@ -258,8 +307,8 @@ export async function questsRoutes(server: FastifyInstance) {
                 participations: allParticipations.map((p, i) => ({
                     id: p.id,
                     rank: offset + i + 1,
-                    agentName: p.agent.name,
-                    humanHandle: p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
+                    agentName: p.agent.agentname,
+                    humanHandle: p.agent.owner?.username ?? p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
                     status: p.status as any,
                     tasksCompleted: p.tasksCompleted,
                     tasksTotal: p.tasksTotal,
@@ -892,7 +941,7 @@ export async function questsRoutes(server: FastifyInstance) {
                         take: 5,
                         include: {
                             agent: {
-                                select: { name: true, owner: { select: { email: true } } },
+                                select: { agentname: true, owner: { select: { email: true, username: true } } },
                             },
                         },
                         orderBy: { joinedAt: 'asc' },
@@ -905,6 +954,100 @@ export async function questsRoutes(server: FastifyInstance) {
                 fundingStatus: q.fundingStatus,
                 previewToken: q.previewToken,
             }));
+        }
+    );
+
+    // ── POST /quests/:id/claim-reward — Submit wallet for payout ──────────────
+    server.post(
+        '/:id/claim-reward',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Submit wallet address to claim crypto reward',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                body: z.object({
+                    walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid wallet address'),
+                }),
+                response: {
+                    200: z.object({
+                        message: z.string(),
+                        payoutWallet: z.string(),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id } = request.params as any;
+            const { walletAddress } = request.body as { walletAddress: string };
+            const userId = request.user.id;
+
+            // Find quest
+            const quest = await server.prisma.quest.findUnique({ where: { id } });
+            if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any);
+
+            // Must be crypto-funded
+            if (quest.fundingMethod !== 'crypto') {
+                return reply.status(400).send({ message: 'This quest does not use crypto rewards' } as any);
+            }
+
+            // Find user's participation (via their agents)
+            const userAgents = await server.prisma.agent.findMany({
+                where: { ownerId: userId },
+                select: { id: true },
+            });
+            const agentIds = userAgents.map(a => a.id);
+
+            if (agentIds.length === 0) {
+                return reply.status(400).send({ message: 'You have no agents participating in this quest' } as any);
+            }
+
+            const participation = await server.prisma.questParticipation.findFirst({
+                where: {
+                    questId: id,
+                    agentId: { in: agentIds },
+                    status: { in: ['completed', 'submitted'] },
+                },
+            });
+
+            if (!participation) {
+                return reply.status(400).send({
+                    message: 'No completed participation found for this quest',
+                } as any);
+            }
+
+            if (participation.payoutWallet) {
+                return reply.status(400).send({
+                    message: 'Wallet already submitted for this quest',
+                } as any);
+            }
+
+            const normalizedAddress = walletAddress.toLowerCase();
+
+            // Upsert WalletLink for user
+            await server.prisma.walletLink.upsert({
+                where: {
+                    userId_address: { userId, address: normalizedAddress },
+                },
+                update: {},
+                create: {
+                    userId,
+                    address: normalizedAddress,
+                    isPrimary: (await server.prisma.walletLink.count({ where: { userId } })) === 0,
+                },
+            });
+
+            // Set payoutWallet on participation
+            await server.prisma.questParticipation.update({
+                where: { id: participation.id },
+                data: { payoutWallet: normalizedAddress },
+            });
+
+            return {
+                message: 'Wallet submitted for payout',
+                payoutWallet: normalizedAddress,
+            };
         }
     );
 
@@ -944,7 +1087,17 @@ export async function questsRoutes(server: FastifyInstance) {
                 data: { status: 'cancelled' },
             });
 
-            // TODO: trigger refund if funded (Stripe refund / crypto refund)
+            // Trigger on-chain refund if crypto-funded
+            if (quest.fundingStatus === 'confirmed' && quest.cryptoChainId) {
+                try {
+                    const { executeRefund } = await import('../escrow/escrow.service');
+                    await executeRefund(server.prisma, id, quest.cryptoChainId);
+                    server.log.info({ questId: id }, 'Refund triggered on cancellation');
+                } catch (err: any) {
+                    server.log.error({ err, questId: id }, 'Refund failed on cancellation — will retry');
+                    // Don't fail the cancel operation — refund can be retried
+                }
+            }
 
             return { message: 'Quest cancelled', questId: id };
         }

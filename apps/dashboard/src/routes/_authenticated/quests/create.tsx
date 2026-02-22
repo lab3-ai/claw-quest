@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useNavigate, Link } from "@tanstack/react-router"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { PlatformIcon } from "@/components/PlatformIcon"
 import { useSkillSearch, isSkillUrl, fetchSkillFromUrl, type ClawHubSkill } from "@/hooks/useSkillSearch"
@@ -266,6 +266,55 @@ function getTokenSymbol(rail: PaymentRail, token: string, network: string): stri
     return token
 }
 
+// ─── Reverse-map API QuestTask[] → SocialEntry[] for edit mode ──────────────
+function questTasksToSocialEntries(tasks: any[]): SocialEntry[] {
+    const groups = new Map<string, SocialEntry>()
+    for (const task of tasks) {
+        const key = `${task.platform}-${task.actionType}`
+        const platformName = task.platform === "x" ? "X" : task.platform === "discord" ? "Discord" : "Telegram"
+        const actionDef = PLATFORM_ACTIONS[platformName]?.find(a => a.type === task.actionType)
+        if (!groups.has(key)) {
+            groups.set(key, {
+                platform: platformName,
+                action: actionDef?.label ?? task.label,
+                actionType: task.actionType,
+                icon: platformName,
+                params: {},
+                chips: [],
+                requireTagFriends: task.requireTagFriends ?? false,
+            })
+        }
+        const entry = groups.get(key)!
+        switch (task.actionType) {
+            case "follow_account":
+                entry.chips.push(task.params?.username ?? "")
+                break
+            case "like_post":
+            case "repost":
+                entry.chips.push(task.params?.postUrl ?? "")
+                break
+            case "post":
+                entry.params.content = task.params?.content ?? ""
+                break
+            case "quote_post":
+                entry.chips.push(task.params?.postUrl ?? "")
+                entry.params.content = task.params?.content ?? ""
+                break
+            case "join_server":
+                entry.chips.push(task.params?.inviteUrl ?? "")
+                break
+            case "verify_role":
+                entry.chips.push(task.params?.inviteUrl ?? "")
+                entry.params.role = task.params?.roleName ?? ""
+                break
+            case "join_channel":
+                entry.chips.push(task.params?.channelUrl ?? "")
+                break
+        }
+    }
+    return Array.from(groups.values())
+}
+
 // ─── Chip Input (Enter-to-confirm, multi-value) ─────────────────────────────
 function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, maxChips, error: externalError }: {
     chips: string[]
@@ -517,9 +566,10 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function CreateQuest() {
+export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const navigate = useNavigate()
     const { session } = useAuth()
+    const isEditMode = !!editQuestId
     const [tab, setTab] = useState<Tab>("details")
     const [form, setForm] = useState<FormData>({
         title: "", description: "", startAt: "", endAt: "",
@@ -537,6 +587,59 @@ export function CreateQuest() {
     const [urlFetching, setUrlFetching] = useState(false)
     const [urlFetchError, setUrlFetchError] = useState<string | null>(null)
     const [urlPreview, setUrlPreview] = useState<ClawHubSkill | null>(null)
+    const fundAfterSave = useRef(false)
+    const editPopulated = useRef(false)
+
+    // ── Fetch existing quest for edit mode ─────────────────────────────────────
+    const { data: editQuest, isLoading: editLoading } = useQuery<any>({
+        queryKey: ["quest", editQuestId],
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/quests/${editQuestId}`, {
+                headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
+            })
+            if (!res.ok) throw new Error("Failed to fetch quest")
+            return res.json()
+        },
+        enabled: isEditMode && !!session?.access_token,
+        staleTime: 60_000,
+    })
+
+    // ── Pre-populate form when edit quest data loads ───────────────────────────
+    useEffect(() => {
+        if (!editQuest || editPopulated.current) return
+        editPopulated.current = true
+
+        const isFiat = editQuest.rewardType === "USD"
+        const token = isFiat ? "USDC" : (editQuest.rewardType || "USDC")
+        // Check if token is a native token (not USDC/USDT)
+        const isNative = !isFiat && token !== "USDC" && token !== "USDT"
+
+        setForm({
+            title: editQuest.title || "",
+            description: editQuest.description || "",
+            startAt: editQuest.startAt ? new Date(editQuest.startAt).toISOString().slice(0, 16) : "",
+            endAt: editQuest.expiresAt ? new Date(editQuest.expiresAt).toISOString().slice(0, 16) : "",
+            rail: isFiat ? "fiat" : "crypto",
+            network: editQuest.network || "Base",
+            token: isNative ? "NATIVE" : token,
+            type: (editQuest.type || "FCFS") as QuestType,
+            total: String(editQuest.rewardAmount ?? "100.00"),
+            winners: String(editQuest.totalSlots ?? "50"),
+            drawTime: editQuest.drawTime ? new Date(editQuest.drawTime).toISOString().slice(0, 16) : "",
+        })
+
+        // Populate human tasks
+        if (editQuest.tasks && Array.isArray(editQuest.tasks) && editQuest.tasks.length > 0) {
+            setHumanTasks(questTasksToSocialEntries(editQuest.tasks))
+        }
+
+        // Populate required skills
+        if (editQuest.requiredSkills && Array.isArray(editQuest.requiredSkills) && editQuest.requiredSkills.length > 0) {
+            setRequiredSkills(editQuest.requiredSkills.map((s: string) => ({
+                id: s, name: s, desc: "", agents: 0, version: null,
+            })))
+        }
+    }, [editQuest])
 
     const toggleDesc = (id: string, e: React.MouseEvent) => {
         e.stopPropagation()
@@ -636,24 +739,30 @@ export function CreateQuest() {
             const slots = parseInt(form.winners) || 50
             const tasks = socialEntriesToTasks(humanTasks)
 
-            const res = await fetch(`${API_BASE}/quests`, {
-                method: "POST",
+            const url = isEditMode ? `${API_BASE}/quests/${editQuestId}` : `${API_BASE}/quests`
+            const method = isEditMode ? "PATCH" : "POST"
+
+            const payload: any = {
+                title: form.title,
+                description: form.description || undefined,
+                type: form.type,
+                rewardType: form.rail === "fiat" ? "USD" : form.token,
+                rewardAmount: total,
+                totalSlots: slots,
+                requiredSkills: requiredSkills.map(s => s.id),
+                tasks,
+                expiresAt: form.endAt ? new Date(form.endAt).toISOString() : undefined,
+                startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
+            }
+            if (!isEditMode) payload.status = "draft"
+
+            const res = await fetch(url, {
+                method,
                 headers: {
                     "Content-Type": "application/json",
                     ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
                 },
-                body: JSON.stringify({
-                    title: form.title,
-                    description: form.description || undefined,
-                    type: form.type,
-                    rewardType: form.rail === "fiat" ? "USD" : form.token,
-                    rewardAmount: total,
-                    totalSlots: slots,
-                    status: "draft",
-                    requiredSkills: requiredSkills.map(s => s.id),
-                    tasks,
-                    expiresAt: form.endAt ? new Date(form.endAt).toISOString() : undefined,
-                }),
+                body: JSON.stringify(payload),
             })
             if (!res.ok) {
                 const err = await res.json().catch(() => ({ message: "Failed" }))
@@ -661,12 +770,19 @@ export function CreateQuest() {
                 if (Array.isArray(err.message)) {
                     throw new Error(err.message.map((e: any) => e.message).join(", "))
                 }
-                throw new Error(err.message ?? "Failed to save quest")
+                throw new Error(err.message ?? `Failed to ${isEditMode ? "update" : "save"} quest`)
             }
             return res.json()
         },
-        onSuccess: () => {
-            navigate({ to: "/quests/mine" })
+        onSuccess: (data: any) => {
+            const questId = data?.id || editQuestId
+            if (fundAfterSave.current && questId) {
+                navigate({ to: "/quests/$questId/fund", params: { questId } })
+            } else if (isEditMode && questId) {
+                navigate({ to: "/quests/$questId", params: { questId } })
+            } else {
+                navigate({ to: "/dashboard" })
+            }
         },
     })
 
@@ -703,15 +819,39 @@ export function CreateQuest() {
     const tokenIconColor = isNativeToken ? "#627eea" : (TOKEN_COLORS[form.token] ?? "#888")
 
     // ─────────────────────────────────────────────────────────────────────────
+    if (isEditMode && editLoading) {
+        return (
+            <div style={{ padding: "40px", textAlign: "center", color: "var(--fg-muted)" }}>
+                Loading quest…
+            </div>
+        )
+    }
+
     return (
         <div className="page-container" style={{ maxWidth: 960 }}>
             <div className="breadcrumb">
-                <Link to="/dashboard">Dashboard</Link><span className="sep">›</span><span>Create Quest</span>
+                {isEditMode ? (
+                    <>
+                        <Link to="/quests/$questId" params={{ questId: editQuestId! }}>Quest</Link>
+                        <span className="sep">›</span>
+                        <span>Edit Draft</span>
+                    </>
+                ) : (
+                    <>
+                        <Link to="/dashboard">Dashboard</Link>
+                        <span className="sep">›</span>
+                        <span>Create Quest</span>
+                    </>
+                )}
             </div>
             <div className="page-header" style={{ marginBottom: 20 }}>
                 <div>
-                    <h1>Create a Quest</h1>
-                    <div className="subtitle">Fund a quest for agents to execute. Pay with crypto or fiat.</div>
+                    <h1>{isEditMode ? "Edit Quest" : "Create a Quest"}</h1>
+                    <div className="subtitle">
+                        {isEditMode
+                            ? "Update your draft quest details, rewards, and tasks."
+                            : "Fund a quest for agents to execute. Pay with crypto or fiat."}
+                    </div>
                 </div>
             </div>
 
@@ -1652,42 +1792,18 @@ export function CreateQuest() {
 
                                 {form.rail === "crypto" ? (
                                     <div className="fund-crypto-box">
-                                        <div className="fund-field">
-                                            <div className="fund-field-label">Treasury address</div>
-                                            <div className="fund-address-row">
-                                                <code className="fund-address-text">
-                                                    {import.meta.env.VITE_TREASURY_ADDRESS || "0x...treasury"}
-                                                </code>
-                                                <button
-                                                    className="fund-copy-btn"
-                                                    onClick={() => {
-                                                        const addr = import.meta.env.VITE_TREASURY_ADDRESS || "0x...treasury"
-                                                        navigator.clipboard.writeText(addr)
-                                                    }}
-                                                >
-                                                    Copy
-                                                </button>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                                            <span style={{ fontSize: 20 }}>🔗</span>
+                                            <div>
+                                                <div style={{ fontSize: 12, fontWeight: 600 }}>Smart Contract Escrow</div>
+                                                <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>
+                                                    {form.network} · {tokenLabel}
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="fund-send-note">
-                                            Send exactly <strong>{activeTotal > 0 ? activeTotal.toFixed(2) : "—"} {tokenLabel}</strong> on <strong>{form.network}</strong>
-                                        </div>
-                                        <div className="fund-field" style={{ marginTop: 8 }}>
-                                            <div className="fund-field-label">Transaction hash</div>
-                                            <input
-                                                className="form-input"
-                                                type="text"
-                                                placeholder="0x..."
-                                                style={{ fontSize: 11, fontFamily: "var(--font-mono)" }}
-                                                disabled
-                                            />
-                                        </div>
-                                        <button className="cta-btn disabled" disabled style={{ marginTop: 8 }}>
-                                            Verify & Go Live
-                                        </button>
-                                        <div className="fund-coming-soon">
-                                            On-chain verification coming soon
-                                        </div>
+                                        <p style={{ fontSize: 11, color: "var(--fg-muted)", margin: 0 }}>
+                                            After saving, you'll connect your wallet and deposit via smart contract.
+                                        </p>
                                     </div>
                                 ) : (
                                     <div className="fund-fiat-box">
@@ -1719,19 +1835,39 @@ export function CreateQuest() {
                                 </div>
                             )}
 
-                            {/* Action button */}
+                            {/* Action buttons */}
                             <div className="preview-actions">
+                                {form.rail === "crypto" && (
+                                    <button
+                                        className="btn btn-primary btn-lg"
+                                        style={{ width: "100%", marginBottom: 8 }}
+                                        disabled={mutation.isPending}
+                                        onClick={() => { fundAfterSave.current = true; mutation.mutate() }}
+                                    >
+                                        {mutation.isPending && fundAfterSave.current
+                                            ? "Saving…"
+                                            : isEditMode ? "Update & Fund Now →" : "Save & Fund Now →"}
+                                    </button>
+                                )}
                                 <button
-                                    className="btn btn-primary btn-lg"
+                                    className={`btn ${form.rail === "crypto" ? "btn-secondary" : "btn-primary"} btn-lg`}
                                     style={{ width: "100%" }}
                                     disabled={mutation.isPending}
-                                    onClick={() => mutation.mutate()}
+                                    onClick={() => { fundAfterSave.current = false; mutation.mutate() }}
                                 >
-                                    {mutation.isPending ? "Saving…" : "Save Draft"}
+                                    {mutation.isPending && !fundAfterSave.current
+                                        ? "Saving…"
+                                        : isEditMode ? "Update Draft" : "Save Draft"}
                                 </button>
                             </div>
                             <div className="preview-note">
-                                Quest saved as draft. Fund later to go live.
+                                {form.rail === "crypto"
+                                    ? isEditMode
+                                        ? "Update & Fund connects your wallet to deposit via escrow contract."
+                                        : "Save & Fund connects your wallet to deposit via escrow contract."
+                                    : isEditMode
+                                        ? "Quest updated as draft. Fund later to go live."
+                                        : "Quest saved as draft. Fund later to go live."}
                             </div>
                         </div>
                     )}

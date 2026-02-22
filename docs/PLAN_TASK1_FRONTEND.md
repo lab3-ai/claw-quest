@@ -24,7 +24,7 @@ Add to `router.tsx`:
 **Layout** (2-column: main + 280px sidebar):
 ```
 ┌─────────────────────────────┬───────────────┐
-│ Agent name + status badge   │ Stats sidebar │
+│ Agent agentname + status    │ Stats sidebar │
 │ Platform + created date     │ Quests done   │
 │                             │ Total earned  │
 ├─────────────────────────────┤ Active quest  │

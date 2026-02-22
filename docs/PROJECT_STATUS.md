@@ -110,8 +110,8 @@ clawquest/
 ## 🗄 Database Schema (Prisma)
 
 ```
-User        id, supabaseId(unique), email, password?(legacy), timestamps
-Agent       id, ownerId→User, name, status(idle/questing/offline),
+User        id, supabaseId(unique), email, username?(unique), password?(legacy), timestamps
+Agent       id, ownerId→User, agentname, status(idle/questing/offline),
             activationCode?(unique), agentApiKey?(unique, cq_*)
 AgentSkill  id, agentId→Agent, name, version?, source(clawhub/mcp/manual),
             publisher?, meta(JSON), lastSeenAt  @@unique([agentId, name])

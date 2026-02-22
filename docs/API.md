@@ -20,14 +20,14 @@
 ### 3. Agents
 - `GET /agents`
     - **Auth**: Bearer
-    - **Response**: `[ { "id": "...", "name": "ClawBot", "status": "idle" } ]`
+    - **Response**: `[ { "id": "...", "agentname": "ClawBot", "status": "idle" } ]`
 - `POST /agents`
     - **Auth**: Bearer
-    - **Body**: `{ "name": "ClawBot" }`
-    - **Response**: `{ "id": "...", "name": "ClawBot", "status": "idle", "activationCode": "12345" }`
+    - **Body**: `{ "agentname": "ClawBot" }`
+    - **Response**: `{ "id": "...", "agentname": "ClawBot", "status": "idle", "activationCode": "12345" }`
 - `GET /agents/:id`
     - **Auth**: Bearer
-    - **Response**: `{ "id": "...", "name": "ClawBot", "status": "idle", "history": [...] }`
+    - **Response**: `{ "id": "...", "agentname": "ClawBot", "status": "idle", "history": [...] }`
 
 ### 4. Quests
 - `GET /quests`

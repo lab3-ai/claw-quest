@@ -12,7 +12,7 @@
 
 **DB models relevant**:
 - `User` — the human owner
-- `Agent` — `{ id, ownerId, name, status, activationCode }`
+- `Agent` — `{ id, ownerId, agentname, status, activationCode }`
 - `TelegramLink` — `{ agentId, telegramId, username, firstName }`
 
 **Environment vars needed**:
@@ -123,7 +123,7 @@ Response: { agentId, claimUrl, verificationCode }
 Logic:
 1. Find User by email
 2. Find Agent by activationCode + ownerId
-3. If agent name provided and different → update agent name
+3. If agentname provided and different → update agentname
 4. Return `{ agentId: agent.id, message: "Agent registered" }`
 
 **Note**: This endpoint doesn't need `TelegramLink` — it's for API-based agents.

@@ -12,6 +12,9 @@ import 'dotenv/config';
 import { authRoutes } from './modules/auth/auth.routes';
 import { agentsRoutes } from './modules/agents/agents.routes';
 import { questsRoutes } from './modules/quests/quests.routes';
+import { escrowRoutes } from './modules/escrow/escrow.routes';
+import { walletsRoutes } from './modules/wallets/wallets.routes';
+import { adminRoutes } from './modules/admin/admin.routes';
 
 // ─── Supabase Admin Client ──────────────────────────────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
@@ -32,7 +35,7 @@ declare module 'fastify' {
         telegram: TelegramService;
     }
     interface FastifyRequest {
-        user: { id: string; email: string; supabaseId: string };
+        user: { id: string; email: string; username: string | null; supabaseId: string; role: string };
     }
 }
 
@@ -49,10 +52,13 @@ server.register(cors, {
     origin: [
         'http://localhost:5173',
         'http://127.0.0.1:5173',
+        'http://localhost:5174',
+        'http://127.0.0.1:5174',
         'https://clawquest-nu.vercel.app',
         'https://clawquest-ai.vercel.app',
         'https://clawquest.ai',
         'https://www.clawquest.ai',
+        'https://admin.clawquest.ai',
     ],
 });
 
@@ -100,6 +106,7 @@ server.decorate('authenticate', async (request: FastifyRequest, reply: FastifyRe
                 data: {
                     supabaseId: supabaseUser.id,
                     email: supabaseUser.email!,
+                    username: supabaseUser.email!.split('@')[0],
                 },
             });
         }
@@ -108,7 +115,9 @@ server.decorate('authenticate', async (request: FastifyRequest, reply: FastifyRe
     request.user = {
         id: user.id,
         email: user.email,
+        username: user.username,
         supabaseId: supabaseUser.id,
+        role: user.role ?? 'user',
     };
 });
 
@@ -146,6 +155,9 @@ server.register(scalarPlugin, {
 server.register(authRoutes, { prefix: '/auth' });
 server.register(agentsRoutes, { prefix: '/agents' });
 server.register(questsRoutes, { prefix: '/quests' });
+server.register(escrowRoutes, { prefix: '/escrow' });
+server.register(walletsRoutes, { prefix: '/wallets' });
+server.register(adminRoutes, { prefix: '/admin' });
 
 // Telegram Bot (Polling for local dev)
 import { TelegramService } from './modules/telegram/telegram.service';
@@ -160,6 +172,17 @@ if (TELEGRAM_BOT_TOKEN) {
     });
 } else {
     console.warn('⚠️  Missing TELEGRAM_BOT_TOKEN — Telegram bot will not start');
+}
+
+// Escrow Event Poller (detect on-chain deposits)
+import { startEscrowPoller } from './modules/escrow/escrow.poller';
+
+if (process.env.ESCROW_CONTRACT) {
+    startEscrowPoller(server).catch((err) => {
+        console.error('⚠️  Escrow poller failed (non-fatal):', err.message);
+    });
+} else {
+    console.warn('⚠️  Missing ESCROW_CONTRACT — escrow poller will not start');
 }
 
 // Serve skill.md for agents to read

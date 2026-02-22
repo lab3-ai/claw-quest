@@ -52,7 +52,7 @@ async function handlePastedAgentToken(server: FastifyInstance, ctx: BotContext, 
         }
 
         if (agent.ownerId) {
-            return ctx.reply(MSG.agentAlreadyClaimed(agent.name));
+            return ctx.reply(MSG.agentAlreadyClaimed(agent.agentname));
         }
 
         if (agent.verificationExpiresAt && agent.verificationExpiresAt < new Date()) {
@@ -77,7 +77,7 @@ async function handlePastedAgentToken(server: FastifyInstance, ctx: BotContext, 
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         const verifyUrl = `${frontendUrl}/verify?token=${token}`;
 
-        return ctx.reply(MSG.agentLinked(agent.name), {
+        return ctx.reply(MSG.agentLinked(agent.agentname), {
             reply_markup: claimAgentKeyboard(verifyUrl),
         });
     } catch (error) {

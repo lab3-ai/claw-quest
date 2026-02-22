@@ -47,7 +47,7 @@ async function handleVerifyDeeplink(server: FastifyInstance, ctx: BotContext, to
         }
 
         if (agent.ownerId) {
-            return ctx.reply(MSG.agentAlreadyClaimed(agent.name));
+            return ctx.reply(MSG.agentAlreadyClaimed(agent.agentname));
         }
 
         if (agent.verificationExpiresAt && agent.verificationExpiresAt < new Date()) {
@@ -72,7 +72,7 @@ async function handleVerifyDeeplink(server: FastifyInstance, ctx: BotContext, to
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         const verifyUrl = `${frontendUrl}/verify?token=${token}`;
 
-        return ctx.reply(MSG.agentLinked(agent.name), {
+        return ctx.reply(MSG.agentLinked(agent.agentname), {
             reply_markup: claimAgentKeyboard(verifyUrl),
         });
     } catch (error) {
@@ -150,7 +150,7 @@ async function handleActivationCode(server: FastifyInstance, ctx: BotContext, co
             data: { activationCode: null },
         });
 
-        return ctx.reply(MSG.activationSuccess(agent.name));
+        return ctx.reply(MSG.activationSuccess(agent.agentname));
     } catch (error) {
         server.log.error(error);
         return ctx.reply(MSG.genericError);

@@ -48,7 +48,7 @@ export function AgentList() {
                     {agents?.map((agent) => (
                         <Card key={agent.id}>
                             <CardHeader>
-                                <CardTitle>{agent.name}</CardTitle>
+                                <CardTitle>{agent.agentname}</CardTitle>
                                 <CardDescription>Status: {agent.status}</CardDescription>
                             </CardHeader>
                             <CardContent>

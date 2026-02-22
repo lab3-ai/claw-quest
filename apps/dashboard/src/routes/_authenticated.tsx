@@ -25,7 +25,7 @@ export function AuthenticatedLayout() {
         return <Navigate to="/login" />
     }
 
-    const handle = user?.email?.split("@")[0] ?? "user"
+    const handle = (user as any)?.username ?? user?.email?.split("@")[0] ?? "user"
 
     return (
         <div>

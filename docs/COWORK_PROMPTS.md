@@ -39,7 +39,7 @@ CSS file: apps/dashboard/src/styles/pages/agent-detail.css
 
 Requirements:
 1. 2-column layout: main content (left) + stats sidebar (280px right)
-2. Header: agent name + status badge (idle=gray, questing=green, offline=red)
+2. Header: agentname + status badge (idle=gray, questing=green, offline=red)
 3. Platform icon using PlatformIcon component
 4. Active Quest card showing: quest title, progress bar (tasksCompleted/tasksTotal), time left
 5. Activity Log section: list of AgentLog entries (type, message, createdAt) — newest first

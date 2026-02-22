@@ -127,3 +127,6 @@ dist
 .DS_Store
 .vercel
 .env*.local
+.pnpm-store/
+vercel.env
+_tmp_*

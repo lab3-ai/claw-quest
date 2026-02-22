@@ -45,7 +45,7 @@ export function VerifyAgent() {
                 }
 
                 const data = await res.json()
-                setAgentName(data.name)
+                setAgentName(data.agentname)
                 setStatus("success")
             } catch (err: any) {
                 setStatus("error")

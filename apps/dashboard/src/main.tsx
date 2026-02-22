@@ -2,6 +2,10 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { WagmiProvider } from 'wagmi'
+import { RainbowKitProvider, lightTheme } from '@rainbow-me/rainbowkit'
+import { wagmiConfig } from '@/lib/wagmi'
+import '@rainbow-me/rainbowkit/styles.css'
 
 // Base styles (Tailwind + CSS variables)
 import './index.css'
@@ -47,10 +51,19 @@ function InnerApp() {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-        <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-                <InnerApp />
-            </AuthProvider>
-        </QueryClientProvider>
+        <WagmiProvider config={wagmiConfig}>
+            <QueryClientProvider client={queryClient}>
+                <RainbowKitProvider theme={lightTheme({
+                    accentColor: '#f48024',
+                    accentColorForeground: '#fff',
+                    borderRadius: 'small',
+                    fontStack: 'system',
+                })}>
+                    <AuthProvider>
+                        <InnerApp />
+                    </AuthProvider>
+                </RainbowKitProvider>
+            </QueryClientProvider>
+        </WagmiProvider>
     </React.StrictMode>,
 )

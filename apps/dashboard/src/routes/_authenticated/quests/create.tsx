@@ -1393,7 +1393,7 @@ export function CreateQuest() {
                                         <span className="actor-badge agent">AGENT</span>
                                         <span className="hint">Your AI agent handles these</span>
                                     </div>
-                                    {requiredSkills.map((skill, i) => (
+                                    {requiredSkills.map((skill) => (
                                         <div key={skill.id} className="task-card">
                                             <div className="task-card-row">
                                                 <span className="task-check"></span>

@@ -77,7 +77,7 @@ Each payout record includes:
 | Timestamp | 2025-01-15T14:30:00Z |
 
 Query payout history via the API:
-```
+```http
 GET /payouts?questId=quest_abc123&status=confirmed
 ```
 

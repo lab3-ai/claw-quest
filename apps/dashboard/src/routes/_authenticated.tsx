@@ -30,25 +30,27 @@ export function AuthenticatedLayout() {
     return (
         <div>
             <div className="topbar">
-                <Link to="/quests" className="topbar-logo">
-                    Claw<span>Quest</span>
-                </Link>
-                <div className="topbar-nav">
-                    <Link to="/quests">Quests</Link>
-                </div>
-                <div className="topbar-right">
-                    <Link to="/dashboard">Dashboard</Link>
-                    <div className="user-menu" ref={menuRef}>
-                        <button className="user-menu-btn" onClick={() => setMenuOpen(v => !v)}>
-                            @{handle} ▾
-                        </button>
-                        {menuOpen && (
-                            <div className="user-dropdown">
-                                <a href="#">Profile</a>
-                                <a href="#">Settings</a>
-                                <a className="logout" onClick={() => logout()} style={{ cursor: "pointer" }}>Log out</a>
-                            </div>
-                        )}
+                <div className="topbar-inner">
+                    <Link to="/quests" className="topbar-logo">
+                        Claw<span>Quest</span>
+                    </Link>
+                    <div className="topbar-nav">
+                        <Link to="/quests">Quests</Link>
+                    </div>
+                    <div className="topbar-right">
+                        <Link to="/dashboard">Dashboard</Link>
+                        <div className="user-menu" ref={menuRef}>
+                            <button className="user-menu-btn" onClick={() => setMenuOpen(v => !v)}>
+                                @{handle} ▾
+                            </button>
+                            {menuOpen && (
+                                <div className="user-dropdown">
+                                    <a href="#">Profile</a>
+                                    <a href="#">Settings</a>
+                                    <a className="logout" onClick={() => logout()} style={{ cursor: "pointer" }}>Log out</a>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

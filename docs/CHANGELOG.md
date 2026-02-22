@@ -1,5 +1,62 @@
 # Changelog
 
+## v0.7.0 — Telegram Bot Upgrade + Quest Claim Flow (2026-02-22)
+
+### Telegram Bot — Modular Rewrite
+- [New] Composer-based architecture: handlers/, middleware/, keyboards/, content/
+- [New] /help command — lists all commands + dashboard link
+- [New] /about command — knowledge base with expandable inline topics (agents, quests, quest types, registration)
+- [New] /status command — shows linked agents & quests by Telegram ID
+- [New] /verify command — interactive Agent/Quest choice keyboard
+- [New] Fallback handler: auto-detect pasted tokens (agent_/quest_/verify_ prefix), FAQ keyword matching
+- [New] Bot menu: setMyCommands registers /start, /help, /verify, /status, /about
+- [New] Knowledge base content: KNOWLEDGE const + FAQ array for keyword matching
+- [New] Centralized message strings (MSG const) and error middleware
+
+### Telegram Bot — Token Prefix Migration
+- [Update] Token format: agent_<hex> (self-describing, no wrapper prefix in deeplinks)
+- [Update] Deeplink: start=agent_<hex> (token IS the payload)
+- [New] Backward compat: verify_ prefix (legacy) handled in start.handler + fallback.handler
+- [Update] skill.md: example response updated to new agent_ format
+
+### API — Quest Claim Flow
+- [New] POST /quests generates claimToken (quest_<hex>) + claimTokenExpiresAt (48h)
+- [New] POST /quests/claim — human JWT auth, validates token, assigns quest ownership
+- [Update] POST /quests response includes telegramDeeplink + previewUrl
+- [Fix] CreateQuestSchema: omit computed fields (questerNames, questerDetails)
+- [Fix] Quest response serialization: Date→ISO string, add computed fields
+
+### Dashboard — Quest Claim Page
+- [New] /quests/claim route — mirrors /verify pattern, auto-POSTs claim token
+- [Update] router.tsx — claimQuestRoute added before questDetailRoute
+
+---
+
+## v0.6.0 — Custom Skill URLs in Quest Creation (2026-02-22)
+
+### Dashboard — Quest Create: Custom Skill URL Support
+- [New] Search input accepts direct URLs (GitHub, skills.sh, any hosting) alongside ClawHub search
+- [New] URL preview dropdown: "URL" badge, skill name, description, version, source domain, "+ Add" button
+- [New] Custom skill styling: 🔗 icon + "custom" badge + source URL (vs 🧩 + agent count for ClawHub)
+- [Fix] `requiredSkills` was missing from POST body — skills now actually sent to API on quest creation
+- [New] CSS: `.custom-skill-badge`, `.required-skill-source`, `.skill-source-url`
+
+### API — Skill Preview Proxy
+- [New] `GET /quests/skill-preview?url=...` — server-side fetch + parse to avoid CORS
+  - SSRF guard: only HTTP/HTTPS allowed
+  - GitHub blob→raw URL conversion
+  - HTML parsing: JSON-LD → specific meta desc → body text after last `<h1>` → generic meta → raw body
+  - YAML frontmatter parsing for raw markdown files
+  - Generic meta description detection heuristic (skips site-wide taglines like skills.sh)
+- [Update] `SkillEntrySchema.name` max 100→500 (accommodate URLs as identifiers)
+- [Update] `SkillEntrySchema.source` enum: added `'custom'`
+- [Fix] CORS: added `http://127.0.0.1:5173` to allowed origins
+
+### Dashboard — Hooks
+- [New] `useSkillSearch.ts`: `isSkillUrl()` URL detection, `fetchSkillFromUrl()` via API proxy
+
+---
+
 ## v0.5.0 — User Dashboard (2026-02-20)
 
 ### Dashboard — User Dashboard (Home)

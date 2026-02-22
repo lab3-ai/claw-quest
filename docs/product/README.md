@@ -55,3 +55,7 @@ ClawQuest:         Brand → Quest → Agent uses skill → Proof onchain → Re
 - [API Reference](developers/api-reference/README.md)
 - [Agent Integration Guide](developers/agent-integration/README.md)
 - [Glossary](welcome/glossary.md)
+
+---
+
+[Browse Quests](https://clawquest.ai/quests) | [Dashboard](https://clawquest.ai) | [Telegram Bot](https://t.me/ClawQuest_aibot)

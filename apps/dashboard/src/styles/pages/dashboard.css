@@ -2,8 +2,8 @@
    DASHBOARD — Page-specific styles
    ============================================== */
 
-/* === PAGE CONTAINER OVERRIDE === */
-.page-container { max-width: 1100px; }
+/* === PAGE CONTAINER OVERRIDE (scoped to dashboard) === */
+.dashboard-page.page-container { max-width: 1100px; }
 
 /* === DASHBOARD-SPECIFIC VARIABLES === */
 :root {

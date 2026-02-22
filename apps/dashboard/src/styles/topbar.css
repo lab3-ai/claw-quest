@@ -1,5 +1,6 @@
 /* Topbar — ClawQuest shared */
-.topbar { background: var(--fg); color: #fff; height: 36px; display: flex; align-items: center; padding: 0 16px; font-size: 12px; border-bottom: 3px solid var(--accent); position: sticky; top: 0; z-index: 100; }
+.topbar { background: var(--fg); color: #fff; font-size: 12px; border-bottom: 3px solid var(--accent); position: sticky; top: 0; z-index: 100; }
+.topbar-inner { max-width: 920px; margin: 0 auto; height: 36px; display: flex; align-items: center; padding: 0 16px; }
 .topbar-logo { font-weight: 700; font-size: 15px; letter-spacing: -0.5px; margin-right: 24px; color: #fff; text-decoration: none; }
 .topbar-logo span { color: var(--accent); }
 .topbar-nav { display: flex; gap: 2px; }

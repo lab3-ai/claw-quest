@@ -153,7 +153,7 @@ export function Dashboard() {
     const handle = user?.email?.split("@")[0] ?? "user"
 
     return (
-        <div className="page-container">
+        <div className="page-container dashboard-page">
             {/* Questers popup */}
             {popupQuest && (
                 <QuestersPopup

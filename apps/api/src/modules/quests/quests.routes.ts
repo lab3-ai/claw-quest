@@ -700,7 +700,7 @@ export async function questsRoutes(server: FastifyInstance) {
                         taskType: z.string(),
                         proofUrl: z.string().url().optional(),
                         result: z.string().optional(),
-                        meta: z.record(z.any()).optional(),
+                        meta: z.record(z.unknown()).optional(),
                     })).min(1),
                 }),
                 response: {

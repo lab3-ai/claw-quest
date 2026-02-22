@@ -1,8 +1,8 @@
 import Fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import swagger from '@fastify/swagger';
-import swaggerUi from '@fastify/swagger-ui';
-import { serializerCompiler, validatorCompiler, ZodTypeProvider } from 'fastify-type-provider-zod';
+import scalarPlugin from '@scalar/fastify-api-reference';
+import { serializerCompiler, validatorCompiler, ZodTypeProvider, jsonSchemaTransform } from 'fastify-type-provider-zod';
 import { createClient } from '@supabase/supabase-js';
 
 // Load env vars
@@ -135,9 +135,10 @@ server.register(swagger, {
             },
         },
     },
+    transform: jsonSchemaTransform,
 });
 
-server.register(swaggerUi, {
+server.register(scalarPlugin, {
     routePrefix: '/docs',
 });
 

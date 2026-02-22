@@ -268,7 +268,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                         id: z.string(),
                         type: z.string(),
                         message: z.string(),
-                        meta: z.any().nullable(),
+                        meta: z.record(z.unknown()).nullable(),
                         createdAt: z.string(),
                     })),
                 },
@@ -299,7 +299,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 body: z.object({
                     type: z.enum(['QUEST_START', 'QUEST_COMPLETE', 'ERROR', 'INFO']),
                     message: z.string().min(1).max(500),
-                    meta: z.record(z.any()).optional(),
+                    meta: z.record(z.unknown()).optional(),
                 }),
                 response: { 201: z.object({ id: z.string(), createdAt: z.string() }) },
             },
@@ -324,7 +324,7 @@ export async function agentsRoutes(app: FastifyInstance) {
         version: z.string().max(20).optional(),    // e.g. "1.0.0"
         source: z.enum(['clawhub', 'mcp', 'manual', 'custom']).default('clawhub'),
         publisher: z.string().max(100).optional(), // e.g. "paysponge"
-        meta: z.record(z.any()).optional(),         // tool names, descriptions, etc.
+        meta: z.record(z.unknown()).optional(),         // tool names, descriptions, etc.
     });
 
     server.post(
@@ -407,7 +407,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                         version: z.string().nullable(),
                         source: z.string(),
                         publisher: z.string().nullable(),
-                        meta: z.any().nullable(),
+                        meta: z.record(z.unknown()).nullable(),
                         lastSeenAt: z.string(),
                         createdAt: z.string(),
                     })),

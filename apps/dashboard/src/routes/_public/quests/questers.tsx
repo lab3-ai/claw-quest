@@ -40,7 +40,7 @@ function rankClass(rank: number) {
 }
 
 export function QuestersPage() {
-    const { questId } = useParams({ from: "/_public/quests/$questId/questers" })
+    const { questId } = useParams({ from: "/_app/quests/$questId/questers" })
     const [filter, setFilter] = useState<StatusFilter>("all")
     const [page, setPage] = useState(1)
     const PAGE_SIZE = 10
@@ -65,7 +65,7 @@ export function QuestersPage() {
     }
 
     return (
-        <div className="page-container">
+        <div>
             {/* Breadcrumb */}
             <div className="breadcrumb">
                 <Link to="/quests">Quests</Link>

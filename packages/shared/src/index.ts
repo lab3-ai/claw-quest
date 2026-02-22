@@ -25,10 +25,25 @@ export const CreateAgentSchema = AgentSchema.pick({ name: true });
 // --- Quest Types ---
 export const QUEST_STATUS = {
     DRAFT: 'draft',
+    PENDING_FUNDING: 'pending_funding',
     LIVE: 'live',
     SCHEDULED: 'scheduled',
-    PENDING: 'pending',
+    PENDING: 'pending', // @deprecated — use PENDING_FUNDING; kept for seed compat
     COMPLETED: 'completed',
+    CANCELLED: 'cancelled',
+    EXPIRED: 'expired',
+} as const;
+
+export const FUNDING_STATUS = {
+    UNFUNDED: 'unfunded',
+    PENDING: 'pending',
+    CONFIRMED: 'confirmed',
+    REFUNDED: 'refunded',
+} as const;
+
+export const FUNDING_METHOD = {
+    STRIPE: 'stripe',
+    CRYPTO: 'crypto',
 } as const;
 
 export const QUEST_TYPE = {
@@ -40,6 +55,20 @@ export const QUEST_TYPE = {
 export const LinkAgentSchema = z.object({
     activationCode: z.string().min(1),
 });
+
+// --- Quest Task (Social / Human tasks) ---
+export const QuestTaskSchema = z.object({
+    id: z.string().uuid(),
+    platform: z.enum(['x', 'discord', 'telegram']),
+    actionType: z.enum([
+        'follow_account', 'like_post', 'repost', 'post', 'quote_post',
+        'join_server', 'verify_role', 'join_channel',
+    ]),
+    label: z.string().min(1).max(100),
+    params: z.record(z.string()),
+    requireTagFriends: z.boolean().optional().default(false),
+});
+export type QuestTask = z.infer<typeof QuestTaskSchema>;
 
 export const QuestSchema = z.object({
     id: z.string().uuid(),
@@ -54,6 +83,7 @@ export const QuestSchema = z.object({
     filledSlots: z.number(),
     tags: z.array(z.string()).default([]),
     requiredSkills: z.array(z.string()).default([]), // skill names agent must have
+    tasks: z.array(QuestTaskSchema).default([]), // social / human tasks
     questers: z.number().default(0), // count of active participations
     questerNames: z.array(z.string()).default([]), // first few agent names for avatar stack
     questerDetails: z.array(z.object({

@@ -3,7 +3,9 @@ import { useNavigate, Link } from "@tanstack/react-router"
 import { useMutation } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { PlatformIcon } from "@/components/PlatformIcon"
+import { useSkillSearch, isSkillUrl, fetchSkillFromUrl, type ClawHubSkill } from "@/hooks/useSkillSearch"
 import "@/styles/pages/create-quest.css"
+import "@/styles/pages/quest-detail.css"
 import "@/styles/actor-sections.css"
 import "@/styles/forms.css"
 import "@/styles/token-display.css"
@@ -12,7 +14,7 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Tab = "details" | "reward" | "tasks"
+type Tab = "details" | "reward" | "tasks" | "preview"
 type QuestType = "FCFS" | "LEADERBOARD" | "LUCKY_DRAW"
 type PaymentRail = "crypto" | "fiat"
 
@@ -22,6 +24,7 @@ interface SocialEntry {
     actionType: string
     icon: string
     params: Record<string, string>
+    chips: string[]
     requireTagFriends?: boolean
 }
 
@@ -130,15 +133,116 @@ const PLATFORM_ACTIONS: Record<string, ActionDef[]> = {
     ],
 }
 
-// ─── Mock skills ──────────────────────────────────────────────────────────────
+// ─── Task validation (matches API-side regex) ─────────────────────────────────
 
-const MOCK_SKILLS = [
-    { id: "leeknowsai/clawfriend", name: "clawfriend", desc: "ClawFriend Social Agent Platform — Buy/Sell/Trade Share Agent.", downloads: "1k", stars: "0", version: "1.1.0", agents: 42 },
-    { id: "clawfriend/cf-trading-bot", name: "cf-trading-bot", desc: "Automated share trading strategies for ClawFriend agents.", downloads: "620", stars: "4", version: "0.8.1", agents: 18 },
-    { id: "moltbro/cf-content-gen", name: "cf-content-gen", desc: "Auto-generate tweets and engagement content for ClawFriend.", downloads: "340", stars: "2", version: "0.5.0", agents: 9 },
-    { id: "uniswap/uniswap-v3", name: "uniswap-v3", desc: "Swap tokens on Uniswap V3 across EVM chains.", downloads: "5k", stars: "120", version: "2.0.0", agents: 210 },
-    { id: "openclaw/evm-wallet", name: "evm-wallet", desc: "EVM wallet actions: sign, send, check balance.", downloads: "8k", stars: "340", version: "1.3.0", agents: 680 },
-]
+const X_POST_URL_RE = /^https?:\/\/(x\.com|twitter\.com)\/\w+\/status\/\d+/i
+const X_USERNAME_RE = /^@?[\w]{1,15}$/
+const DISCORD_INVITE_RE = /^https?:\/\/(discord\.gg|discord\.com\/invite)\/[\w-]+$/i
+const TELEGRAM_CHANNEL_RE = /^(@[\w]{5,32}|https?:\/\/t\.me\/[\w]+)$/i
+
+interface TaskValidationError {
+    index: number
+    field: string
+    message: string
+}
+
+function validateSocialTasks(tasks: SocialEntry[]): TaskValidationError[] {
+    const errors: TaskValidationError[] = []
+    tasks.forEach((task, i) => {
+        switch (task.actionType) {
+            case "follow_account":
+                if (task.chips.length === 0)
+                    errors.push({ index: i, field: "chips", message: "Add at least one X username (type & press ↵)" })
+                break
+            case "like_post":
+            case "repost":
+                if (task.chips.length === 0)
+                    errors.push({ index: i, field: "chips", message: "Add at least one post URL (type & press ↵)" })
+                break
+            case "post":
+                if (!task.params.content?.trim())
+                    errors.push({ index: i, field: "content", message: "Post content is required" })
+                else if (task.params.content.length > 280)
+                    errors.push({ index: i, field: "content", message: "Post content exceeds 280 characters" })
+                break
+            case "quote_post":
+                if (task.chips.length === 0)
+                    errors.push({ index: i, field: "chips", message: "Add the post URL to quote (type & press ↵)" })
+                break
+            case "join_server":
+                if (task.chips.length === 0)
+                    errors.push({ index: i, field: "chips", message: "Add a Discord invite URL (type & press ↵)" })
+                break
+            case "verify_role":
+                if (task.chips.length === 0)
+                    errors.push({ index: i, field: "chips", message: "Add a Discord invite URL (type & press ↵)" })
+                if (!task.params.role?.trim())
+                    errors.push({ index: i, field: "role", message: "Select a role to verify" })
+                break
+            case "join_channel":
+                if (task.chips.length === 0)
+                    errors.push({ index: i, field: "chips", message: "Add a Telegram channel (type & press ↵)" })
+                break
+        }
+    })
+    return errors
+}
+
+/** Transform frontend SocialEntry[] → API QuestTask[] (chips expand to multiple tasks) */
+function socialEntriesToTasks(entries: SocialEntry[]): any[] {
+    const tasks: any[] = []
+    for (const entry of entries) {
+        const platform = entry.platform.toLowerCase() as "x" | "discord" | "telegram"
+        switch (entry.actionType) {
+            case "follow_account":
+                for (const chip of entry.chips) {
+                    tasks.push({ id: crypto.randomUUID(), platform, actionType: "follow_account",
+                        label: `Follow @${chip.replace(/^@/, "")}`,
+                        params: { username: chip.replace(/^@/, "").trim() }, requireTagFriends: false })
+                }
+                break
+            case "like_post":
+            case "repost":
+                for (const chip of entry.chips) {
+                    tasks.push({ id: crypto.randomUUID(), platform, actionType: entry.actionType,
+                        label: `${entry.actionType === "like_post" ? "Like" : "Repost"} post`,
+                        params: { postUrl: chip.trim() }, requireTagFriends: false })
+                }
+                break
+            case "post":
+                tasks.push({ id: crypto.randomUUID(), platform, actionType: "post",
+                    label: entry.action, params: { content: (entry.params.content ?? "").trim() },
+                    requireTagFriends: entry.requireTagFriends ?? false })
+                break
+            case "quote_post":
+                if (entry.chips.length > 0)
+                    tasks.push({ id: crypto.randomUUID(), platform, actionType: "quote_post",
+                        label: entry.action, params: { postUrl: entry.chips[0].trim(),
+                            ...(entry.params.content ? { content: entry.params.content.trim() } : {}) },
+                        requireTagFriends: entry.requireTagFriends ?? false })
+                break
+            case "join_server":
+                if (entry.chips.length > 0)
+                    tasks.push({ id: crypto.randomUUID(), platform, actionType: "join_server",
+                        label: entry.action, params: { inviteUrl: entry.chips[0].trim() },
+                        requireTagFriends: false })
+                break
+            case "verify_role":
+                if (entry.chips.length > 0)
+                    tasks.push({ id: crypto.randomUUID(), platform, actionType: "verify_role",
+                        label: entry.action, params: { inviteUrl: entry.chips[0].trim(),
+                            roleName: (entry.params.role ?? "").trim() }, requireTagFriends: false })
+                break
+            case "join_channel":
+                if (entry.chips.length > 0)
+                    tasks.push({ id: crypto.randomUUID(), platform, actionType: "join_channel",
+                        label: entry.action, params: { channelUrl: entry.chips[0].trim() },
+                        requireTagFriends: false })
+                break
+        }
+    }
+    return tasks
+}
 
 // ─── Leaderboard payout calc (linear decay — matches JS template exactly) ────
 function calcLbPayouts(total: number, n: number): number[] {
@@ -162,13 +266,88 @@ function getTokenSymbol(rail: PaymentRail, token: string, network: string): stri
     return token
 }
 
+// ─── Chip Input (Enter-to-confirm, multi-value) ─────────────────────────────
+function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, maxChips, error: externalError }: {
+    chips: string[]
+    onAdd: (value: string) => void
+    onRemove: (index: number) => void
+    placeholder: string
+    validate?: (value: string) => string | null
+    formatChip?: (value: string) => string
+    maxChips?: number
+    error?: string
+}) {
+    const [input, setInput] = useState("")
+    const [error, setError] = useState<string | null>(null)
+    const atMax = maxChips !== undefined && chips.length >= maxChips
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            e.preventDefault()
+            const trimmed = input.trim()
+            if (!trimmed) return
+            if (atMax) return
+            if (validate) {
+                const err = validate(trimmed)
+                if (err) { setError(err); return }
+            }
+            const norm = trimmed.replace(/^@/, "").toLowerCase()
+            if (chips.some(c => c.replace(/^@/, "").toLowerCase() === norm)) {
+                setError("Already added"); return
+            }
+            onAdd(trimmed)
+            setInput("")
+            setError(null)
+        } else if (e.key === "Backspace" && input === "" && chips.length > 0) {
+            onRemove(chips.length - 1)
+        }
+    }
+
+    const displayError = error || externalError
+
+    return (
+        <div className="chip-input-wrapper">
+            {chips.length > 0 && (
+                <div className="chip-list">
+                    {chips.map((chip, i) => (
+                        <span key={i} className="chip">
+                            <span className="chip-check">✓</span>
+                            <span className="chip-text">{formatChip ? formatChip(chip) : chip}</span>
+                            <button className="chip-remove" onClick={() => onRemove(i)}>×</button>
+                        </span>
+                    ))}
+                </div>
+            )}
+            {!atMax && (
+                <input
+                    className={`form-input chip-input${displayError ? " form-input-error" : ""}`}
+                    type="text"
+                    placeholder={chips.length > 0 ? "Add another… ↵" : placeholder}
+                    value={input}
+                    onChange={e => { setInput(e.target.value); setError(null) }}
+                    onKeyDown={handleKeyDown}
+                />
+            )}
+            {!atMax && !displayError && input.length === 0 && chips.length === 0 && (
+                <div className="form-hint" style={{ marginTop: 2 }}>Press ↵ Enter to confirm</div>
+            )}
+            {displayError && <div className="form-error">{displayError}</div>}
+        </div>
+    )
+}
+
 // ─── Social entry field components ───────────────────────────────────────────
-function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends }: {
+function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, removeChip, errors }: {
     task: SocialEntry
     idx: number
     setTaskParam: (i: number, key: string, val: string) => void
     toggleTagFriends: (i: number) => void
+    addChip: (i: number, value: string) => void
+    removeChip: (i: number, chipIdx: number) => void
+    errors?: TaskValidationError[]
 }) {
+    const chipError = errors?.find(e => e.index === idx && e.field === "chips")?.message
+    const fieldError = (field: string) => errors?.find(e => e.index === idx && e.field === field)?.message
     const actionDef = PLATFORM_ACTIONS[task.platform]?.find(a => a.type === task.actionType)
     if (!actionDef) return null
     const fields = actionDef.fields
@@ -177,20 +356,31 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends }: {
         <div className="social-entry-body expanded">
             {(fields === "follow") && (
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">X Username</label>
-                    <div className="form-hint">The account the human must follow.</div>
-                    <input className="form-input" type="text" placeholder="@username"
-                        value={task.params["username"] ?? ""}
-                        onChange={e => setTaskParam(idx, "username", e.target.value)} />
+                    <label className="form-label">X Usernames</label>
+                    <div className="form-hint">Add accounts the human must follow. Press ↵ to confirm each.</div>
+                    <ChipInput
+                        chips={task.chips}
+                        onAdd={val => addChip(idx, val.replace(/^@/, ""))}
+                        onRemove={ci => removeChip(idx, ci)}
+                        placeholder="@username"
+                        formatChip={v => `@${v}`}
+                        validate={v => X_USERNAME_RE.test(v.trim()) ? null : "Invalid X username (1–15 chars, letters/numbers/underscore)"}
+                        error={chipError}
+                    />
                 </div>
             )}
             {(fields === "post_url") && (
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Post URL</label>
-                    <div className="form-hint">URL can be changed after creation.</div>
-                    <input className="form-input" type="text" placeholder="https://x.com/user/status/..."
-                        value={task.params["url"] ?? ""}
-                        onChange={e => setTaskParam(idx, "url", e.target.value)} />
+                    <label className="form-label">Post URLs</label>
+                    <div className="form-hint">Add X post URLs. Press ↵ to confirm each.</div>
+                    <ChipInput
+                        chips={task.chips}
+                        onAdd={val => addChip(idx, val)}
+                        onRemove={ci => removeChip(idx, ci)}
+                        placeholder="https://x.com/user/status/..."
+                        validate={v => X_POST_URL_RE.test(v.trim()) ? null : "Must be a valid x.com or twitter.com post URL"}
+                        error={chipError}
+                    />
                 </div>
             )}
             {(fields === "post_content") && (
@@ -199,7 +389,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends }: {
                         <label className="form-label">Post Template</label>
                         <div className="form-hint">Provide a template or required content. User can customize around it.</div>
                         <div className="textarea-wrapper">
-                            <textarea className="form-textarea" rows={3}
+                            <textarea className={`form-textarea${fieldError("content") ? " form-input-error" : ""}`} rows={3}
                                 placeholder="Write the required post content, hashtags, or mentions..."
                                 value={task.params["content"] ?? ""}
                                 onChange={e => setTaskParam(idx, "content", e.target.value)}
@@ -207,6 +397,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends }: {
                             />
                             <span className="char-count">{(task.params["content"] ?? "").length}/280</span>
                         </div>
+                        {fieldError("content") && <div className="form-error">{fieldError("content")}</div>}
                     </div>
                     <div className="toggle-row">
                         <span>Require tagging 3 friends</span>
@@ -221,10 +412,16 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends }: {
                 <>
                     <div className="form-group" style={{ marginBottom: 8 }}>
                         <label className="form-label">Post URL</label>
-                        <div className="form-hint">Link to the X post to quote.</div>
-                        <input className="form-input" type="text" placeholder="https://x.com/user/status/..."
-                            value={task.params["url"] ?? ""}
-                            onChange={e => setTaskParam(idx, "url", e.target.value)} />
+                        <div className="form-hint">Link to the X post to quote. Press ↵ to confirm.</div>
+                        <ChipInput
+                            chips={task.chips}
+                            onAdd={val => addChip(idx, val)}
+                            onRemove={ci => removeChip(idx, ci)}
+                            placeholder="https://x.com/user/status/..."
+                            validate={v => X_POST_URL_RE.test(v.trim()) ? null : "Must be a valid X post URL"}
+                            maxChips={1}
+                            error={chipError}
+                        />
                     </div>
                     <div className="form-group" style={{ marginBottom: 8 }}>
                         <label className="form-label">Quote Template</label>
@@ -251,10 +448,16 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends }: {
             {(fields === "discord_join") && (
                 <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">Discord Server URL</label>
-                    <div className="form-hint">Invite link to the Discord server.</div>
-                    <input className="form-input" type="text" placeholder="https://discord.gg/..."
-                        value={task.params["url"] ?? ""}
-                        onChange={e => setTaskParam(idx, "url", e.target.value)} />
+                    <div className="form-hint">Invite link to the Discord server. Press ↵ to confirm.</div>
+                    <ChipInput
+                        chips={task.chips}
+                        onAdd={val => addChip(idx, val)}
+                        onRemove={ci => removeChip(idx, ci)}
+                        placeholder="https://discord.gg/..."
+                        validate={v => DISCORD_INVITE_RE.test(v.trim()) ? null : "Must be a valid Discord invite link (discord.gg/… or discord.com/invite/…)"}
+                        maxChips={1}
+                        error={chipError}
+                    />
                 </div>
             )}
             {(fields === "discord_role") && (
@@ -266,15 +469,21 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends }: {
                     </div>
                     <div className="form-group" style={{ marginBottom: 8 }}>
                         <label className="form-label">Discord Server URL</label>
-                        <div className="form-hint">Invite link to the Discord server.</div>
-                        <input className="form-input" type="text" placeholder="https://discord.gg/..."
-                            value={task.params["url"] ?? ""}
-                            onChange={e => setTaskParam(idx, "url", e.target.value)} />
+                        <div className="form-hint">Invite link. Press ↵ to confirm.</div>
+                        <ChipInput
+                            chips={task.chips}
+                            onAdd={val => addChip(idx, val)}
+                            onRemove={ci => removeChip(idx, ci)}
+                            placeholder="https://discord.gg/..."
+                            validate={v => DISCORD_INVITE_RE.test(v.trim()) ? null : "Must be a valid Discord invite link"}
+                            maxChips={1}
+                            error={chipError}
+                        />
                     </div>
                     <div className="form-group" style={{ marginBottom: 0 }}>
                         <label className="form-label">Required Role</label>
                         <div className="form-hint">Select a role from the server (requires bot installed).</div>
-                        <select className="form-select"
+                        <select className={`form-select${fieldError("role") ? " form-input-error" : ""}`}
                             value={task.params["role"] ?? ""}
                             onChange={e => setTaskParam(idx, "role", e.target.value)}>
                             <option value="" disabled>— Select a role —</option>
@@ -283,16 +492,23 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends }: {
                             <option value="og">OG</option>
                             <option value="contributor">Contributor</option>
                         </select>
+                        {fieldError("role") && <div className="form-error">{fieldError("role")}</div>}
                     </div>
                 </>
             )}
             {(fields === "telegram_join") && (
                 <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">Telegram Group / Channel</label>
-                    <div className="form-hint">Username or invite link.</div>
-                    <input className="form-input" type="text" placeholder="@channel or https://t.me/..."
-                        value={task.params["channel"] ?? ""}
-                        onChange={e => setTaskParam(idx, "channel", e.target.value)} />
+                    <div className="form-hint">Username or invite link. Press ↵ to confirm.</div>
+                    <ChipInput
+                        chips={task.chips}
+                        onAdd={val => addChip(idx, val)}
+                        onRemove={ci => removeChip(idx, ci)}
+                        placeholder="@channel or https://t.me/..."
+                        validate={v => TELEGRAM_CHANNEL_RE.test(v.trim()) ? null : "Use @channel or t.me/channel format"}
+                        maxChips={1}
+                        error={chipError}
+                    />
                 </div>
             )}
         </div>
@@ -314,9 +530,29 @@ export function CreateQuest() {
     const [activePlatform, setActivePlatform] = useState<string | null>(null)
     const [humanTasks, setHumanTasks] = useState<SocialEntry[]>([])
     const [expandedTask, setExpandedTask] = useState<number | null>(null)
-    const [requiredSkills, setRequiredSkills] = useState<{ id: string; name: string; desc: string; agents: number }[]>([])
-    const [skillSearch, setSkillSearch] = useState("")
+    const [requiredSkills, setRequiredSkills] = useState<Pick<ClawHubSkill, "id" | "name" | "desc" | "agents" | "version">[]>([])
+    const { query: skillSearch, setQuery: setSkillSearch, results: skillSearchResults, isLoading: skillSearchLoading } = useSkillSearch()
     const [showSkillResults, setShowSkillResults] = useState(false)
+    const [expandedDescs, setExpandedDescs] = useState<Set<string>>(new Set())
+    const [urlFetching, setUrlFetching] = useState(false)
+    const [urlFetchError, setUrlFetchError] = useState<string | null>(null)
+    const [urlPreview, setUrlPreview] = useState<ClawHubSkill | null>(null)
+
+    const toggleDesc = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation()
+        setExpandedDescs(prev => {
+            const next = new Set(prev)
+            if (next.has(id)) next.delete(id)
+            else next.add(id)
+            return next
+        })
+    }
+
+    const truncateDesc = (text: string, id: string) => {
+        if (!text || text.length <= 250) return text
+        if (expandedDescs.has(id)) return <>{text} <span className="more-link" onClick={(e) => toggleDesc(id, e)}>less</span></>
+        return <>{text.slice(0, 250).trimEnd()}… <span className="more-link" onClick={(e) => toggleDesc(id, e)}>more</span></>
+    }
 
     const set = (key: keyof FormData, val: string) => setForm(prev => ({ ...prev, [key]: val }))
 
@@ -329,6 +565,7 @@ export function CreateQuest() {
             actionType: action.type,
             icon: platform,
             params: {},
+            chips: [],
             requireTagFriends: false,
         }])
         setActivePlatform(null)
@@ -340,30 +577,65 @@ export function CreateQuest() {
         if (expandedTask === i) setExpandedTask(null)
     }
 
-    const setTaskParam = (i: number, key: string, val: string) =>
+    const [taskErrors, setTaskErrors] = useState<TaskValidationError[]>([])
+
+    const setTaskParam = (i: number, key: string, val: string) => {
         setHumanTasks(prev => prev.map((t, idx) => idx === i ? { ...t, params: { ...t.params, [key]: val } } : t))
+        // Clear matching error on edit
+        setTaskErrors(prev => prev.filter(e => !(e.index === i && e.field === key)))
+    }
 
     const toggleTagFriends = (i: number) =>
         setHumanTasks(prev => prev.map((t, idx) => idx === i ? { ...t, requireTagFriends: !t.requireTagFriends } : t))
 
+    const addChip = (i: number, value: string) => {
+        setHumanTasks(prev => prev.map((t, idx) => idx === i ? { ...t, chips: [...t.chips, value] } : t))
+        setTaskErrors(prev => prev.filter(e => !(e.index === i && e.field === "chips")))
+    }
+
+    const removeChip = (i: number, chipIdx: number) => {
+        setHumanTasks(prev => prev.map((t, idx) => idx === i ? { ...t, chips: t.chips.filter((_, ci) => ci !== chipIdx) } : t))
+    }
+
     // ── Skills ────────────────────────────────────────────────────────────────
-    const filteredSkills = MOCK_SKILLS.filter(s =>
-        skillSearch.length > 0
-        && (s.id.includes(skillSearch.toLowerCase()) || s.name.includes(skillSearch.toLowerCase()))
-        && !requiredSkills.find(r => r.id === s.id)
-    )
-    const addSkill = (s: typeof MOCK_SKILLS[0]) => {
-        setRequiredSkills(prev => [...prev, { id: s.id, name: s.name, desc: s.desc, agents: s.agents }])
-        setSkillSearch("")
-        setShowSkillResults(false)
+    const [fadingInSkills, setFadingInSkills] = useState<Set<string>>(new Set())
+
+    const addedSkillIds = new Set(requiredSkills.map(s => s.id))
+    const addSkill = (s: ClawHubSkill) => {
+        if (addedSkillIds.has(s.id)) return
+        setRequiredSkills(prev => [...prev, { id: s.id, name: s.name, desc: s.desc, agents: s.agents, version: s.version }])
+        setFadingInSkills(prev => new Set(prev).add(s.id))
+        setTimeout(() => {
+            setFadingInSkills(prev => { const next = new Set(prev); next.delete(s.id); return next })
+        }, 400)
     }
     const removeSkill = (id: string) => setRequiredSkills(prev => prev.filter(s => s.id !== id))
 
     // ── Submit mutation ───────────────────────────────────────────────────────
     const mutation = useMutation({
         mutationFn: async () => {
+            // Light validation — only title required for draft
+            if (!form.title.trim()) {
+                setTab("details")
+                throw new Error("Quest title is required")
+            }
+
+            // Validate tasks if any exist (but tasks are not required)
+            if (humanTasks.length > 0) {
+                const errors = validateSocialTasks(humanTasks)
+                if (errors.length > 0) {
+                    setTaskErrors(errors)
+                    setTab("tasks")
+                    setExpandedTask(errors[0].index)
+                    throw new Error("Fix task errors before saving")
+                }
+            }
+            setTaskErrors([])
+
             const total = parseFloat(form.total) || 0
             const slots = parseInt(form.winners) || 50
+            const tasks = socialEntriesToTasks(humanTasks)
+
             const res = await fetch(`${API_BASE}/quests`, {
                 method: "POST",
                 headers: {
@@ -372,29 +644,38 @@ export function CreateQuest() {
                 },
                 body: JSON.stringify({
                     title: form.title,
-                    description: form.description,
+                    description: form.description || undefined,
                     type: form.type,
                     rewardType: form.rail === "fiat" ? "USD" : form.token,
                     rewardAmount: total,
                     totalSlots: slots,
                     status: "draft",
-                    expiresAt: form.endAt || undefined,
+                    requiredSkills: requiredSkills.map(s => s.id),
+                    tasks,
+                    expiresAt: form.endAt ? new Date(form.endAt).toISOString() : undefined,
                 }),
             })
             if (!res.ok) {
                 const err = await res.json().catch(() => ({ message: "Failed" }))
-                throw new Error(err.message)
+                // Parse Zod array errors → human-readable message
+                if (Array.isArray(err.message)) {
+                    throw new Error(err.message.map((e: any) => e.message).join(", "))
+                }
+                throw new Error(err.message ?? "Failed to save quest")
             }
             return res.json()
         },
-        onSuccess: (data) => navigate({ to: "/quests/$questId", params: { questId: data.id } }),
+        onSuccess: () => {
+            navigate({ to: "/quests/mine" })
+        },
     })
 
     // ── Derived values ────────────────────────────────────────────────────────
-    const tabDone = {
+    const tabDone: Record<Tab, boolean> = {
         details: !!(form.title.trim() && form.description.trim()),
         reward: true,
         tasks: humanTasks.length > 0 || requiredSkills.length > 0,
+        preview: false,
     }
 
     const activeTotal = parseFloat(form.total) || 0
@@ -425,7 +706,7 @@ export function CreateQuest() {
     return (
         <div className="page-container" style={{ maxWidth: 960 }}>
             <div className="breadcrumb">
-                <Link to="/">Dashboard</Link><span className="sep">›</span><span>Create Quest</span>
+                <Link to="/dashboard">Dashboard</Link><span className="sep">›</span><span>Create Quest</span>
             </div>
             <div className="page-header" style={{ marginBottom: 20 }}>
                 <div>
@@ -436,18 +717,21 @@ export function CreateQuest() {
 
             {/* Step tabs */}
             <div className="step-tabs">
-                {(["details", "reward", "tasks"] as Tab[]).map((t, i) => (
-                    <button
-                        key={t}
-                        className={`step-tab ${tab === t ? "active" : ""} ${tabDone[t] && tab !== t ? "done" : ""}`}
-                        onClick={() => setTab(t)}
-                    >
-                        <span className="tab-num">
-                            <span className="num">{tabDone[t] && tab !== t ? "✓" : i + 1}</span>
-                        </span>
-                        {t.charAt(0).toUpperCase() + t.slice(1)}
-                    </button>
-                ))}
+                {(["details", "reward", "tasks", "preview"] as Tab[]).map((t, i) => {
+                    const label = t === "preview" ? "Preview & Fund" : t.charAt(0).toUpperCase() + t.slice(1)
+                    return (
+                        <button
+                            key={t}
+                            className={`step-tab ${tab === t ? "active" : ""} ${tabDone[t] && tab !== t ? "done" : ""}`}
+                            onClick={() => setTab(t)}
+                        >
+                            <span className="tab-num">
+                                <span className="num">{tabDone[t] && tab !== t ? "✓" : i + 1}</span>
+                            </span>
+                            {label}
+                        </button>
+                    )
+                })}
             </div>
 
             <div className="form-layout">
@@ -816,18 +1100,34 @@ export function CreateQuest() {
                                                     >
                                                         <span className="entry-icon"><PlatformBtnIcon platform={task.platform} /></span>
                                                         <span className="entry-label">{task.action}</span>
+                                                        {task.chips.length > 0 && (
+                                                            <span className="entry-chip-count">{task.chips.length}</span>
+                                                        )}
                                                         <span className="entry-platform">{task.platform}</span>
                                                         <button
                                                             className="entry-remove"
                                                             onClick={e => { e.stopPropagation(); removeHumanTask(i) }}
                                                         >✕</button>
                                                     </div>
+                                                    {expandedTask !== i && task.chips.length > 0 && (
+                                                        <div className="social-entry-chips-preview">
+                                                            {task.chips.slice(0, 4).map((c, ci) => (
+                                                                <span key={ci} className="chip-preview">
+                                                                    ✓ {task.actionType === "follow_account" ? `@${c.replace(/^@/, "")}` : c.length > 35 ? c.slice(0, 35) + "…" : c}
+                                                                </span>
+                                                            ))}
+                                                            {task.chips.length > 4 && <span className="chip-preview more">+{task.chips.length - 4} more</span>}
+                                                        </div>
+                                                    )}
                                                     {expandedTask === i && (
                                                         <SocialEntryBody
                                                             task={task}
                                                             idx={i}
                                                             setTaskParam={setTaskParam}
                                                             toggleTagFriends={toggleTagFriends}
+                                                            addChip={addChip}
+                                                            removeChip={removeChip}
+                                                            errors={taskErrors}
                                                         />
                                                     )}
                                                 </div>
@@ -852,237 +1152,589 @@ export function CreateQuest() {
                                         installed + each required skill below. CQ checks capabilities before submission.
                                     </div>
 
-                                    <div className="skill-search-wrapper" style={{ position: "relative" }}>
-                                        <span className="skill-search-icon">🔍</span>
-                                        <input
-                                            className="skill-search-input"
-                                            type="text"
-                                            placeholder="Search skills on ClawHub…"
-                                            value={skillSearch}
-                                            onChange={e => { setSkillSearch(e.target.value); setShowSkillResults(true) }}
-                                            onFocus={() => setShowSkillResults(true)}
-                                        />
-                                        {showSkillResults && skillSearch && filteredSkills.length > 0 && (
-                                            <div className="skill-search-results">
-                                                <div className="skill-search-results-header">
-                                                    <span>{filteredSkills.length} results for "{skillSearch}"</span>
-                                                    <span style={{ cursor: "pointer" }} onClick={() => setShowSkillResults(false)}>✕ close</span>
-                                                </div>
-                                                {filteredSkills.map(s => (
-                                                    <div key={s.id} className="skill-result-item" onClick={() => addSkill(s)}>
-                                                        <div className="skill-result-info">
-                                                            <div className="skill-result-name">
-                                                                <span className="org">{s.id.split("/")[0]} /</span> {s.name}
-                                                            </div>
-                                                            <div className="skill-result-desc">{s.desc}</div>
-                                                            <div className="skill-result-meta">
-                                                                <span>↓ {s.downloads}</span>
-                                                                <span>★ {s.stars}</span>
-                                                                <span>v{s.version}</span>
-                                                            </div>
-                                                        </div>
-                                                        <button className="skill-result-add">+ Add</button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-
                                     <div style={{ fontSize: 11, fontWeight: 600, color: "var(--fg)", margin: "12px 0 6px" }}>
                                         Required Skills
                                     </div>
                                     {requiredSkills.length === 0 ? (
                                         <div style={{ fontSize: 12, color: "var(--fg-muted)", padding: "4px 0 8px" }}>
-                                            No skills required yet. Search above to add.
+                                            No skills required yet. Search below to add.
                                         </div>
                                     ) : (
                                         <div className="required-skills-list">
-                                            {requiredSkills.map(skill => (
-                                                <div key={skill.id} className="required-skill-item" data-agents={skill.agents}>
-                                                    <div className="required-skill-icon">🧩</div>
-                                                    <div className="required-skill-info">
-                                                        <div className="required-skill-name">{skill.id}@latest</div>
-                                                        <div className="required-skill-desc">{skill.desc}</div>
+                                            {requiredSkills.map(skill => {
+                                                const isCustom = skill.id.startsWith("http")
+                                                return (
+                                                    <div key={skill.id} className={`required-skill-item${fadingInSkills.has(skill.id) ? " fading-in" : ""}`} data-agents={skill.agents}>
+                                                        <div className="required-skill-icon">{isCustom ? "🔗" : "🧩"}</div>
+                                                        <div className="required-skill-info">
+                                                            <div className="required-skill-name">
+                                                                {isCustom ? skill.name : `${skill.id}@${skill.version ?? "latest"}`}
+                                                            </div>
+                                                            <div className="required-skill-desc">{skill.desc}</div>
+                                                            {isCustom && (
+                                                                <div className="required-skill-source" title={skill.id}>
+                                                                    {skill.id}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {isCustom
+                                                            ? <span className="required-skill-eligible custom">custom</span>
+                                                            : <span className="required-skill-eligible">{skill.agents} agents</span>
+                                                        }
+                                                        <button className="required-skill-remove" onClick={() => removeSkill(skill.id)}>✕</button>
                                                     </div>
-                                                    <span className="required-skill-eligible">{skill.agents} agents</span>
-                                                    <button className="required-skill-remove" onClick={() => removeSkill(skill.id)}>✕</button>
-                                                </div>
-                                            ))}
+                                                )
+                                            })}
                                         </div>
                                     )}
+
+                                    <div className="skill-search-wrapper" style={{ position: "relative" }}>
+                                        <span className="skill-search-icon">🔍</span>
+                                        <input
+                                            className="skill-search-input"
+                                            type="text"
+                                            placeholder="Search on ClawHub or paste skill URL…"
+                                            value={skillSearch}
+                                            onChange={e => {
+                                                const val = e.target.value
+                                                setSkillSearch(val)
+                                                setShowSkillResults(true)
+                                                setUrlFetchError(null)
+                                                setUrlPreview(null)
+                                                if (isSkillUrl(val.trim())) {
+                                                    setUrlFetching(true)
+                                                    fetchSkillFromUrl(val.trim())
+                                                        .then(skill => {
+                                                            setUrlPreview(skill)
+                                                            if (!skill) setUrlFetchError("Could not parse skill.md from this URL")
+                                                        })
+                                                        .catch(() => setUrlFetchError("Failed to fetch URL"))
+                                                        .finally(() => setUrlFetching(false))
+                                                }
+                                            }}
+                                            onFocus={() => setShowSkillResults(true)}
+                                        />
+
+                                        {/* URL-based skill preview */}
+                                        {showSkillResults && isSkillUrl(skillSearch.trim()) && (urlFetching || urlPreview || urlFetchError) && (
+                                            <div className="skill-search-results">
+                                                <div className="skill-search-results-header">
+                                                    <span>{urlFetching ? "Fetching skill.md…" : urlPreview ? "Skill found" : "Error"}</span>
+                                                    <span style={{ cursor: "pointer" }} onClick={() => setShowSkillResults(false)}>✕ close</span>
+                                                </div>
+                                                {urlFetching && (
+                                                    <div style={{ padding: "12px", textAlign: "center", color: "var(--fg-muted)", fontSize: 12 }}>
+                                                        Fetching skill.md…
+                                                    </div>
+                                                )}
+                                                {urlFetchError && !urlFetching && (
+                                                    <div style={{ padding: "12px", textAlign: "center", color: "var(--red)", fontSize: 12 }}>
+                                                        {urlFetchError}. Ensure the URL points to a public skill.md file.
+                                                    </div>
+                                                )}
+                                                {urlPreview && !urlFetching && (() => {
+                                                    const isAdded = addedSkillIds.has(urlPreview.id)
+                                                    return (
+                                                        <div className={`skill-result-item${isAdded ? " disabled" : ""}`} onClick={() => !isAdded && addSkill(urlPreview)}>
+                                                            <div className="skill-result-info">
+                                                                <div className="skill-result-name">
+                                                                    <span className="custom-skill-badge">URL</span>
+                                                                    <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{urlPreview.name}</span>
+                                                                </div>
+                                                                <div className="skill-result-desc">{truncateDesc(urlPreview.desc, urlPreview.id)}</div>
+                                                                <div className="skill-result-meta">
+                                                                    <span>v{urlPreview.version}</span>
+                                                                    <span className="skill-source-url" title={urlPreview.id}>{urlPreview.ownerHandle}</span>
+                                                                </div>
+                                                            </div>
+                                                            {isAdded
+                                                                ? <span className="skill-result-added">✓ Added</span>
+                                                                : <button className="skill-result-add">+ Add</button>
+                                                            }
+                                                        </div>
+                                                    )
+                                                })()}
+                                            </div>
+                                        )}
+
+                                        {/* ClawHub search results */}
+                                        {showSkillResults && !isSkillUrl(skillSearch.trim()) && skillSearch.length >= 2 && (skillSearchResults.length > 0 || skillSearchLoading) && (
+                                            <div className="skill-search-results">
+                                                <div className="skill-search-results-header">
+                                                    <span>{skillSearchLoading ? `Searching "${skillSearch}"…` : `${skillSearchResults.length} results for "${skillSearch}"`}</span>
+                                                    <span style={{ cursor: "pointer" }} onClick={() => setShowSkillResults(false)}>✕ close</span>
+                                                </div>
+                                                {skillSearchLoading && skillSearchResults.length === 0 && (
+                                                    <div style={{ padding: "12px", textAlign: "center", color: "var(--fg-muted)", fontSize: 12 }}>
+                                                        Searching ClawHub…
+                                                    </div>
+                                                )}
+                                                {skillSearchResults.map(s => {
+                                                    const isAdded = addedSkillIds.has(s.id)
+                                                    return (
+                                                        <div key={s.id} className={`skill-result-item${isAdded ? " disabled" : ""}`} onClick={() => !isAdded && addSkill(s)}>
+                                                            <div className="skill-result-info">
+                                                                <div className="skill-result-name">
+                                                                    <span className="org">{s.id.split("/")[0]} /</span>
+                                                                    <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}</span>
+                                                                </div>
+                                                                <div className="skill-result-desc">{truncateDesc(s.desc, s.id)}</div>
+                                                                <div className="skill-result-meta">
+                                                                    <span>↓ {s.downloads}</span>
+                                                                    <span>★ {s.stars}</span>
+                                                                    <span>v{s.version}</span>
+                                                                </div>
+                                                            </div>
+                                                            {isAdded
+                                                                ? <span className="skill-result-added">✓ Added</span>
+                                                                : <button className="skill-result-add">+ Add</button>
+                                                            }
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="tab-nav-row">
                                 <button className="btn btn-secondary" onClick={() => setTab("reward")}>← Reward</button>
-                                <span />
+                                <button className="btn btn-primary" onClick={() => setTab("preview")}>Next: Preview →</button>
                             </div>
+                        </div>
+                    )}
+
+                    {/* ══ TAB 4: PREVIEW & FUND ══ */}
+                    {tab === "preview" && (
+                        <div className="tab-panel active">
+                            {/* Header badges */}
+                            <div className="page-header-meta" style={{ marginBottom: 16 }}>
+                                <span className="badge badge-draft">draft</span>
+                                <span>·</span>
+                                <span className={`badge badge-${form.type === "FCFS" ? "fcfs" : form.type === "LEADERBOARD" ? "leaderboard" : "luckydraw"}`}>
+                                    {form.type === "LUCKY_DRAW" ? "Lucky Draw" : form.type === "LEADERBOARD" ? "Leaderboard" : "FCFS"}
+                                </span>
+                                <span>·</span>
+                                <span className={`badge ${form.rail === "fiat" ? "badge-fiat" : "badge-crypto"}`}>
+                                    {tokenLabel}
+                                </span>
+                                <span>·</span>
+                                <span>by <strong>you</strong></span>
+                            </div>
+
+                            {/* Description */}
+                            <div className="description">
+                                <div className="section-title">About this Quest</div>
+                                <p>{form.description || <span style={{ color: "var(--fg-muted)", fontStyle: "italic" }}>No description provided</span>}</p>
+                            </div>
+
+                            {/* Reward grid */}
+                            <div className="reward-grid">
+                                <div className="reward-item">
+                                    <div className="reward-item-label">total reward</div>
+                                    <div className="reward-item-value green mono">
+                                        {activeTotal > 0 ? activeTotal.toLocaleString() : "—"} {tokenLabel}
+                                    </div>
+                                </div>
+                                <div className="reward-item">
+                                    <div className="reward-item-label">total slots</div>
+                                    <div className="reward-item-value">{activeWinners}</div>
+                                </div>
+                                <div className="reward-item">
+                                    <div className="reward-item-label">per winner</div>
+                                    <div className="reward-item-value green mono">
+                                        {form.type === "LEADERBOARD"
+                                            ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
+                                            : `${perWinner} ${tokenLabel}`}
+                                    </div>
+                                </div>
+                                <div className="reward-item">
+                                    <div className="reward-item-label">duration</div>
+                                    <div className="reward-item-value">
+                                        {durationDays !== null && durationDays > 0 ? `${durationDays} day${durationDays === 1 ? "" : "s"}` : "—"}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Human Tasks */}
+                            {humanTasks.length > 0 && (
+                                <div className="actor-section human" style={{ marginTop: 16 }}>
+                                    <div className="actor-section-title">
+                                        Human Tasks
+                                        <span className="actor-badge human">HUMAN</span>
+                                        <span className="hint">Complete these yourself</span>
+                                    </div>
+                                    {humanTasks.map((task, i) => (
+                                        <div key={i} className="task-card">
+                                            <div className="task-card-row">
+                                                <span className="task-check"></span>
+                                                <span className="task-card-label">
+                                                    <span className="task-num">#{i + 1}</span>
+                                                    {task.action}
+                                                    {task.chips.length > 0 && (
+                                                        <span style={{ color: "var(--fg-muted)", fontWeight: 400, marginLeft: 6, fontSize: 11 }}>
+                                                            ({task.chips.length} {task.chips.length === 1 ? "item" : "items"})
+                                                        </span>
+                                                    )}
+                                                </span>
+                                                <span className="badge badge-social">{task.platform}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Agent Tasks */}
+                            {requiredSkills.length > 0 && (
+                                <div className="actor-section agent" style={{ marginTop: humanTasks.length > 0 ? 10 : 16 }}>
+                                    <div className="actor-section-title">
+                                        Agent Tasks
+                                        <span className="actor-badge agent">AGENT</span>
+                                        <span className="hint">Your AI agent handles these</span>
+                                    </div>
+                                    {requiredSkills.map((skill, i) => (
+                                        <div key={skill.id} className="task-card">
+                                            <div className="task-card-row">
+                                                <span className="task-check"></span>
+                                                <span className="task-card-label">
+                                                    Requires skill: <code style={{ fontSize: 11, background: "var(--code-bg, #f5f5f5)", padding: "1px 4px", borderRadius: 2 }}>{skill.name}</code>
+                                                </span>
+                                                <span className="badge badge-skill">Skill</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* No tasks fallback */}
+                            {humanTasks.length === 0 && requiredSkills.length === 0 && (
+                                <div style={{ padding: "16px 0", color: "var(--fg-muted)", fontSize: 13 }}>
+                                    No tasks defined. Go back to the Tasks step to add human or agent tasks.
+                                </div>
+                            )}
+
+                            {/* Mutation error */}
                             {mutation.isError && (
-                                <div style={{ marginTop: 10, fontSize: 12, color: "var(--red)" }}>
+                                <div style={{ marginTop: 16, padding: "10px 12px", background: "var(--red-bg)", border: "1px solid var(--red)", borderRadius: 3, fontSize: 12, color: "var(--red)" }}>
                                     {(mutation.error as Error).message}
                                 </div>
                             )}
+
+                            <div className="tab-nav-row">
+                                <button className="btn btn-secondary" onClick={() => setTab("tasks")}>← Tasks</button>
+                                <span />
+                            </div>
                         </div>
                     )}
                 </div>
 
-                {/* ── Preview Sidebar ── */}
+                {/* ── Sidebar ── */}
                 <div>
-                    <div className="preview-box">
-                        <div className="preview-header">Quest Preview</div>
+                    {tab !== "preview" ? (
+                        /* Steps 1-3: Quest summary preview */
+                        <div className="preview-box">
+                            <div className="preview-header">Quest Preview</div>
 
-                        {/* Quest card preview */}
-                        <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--border)" }}>
-                            <div className="preview-quest-card">
-                                <div className="preview-quest-title">
-                                    {form.title || <span style={{ color: "var(--fg-muted)" }}>Quest title…</span>}
-                                </div>
-                                {form.description && (
-                                    <div className="preview-quest-desc">{form.description}</div>
-                                )}
-                                <div className="preview-quest-meta">
-                                    <span className={`badge badge-${form.type === "FCFS" ? "fcfs" : form.type === "LEADERBOARD" ? "leaderboard" : "luckydraw"}`}>
-                                        {form.type === "LUCKY_DRAW" ? "Lucky Draw" : form.type === "LEADERBOARD" ? "Leaderboard" : "FCFS"}
-                                    </span>
-                                    {form.rail === "crypto" && <span className="badge badge-network">{form.network}</span>}
-                                    {humanTasks.length > 0 && <span className="badge badge-social">Social</span>}
-                                    {requiredSkills.length > 0 && <span className="badge badge-skill">Skill</span>}
-                                    {durationDays !== null && durationDays > 0 && (
-                                        <span style={{ color: "var(--fg-muted)", marginLeft: "auto" }}>
-                                            by <strong style={{ color: "var(--fg)" }}>you</strong> · {durationDays}d
+                            {/* Quest card preview */}
+                            <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--border)" }}>
+                                <div className="preview-quest-card">
+                                    <div className="preview-quest-title">
+                                        {form.title || <span style={{ color: "var(--fg-muted)" }}>Quest title…</span>}
+                                    </div>
+                                    {form.description && (
+                                        <div className="preview-quest-desc">{form.description}</div>
+                                    )}
+                                    <div className="preview-quest-meta">
+                                        <span className={`badge badge-${form.type === "FCFS" ? "fcfs" : form.type === "LEADERBOARD" ? "leaderboard" : "luckydraw"}`}>
+                                            {form.type === "LUCKY_DRAW" ? "Lucky Draw" : form.type === "LEADERBOARD" ? "Leaderboard" : "FCFS"}
                                         </span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Payout rows */}
-                        <div className="preview-body">
-                            <div className="preview-row">
-                                <span className="label">Payment</span>
-                                <span className="value">{form.rail === "crypto" ? "Crypto" : "Fiat (Stripe)"}</span>
-                            </div>
-                            {form.rail === "crypto" && (
-                                <div className="preview-row">
-                                    <span className="label">Network</span>
-                                    <span className="value">{form.network}</span>
-                                </div>
-                            )}
-                            <div className="preview-row">
-                                <span className="label">Token</span>
-                                <span className="value">{tokenLabel}</span>
-                            </div>
-                            <div className="preview-row">
-                                <span className="label">Mode</span>
-                                <span className="value">
-                                    <span className={`badge badge-${form.type === "FCFS" ? "fcfs" : form.type === "LEADERBOARD" ? "leaderboard" : "luckydraw"}`}>
-                                        {form.type === "LUCKY_DRAW" ? "Lucky Draw" : form.type === "LEADERBOARD" ? "Leaderboard" : "FCFS"}
-                                    </span>
-                                </span>
-                            </div>
-                            <div className="preview-row">
-                                <span className="label">Winners</span>
-                                <span className="value">
-                                    {form.type === "LEADERBOARD" ? `${lbWinnersNum} spots` : activeWinners}
-                                </span>
-                            </div>
-                            <div className="preview-row">
-                                <span className="label">Per winner</span>
-                                <span className="value green">
-                                    {form.type === "LEADERBOARD"
-                                        ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
-                                        : `${perWinner} ${tokenLabel}`}
-                                </span>
-                            </div>
-                            {durationDays !== null && durationDays > 0 && (
-                                <div className="preview-row">
-                                    <span className="label">Duration</span>
-                                    <span className="value">{durationDays} {durationDays === 1 ? "day" : "days"}</span>
-                                </div>
-                            )}
-                            <div className="preview-total">
-                                <span>Total Fund</span>
-                                <span className="value">
-                                    {activeTotal > 0 ? `${activeTotal.toFixed(2)} ${tokenLabel}` : "—"}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Tasks section */}
-                        {(humanTasks.length > 0 || requiredSkills.length > 0) && (
-                            <div className="preview-body" style={{ borderTop: "1px solid var(--border)" }}>
-                                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--fg)", marginBottom: 6 }}>Tasks</div>
-                                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                                    {humanTasks.length > 0 && (
-                                        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
-                                            <span style={{ color: "var(--human-fg)" }}>👤</span>
-                                            <span style={{ color: "var(--fg-muted)" }}>Human:</span>
-                                            <span style={{ fontWeight: 600 }}>{humanTasks.length} social</span>
-                                        </div>
-                                    )}
-                                    {requiredSkills.length > 0 && (
-                                        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
-                                            <span style={{ color: "var(--agent-fg)" }}>🤖</span>
-                                            <span style={{ color: "var(--fg-muted)" }}>Agent:</span>
-                                            <span style={{ fontWeight: 600 }}>{requiredSkills.length} skill{requiredSkills.length > 1 ? "s" : ""}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Eligibility section */}
-                        {requiredSkills.length > 0 && (
-                            <div style={{ padding: "10px 14px", borderTop: "1px solid var(--border)" }}>
-                                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--fg)", marginBottom: 6 }}>Eligibility</div>
-                                <div style={{ fontSize: 11, color: "var(--fg-muted)", lineHeight: 1.5 }}>
-                                    {requiredSkills.map(s => (
-                                        <div key={s.id} style={{ display: "flex", justifyContent: "space-between", padding: "2px 0" }}>
-                                            <span style={{ fontFamily: "var(--font-mono)" }}>{s.id}@latest</span>
-                                            <span style={{ fontWeight: 600, color: "var(--fg)" }}>{s.agents} agents</span>
-                                        </div>
-                                    ))}
-                                    <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderTop: "1px solid #f0f0f0", marginTop: 4 }}>
-                                        {requiredSkills.length > 1 ? (
-                                            <>
-                                                <span style={{ fontWeight: 600, color: "var(--fg)" }}>All required</span>
-                                                <span style={{ fontWeight: 700, color: "var(--accent)" }}>
-                                                    ~{Math.round(Math.min(...requiredSkills.map(s => s.agents)) * 0.7)} agents
-                                                </span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span style={{ fontWeight: 600, color: "var(--fg)" }}>Eligible</span>
-                                                <span style={{ fontWeight: 700, color: "var(--accent)" }}>
-                                                    ~{Math.min(...requiredSkills.map(s => s.agents))} agents
-                                                </span>
-                                            </>
+                                        {form.rail === "crypto" && <span className="badge badge-network">{form.network}</span>}
+                                        {humanTasks.length > 0 && <span className="badge badge-social">Social</span>}
+                                        {requiredSkills.length > 0 && <span className="badge badge-skill">Skill</span>}
+                                        {durationDays !== null && durationDays > 0 && (
+                                            <span style={{ color: "var(--fg-muted)", marginLeft: "auto" }}>
+                                                by <strong style={{ color: "var(--fg)" }}>you</strong> · {durationDays}d
+                                            </span>
                                         )}
                                     </div>
                                 </div>
                             </div>
-                        )}
 
-                        {/* Actions */}
-                        <div className="preview-actions">
-                            <button
-                                className="btn btn-primary btn-lg"
-                                style={{ width: "100%" }}
-                                disabled={mutation.isPending || !form.title || activeTotal <= 0}
-                                onClick={() => mutation.mutate()}
-                            >
-                                {mutation.isPending
-                                    ? "Creating…"
-                                    : form.rail === "fiat"
-                                        ? "Create Quest & Pay with Stripe"
-                                        : "Create Quest & Fund"}
-                            </button>
-                            <button className="btn btn-secondary" style={{ width: "100%" }}>Save Draft</button>
+                            {/* Payout rows */}
+                            <div className="preview-body">
+                                <div className="preview-row">
+                                    <span className="label">Payment</span>
+                                    <span className="value">{form.rail === "crypto" ? "Crypto" : "Fiat (Stripe)"}</span>
+                                </div>
+                                {form.rail === "crypto" && (
+                                    <div className="preview-row">
+                                        <span className="label">Network</span>
+                                        <span className="value">{form.network}</span>
+                                    </div>
+                                )}
+                                <div className="preview-row">
+                                    <span className="label">Token</span>
+                                    <span className="value">{tokenLabel}</span>
+                                </div>
+                                <div className="preview-row">
+                                    <span className="label">Mode</span>
+                                    <span className="value">
+                                        <span className={`badge badge-${form.type === "FCFS" ? "fcfs" : form.type === "LEADERBOARD" ? "leaderboard" : "luckydraw"}`}>
+                                            {form.type === "LUCKY_DRAW" ? "Lucky Draw" : form.type === "LEADERBOARD" ? "Leaderboard" : "FCFS"}
+                                        </span>
+                                    </span>
+                                </div>
+                                <div className="preview-row">
+                                    <span className="label">Winners</span>
+                                    <span className="value">
+                                        {form.type === "LEADERBOARD" ? `${lbWinnersNum} spots` : activeWinners}
+                                    </span>
+                                </div>
+                                <div className="preview-row">
+                                    <span className="label">Per winner</span>
+                                    <span className="value green">
+                                        {form.type === "LEADERBOARD"
+                                            ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
+                                            : `${perWinner} ${tokenLabel}`}
+                                    </span>
+                                </div>
+                                {durationDays !== null && durationDays > 0 && (
+                                    <div className="preview-row">
+                                        <span className="label">Duration</span>
+                                        <span className="value">{durationDays} {durationDays === 1 ? "day" : "days"}</span>
+                                    </div>
+                                )}
+                                <div className="preview-total">
+                                    <span>Total Fund</span>
+                                    <span className="value">
+                                        {activeTotal > 0 ? `${activeTotal.toFixed(2)} ${tokenLabel}` : "—"}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Tasks section */}
+                            {(humanTasks.length > 0 || requiredSkills.length > 0) && (
+                                <div className="preview-body" style={{ borderTop: "1px solid var(--border)" }}>
+                                    <div style={{ fontSize: 11, fontWeight: 600, color: "var(--fg)", marginBottom: 6 }}>Tasks</div>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                                        {humanTasks.length > 0 && (
+                                            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
+                                                <span style={{ color: "var(--human-fg)" }}>👤</span>
+                                                <span style={{ color: "var(--fg-muted)" }}>Human:</span>
+                                                <span style={{ fontWeight: 600 }}>{humanTasks.length} social</span>
+                                            </div>
+                                        )}
+                                        {requiredSkills.length > 0 && (
+                                            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
+                                                <span style={{ color: "var(--agent-fg)" }}>🤖</span>
+                                                <span style={{ color: "var(--fg-muted)" }}>Agent:</span>
+                                                <span style={{ fontWeight: 600 }}>{requiredSkills.length} skill{requiredSkills.length > 1 ? "s" : ""}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Eligibility section */}
+                            {requiredSkills.length > 0 && (
+                                <div style={{ padding: "10px 14px", borderTop: "1px solid var(--border)" }}>
+                                    <div style={{ fontSize: 11, fontWeight: 600, color: "var(--fg)", marginBottom: 6 }}>Eligibility</div>
+                                    <div style={{ fontSize: 11, color: "var(--fg-muted)", lineHeight: 1.5 }}>
+                                        {requiredSkills.map(s => {
+                                            const isCustom = s.id.startsWith("http")
+                                            return (
+                                                <div key={s.id} style={{ display: "flex", justifyContent: "space-between", padding: "2px 0", gap: 8 }}>
+                                                    <span style={{ fontFamily: "var(--font-mono)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                                        {isCustom ? s.name : `${s.id}@${s.version ?? "latest"}`}
+                                                    </span>
+                                                    <span style={{ fontWeight: 600, color: "var(--fg)", flexShrink: 0 }}>
+                                                        {isCustom ? "custom" : `${s.agents} agents`}
+                                                    </span>
+                                                </div>
+                                            )
+                                        })}
+                                        {(() => {
+                                            const clawHubSkills = requiredSkills.filter(s => !s.id.startsWith("http"))
+                                            const hasCustom = requiredSkills.some(s => s.id.startsWith("http"))
+                                            return (
+                                                <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderTop: "1px solid #f0f0f0", marginTop: 4 }}>
+                                                    <span style={{ fontWeight: 600, color: "var(--fg)" }}>
+                                                        {requiredSkills.length > 1 ? "All required" : "Eligible"}
+                                                    </span>
+                                                    <span style={{ fontWeight: 700, color: "var(--accent)" }}>
+                                                        {clawHubSkills.length > 0
+                                                            ? `~${Math.round(Math.min(...clawHubSkills.map(s => s.agents)) * (requiredSkills.length > 1 ? 0.7 : 1))} agents`
+                                                            : hasCustom ? "?" : "0 agents"
+                                                        }
+                                                    </span>
+                                                </div>
+                                            )
+                                        })()}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Actions */}
+                            <div className="preview-actions">
+                                <button
+                                    className="btn btn-primary"
+                                    style={{ width: "100%" }}
+                                    onClick={() => setTab("preview")}
+                                >
+                                    Next: Preview →
+                                </button>
+                            </div>
+                            <div className="preview-note">
+                                Funds held in escrow. Skill tasks verified via CQ Skill proof. Social tasks verified via platform API.
+                            </div>
                         </div>
-                        <div className="preview-note">
-                            Funds held in escrow. Skill tasks verified via CQ Skill proof. Social tasks verified via platform API.
+                    ) : (
+                        /* Step 4: Funding sidebar */
+                        <div className="preview-box fund-sidebar">
+                            <div className="preview-header">Payment Summary</div>
+
+                            {/* Reward hero */}
+                            <div className="reward-hero">
+                                <div className="reward-hero-amount">
+                                    {activeTotal > 0 ? activeTotal.toLocaleString() : "—"}
+                                </div>
+                                <div className="reward-hero-sub">
+                                    <span className={`badge ${form.rail === "fiat" ? "badge-fiat" : "badge-crypto"}`}>{tokenLabel}</span>
+                                    <span className={`badge badge-${form.type === "FCFS" ? "fcfs" : form.type === "LEADERBOARD" ? "leaderboard" : "luckydraw"}`}>
+                                        {form.type === "LUCKY_DRAW" ? "Lucky Draw" : form.type === "LEADERBOARD" ? "Leaderboard" : "FCFS"}
+                                    </span>
+                                </div>
+                                <div className="reward-hero-label">total quest fund</div>
+                            </div>
+
+                            {/* Payout summary */}
+                            <div className="preview-body">
+                                <div className="preview-row">
+                                    <span className="label">Payment</span>
+                                    <span className="value">{form.rail === "crypto" ? "Crypto" : "Fiat (Stripe)"}</span>
+                                </div>
+                                {form.rail === "crypto" && (
+                                    <div className="preview-row">
+                                        <span className="label">Network</span>
+                                        <span className="value">{form.network}</span>
+                                    </div>
+                                )}
+                                <div className="preview-row">
+                                    <span className="label">Token</span>
+                                    <span className="value">{tokenLabel}</span>
+                                </div>
+                                <div className="preview-row">
+                                    <span className="label">Winners</span>
+                                    <span className="value">
+                                        {form.type === "LEADERBOARD" ? `${lbWinnersNum} spots` : activeWinners}
+                                    </span>
+                                </div>
+                                <div className="preview-row">
+                                    <span className="label">Per winner</span>
+                                    <span className="value green">
+                                        {form.type === "LEADERBOARD"
+                                            ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
+                                            : `${perWinner} ${tokenLabel}`}
+                                    </span>
+                                </div>
+                                <div className="preview-total">
+                                    <span>Total Fund</span>
+                                    <span className="value">
+                                        {activeTotal > 0 ? `${activeTotal.toFixed(2)} ${tokenLabel}` : "—"}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Pay With section */}
+                            <div className="fund-pay-section">
+                                <div className="fund-pay-title">Pay with</div>
+
+                                {form.rail === "crypto" ? (
+                                    <div className="fund-crypto-box">
+                                        <div className="fund-field">
+                                            <div className="fund-field-label">Treasury address</div>
+                                            <div className="fund-address-row">
+                                                <code className="fund-address-text">
+                                                    {import.meta.env.VITE_TREASURY_ADDRESS || "0x...treasury"}
+                                                </code>
+                                                <button
+                                                    className="fund-copy-btn"
+                                                    onClick={() => {
+                                                        const addr = import.meta.env.VITE_TREASURY_ADDRESS || "0x...treasury"
+                                                        navigator.clipboard.writeText(addr)
+                                                    }}
+                                                >
+                                                    Copy
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="fund-send-note">
+                                            Send exactly <strong>{activeTotal > 0 ? activeTotal.toFixed(2) : "—"} {tokenLabel}</strong> on <strong>{form.network}</strong>
+                                        </div>
+                                        <div className="fund-field" style={{ marginTop: 8 }}>
+                                            <div className="fund-field-label">Transaction hash</div>
+                                            <input
+                                                className="form-input"
+                                                type="text"
+                                                placeholder="0x..."
+                                                style={{ fontSize: 11, fontFamily: "var(--font-mono)" }}
+                                                disabled
+                                            />
+                                        </div>
+                                        <button className="cta-btn disabled" disabled style={{ marginTop: 8 }}>
+                                            Verify & Go Live
+                                        </button>
+                                        <div className="fund-coming-soon">
+                                            On-chain verification coming soon
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="fund-fiat-box">
+                                        <div className="fund-stripe-info">
+                                            <div className="token-display" style={{ marginBottom: 8 }}>
+                                                <div className="token-icon" style={{ background: "#635bff" }}>S</div>
+                                                <div className="token-info">
+                                                    <div className="token-name">Pay via Stripe</div>
+                                                    <div className="token-contract" style={{ fontFamily: "var(--font)" }}>
+                                                        Card · Apple Pay · Google Pay
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button className="cta-btn disabled" disabled>
+                                            Pay with Stripe →
+                                        </button>
+                                        <div className="fund-coming-soon">
+                                            Stripe integration coming soon
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Mutation error in sidebar */}
+                            {mutation.isError && (
+                                <div style={{ margin: "0 14px 8px", padding: "8px 10px", background: "var(--red-bg)", border: "1px solid var(--red)", borderRadius: 3, fontSize: 11, color: "var(--red)" }}>
+                                    {(mutation.error as Error).message}
+                                </div>
+                            )}
+
+                            {/* Action button */}
+                            <div className="preview-actions">
+                                <button
+                                    className="btn btn-primary btn-lg"
+                                    style={{ width: "100%" }}
+                                    disabled={mutation.isPending}
+                                    onClick={() => mutation.mutate()}
+                                >
+                                    {mutation.isPending ? "Saving…" : "Save Draft"}
+                                </button>
+                            </div>
+                            <div className="preview-note">
+                                Quest saved as draft. Fund later to go live.
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>

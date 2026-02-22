@@ -9,7 +9,7 @@ interface AuthState {
     isLoading: boolean
 }
 
-interface AuthContextType extends AuthState {
+export interface AuthContextType extends AuthState {
     logout: () => Promise<void>
 }
 

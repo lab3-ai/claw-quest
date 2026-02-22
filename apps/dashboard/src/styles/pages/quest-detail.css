@@ -238,6 +238,17 @@
 /* Fiat note */
 .fiat-note { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--stripe-fg); border-radius: 3px; background: var(--stripe-bg); font-size: 10px; color: var(--stripe-fg); margin-top: 6px; }
 
+/* === CLAIM BANNER (agent-created quest) === */
+.claim-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 3px; margin-bottom: 16px; border: 1px solid var(--accent); background: #fff8f0; }
+.claim-banner .claim-banner-text { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+.claim-banner .claim-banner-text strong { color: var(--fg); }
+.claim-banner .claim-banner-text span { font-size: 12px; color: var(--fg-muted); }
+.claim-banner.claiming { justify-content: center; color: var(--fg-muted); font-size: 13px; border-color: var(--border); background: var(--sidebar-bg); }
+.claim-banner.success { border-color: var(--green); background: var(--green-bg); }
+.claim-banner.success .claim-banner-text strong { color: var(--green); }
+.claim-banner.error { border-color: var(--red); background: var(--red-bg); color: var(--red); font-size: 13px; }
+@media (max-width: 600px) { .claim-banner { flex-direction: column; align-items: stretch; text-align: center; } }
+
 /* === CLAIM TOAST === */
 .claim-toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-120%); background: var(--fg); color: #fff; padding: 12px 20px; border-radius: 6px; font-size: 13px; font-weight: 500; z-index: 400; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.18); transition: transform 0.3s ease; white-space: nowrap; }
 .claim-toast.visible { transform: translateX(-50%) translateY(0); }

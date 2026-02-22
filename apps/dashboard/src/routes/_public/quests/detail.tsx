@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react"
-import { useParams, Link } from "@tanstack/react-router"
+import { useState, useEffect, useRef } from "react"
+import { useParams, useSearch, Link, useNavigate } from "@tanstack/react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { Quest } from "@clawquest/shared"
 import { useAuth } from "@/context/AuthContext"
@@ -8,6 +8,7 @@ import "@/styles/pages/quest-detail.css"
 import "@/styles/actor-sections.css"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
+const REDIRECT_KEY = "clawquest_redirect_after_login"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -60,21 +61,6 @@ function useCountdown(expiresAt: string | null) {
     return timeLeft
 }
 
-// Static mock tasks for the detail view (in a real app, these come from the API)
-const HUMAN_TASKS = [
-    { id: "h1", label: "Follow @ClawQuest on X", platform: "x", type: "social", status: "done" },
-    { id: "h2", label: "Like & Retweet the announcement post", platform: "x", type: "social", status: "done" },
-    { id: "h3", label: "Join our Telegram channel", platform: "telegram", type: "social", status: "pending" },
-    { id: "h4", label: "Get Discord member role", platform: "discord", type: "social", status: "pending" },
-]
-
-const AGENT_TASKS = [
-    { id: "a1", label: "Register wallet on-chain", platform: "onchain", type: "skill", status: "done" },
-    { id: "a2", label: "Buy a share of the reward pool", platform: "onchain", type: "skill", status: "running" },
-    { id: "a3", label: "Swap 10 USDC on Uniswap", platform: "uniswap", type: "skill", status: "pending" },
-    { id: "a4", label: "Post a tweet mentioning @ClawQuest", platform: "x", type: "skill", status: "pending" },
-]
-
 function platformLabel(platform: string) {
     const map: Record<string, string> = {
         x: "X / Twitter",
@@ -85,6 +71,7 @@ function platformLabel(platform: string) {
     }
     return map[platform] ?? platform
 }
+
 
 function TaskCheck({ status }: { status: string }) {
     if (status === "done") return <span className="task-check done">✓</span>
@@ -101,24 +88,95 @@ function TaskActionBtn({ status }: { status: string }) {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function QuestDetail() {
-    const { questId } = useParams({ from: "/_public/quests/$questId" })
+    const { questId } = useParams({ from: "/_app/quests/$questId" })
+    const { token, claim } = useSearch({ from: "/_app/quests/$questId" })
     const { isAuthenticated, session } = useAuth()
     const queryClient = useQueryClient()
+    const navigate = useNavigate()
     const [selectedAgentId, setSelectedAgentId] = useState<string>("")
     const [acceptMsg, setAcceptMsg] = useState<string | null>(null)
+    const [claimStatus, setClaimStatus] = useState<"idle" | "claiming" | "success" | "error">("idle")
+    const [claimError, setClaimError] = useState("")
+    const claimAttempted = useRef(false)
+
+    // ── Auto-claim: if user is authenticated and claim token is present ──
+    const claimMutation = useMutation({
+        mutationFn: async (claimToken: string) => {
+            const res = await fetch(`${API_BASE}/quests/claim`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session?.access_token}`,
+                },
+                body: JSON.stringify({ claimToken }),
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error(err.error || "Failed to claim quest")
+            }
+            return res.json()
+        },
+        onSuccess: () => {
+            setClaimStatus("success")
+            // Clear the redirect key if it was set
+            localStorage.removeItem(REDIRECT_KEY)
+            // Refetch quest to get updated data
+            queryClient.invalidateQueries({ queryKey: ["quest", questId] })
+        },
+        onError: (e: Error) => {
+            // "Quest already claimed" is not really an error for the user
+            if (e.message.includes("already claimed")) {
+                setClaimStatus("success")
+            } else {
+                setClaimStatus("error")
+                setClaimError(e.message)
+            }
+        },
+    })
+
+    // Auto-claim on page load if authenticated + claim token present
+    useEffect(() => {
+        if (claim && isAuthenticated && session?.access_token && !claimAttempted.current) {
+            claimAttempted.current = true
+            setClaimStatus("claiming")
+            claimMutation.mutate(claim)
+        }
+    }, [claim, isAuthenticated, session?.access_token])
+
+    const handleClaimClick = () => {
+        if (!isAuthenticated) {
+            // Save current URL to localStorage → redirect to login
+            localStorage.setItem(REDIRECT_KEY, window.location.pathname + window.location.search)
+            navigate({ to: "/login" })
+            return
+        }
+        if (claim) {
+            setClaimStatus("claiming")
+            claimMutation.mutate(claim)
+        }
+    }
 
     // Note: liveCountdown is used below once quest loads
 
     const { data: quest, isLoading, error } = useQuery<Quest>({
-        queryKey: ["quest", questId],
+        queryKey: ["quest", questId, token],
         queryFn: async () => {
-            const res = await fetch(`${API_BASE}/quests/${questId}`)
+            const tokenParam = token ? `?token=${token}` : ""
+            const res = await fetch(`${API_BASE}/quests/${questId}${tokenParam}`, {
+                headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
+            })
             if (!res.ok) throw new Error("Failed to fetch quest")
             return res.json()
         },
         initialData: () => {
             const cached = queryClient.getQueryData<Quest[]>(["quests"])
             return cached?.find(q => q.id === questId)
+        },
+        initialDataUpdatedAt: () => {
+            // Use the quests list query's dataUpdatedAt so React Query knows
+            // how fresh the initialData is — prevents showing "Loading quest…"
+            // when the data is already in cache from the list page
+            return queryClient.getQueryState(["quests"])?.dataUpdatedAt
         },
         staleTime: 60_000,
     })
@@ -160,7 +218,7 @@ export function QuestDetail() {
 
     if (isLoading) {
         return (
-            <div className="page-container" style={{ padding: "40px", textAlign: "center", color: "var(--fg-muted)" }}>
+            <div style={{ padding: "40px", textAlign: "center", color: "var(--fg-muted)" }}>
                 Loading quest…
             </div>
         )
@@ -168,7 +226,7 @@ export function QuestDetail() {
 
     if (error || !quest) {
         return (
-            <div className="page-container" style={{ padding: "40px", textAlign: "center", color: "var(--red)" }}>
+            <div style={{ padding: "40px", textAlign: "center", color: "var(--red)" }}>
                 Quest not found.
             </div>
         )
@@ -180,13 +238,47 @@ export function QuestDetail() {
     const isCompleted = quest.status === "completed"
 
     return (
-        <div className="page-container" style={{ maxWidth: 960 }}>
+        <div style={{ maxWidth: 960 }}>
             {/* Breadcrumb */}
             <div className="breadcrumb">
                 <Link to="/quests">Quests</Link>
                 <span className="sep">›</span>
                 <span>{quest.title}</span>
             </div>
+
+            {/* Claim banner — shown when claim token is in URL */}
+            {claim && claimStatus === "idle" && (
+                <div className="claim-banner">
+                    <div className="claim-banner-text">
+                        <strong>🤖 This quest was created by an AI agent.</strong>
+                        <span>Claim it to manage, edit, and fund it.</span>
+                    </div>
+                    <button className="btn btn-primary btn-sm" onClick={handleClaimClick}>
+                        {isAuthenticated ? "Claim Quest" : "Log in to Claim"}
+                    </button>
+                </div>
+            )}
+            {claim && claimStatus === "claiming" && (
+                <div className="claim-banner claiming">
+                    <span>Claiming quest…</span>
+                </div>
+            )}
+            {claimStatus === "success" && (
+                <div className="claim-banner success">
+                    <div className="claim-banner-text">
+                        <strong>✓ Quest claimed!</strong>
+                        <span>You can now edit and fund this quest.</span>
+                    </div>
+                    <Link to="/quests/mine" className="btn btn-primary btn-sm">
+                        Go to My Quests →
+                    </Link>
+                </div>
+            )}
+            {claimStatus === "error" && (
+                <div className="claim-banner error">
+                    <span>{claimError}</span>
+                </div>
+            )}
 
             {/* Page header */}
             <div className="page-header" style={{ marginBottom: 20 }}>
@@ -251,43 +343,56 @@ export function QuestDetail() {
                         </div>
                     )}
 
-                    {/* Human Tasks */}
-                    <div className="actor-section human">
-                        <div className="actor-section-title">
-                            Human Tasks
-                            <span className="actor-badge human">HUMAN</span>
-                            <span className="hint">Complete these yourself</span>
-                        </div>
-                        {HUMAN_TASKS.map(task => (
-                            <div key={task.id} className="task-card">
-                                <div className="task-card-row">
-                                    <TaskCheck status={task.status} />
-                                    <span className="task-card-label">{task.label}</span>
-                                    <span className="badge badge-social">{platformLabel(task.platform)}</span>
-                                    <TaskActionBtn status={task.status} />
-                                </div>
+                    {/* Human Tasks (from quest.tasks) */}
+                    {quest.tasks && quest.tasks.length > 0 && (
+                        <div className="actor-section human">
+                            <div className="actor-section-title">
+                                Human Tasks
+                                <span className="actor-badge human">HUMAN</span>
+                                <span className="hint">Complete these yourself</span>
                             </div>
-                        ))}
-                    </div>
+                            {quest.tasks.map((task: any) => (
+                                <div key={task.id} className="task-card">
+                                    <div className="task-card-row">
+                                        <TaskCheck status="pending" />
+                                        <span className="task-card-label">{task.label}</span>
+                                        <span className="badge badge-social">{platformLabel(task.platform)}</span>
+                                        <TaskActionBtn status="pending" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
-                    {/* Agent Tasks */}
-                    <div className="actor-section agent">
-                        <div className="actor-section-title">
-                            Agent Tasks
-                            <span className="actor-badge agent">AGENT</span>
-                            <span className="hint">Your AI agent handles these</span>
-                        </div>
-                        {AGENT_TASKS.map(task => (
-                            <div key={task.id} className="task-card">
-                                <div className="task-card-row">
-                                    <TaskCheck status={task.status} />
-                                    <span className="task-card-label">{task.label}</span>
-                                    <span className="badge badge-skill">{platformLabel(task.platform)}</span>
-                                    <TaskActionBtn status={task.status} />
-                                </div>
+                    {/* Agent Tasks (from quest.requiredSkills) */}
+                    {quest.requiredSkills && quest.requiredSkills.length > 0 && (
+                        <div className="actor-section agent">
+                            <div className="actor-section-title">
+                                Agent Tasks
+                                <span className="actor-badge agent">AGENT</span>
+                                <span className="hint">Your AI agent handles these</span>
                             </div>
-                        ))}
-                    </div>
+                            {quest.requiredSkills.map((skill: string, idx: number) => (
+                                <div key={idx} className="task-card">
+                                    <div className="task-card-row">
+                                        <TaskCheck status="pending" />
+                                        <span className="task-card-label">
+                                            Requires skill: <code style={{ fontSize: 11, background: "var(--code-bg, #f5f5f5)", padding: "1px 4px", borderRadius: 2 }}>{skill}</code>
+                                        </span>
+                                        <span className="badge badge-skill">Skill</span>
+                                        <TaskActionBtn status="pending" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* No tasks fallback */}
+                    {(!quest.tasks || quest.tasks.length === 0) && (!quest.requiredSkills || quest.requiredSkills.length === 0) && (
+                        <div style={{ padding: "16px 0", color: "var(--fg-muted)", fontSize: 13 }}>
+                            No specific tasks defined for this quest yet.
+                        </div>
+                    )}
 
                     {/* Questers avatar crowd */}
                     {quest.questers > 0 && quest.questerDetails && (

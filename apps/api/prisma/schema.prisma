@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -67,7 +68,7 @@ model Quest {
   sponsor     String   @default("System")
 
   type        String   @default("FCFS") // FCFS, LEADERBOARD, LUCKY_DRAW
-  status      String   @default("draft") // draft, live, scheduled, pending, completed
+  status      String   @default("draft") // draft, pending_funding, live, scheduled, completed, cancelled, expired
 
   rewardAmount Int
   rewardType   String   @default("USDC")
@@ -77,16 +78,36 @@ model Quest {
 
   tags        String[] @default([])
   requiredSkills String[] @default([]) // skill names agent must have to accept
+  tasks         Json      @default("[]")  // QuestTask[] — social task definitions
 
   expiresAt   DateTime?
+  startAt     DateTime?               // null = immediately live after funding
 
   // Ownership / claim fields
+  creatorAgentId      String?             // Agent who created this quest (Flow B)
   creatorTelegramId   BigInt?             // Telegram user who claimed this quest
   creatorEmail        String?             // Email of creator (alternative identity)
   creatorUserId       String?             // Optional — linked Supabase user
-  claimToken          String?   @unique   // Token for claiming ownership
+  claimToken          String?   @unique   // Token for claiming ownership (cleared on claim)
   claimTokenExpiresAt DateTime?           // 48h expiry
   claimedAt           DateTime?           // null = unclaimed
+  previewToken        String?   @unique   // Permanent preview link token (survives claim)
+
+  // Funding
+  fundingMethod       String?             // "stripe" | "crypto"
+  fundingStatus       String   @default("unfunded") // unfunded, pending, confirmed, refunded
+  stripeSessionId     String?  @unique
+  stripePaymentId     String?
+  cryptoTxHash        String?
+  cryptoChainId       Int?                // e.g. 8453 (Base)
+  fundedAt            DateTime?
+  fundedAmount        Int?                // actual amount received (same unit as rewardAmount)
+
+  // Refund
+  refundStatus        String?             // pending, completed
+  refundAmount        Int?
+  refundTxHash        String?
+  refundedAt          DateTime?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -94,7 +115,9 @@ model Quest {
   participations QuestParticipation[]
 
   @@index([claimToken])
+  @@index([previewToken])
   @@index([creatorTelegramId])
+  @@index([creatorAgentId])
 }
 
 model QuestParticipation {
@@ -148,4 +171,37 @@ model AgentLog {
 
   @@index([agentId])
   @@index([createdAt])
+}
+
+// External data — crawled from ClawHub registry
+model clawhub_skills {
+  id                  String    @id @default(uuid()) @db.Uuid
+  clawhub_id          String    @unique
+  slug                String    @unique
+  display_name        String
+  summary             String?
+  downloads           Int       @default(0)
+  installs_all_time   Int       @default(0)
+  installs_current    Int       @default(0)
+  stars               Int       @default(0)
+  comments            Int       @default(0)
+  versions            Int       @default(0)
+  owner_handle        String?
+  owner_display_name  String?
+  owner_image         String?
+  latest_version      String?
+  latest_version_id   String?
+  badges              Json      @default("{}")
+  tags                Json      @default("{}")
+  parsed_clawdis      Json?
+  clawhub_created_at  DateTime? @db.Timestamptz
+  clawhub_updated_at  DateTime? @db.Timestamptz
+  crawled_at          DateTime  @default(now()) @db.Timestamptz
+
+  @@index([downloads(sort: Desc)])
+  @@index([stars(sort: Desc)])
+  @@index([owner_handle])
+  @@index([crawled_at])
+
+  @@map("clawhub_skills")
 }

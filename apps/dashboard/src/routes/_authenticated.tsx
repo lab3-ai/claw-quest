@@ -37,7 +37,7 @@ export function AuthenticatedLayout() {
                     <Link to="/quests">Quests</Link>
                 </div>
                 <div className="topbar-right">
-                    <Link to="/">Dashboard</Link>
+                    <Link to="/dashboard">Dashboard</Link>
                     <div className="user-menu" ref={menuRef}>
                         <button className="user-menu-btn" onClick={() => setMenuOpen(v => !v)}>
                             @{handle} ▾

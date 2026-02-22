@@ -60,3 +60,15 @@
 .platform-btn.disabled { opacity: 0.45; cursor: default; pointer-events: none; }
 .platform-btn .icon { font-size: 14px; line-height: 1; display: inline-flex; align-items: center; }
 /* badge-soon inside platform-btn — inherits base, no extra needed */
+
+/* === FORM ERROR STATES === */
+.form-input-error, .form-input-error:focus {
+  border-color: var(--red, #dc2626) !important;
+  box-shadow: 0 0 0 3px rgba(220,38,38,0.12) !important;
+}
+.form-error {
+  font-size: 11px;
+  color: var(--red, #dc2626);
+  margin-top: 3px;
+  line-height: 1.3;
+}

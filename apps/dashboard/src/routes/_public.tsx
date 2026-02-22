@@ -31,13 +31,13 @@ export function PublicLayout() {
                 <div className="topbar-right">
                     {isAuthenticated ? (
                         <>
-                            <Link to="/">Dashboard</Link>
+                            <Link to="/dashboard">Dashboard</Link>
                             <div className="user-menu" ref={menuRef}>
                                 <button className="user-menu-btn" onClick={() => setMenuOpen(v => !v)}>
                                     @{handle} ▾
                                 </button>
                                 {menuOpen && (
-                                    <div className="user-dropdown">
+                                    <div className="user-dropdown visible">
                                         <a href="#">Profile</a>
                                         <a href="#">Settings</a>
                                         <a className="logout" onClick={() => logout()} style={{ cursor: "pointer" }}>Log out</a>

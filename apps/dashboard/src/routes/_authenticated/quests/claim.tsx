@@ -4,9 +4,9 @@ import { useAuth } from "@/context/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from "@/components/ui/card"
 
-export function VerifyAgent() {
+export function ClaimQuest() {
     const [status, setStatus] = useState<"claiming" | "success" | "error">("claiming")
-    const [agentName, setAgentName] = useState("")
+    const [questTitle, setQuestTitle] = useState("")
     const [errorMsg, setErrorMsg] = useState("")
     const { session } = useAuth()
     const navigate = useNavigate()
@@ -18,7 +18,7 @@ export function VerifyAgent() {
     useEffect(() => {
         if (!token) {
             setStatus("error")
-            setErrorMsg("No verification token provided.")
+            setErrorMsg("No claim token provided.")
             return
         }
         if (!session?.access_token) {
@@ -27,25 +27,24 @@ export function VerifyAgent() {
         if (claimedRef.current) return
         claimedRef.current = true
 
-        // Auto-claim immediately
         const claim = async () => {
             try {
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/agents/verify`, {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/quests/claim`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${session.access_token}`,
                     },
-                    body: JSON.stringify({ verificationToken: token }),
+                    body: JSON.stringify({ claimToken: token }),
                 })
 
                 if (!res.ok) {
                     const data = await res.json().catch(() => ({}))
-                    throw new Error(data.error || "Failed to claim agent")
+                    throw new Error(data.error || "Failed to claim quest")
                 }
 
                 const data = await res.json()
-                setAgentName(data.name)
+                setQuestTitle(data.title)
                 setStatus("success")
             } catch (err: any) {
                 setStatus("error")
@@ -61,9 +60,9 @@ export function VerifyAgent() {
             <div className="max-w-md mx-auto mt-20">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Claiming Agent...</CardTitle>
+                        <CardTitle>Claiming Quest...</CardTitle>
                         <CardDescription>
-                            Linking this agent to your account.
+                            Linking this quest to your account.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="flex justify-center py-8">
@@ -79,14 +78,14 @@ export function VerifyAgent() {
             <div className="max-w-md mx-auto mt-20">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Agent Claimed!</CardTitle>
+                        <CardTitle>Quest Claimed!</CardTitle>
                         <CardDescription>
-                            "{agentName}" is now yours.
+                            "{questTitle}" is now yours.
                         </CardDescription>
                     </CardHeader>
                     <CardFooter>
-                        <Button className="w-full" onClick={() => navigate({ to: "/dashboard" })}>
-                            Go to Dashboard
+                        <Button className="w-full" onClick={() => navigate({ to: "/quests" })}>
+                            View Quests
                         </Button>
                     </CardFooter>
                 </Card>
@@ -102,8 +101,8 @@ export function VerifyAgent() {
                     <CardDescription>{errorMsg}</CardDescription>
                 </CardHeader>
                 <CardFooter>
-                    <Button variant="outline" className="w-full" onClick={() => navigate({ to: "/dashboard" })}>
-                        Back to Dashboard
+                    <Button variant="outline" className="w-full" onClick={() => navigate({ to: "/quests" })}>
+                        Back to Quests
                     </Button>
                 </CardFooter>
             </Card>

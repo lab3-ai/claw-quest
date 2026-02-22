@@ -320,9 +320,9 @@ export async function agentsRoutes(app: FastifyInstance) {
     // Agent scans its own environment and reports what skills it has.
     // Uses upsert: creates new records or updates lastSeenAt for existing ones.
     const SkillEntrySchema = z.object({
-        name: z.string().min(1).max(100),         // e.g. "sponge-wallet"
+        name: z.string().min(1).max(500),         // e.g. "sponge-wallet" or full URL for custom skills
         version: z.string().max(20).optional(),    // e.g. "1.0.0"
-        source: z.enum(['clawhub', 'mcp', 'manual']).default('clawhub'),
+        source: z.enum(['clawhub', 'mcp', 'manual', 'custom']).default('clawhub'),
         publisher: z.string().max(100).optional(), // e.g. "paysponge"
         meta: z.record(z.any()).optional(),         // tool names, descriptions, etc.
     });
@@ -461,7 +461,7 @@ export async function agentsRoutes(app: FastifyInstance) {
             const { name } = request.body;
 
             const agentApiKey = generateAgentApiKey();
-            const verificationToken = randomBytes(32).toString('hex');
+            const verificationToken = 'agent_' + randomBytes(32).toString('hex');
             const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
             const agent = await server.prisma.agent.create({
@@ -484,7 +484,7 @@ export async function agentsRoutes(app: FastifyInstance) {
             });
 
             const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'ClawQuest_aibot';
-            const telegramDeeplink = `https://t.me/${botUsername}?start=verify_${verificationToken}`;
+            const telegramDeeplink = `https://t.me/${botUsername}?start=${verificationToken}`;
 
             return reply.code(201).send({
                 agentId: agent.id,

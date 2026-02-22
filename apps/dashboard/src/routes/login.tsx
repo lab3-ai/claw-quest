@@ -14,9 +14,15 @@ export function Login() {
     const { isAuthenticated } = useAuth()
     const navigate = useNavigate()
 
-    // If already authenticated, redirect to dashboard
+    // If already authenticated, redirect to saved URL or quests
     if (isAuthenticated) {
-        navigate({ to: "/" })
+        const savedRedirect = localStorage.getItem("clawquest_redirect_after_login")
+        if (savedRedirect) {
+            localStorage.removeItem("clawquest_redirect_after_login")
+            window.location.href = savedRedirect
+        } else {
+            navigate({ to: "/quests" })
+        }
         return null
     }
 
@@ -46,7 +52,13 @@ export function Login() {
         if (signInError) {
             setError(signInError.message)
         } else {
-            navigate({ to: "/" })
+            const savedRedirect = localStorage.getItem("clawquest_redirect_after_login")
+            if (savedRedirect) {
+                localStorage.removeItem("clawquest_redirect_after_login")
+                window.location.href = savedRedirect
+            } else {
+                navigate({ to: "/quests" })
+            }
         }
 
         setLoading(false)

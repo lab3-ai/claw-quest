@@ -42,22 +42,33 @@ function statusBadgeClass(status: string) {
     return map[status] ?? "badge-live"
 }
 
-function sortQuests(quests: Quest[], tab: Tab): Quest[] {
+function isEnded(quest: Quest): boolean {
+    if (!quest.expiresAt) return false
+    return new Date(quest.expiresAt).getTime() <= Date.now()
+}
+
+function filterAndSortQuests(quests: Quest[], tab: Tab): Quest[] {
+    const active = quests.filter(q => !isEnded(q))
     switch (tab) {
+        case "featured":
+            return [...active]
+                .sort((a, b) => b.questers - a.questers)
+                .slice(0, 5)
         case "highest-reward":
-            return [...quests].sort((a, b) => b.rewardAmount - a.rewardAmount)
+            return [...active].sort((a, b) => b.rewardAmount - a.rewardAmount)
         case "ending-soon":
-            return [...quests].sort((a, b) => {
-                const ta = a.expiresAt ? new Date(a.expiresAt).getTime() : Infinity
-                const tb = b.expiresAt ? new Date(b.expiresAt).getTime() : Infinity
-                return ta - tb
-            })
+            return [...active]
+                .sort((a, b) => {
+                    const ta = a.expiresAt ? new Date(a.expiresAt).getTime() : Infinity
+                    const tb = b.expiresAt ? new Date(b.expiresAt).getTime() : Infinity
+                    return ta - tb
+                })
         case "new":
-            return [...quests].sort((a, b) =>
+            return [...active].sort((a, b) =>
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             )
         default:
-            return quests
+            return active
     }
 }
 
@@ -76,9 +87,16 @@ export function QuestList() {
             if (!res.ok) throw new Error("Failed to fetch quests")
             return res.json() as Promise<Quest[]>
         },
+        staleTime: 60_000,
     })
 
-    const sorted = sortQuests(quests, tab)
+    const sorted = filterAndSortQuests(quests, tab)
+    const tabCounts: Record<Tab, number> = {
+        featured: filterAndSortQuests(quests, "featured").length,
+        "highest-reward": filterAndSortQuests(quests, "highest-reward").length,
+        "ending-soon": filterAndSortQuests(quests, "ending-soon").length,
+        new: filterAndSortQuests(quests, "new").length,
+    }
     const tabs: { id: Tab; label: string }[] = [
         { id: "featured", label: "Featured" },
         { id: "highest-reward", label: "Highest Reward" },
@@ -116,8 +134,8 @@ export function QuestList() {
                             onClick={() => setTab(t.id)}
                         >
                             {t.label}
-                            {t.id === "featured" && quests.length > 0 && (
-                                <span className="count">&nbsp;{quests.length}</span>
+                            {tabCounts[t.id] > 0 && (
+                                <span className="count">&nbsp;{tabCounts[t.id]}</span>
                             )}
                         </button>
                     ))}

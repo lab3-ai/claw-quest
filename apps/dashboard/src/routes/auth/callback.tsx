@@ -9,9 +9,19 @@ export function AuthCallback() {
     useEffect(() => {
         // Supabase handles the OAuth code exchange automatically via onAuthStateChange
         // We just need to wait for the session to be set, then redirect
+        const redirectAfterLogin = () => {
+            const savedRedirect = localStorage.getItem("clawquest_redirect_after_login")
+            if (savedRedirect) {
+                localStorage.removeItem("clawquest_redirect_after_login")
+                window.location.href = savedRedirect
+            } else {
+                navigate({ to: "/quests" })
+            }
+        }
+
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === "SIGNED_IN" && session) {
-                navigate({ to: "/" })
+                redirectAfterLogin()
             } else if (event === "SIGNED_OUT") {
                 navigate({ to: "/login" })
             }
@@ -22,7 +32,7 @@ export function AuthCallback() {
             if (sessionError) {
                 setError(sessionError.message)
             } else if (session) {
-                navigate({ to: "/" })
+                redirectAfterLogin()
             }
         })
 

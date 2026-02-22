@@ -28,7 +28,7 @@ export function CreateAgent() {
 
             if (!res.ok) throw new Error("Failed to create agent")
 
-            navigate({ to: "/" })
+            navigate({ to: "/dashboard" })
         } catch (err) {
             console.error(err)
             alert("Failed to create agent")

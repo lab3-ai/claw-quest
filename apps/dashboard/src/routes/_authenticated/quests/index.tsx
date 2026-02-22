@@ -169,7 +169,26 @@ export function QuestList() {
             </div>
 
             {/* Loading / Error */}
-            {isLoading && <div style={{ padding: "32px 0", color: "var(--fg-muted)" }}>Loading quests...</div>}
+            {isLoading && (
+                <div className="quest-list-wrap">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="quest-item skeleton-item">
+                            <div className="quest-stats">
+                                <div className="skel skel-stat" />
+                                <div className="skel skel-stat-sm" />
+                            </div>
+                            <div className="quest-body">
+                                <div className="skel skel-title" />
+                                <div className="skel skel-text" />
+                                <div className="skel skel-tags" />
+                            </div>
+                            <div className="quest-time-col">
+                                <div className="skel skel-time" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
             {error && <div style={{ padding: "32px 0", color: "var(--red)" }}>Error loading quests.</div>}
 
             {/* Card view */}

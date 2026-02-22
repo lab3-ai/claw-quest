@@ -149,6 +149,25 @@
 /* Badge must be inline (Tailwind preflight sets display:block) */
 .badge { display: inline-block !important; }
 
+/* === SKELETON LOADING === */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skel {
+  background: linear-gradient(90deg, var(--border) 25%, #e8e8e8 50%, var(--border) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+  border-radius: 3px;
+}
+.skeleton-item { pointer-events: none; }
+.skel-stat { width: 50px; height: 20px; margin-bottom: 4px; }
+.skel-stat-sm { width: 70px; height: 12px; }
+.skel-title { width: 60%; height: 16px; margin-bottom: 8px; }
+.skel-text { width: 90%; height: 12px; margin-bottom: 10px; }
+.skel-tags { width: 40%; height: 12px; }
+.skel-time { width: 70px; height: 18px; }
+
 /* === RESPONSIVE === */
 @media (max-width: 640px) {
   .quest-stats { display: none; }

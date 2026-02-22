@@ -29,7 +29,16 @@ import './styles/status-dots.css'
 import { router } from './router'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 60_000,      // 1 min — don't refetch if fresh
+            gcTime: 5 * 60_000,     // 5 min — keep in cache after unmount
+            refetchOnWindowFocus: false,
+            retry: 1,
+        },
+    },
+})
 
 function InnerApp() {
     const auth = useAuth()

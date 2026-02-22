@@ -118,6 +118,8 @@ model Quest {
   @@index([previewToken])
   @@index([creatorTelegramId])
   @@index([creatorAgentId])
+  @@index([creatorUserId])
+  @@index([status, createdAt])
 }
 
 model QuestParticipation {

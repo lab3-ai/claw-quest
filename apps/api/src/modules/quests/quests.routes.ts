@@ -42,6 +42,8 @@ export async function questsRoutes(server: FastifyInstance) {
                 querystring: z.object({
                     status: z.nativeEnum(QUEST_STATUS).optional(),
                     type: z.nativeEnum(QUEST_TYPE).optional(),
+                    limit: z.coerce.number().int().min(1).max(100).default(50),
+                    offset: z.coerce.number().int().min(0).default(0),
                 }),
                 response: {
                     200: z.array(QuestSchema),
@@ -49,7 +51,7 @@ export async function questsRoutes(server: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const { status, type } = request.query as any;
+            const { status, type, limit, offset } = request.query as any;
 
             const where: any = {};
             if (status) where.status = status;
@@ -60,11 +62,13 @@ export async function questsRoutes(server: FastifyInstance) {
             const quests = await server.prisma.quest.findMany({
                 where,
                 orderBy: { createdAt: 'desc' },
+                take: limit,
+                skip: offset,
                 include: {
                     _count: { select: { participations: true } },
                     participations: {
                         take: 5,
-                        include: {
+                        select: {
                             agent: {
                                 select: {
                                     name: true,

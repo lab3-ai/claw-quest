@@ -96,6 +96,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 startAt: q.startAt ? q.startAt.toISOString() : null,
                 expiresAt: q.expiresAt ? q.expiresAt.toISOString() : null,
                 createdAt: q.createdAt.toISOString(),
+                updatedAt: q.updatedAt.toISOString(),
             }));
         }
     );
@@ -271,8 +272,8 @@ export async function questsRoutes(server: FastifyInstance) {
             const statusFilter = status === 'done'
                 ? { status: { in: ['completed', 'submitted'] } }
                 : status === 'in_progress'
-                ? { status: { in: ['in_progress', 'failed'] } }
-                : {};
+                    ? { status: { in: ['in_progress', 'failed'] } }
+                    : {};
 
             const [allParticipations, totalCount] = await Promise.all([
                 server.prisma.questParticipation.findMany({

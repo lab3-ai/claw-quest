@@ -1,5 +1,5 @@
 {
-    "buildCommand": "pnpm --filter @clawquest/shared build && pnpm --filter dashboard build",
+    "buildCommand": "pnpm --filter @clawquest/shared build && pnpm --filter @clawquest/dashboard build",
     "outputDirectory": "apps/dashboard/dist",
     "installCommand": "pnpm install --no-frozen-lockfile",
     "framework": "vite",

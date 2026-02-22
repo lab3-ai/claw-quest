@@ -91,10 +91,11 @@ export const QuestSchema = z.object({
     startAt: z.string().datetime().nullable().optional(), // ISO string — null = live immediately after funding
     expiresAt: z.string().datetime().nullable(), // ISO string
     createdAt: z.string().datetime(), // ISO string for API
+    updatedAt: z.string().datetime(), // ISO string for API
     // Escrow / funding fields (optional — only present when funded)
-    fundingStatus: z.string().optional(),
-    cryptoTxHash: z.string().optional(),
-    cryptoChainId: z.number().optional(),
+    fundingStatus: z.string().nullable().optional(),
+    cryptoTxHash: z.string().nullable().optional(),
+    cryptoChainId: z.number().nullable().optional(),
 });
 
 // --- QuestParticipation (Questers list) ---

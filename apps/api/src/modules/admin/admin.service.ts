@@ -1,4 +1,5 @@
 import { PrismaClient, Prisma } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
 
 // ─── Pagination helper ───────────────────────────────────────────────────────
 
@@ -348,27 +349,41 @@ export async function getUserDetail(prisma: PrismaClient, userId: string) {
     };
 }
 
+export interface AdminUpdateUserInput {
+    role?: 'user' | 'admin';
+    username?: string;
+    password?: string;
+}
+
 export async function adminUpdateUser(
     prisma: PrismaClient,
     userId: string,
-    role: string,
+    input: AdminUpdateUserInput,
     requestingUserId: string,
 ) {
-    if (userId === requestingUserId && role !== 'admin') {
+    if (userId === requestingUserId && input.role !== undefined && input.role !== 'admin') {
         return { error: 'CANNOT_DEMOTE_SELF' } as const;
     }
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return null;
 
+    const data: any = {};
+    if (input.role !== undefined) data.role = input.role;
+    if (input.username !== undefined) data.username = input.username;
+    if (input.password !== undefined) {
+        data.password = await bcrypt.hash(input.password, 10);
+    }
+
     const updated = await prisma.user.update({
         where: { id: userId },
-        data: { role },
+        data,
     });
 
     return {
         id: updated.id,
         email: updated.email,
+        username: updated.username,
         role: updated.role,
     };
 }

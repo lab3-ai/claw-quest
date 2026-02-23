@@ -220,14 +220,15 @@ export async function adminRoutes(server: FastifyInstance) {
                 security: [{ bearerAuth: [] }],
                 params: z.object({ id: z.string().uuid() }),
                 body: z.object({
-                    role: z.enum(['user', 'admin']),
+                    role: z.enum(['user', 'admin']).optional(),
+                    username: z.string().min(3).max(30).optional(),
+                    password: z.string().min(6).optional(),
                 }),
             },
         },
         async (request, reply) => {
             const { id } = request.params as any;
-            const { role } = request.body as any;
-            const result = await adminUpdateUser(server.prisma, id, role, request.user.id);
+            const result = await adminUpdateUser(server.prisma, id, request.body as any, request.user.id);
             if (!result) return reply.status(404).send({ message: 'User not found' });
             if ('error' in result) {
                 return reply.status(400).send({

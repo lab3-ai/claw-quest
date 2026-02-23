@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { supabaseAdmin } from '../../app';
 
 // ─── Pagination helper ───────────────────────────────────────────────────────
 
@@ -373,6 +374,18 @@ export async function adminUpdateUser(
     if (input.username !== undefined) data.username = input.username;
     if (input.password !== undefined) {
         data.password = await bcrypt.hash(input.password, 10);
+
+        // Sync with Supabase Auth if supabaseId exists
+        if (user.supabaseId) {
+            const { error: syncError } = await supabaseAdmin.auth.admin.updateUserById(user.supabaseId, {
+                password: input.password,
+            });
+            if (syncError) {
+                console.error(`[SupabaseSync] Failed to update password for user ${userId}:`, syncError.message);
+            } else {
+                console.log(`[SupabaseSync] Successfully synced password for user ${userId}`);
+            }
+        }
     }
 
     const updated = await prisma.user.update({

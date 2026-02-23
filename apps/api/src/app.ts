@@ -1,4 +1,4 @@
-import Fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import swagger from '@fastify/swagger';
 import scalarPlugin from '@scalar/fastify-api-reference';
@@ -18,13 +18,13 @@ import { adminRoutes } from './modules/admin/admin.routes';
 
 // ─── Supabase Admin Client ──────────────────────────────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    console.warn('⚠️  Missing SUPABASE_URL / SUPABASE_ANON_KEY — auth will not work');
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn('⚠️  Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY — administrative auth actions will not work');
 }
 
-const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+export const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '');
 
 // ─── Type extensions ────────────────────────────────────────────────────────
 declare module 'fastify' {

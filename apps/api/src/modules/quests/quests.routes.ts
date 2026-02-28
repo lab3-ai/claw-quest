@@ -8,6 +8,9 @@ import {
     updateQuest,
     formatQuestResponse,
     isValidTransition,
+    isQuestCreatorOrAdmin,
+    verifyParticipation,
+    bulkVerifyParticipations,
     QuestValidationError,
     QuestNotFoundError,
     QuestNotEditableError,
@@ -1101,6 +1104,189 @@ export async function questsRoutes(server: FastifyInstance) {
             }
 
             return { message: 'Quest cancelled', questId: id };
+        }
+    );
+
+    // ── POST /quests/:id/participations/:pid/verify — Approve/reject proof ───
+    server.post(
+        '/:id/participations/:pid/verify',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Verify (approve/reject) a submitted proof',
+                security: [{ bearerAuth: [] }],
+                params: z.object({
+                    id: z.string().uuid(),
+                    pid: z.string().uuid(),
+                }),
+                body: z.object({
+                    action: z.enum(['approve', 'reject']),
+                    reason: z.string().optional(),
+                }),
+                response: {
+                    200: z.object({
+                        message: z.string(),
+                        participation: z.object({
+                            id: z.string(),
+                            status: z.string(),
+                        }),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id: questId, pid } = request.params as any;
+            const { action, reason } = request.body as any;
+            const userId = request.user.id;
+            const userRole = request.user.role ?? 'user';
+
+            const { allowed } = await isQuestCreatorOrAdmin(server.prisma, questId, userId, userRole);
+            if (!allowed) return reply.status(403).send({ message: 'Only quest creator or admin can verify proofs' } as any);
+
+            try {
+                const participation = await verifyParticipation(server.prisma, questId, pid, action, reason);
+                return {
+                    message: `Proof ${action === 'approve' ? 'approved' : 'rejected'}`,
+                    participation: { id: participation.id, status: participation.status },
+                };
+            } catch (err: any) {
+                if (err instanceof QuestValidationError) {
+                    return reply.status(400).send({ message: err.message } as any);
+                }
+                if (err instanceof QuestNotFoundError) {
+                    return reply.status(404).send({ message: err.message } as any);
+                }
+                throw err;
+            }
+        }
+    );
+
+    // ── POST /quests/:id/participations/verify-bulk — Bulk approve/reject ────
+    server.post(
+        '/:id/participations/verify-bulk',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Bulk verify (approve/reject) submitted proofs',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                body: z.object({
+                    items: z.array(z.object({
+                        participationId: z.string().uuid(),
+                        action: z.enum(['approve', 'reject']),
+                        reason: z.string().optional(),
+                    })).min(1).max(100),
+                }),
+                response: {
+                    200: z.object({
+                        updated: z.number(),
+                        errors: z.array(z.string()),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id: questId } = request.params as any;
+            const { items } = request.body as any;
+            const userId = request.user.id;
+            const userRole = request.user.role ?? 'user';
+
+            const { allowed } = await isQuestCreatorOrAdmin(server.prisma, questId, userId, userRole);
+            if (!allowed) return reply.status(403).send({ message: 'Only quest creator or admin can verify proofs' } as any);
+
+            try {
+                return await bulkVerifyParticipations(server.prisma, questId, items);
+            } catch (err: any) {
+                if (err instanceof QuestNotFoundError) {
+                    return reply.status(404).send({ message: err.message } as any);
+                }
+                throw err;
+            }
+        }
+    );
+
+    // ── GET /quests/:id/manage-summary — Combined data for manage page ───────
+    server.get(
+        '/:id/manage-summary',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Get quest manage summary (creator/admin)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id: questId } = request.params as any;
+            const userId = request.user.id;
+            const userRole = request.user.role ?? 'user';
+
+            const quest = await server.prisma.quest.findUnique({ where: { id: questId } });
+            if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any);
+
+            const isCreator = quest.creatorUserId === userId;
+            const isAdmin = userRole === 'admin';
+            if (!isCreator && !isAdmin) {
+                return reply.status(403).send({ message: 'Only quest creator or admin can access manage summary' } as any);
+            }
+
+            const participations = await server.prisma.questParticipation.findMany({
+                where: { questId },
+                include: {
+                    agent: {
+                        select: {
+                            agentname: true,
+                            owner: { select: { email: true, username: true } },
+                        },
+                    },
+                },
+                orderBy: [{ completedAt: 'asc' }, { joinedAt: 'asc' }],
+            });
+
+            const statusCounts = {
+                in_progress: 0,
+                submitted: 0,
+                verified: 0,
+                rejected: 0,
+                completed: 0,
+                failed: 0,
+            };
+            for (const p of participations) {
+                if (p.status in statusCounts) {
+                    (statusCounts as any)[p.status]++;
+                }
+            }
+
+            return {
+                quest: {
+                    ...formatQuestResponse(quest),
+                    fundingStatus: quest.fundingStatus,
+                    fundingMethod: quest.fundingMethod,
+                    cryptoChainId: quest.cryptoChainId,
+                    cryptoTxHash: quest.cryptoTxHash,
+                    sponsorWallet: quest.sponsorWallet,
+                },
+                participations: participations.map(p => ({
+                    id: p.id,
+                    agentName: p.agent.agentname,
+                    humanHandle: p.agent.owner?.username ?? p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
+                    status: p.status,
+                    proof: p.proof,
+                    tasksCompleted: p.tasksCompleted,
+                    tasksTotal: p.tasksTotal,
+                    payoutWallet: p.payoutWallet,
+                    payoutAmount: p.payoutAmount,
+                    payoutStatus: p.payoutStatus,
+                    payoutTxHash: p.payoutTxHash,
+                    joinedAt: p.joinedAt.toISOString(),
+                    completedAt: p.completedAt ? p.completedAt.toISOString() : null,
+                })),
+                statusCounts,
+                totalParticipations: participations.length,
+            };
         }
     );
 }

@@ -242,6 +242,102 @@ export function formatQuestResponse(
     };
 }
 
+// ─── Proof Verification ──────────────────────────────────────────────────
+
+/** Check if a user is the quest creator or admin. */
+export async function isQuestCreatorOrAdmin(
+    prisma: PrismaClient,
+    questId: string,
+    userId: string,
+    userRole: string,
+): Promise<{ allowed: boolean; quest: any }> {
+    const quest = await prisma.quest.findUnique({ where: { id: questId } });
+    if (!quest) throw new QuestNotFoundError();
+    const allowed = quest.creatorUserId === userId || userRole === 'admin';
+    return { allowed, quest };
+}
+
+/** Approve or reject a single participation proof. */
+export async function verifyParticipation(
+    prisma: PrismaClient,
+    questId: string,
+    participationId: string,
+    action: 'approve' | 'reject',
+    reason?: string,
+) {
+    const participation = await prisma.questParticipation.findUnique({
+        where: { id: participationId },
+    });
+    if (!participation || participation.questId !== questId) {
+        throw new QuestValidationError('Participation not found for this quest');
+    }
+    if (participation.status !== 'submitted') {
+        throw new QuestValidationError(`Can only verify submitted proofs (current: ${participation.status})`);
+    }
+
+    const newStatus = action === 'approve' ? 'verified' : 'rejected';
+    const proofData = (participation.proof as any) ?? {};
+    const updatedProof = action === 'reject'
+        ? { ...proofData, rejectionReason: reason }
+        : proofData;
+
+    return prisma.questParticipation.update({
+        where: { id: participationId },
+        data: {
+            status: newStatus,
+            proof: updatedProof,
+        },
+    });
+}
+
+/** Approve or reject multiple participations at once. */
+export async function bulkVerifyParticipations(
+    prisma: PrismaClient,
+    questId: string,
+    items: Array<{ participationId: string; action: 'approve' | 'reject'; reason?: string }>,
+) {
+    // Load all participations in one query
+    const ids = items.map(i => i.participationId);
+    const participations = await prisma.questParticipation.findMany({
+        where: { id: { in: ids }, questId },
+    });
+    const pMap = new Map(participations.map(p => [p.id, p]));
+
+    const errors: string[] = [];
+    const operations: any[] = [];
+
+    for (const item of items) {
+        const p = pMap.get(item.participationId);
+        if (!p) {
+            errors.push(`${item.participationId}: not found`);
+            continue;
+        }
+        if (p.status !== 'submitted') {
+            errors.push(`${item.participationId}: status is ${p.status}, expected submitted`);
+            continue;
+        }
+
+        const newStatus = item.action === 'approve' ? 'verified' : 'rejected';
+        const proofData = (p.proof as any) ?? {};
+        const updatedProof = item.action === 'reject'
+            ? { ...proofData, rejectionReason: item.reason }
+            : proofData;
+
+        operations.push(
+            prisma.questParticipation.update({
+                where: { id: item.participationId },
+                data: { status: newStatus, proof: updatedProof },
+            })
+        );
+    }
+
+    if (operations.length > 0) {
+        await prisma.$transaction(operations);
+    }
+
+    return { updated: operations.length, errors };
+}
+
 // ─── Error classes ────────────────────────────────────────────────────────────
 
 export class QuestValidationError extends Error {

@@ -102,6 +102,7 @@ interface MyParticipation {
 interface QuestWithParticipation extends Quest {
     myParticipation?: MyParticipation
     fundingMethod?: string
+    creatorUserId?: string
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -109,7 +110,7 @@ interface QuestWithParticipation extends Quest {
 export function QuestDetail() {
     const { questId } = useParams({ from: "/_app/quests/$questId" })
     const { token, claim } = useSearch({ from: "/_app/quests/$questId" })
-    const { isAuthenticated, session } = useAuth()
+    const { isAuthenticated, session, user } = useAuth()
     const queryClient = useQueryClient()
     const navigate = useNavigate()
     const [selectedAgentId, setSelectedAgentId] = useState<string>("")
@@ -609,6 +610,12 @@ export function QuestDetail() {
                             {quest.status === "draft" && !isAuthenticated && (
                                 <Link to="/login">
                                     <button className="cta-btn primary">Log in to Edit</button>
+                                </Link>
+                            )}
+                            {/* Manage button for quest creator */}
+                            {isAuthenticated && quest.creatorUserId === user?.id && quest.status !== "draft" && (
+                                <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>
+                                    <button className="cta-btn secondary" style={{ marginBottom: 8 }}>Manage Quest</button>
                                 </Link>
                             )}
                             {!isLive && !isCompleted && quest.status !== "draft" && (

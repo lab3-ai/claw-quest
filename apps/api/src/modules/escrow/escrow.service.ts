@@ -10,7 +10,7 @@ import {
     ESCROW_ABI,
     TOKEN_REGISTRY,
 } from '@clawquest/shared';
-import { escrowConfig } from './escrow.config';
+import { escrowConfig, getContractAddress } from './escrow.config';
 import { getPublicClient, getOperatorWalletClient } from './escrow.client';
 
 // ─── Deposit Params (for frontend) ──────────────────────────────────────────
@@ -62,7 +62,7 @@ export async function getDepositParams(
         : 0;
 
     return {
-        contractAddress: escrowConfig.contractAddress,
+        contractAddress: getContractAddress(targetChainId),
         questIdBytes32,
         tokenAddress: tokenInfo.address,
         tokenSymbol: tokenInfo.symbol,
@@ -106,7 +106,7 @@ export async function getEscrowStatus(
 
     try {
         const result = await client.readContract({
-            address: escrowConfig.contractAddress,
+            address: getContractAddress(chainId),
             abi: ESCROW_ABI,
             functionName: 'getQuest',
             args: [questIdBytes32],
@@ -180,7 +180,7 @@ export async function calculateDistribution(
     const participations = await prisma.questParticipation.findMany({
         where: {
             questId,
-            status: { in: ['completed', 'submitted'] },
+            status: { in: ['completed', 'submitted', 'verified'] },
             payoutWallet: { not: null },
         },
         orderBy: [{ completedAt: 'asc' }, { joinedAt: 'asc' }],
@@ -265,9 +265,11 @@ export async function executeDistribute(
     const walletClient = getOperatorWalletClient(chainId);
     const publicClient = getPublicClient(chainId);
 
+    const contractAddr = getContractAddress(chainId);
+
     // Simulate first
     await publicClient.simulateContract({
-        address: escrowConfig.contractAddress,
+        address: contractAddr,
         abi: ESCROW_ABI,
         functionName: 'distribute',
         args: [questIdBytes32, recipients, amounts],
@@ -276,7 +278,7 @@ export async function executeDistribute(
 
     // Execute
     const txHash = await walletClient.writeContract({
-        address: escrowConfig.contractAddress,
+        address: contractAddr,
         abi: ESCROW_ABI,
         functionName: 'distribute',
         args: [questIdBytes32, recipients, amounts],
@@ -289,14 +291,13 @@ export async function executeDistribute(
     }
 
     // Update DB — mark payouts
+    const questData = await prisma.quest.findUnique({ where: { id: questId } });
+    const decimals = questData?.tokenDecimals || 6;
     for (const payout of payouts) {
         await prisma.questParticipation.update({
             where: { id: payout.participationId },
             data: {
-                payoutAmount: fromSmallestUnit(
-                    payout.amount,
-                    (await prisma.quest.findUnique({ where: { id: questId } }))?.tokenDecimals || 6,
-                ),
+                payoutAmount: fromSmallestUnit(payout.amount, decimals),
                 payoutStatus: 'paid',
                 payoutTxHash: txHash,
             },
@@ -326,9 +327,11 @@ export async function executeRefund(
     const walletClient = getOperatorWalletClient(chainId);
     const publicClient = getPublicClient(chainId);
 
+    const contractAddr = getContractAddress(chainId);
+
     // Simulate first
     await publicClient.simulateContract({
-        address: escrowConfig.contractAddress,
+        address: contractAddr,
         abi: ESCROW_ABI,
         functionName: 'refund',
         args: [questIdBytes32],
@@ -337,7 +340,7 @@ export async function executeRefund(
 
     // Execute
     const txHash = await walletClient.writeContract({
-        address: escrowConfig.contractAddress,
+        address: contractAddr,
         abi: ESCROW_ABI,
         functionName: 'refund',
         args: [questIdBytes32],

@@ -499,6 +499,7 @@ export function Dashboard() {
                                                 <>
                                                     <span className={`quest-time-val ${time.cls}`}>{time.val}</span>
                                                     {time.label && <span className="quest-time-lbl">{time.label}</span>}
+                                                    <Link to="/quests/$questId/manage" params={{ questId: quest.id }} className="btn btn-sm btn-secondary" style={{ marginTop: 4, display: "inline-block" }}>Manage</Link>
                                                 </>
                                             )}
                                         </div>
@@ -578,6 +579,7 @@ export function Dashboard() {
                                                     <>
                                                         <div className={`tbl-time ${time.cls}`}>{time.val}</div>
                                                         {time.label && <div className="tbl-time-label">{time.label}</div>}
+                                                        <Link to="/quests/$questId/manage" params={{ questId: quest.id }} className="btn btn-sm btn-secondary" style={{ marginTop: 4, display: "inline-block" }}>Manage</Link>
                                                     </>
                                                 )}
                                             </td>

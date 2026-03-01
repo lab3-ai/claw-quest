@@ -205,11 +205,6 @@ server.get('/skill.md', async (_request, reply) => {
     reply.type('text/plain; charset=utf-8').send(skillContent);
 });
 
-// Health Check
-server.get('/health', async () => {
-    return { status: 'ok', datetime: new Date().toISOString() };
-});
-
 // Main
 const start = async () => {
     try {

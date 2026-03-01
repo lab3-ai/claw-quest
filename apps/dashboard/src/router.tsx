@@ -16,6 +16,8 @@ import { ClaimQuest } from './routes/_authenticated/quests/claim'
 import { FundQuest } from './routes/_authenticated/quests/$questId/fund'
 import { EditQuest } from './routes/_authenticated/quests/$questId/edit'
 import { ManageQuest } from './routes/_authenticated/quests/$questId/manage'
+import { Privacy } from './routes/privacy'
+import { Terms } from './routes/terms'
 
 // Root route
 interface RouterContext {
@@ -43,6 +45,18 @@ const authCallbackRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/auth/callback',
     component: AuthCallback,
+})
+
+const privacyRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/privacy',
+    component: Privacy,
+})
+
+const termsRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/terms',
+    component: Terms,
 })
 
 // Single app layout (topbar + footer, handles both public & authenticated pages)
@@ -180,6 +194,8 @@ const routeTree = rootRoute.addChildren([
     loginRoute,
     registerRoute,
     authCallbackRoute,
+    privacyRoute,
+    termsRoute,
     appLayoutRoute.addChildren([
         indexRoute,
         questsRoute,

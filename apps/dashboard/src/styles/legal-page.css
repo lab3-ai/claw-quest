@@ -1,0 +1,9 @@
+.legal-page { min-height: 100vh; background: var(--bg); }
+.legal-content { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; color: var(--fg); font-size: 14px; line-height: 1.7; }
+.legal-content h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+.legal-content h2 { font-size: 16px; font-weight: 600; margin-top: 32px; margin-bottom: 8px; }
+.legal-content p { margin-bottom: 12px; color: var(--fg-muted); }
+.legal-content ul { margin: 0 0 16px 20px; color: var(--fg-muted); }
+.legal-content li { margin-bottom: 4px; }
+.legal-content a { color: var(--link); }
+.legal-updated { font-size: 12px; color: var(--fg-muted); margin-bottom: 24px; }

@@ -491,10 +491,13 @@ export function Dashboard() {
                                         </div>
 
                                         <div className="quest-time-col">
-                                            {isDraft && quest.fundingStatus === "pending" ? (
-                                                <Link to="/quests/$questId/fund" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Fund</Link>
-                                            ) : isDraft ? (
-                                                <Link {...titleLinkProps} className="btn btn-sm btn-secondary">View Draft</Link>
+                                            {isDraft ? (
+                                                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                                                    {quest.fundingStatus === "pending" && (
+                                                        <Link to="/quests/$questId/fund" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Fund</Link>
+                                                    )}
+                                                    <Link to="/quests/$questId/edit" params={{ questId: quest.id }} className="btn btn-sm btn-secondary">Edit</Link>
+                                                </div>
                                             ) : (
                                                 <>
                                                     <span className={`quest-time-val ${time.cls}`}>{time.val}</span>
@@ -572,9 +575,12 @@ export function Dashboard() {
                                             </td>
                                             <td className="col-time">
                                                 {isDraft ? (
-                                                    isDraft && quest.fundingStatus === "pending"
-                                                        ? <Link to="/quests/$questId/fund" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Fund</Link>
-                                                        : <Link {...titleLinkProps} className="btn btn-sm btn-secondary">View Draft</Link>
+                                                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                                                        {quest.fundingStatus === "pending" && (
+                                                            <Link to="/quests/$questId/fund" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Fund</Link>
+                                                        )}
+                                                        <Link to="/quests/$questId/edit" params={{ questId: quest.id }} className="btn btn-sm btn-secondary">Edit</Link>
+                                                    </div>
                                                 ) : (
                                                     <>
                                                         <div className={`tbl-time ${time.cls}`}>{time.val}</div>

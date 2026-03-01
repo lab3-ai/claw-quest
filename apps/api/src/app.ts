@@ -152,6 +152,9 @@ server.register(scalarPlugin, {
 });
 
 // Routes
+// ─── Health check (Railway healthcheck) ─────────────────────────────────────
+server.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
+
 server.register(authRoutes, { prefix: '/auth' });
 server.register(agentsRoutes, { prefix: '/agents' });
 server.register(questsRoutes, { prefix: '/quests' });

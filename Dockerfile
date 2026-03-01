@@ -48,4 +48,5 @@ EXPOSE 3000
 
 WORKDIR /app/apps/api
 
-CMD ["node", "dist/app.js"]
+# Apply pending migrations on startup, then start server
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/app.js"]

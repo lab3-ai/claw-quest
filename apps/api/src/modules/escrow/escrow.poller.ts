@@ -27,19 +27,29 @@ export const escrowPollerHealth = {
 
 /** Read persisted cursor from DB, or default to recent blocks on first run */
 async function getCursor(server: FastifyInstance, chainId: number, currentBlock: bigint): Promise<bigint> {
-    const row = await server.prisma.escrowCursor.findUnique({ where: { chainId } });
-    if (row) return row.lastBlock;
+    try {
+        const row = await server.prisma.escrowCursor.findUnique({ where: { chainId } });
+        if (row) return row.lastBlock;
+    } catch {
+        // Table may not exist yet (migration pending) — fall through to default
+        server.log.warn('[escrow:poller] EscrowCursor table not available, using default cursor');
+    }
     // First run: start from last ~100 blocks to catch recent events
     return currentBlock > 100n ? currentBlock - 100n : 0n;
 }
 
 /** Persist the last processed block for a chain */
 async function saveCursor(server: FastifyInstance, chainId: number, lastBlock: bigint): Promise<void> {
-    await server.prisma.escrowCursor.upsert({
-        where: { chainId },
-        create: { chainId, lastBlock },
-        update: { lastBlock },
-    });
+    try {
+        await server.prisma.escrowCursor.upsert({
+            where: { chainId },
+            create: { chainId, lastBlock },
+            update: { lastBlock },
+        });
+    } catch {
+        // Table may not exist yet — skip persisting, will re-scan on next poll
+        server.log.warn('[escrow:poller] Failed to save cursor (migration pending?)');
+    }
 }
 
 /**

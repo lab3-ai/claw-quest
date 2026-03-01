@@ -9,3 +9,4 @@
 .user-dropdown a:last-child { border-bottom: none; }
 .user-dropdown a:hover { background: var(--sidebar-bg); }
 .user-dropdown .logout { color: var(--red); }
+.user-dropdown-divider { border-top: 1px solid var(--border); margin: 4px 0; }

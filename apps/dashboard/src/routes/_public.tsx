@@ -39,8 +39,12 @@ export function PublicLayout() {
                                     </button>
                                     {menuOpen && (
                                         <div className="user-dropdown visible">
-                                            <a href="#">Profile</a>
-                                            <a href="#">Settings</a>
+                                            <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+                                            <Link to="/quests/mine" onClick={() => setMenuOpen(false)}>My Quests</Link>
+                                            <Link to="/agents" onClick={() => setMenuOpen(false)}>My Agents</Link>
+                                            <div className="user-dropdown-divider" />
+                                            <Link to="/account" onClick={() => setMenuOpen(false)}>Account</Link>
+                                            <div className="user-dropdown-divider" />
                                             <a className="logout" onClick={() => logout()} style={{ cursor: "pointer" }}>Log out</a>
                                         </div>
                                     )}

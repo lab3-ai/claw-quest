@@ -16,6 +16,7 @@ import { ClaimQuest } from './routes/_authenticated/quests/claim'
 import { FundQuest } from './routes/_authenticated/quests/$questId/fund'
 import { EditQuest } from './routes/_authenticated/quests/$questId/edit'
 import { ManageQuest } from './routes/_authenticated/quests/$questId/manage'
+import { Account } from './routes/_authenticated/account'
 import { Privacy } from './routes/privacy'
 import { Terms } from './routes/terms'
 
@@ -190,6 +191,15 @@ const manageQuestRoute = createRoute({
     component: ManageQuest,
 })
 
+const accountRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/account',
+    beforeLoad: ({ context }) => {
+        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
+    },
+    component: Account,
+})
+
 const routeTree = rootRoute.addChildren([
     loginRoute,
     registerRoute,
@@ -211,6 +221,7 @@ const routeTree = rootRoute.addChildren([
         createAgentRoute,
         createQuestRoute,
         verifyRoute,
+        accountRoute,
     ]),
 ])
 

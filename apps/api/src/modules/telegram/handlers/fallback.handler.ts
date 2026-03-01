@@ -4,13 +4,37 @@ import { BotContext } from '../types';
 import { MSG } from '../content/messages';
 import { FAQ } from '../content/knowledge';
 import { claimAgentKeyboard, claimQuestKeyboard } from '../keyboards/menus';
+import { handleRegisterInput } from './register.handler';
+import { registerSessions } from '../telegram.session';
 
 export function fallbackHandler(server: FastifyInstance): Composer<BotContext> {
     const composer = new Composer<BotContext>();
 
+    // Handle /cancel command — clears any active session
+    composer.command('cancel', async (ctx) => {
+        const tgId = ctx.from?.id;
+        if (tgId && registerSessions.has(tgId)) {
+            registerSessions.delete(tgId);
+            return ctx.reply(MSG.registerCancelled);
+        }
+        return ctx.reply('Nothing to cancel.');
+    });
+
     // Catch all non-command text messages
     composer.on('message:text', async (ctx) => {
         const text = ctx.message.text.trim();
+        const tgId = ctx.from?.id;
+
+        // ── Delegate to register flow if session active ──
+        if (tgId && registerSessions.has(tgId)) {
+            // Allow /cancel text to clear session
+            if (text.toLowerCase() === '/cancel' || text.toLowerCase() === 'cancel') {
+                registerSessions.delete(tgId);
+                return ctx.reply(MSG.registerCancelled);
+            }
+            const handled = await handleRegisterInput(server, ctx, text);
+            if (handled) return;
+        }
 
         // ── Auto-detect pasted tokens by prefix ──
         if (text.startsWith('agent_')) {

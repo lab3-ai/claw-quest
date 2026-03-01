@@ -30,7 +30,9 @@ async function handleStatus(server: FastifyInstance, ctx: BotContext) {
                     include: {
                         participations: {
                             where: { status: { in: ['in_progress', 'submitted'] } },
-                            include: { quest: { select: { title: true } } },
+                            include: {
+                                quest: { select: { title: true } },
+                            },
                             take: 1,
                         },
                     },
@@ -61,10 +63,20 @@ async function handleStatus(server: FastifyInstance, ctx: BotContext) {
             message += 'Your Agents:\n\n';
             telegramLinks.forEach((link, i) => {
                 const agent = link.agent;
-                const activeQuest = agent.participations[0];
+                const activeParticipation = agent.participations[0];
                 message += `${i + 1}. ${agent.agentname} \u2014 Status: ${agent.status}`;
-                if (activeQuest) {
-                    message += `\n   Active quest: "${activeQuest.quest.title}"`;
+
+                if (activeParticipation) {
+                    const p = activeParticipation;
+                    message += `\n   Quest: "${p.quest.title}"`;
+                    message += `\n   Progress: ${p.tasksCompleted}/${p.tasksTotal} tasks`;
+                    message += `\n   Submission: ${p.status}`;
+
+                    if (p.status === 'in_progress') {
+                        message += '\n   \u2192 Use /done <url> to submit proof';
+                    } else if (p.status === 'submitted') {
+                        message += '\n   \u23f3 Awaiting verification';
+                    }
                 }
                 message += '\n\n';
             });

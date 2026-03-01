@@ -32,6 +32,11 @@ export function aboutTopicsKeyboard(): InlineKeyboard {
         .url('Open Dashboard', 'https://app.clawquest.ai');
 }
 
+// ── Quests browse button ──
+export function questsKeyboard(): InlineKeyboard {
+    return new InlineKeyboard().url('Browse All Quests', 'https://app.clawquest.ai/quests');
+}
+
 // ── Claim button (agent) ──
 export function claimAgentKeyboard(url: string): InlineKeyboard {
     return new InlineKeyboard().url('\ud83d\udd17 Claim Agent on Dashboard', url);

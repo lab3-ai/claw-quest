@@ -1,5 +1,77 @@
 # Changelog
 
+## v0.9.0 — Escrow Hardening + Admin Dashboard + Fund Page (2026-03-01)
+
+### Escrow Module Hardened
+- [New] `EscrowCursor` Prisma model — DB-persisted block cursor for re-org safety
+- [New] 5-block confirmation buffer on escrow event polling
+- [New] All 4 event types polled: QuestFunded, QuestDistributed, QuestRefunded, EmergencyWithdrawal
+- [New] Idempotent event handlers in `escrow-event-handlers.ts`
+- [New] Fire-and-forget distribute/refund (async, poller reconciles)
+- [New] `writeContractWithRetry` for handling nonce errors on retries
+- [New] Endpoints: `GET /escrow/tx-status/:txHash`, `GET /escrow/health`
+- [Fix] Poller startup condition (now checks `isEscrowConfigured()` vs stale env check)
+- [Update] Admin distribute/refund now require admin role (security hardening)
+
+### Admin API — Multi-env Support
+- [New] All admin endpoints accept `?env=mainnet|testnet` query param
+- [New] `admin.prisma.ts` — testnet Prisma client factory
+- [New] `/admin/env-status` → current environment status
+- [New] `/admin/quests/:id/participations` → quest participation details
+- [New] `/admin/users/:id/agents` → user's agents list
+- [New] `/admin/users/:id/quests` → user's quests list
+- [Update] Escrow health/tx-status endpoints multi-env aware
+
+### Dashboard Fund Page Refactored
+- [Split] From 409 lines → 9 focused components (~50 lines each)
+- [New] Allowance pre-check before approve button shows
+- [New] Balance check + insufficient balance warning
+- [New] Contract error decoding (human-readable revert reasons)
+- [New] Mobile responsive layout (single column on mobile)
+
+### Base Sepolia Deployment
+- [New] Contract verified on Base Sepolia: `0xe1d2b3d041934e2f245d5a366396e4787d3802c1`
+- [New] `ESCROW_CONTRACT_84532` env var added to `.env.development`
+- [New] Roles configured: DEFAULT_ADMIN (deployer), OPERATOR (hot wallet)
+- [New] USDC allowlisted on Base Sepolia testnet
+
+### Telegram Bot — New Commands
+- [New] `/register` — conversational agent registration (in-memory session)
+- [New] `/quests` — list available quests
+- [New] `/accept <questId>` — accept a quest
+- [New] `/done` — mark quest complete
+- [New] `/cancel` — cancel active quest
+- [Update] `/status` → enhanced with quest progress
+- [Update] Bot menu now shows 9 commands
+- [New] In-memory session store for multi-step flows
+
+### Edit Quest Page
+- [New] Edit buttons for draft quests in My Quests tab (card + list view)
+
+### Bug Fixes (v0.8.1)
+- [Fix] GET /quests/:id 500 error (updatedAt serialization)
+- [Fix] previewToken/claimToken leaking in public responses
+- [Fix] creatorUserId missing from response schema
+- [Fix] Admin role checking in distribute/refund endpoints
+
+---
+
+## v0.8.0 — Admin Dashboard (2026-02-28)
+
+### Admin API Module
+- [New] `apps/api/src/modules/admin/` — admin routes + service
+- [New] `requireAdmin` middleware in `admin.middleware.ts`
+- [New] 14 admin endpoints for quest, user, escrow, analytics management
+- [Update] User.role field: `String @default("user")` — "user" | "admin"
+- [Update] `/auth/me` now returns `role` field
+- [New] CORS: `localhost:5174` (admin dev) + `admin.clawquest.ai` (prod)
+
+### Admin Dashboard (separate repo)
+- [New] Multi-env switcher, escrow health monitoring, TX status lookup
+- [New] Quest participations table, user agents/quests tabs
+
+---
+
 ## v0.7.0 — Telegram Bot Upgrade + Quest Claim Flow (2026-02-22)
 
 ### Telegram Bot — Modular Rewrite

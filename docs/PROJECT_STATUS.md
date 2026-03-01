@@ -1,5 +1,5 @@
 # ClawQuest — Project Status
-> Last updated: 2026-02-20. Single source of truth for AI sessions (Cowork, Claude Code, etc.)
+> Last updated: 2026-03-01. Single source of truth for AI sessions (Cowork, Claude Code, etc.)
 
 ---
 
@@ -110,18 +110,19 @@ clawquest/
 ## 🗄 Database Schema (Prisma)
 
 ```
-User        id, supabaseId(unique), email, username?(unique), password?(legacy), timestamps
+User        id, supabaseId(unique), email, username?(unique), password?(legacy), role(user|admin), timestamps
 Agent       id, ownerId→User, agentname, status(idle/questing/offline),
             activationCode?(unique), agentApiKey?(unique, cq_*)
 AgentSkill  id, agentId→Agent, name, version?, source(clawhub/mcp/manual),
             publisher?, meta(JSON), lastSeenAt  @@unique([agentId, name])
 TelegramLink  id, agentId→Agent, telegramId(BigInt), username, firstName
-Quest       id, title, description, sponsor, type(FCFS/LEADERBOARD/LUCKY_DRAW),
+Quest       id, creatorUserId→User, title, description, sponsor, type(FCFS/LEADERBOARD/LUCKY_DRAW),
             status(draft/live/scheduled/pending/completed), rewardAmount, rewardType,
-            totalSlots, filledSlots, tags[], expiresAt
+            totalSlots, filledSlots, tags[], expiresAt, humanTasks, agentTasks
 QuestParticipation  id, questId, agentId, status, proof(JSON), tasksCompleted,
                     tasksTotal, payoutAmount, payoutStatus
 AgentLog    id, agentId, type(QUEST_START/QUEST_COMPLETE/ERROR/INFO), message, meta(JSON)
+EscrowCursor  chainId(unique), lastBlock, updatedAt — DB-persisted block cursor for escrow event polling
 ```
 
 ---
@@ -129,29 +130,40 @@ AgentLog    id, agentId, type(QUEST_START/QUEST_COMPLETE/ERROR/INFO), message, m
 ## 🔌 API Endpoints
 
 ```
-── Human Auth (Supabase) ──────────────────────────────────
-GET  /auth/me                → current user profile (Supabase JWT)
+── Human Auth ──────────────────────────────────────────────
+GET  /auth/me                → current user profile (JWT) + role field
 
-── Human Agent Management (Supabase JWT) ──────────────────
+── Admin API (JWT + admin role, ?env=mainnet|testnet) ──────
+GET  /admin/env-status       → current environment status
+GET  /admin/quests           → all quests (filtered by env)
+GET  /admin/quests/:id/participations → quest participants
+GET  /admin/users/:id/agents → user's agents
+GET  /admin/users/:id/quests → user's quests
+GET  /escrow/tx-status/:txHash → transaction status
+GET  /escrow/health          → poller health, blocks, pending events
+
+── Human Agent Management ──────────────────────────────────
 GET  /agents                 → list user's agents
 POST /agents                 → create agent, generates activationCode
 GET  /agents/:id             → agent detail
 
-── Agent Self-Service (Agent API Key: Bearer cq_*) ────────
-POST /agents/register        → exchange activationCode for agentApiKey (no auth)
+── Agent Self-Service (API Key: Bearer cq_*) ───────────────
+POST /agents/register        → exchange activationCode for agentApiKey
 GET  /agents/me              → agent self-info + active quests
 GET  /agents/logs            → agent activity log
 POST /agents/me/log          → write activity log entry
 POST /agents/me/skills       → report installed skills (upsert)
 GET  /agents/me/skills       → list agent's installed skills
 
-── Quests (public + auth) ─────────────────────────────────
+── Quests (public + auth) ──────────────────────────────────
 GET  /quests                 → list quests (public, excludes draft)
 GET  /quests/:id             → quest detail (public)
 GET  /quests/:id/questers    → paginated questers (public)
-POST /quests                 → create quest (no auth – MVP)
+GET  /quests/skill-preview?url=... → fetch custom skill from URL
+POST /quests                 → create draft quest (human JWT)
 POST /quests/:id/accept      → accept quest (human JWT or agent API key)
 POST /quests/:id/proof       → submit completion proof (agent API key)
+POST /quests/:id/claim       → claim quest ownership (JWT + claimToken)
 ```
 
 ---
@@ -160,34 +172,45 @@ POST /quests/:id/proof       → submit completion proof (agent API key)
 
 File: `apps/api/src/modules/telegram/telegram.service.ts`
 
-**Existing flow:**
-- `/start <CODE>` → finds Agent by `activationCode`, creates `TelegramLink`, clears `activationCode`
-
-**What's missing (Task 2 target):**
-- `/register` conversational flow (no code needed — bot-initiated agent registration)
+**Existing commands:**
+- `/start <CODE>` → find Agent by activationCode, create TelegramLink
+- `/register` → conversational agent registration flow (in-memory session store)
 - `/quests` — list available quests
 - `/accept <questId>` — accept a quest
-- `/status` — agent + active quest status
-- Quest completion + proof submission via chat
+- `/done` — mark quest complete
+- `/cancel` — cancel active quest
+- `/status` → agent + quest progress
+- `/help`, `/about` → command list and knowledge base
 
 ---
 
-## 🚧 Remaining Work
+## 🚧 Remaining Work (v0.9.0+)
 
-### Task 1 — UI/UX Improvements
-- [ ] Agent Detail page `/agents/:agentId` (logs, status, active quest)
-- [ ] Quest Manage page `/quests/:questId/manage` (operator: edit/publish/fund/close)
-- [ ] Auth pages design polish (login, register)
-- [ ] Global Toast notifications
-- [ ] Quest status update (operator: verify tasks, trigger payout)
-- [ ] Mobile responsive pass
+### Dashboard Fund Page
+- [x] Multi-env admin API support (`?env=mainnet|testnet`)
+- [x] Contract verified on Base Sepolia (`0xe1d2b3d041934e2f245d5a366396e4787d3802c1`)
+- [x] Dashboard fund page with allowance, balance checks, error decoding
+- [x] Mobile responsive layout (9 focused components)
+- [ ] Deploy to mainnet (contract upgrade, USDC allowlist, operator role)
 
-### Task 2 — Telegram Bot Registration Flow
-- [ ] Conversational `/register` flow (see `docs/PLAN_TASK2_TELEGRAM.md`)
-- [ ] `/quests`, `/accept`, `/status`, `/done` commands
-- [ ] Quest proof submission
+### Edit Quest Page
+- [x] Edit button for draft quests in My Quests tab
+- [ ] Full edit form (Details, Reward, Tasks)
 
-### Task 3 — ClawQuest Skill for ClawHub
-- [x] `skill.md` written (OpenClaw doc-only format) — registration, quest flow, proof, skill scanning
-- [x] Agent API endpoints implemented (register, me, skills, proof)
-- [ ] MCP server wrapper for Claude Code (future — same REST API, MCP tool interface)
+### Admin Dashboard (separate repo)
+- [x] Multi-env switcher, escrow health monitoring, TX status lookup
+- [x] Quest participations table, user agents/quests tabs
+- [ ] Integration testing with Base Sepolia
+
+### Backend Escrow Module
+- [x] DB-persisted block cursor (5-block confirmation buffer)
+- [x] All 4 event types polled: QuestFunded, QuestDistributed, QuestRefunded, EmergencyWithdrawal
+- [x] Fire-and-forget distribute/refund (async, poller reconciles)
+- [x] writeContractWithRetry for nonce errors
+- [ ] Payout reconciliation for stuck transactions
+- [ ] Emergency withdrawal handling
+
+### Testing & Deployment
+- [ ] Browser test claim flow end-to-end
+- [ ] Deploy to mainnet (Base, Optimism, Arbitrum)
+- [ ] Load test escrow poller

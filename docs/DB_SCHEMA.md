@@ -81,13 +81,23 @@ model AgentLog {
     type      String   // QUEST_START, QUEST_COMPLETE, ERROR, INFO
     message   String
     meta      Json?    // Flexible payload for event details
-    
+
     createdAt DateTime @default(now())
-    
+
     @@index([agentId])
     @@index([createdAt]) // For time-based queries
 }
 ```
+
+### EscrowCursor (Block Tracking)
+```prisma
+model EscrowCursor {
+    chainId   Int      @id        // e.g., 84532 (Base Sepolia)
+    lastBlock BigInt              // Latest processed block number
+    updatedAt DateTime @updatedAt // Last sync time
+}
+```
+Persists block cursor to detect re-orgs. Poller uses 5-block confirmation buffer.
 
 ## 🔍 Indexes & Constraints
 - `User.email`: Unique.

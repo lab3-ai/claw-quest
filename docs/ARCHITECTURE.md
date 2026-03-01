@@ -4,34 +4,31 @@
 ClawQuest uses a modern, type-safe stack designed for reliability and ease of deployment.
 
 ```ascii
-+-----------------------+       +-------------------------+
-|   Telegram User       |       |       Web Admin         |
-|   (Mobile/Desktop)    |       |      (Browser)          |
-+-----------+-----------+       +-----------+-------------+
-            |                               |
-            | TG Webhook                    | HTTPS / WSS
-            v                               v
-+-----------------------+       +-------------------------+
-|   Telegram Bot API    |       |   Dashboard (Vite SPA)  |
-+-----------+-----------+       +-----------+-------------+
-            |                               |
-            | Webhook Payload               | API Requests
-            v                               v
-+---------------------------------------------------------+
-|                    API Server (Fastify)                 |
-|  - Auth (JWT/Session)                                   |
-|  - Bot Logic / Command Handler                          |
-|  - Business Logic (Quests, Agents)                      |
-|  - Realtime (WebSocket/SSE)                             |
-+---------------------------+-----------------------------+
-                            |
-           +----------------+----------------+
-           |                                 |
-           v                                 v
-+-----------------------+       +-------------------------+
-|   Postgres DB         |       |   External LLM APIs     |
-|   (Supabase)          |       |   (OpenAI/Anthropic)    |
-+-----------------------+       +-------------------------+
+Telegram User      Web User      Web Admin      Smart Contract
+     |                |              |              |
+     | Webhook        | HTTPS/WSS     | HTTPS/WSS    | JSON-RPC
+     |                |              |              |
+     +----------------+-------+------+-------+------+
+                              |
+                    +---------+----------+
+                    |                    |
+                    v                    v
+            +------------------+    +------------------+
+            |  API (Fastify)   |    | Escrow Poller    |
+            |  - Auth (JWT)    |    | - Block cursor   |
+            |  - Routes        |    | - Event handlers |
+            |  - Admin API     |    | - Reconciliation |
+            +--------+---------+    +--------+---------+
+                     |                       |
+          +----------+----------+            |
+          |                     |            |
+          v                     v            v
+    +---------------------+    +-----------+---------+
+    | Postgres (Supabase) |    | Blockchain (Base) |
+    | - Schema            |    | - Contracts       |
+    | - EscrowCursor      |    | - Events          |
+    | - Quest/Agent data  |    | - Balances        |
+    +---------------------+    +-------------------+
 ```
 
 ## 🔄 Data Flows
@@ -46,9 +43,18 @@ ClawQuest uses a modern, type-safe stack designed for reliability and ease of de
 - API validates the request signature (optional but recommended) or secret token.
 - API processes the message, updates state in DB, and responds via Telegram API.
 
-### 3. Realtime Flow
-- **Dashboard** subscribes to specific events (e.g., "Quest Completed") via WebSocket/SSE exposed by Fastify.
-- **API** broadcasts events when specific actions occur.
+### 3. Escrow Module: Blockchain ↔ API ↔ Database
+- **Poller** runs continuously in background, querying blockchain events
+- **Block Cursor**: DB-persisted (`EscrowCursor`) to track latest block processed
+- **5-block Confirmation Buffer**: Re-org safety — only process events confirmed 5+ blocks deep
+- **Event Polling**: All 4 event types (QuestFunded, QuestDistributed, QuestRefunded, EmergencyWithdrawal)
+- **Idempotent Handlers**: Same event processed multiple times = same result
+- **Fire-and-Forget**: Distribute/refund calls fire async, poller reconciles status on next sync
+- **Health Endpoint**: `GET /escrow/health` reports poller status, latest block, pending events
+
+### 4. Realtime Flow (Future)
+- **Dashboard** can subscribe to quest status updates via WebSocket/SSE
+- **API** broadcasts events when quests fund, distribute, or refund
 
 ## 🏗 Monorepo Layout
 We use a **pnpm workspace** monorepo to share types and configuration.

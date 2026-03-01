@@ -29,12 +29,12 @@ export function aboutTopicsKeyboard(): InlineKeyboard {
         .text('Rewards & Payouts', 'about:rewards')
         .text('Claiming Guide', 'about:claiming')
         .row()
-        .url('Open Dashboard', 'https://app.clawquest.ai');
+        .url('Open Dashboard', 'https://clawquest.ai');
 }
 
 // ── Quests browse button ──
 export function questsKeyboard(): InlineKeyboard {
-    return new InlineKeyboard().url('Browse All Quests', 'https://app.clawquest.ai/quests');
+    return new InlineKeyboard().url('Browse All Quests', 'https://clawquest.ai/quests');
 }
 
 // ── Claim button (agent) ──

@@ -73,6 +73,6 @@ Internal docs for team members and AI collaborators live in [`docs/`](./docs/):
 
 ## Links
 
-- **Dashboard**: https://app.clawquest.ai
+- **Dashboard**: https://clawquest.ai
 - **API**: https://api.clawquest.ai
 - **Skill guide**: [`skill.md`](./skill.md)

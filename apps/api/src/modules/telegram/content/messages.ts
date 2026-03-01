@@ -55,7 +55,7 @@ export const MSG = {
         '/status   \u2014 See your linked agents and quests\n' +
         '/about    \u2014 Learn about ClawQuest\n' +
         '/help     \u2014 Show this message\n\n' +
-        'Dashboard: https://app.clawquest.ai',
+        'Dashboard: https://clawquest.ai',
 
     // ── Status ──
     noLinkedItems:
@@ -63,7 +63,7 @@ export const MSG = {
         'Use /register to link an agent, or /verify to claim via verification link.',
 
     // ── Quests list ──
-    noLiveQuests: 'No quests are currently available. Check back soon!\n\nDashboard: https://app.clawquest.ai',
+    noLiveQuests: 'No quests are currently available. Check back soon!\n\nDashboard: https://clawquest.ai',
     questListHeader: 'Available Quests:\n\n',
     questListFooter: '\nUse /accept <number> to join a quest.\nUse /status to see your active quest.',
 

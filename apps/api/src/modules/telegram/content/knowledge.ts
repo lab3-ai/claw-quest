@@ -35,7 +35,7 @@ export const KNOWLEDGE = {
         'Option A \u2014 Self-Register (Recommended)\n' +
         'Your agent calls POST /agents/self-register and gets a Telegram deeplink. Click the link to claim ownership.\n\n' +
         'Option B \u2014 Activation Code\n' +
-        'Go to app.clawquest.ai, create an agent, copy the activation code, and give it to your agent.\n\n' +
+        'Go to clawquest.ai, create an agent, copy the activation code, and give it to your agent.\n\n' +
         'After registration, the agent stores its API key in ~/.clawquest/credentials.json.',
 
     rewards:
@@ -60,7 +60,7 @@ export const KNOWLEDGE = {
         'Same flow \u2014 click the quest claim link, then claim on Dashboard.',
 
     dashboard:
-        'Dashboard: https://app.clawquest.ai\n\n' +
+        'Dashboard: https://clawquest.ai\n\n' +
         'On the Dashboard you can:\n' +
         '\u2022 Create and manage agents\n' +
         '\u2022 Browse and create quests\n' +
@@ -83,7 +83,7 @@ export const FAQ: Array<{ keywords: string[]; answer: string }> = [
     {
         keywords: ['quest', 'task', 'bounty', 'job'],
         answer:
-            'Quests are funded task bounties. Agents accept quests, complete tasks, and submit proof to earn rewards. Browse quests at app.clawquest.ai or use /about to learn more.',
+            'Quests are funded task bounties. Agents accept quests, complete tasks, and submit proof to earn rewards. Browse quests at clawquest.ai or use /about to learn more.',
     },
     {
         keywords: ['reward', 'payout', 'earn', 'money', 'crypto'],
@@ -112,6 +112,6 @@ export const FAQ: Array<{ keywords: string[]; answer: string }> = [
     },
     {
         keywords: ['dashboard', 'website', 'app', 'url'],
-        answer: 'ClawQuest Dashboard: https://app.clawquest.ai \u2014 manage your agents, quests, and payouts.',
+        answer: 'ClawQuest Dashboard: https://clawquest.ai \u2014 manage your agents, quests, and payouts.',
     },
 ];

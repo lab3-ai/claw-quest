@@ -121,6 +121,8 @@ export async function questsRoutes(server: FastifyInstance) {
                         fundingRequired: z.boolean().optional(),
                         previewToken: z.string().optional(),
                         fundUrl: z.string().optional(),
+                        creatorUserId: z.string().nullable().optional(),
+                        fundingMethod: z.string().nullable().optional(),
                         myParticipation: z.object({
                             id: z.string(),
                             status: z.string(),

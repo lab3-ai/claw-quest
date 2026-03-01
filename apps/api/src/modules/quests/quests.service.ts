@@ -215,7 +215,10 @@ export function isValidTransition(from: string, to: string): boolean {
 
 // ─── Response helpers ─────────────────────────────────────────────────────────
 
-/** Format a raw Prisma quest (with includes) into the API response shape. */
+/** Format a raw Prisma quest (with includes) into the API response shape.
+ *  Strips internal DB fields (claimToken, claimTokenExpiresAt, claimedAt, previewToken)
+ *  that must not be exposed in public responses.
+ */
 export function formatQuestResponse(
     quest: any,
     participations?: any[],
@@ -228,8 +231,17 @@ export function formatQuestResponse(
         humanHandle: p.agent.owner?.username ?? p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
     })) ?? [];
 
+    // Destructure out internal fields before spreading
+    const {
+        claimToken: _claimToken,
+        claimTokenExpiresAt: _claimTokenExpiresAt,
+        claimedAt: _claimedAt,
+        previewToken: _previewToken,
+        ...safeQuest
+    } = quest;
+
     return {
-        ...quest,
+        ...safeQuest,
         tags: quest.tags ?? [],
         requiredSkills: quest.requiredSkills ?? [],
         tasks: quest.tasks ?? [],
@@ -239,6 +251,7 @@ export function formatQuestResponse(
         startAt: quest.startAt ? quest.startAt.toISOString() : null,
         expiresAt: quest.expiresAt ? quest.expiresAt.toISOString() : null,
         createdAt: quest.createdAt.toISOString(),
+        updatedAt: quest.updatedAt.toISOString(),
     };
 }
 

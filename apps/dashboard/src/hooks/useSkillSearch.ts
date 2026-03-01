@@ -97,7 +97,7 @@ export async function fetchSkillFromUrl(url: string): Promise<ClawHubSkill | nul
     const data = await res.json() as { name: string; desc: string; version: string; url: string }
 
     let hostname = "custom"
-    try { hostname = new URL(trimmed).hostname } catch {}
+    try { hostname = new URL(trimmed).hostname } catch { /* invalid URL, keep default */ }
 
     return {
         id: trimmed,

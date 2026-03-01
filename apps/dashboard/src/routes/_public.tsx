@@ -53,12 +53,7 @@ export function PublicLayout() {
                                     </button>
                                     {menuOpen && (
                                         <div className="user-dropdown visible" role="menu">
-                                            <Link to="/dashboard" role="menuitem" onClick={() => setMenuOpen(false)}>Dashboard</Link>
-                                            <Link to="/quests/mine" role="menuitem" onClick={() => setMenuOpen(false)}>My Quests</Link>
-                                            <Link to="/dashboard" role="menuitem" onClick={() => setMenuOpen(false)}>My Agents</Link>
-                                            <div className="user-dropdown-divider" role="separator" />
                                             <Link to="/account" role="menuitem" onClick={() => setMenuOpen(false)}>Account</Link>
-                                            <div className="user-dropdown-divider" role="separator" />
                                             <button className="logout" role="menuitem" onClick={() => logout()}>Log out</button>
                                         </div>
                                     )}
@@ -78,11 +73,7 @@ export function PublicLayout() {
                     {isAuthenticated ? (
                         <>
                             <Link to="/dashboard" onClick={() => setMobileOpen(false)}>Dashboard</Link>
-                            <Link to="/quests/mine" onClick={() => setMobileOpen(false)}>My Quests</Link>
-                            <Link to="/dashboard" onClick={() => setMobileOpen(false)}>My Agents</Link>
-                            <div className="mobile-nav-divider" />
                             <Link to="/account" onClick={() => setMobileOpen(false)}>Account</Link>
-                            <div className="mobile-nav-divider" />
                             <button className="logout" onClick={() => { logout(); setMobileOpen(false) }}>Log out</button>
                         </>
                     ) : (

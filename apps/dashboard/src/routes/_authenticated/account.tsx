@@ -34,7 +34,7 @@ function shortenAddress(addr: string) {
 }
 
 function formatDate(iso: string) {
-    return new Date(iso).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+    return new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric" }).format(new Date(iso))
 }
 
 export function Account() {
@@ -46,7 +46,7 @@ export function Account() {
     const [walletError, setWalletError] = useState("")
 
     // Fetch profile from API
-    const { data: profile } = useQuery<UserProfile>({
+    const { data: profile, isLoading: profileLoading, isError: profileError } = useQuery<UserProfile>({
         queryKey: ["auth", "me"],
         queryFn: async () => {
             const res = await fetch(`${API_BASE}/auth/me`, {
@@ -59,7 +59,7 @@ export function Account() {
     })
 
     // Fetch wallets
-    const { data: wallets = [] } = useQuery<Wallet[]>({
+    const { data: wallets = [], isLoading: walletsLoading, isError: walletsError } = useQuery<Wallet[]>({
         queryKey: ["wallets"],
         queryFn: async () => {
             const res = await fetch(`${API_BASE}/wallets`, {
@@ -129,20 +129,35 @@ export function Account() {
             <div className="account-section">
                 <div className="account-section-header">Profile</div>
                 <div className="account-section-body">
-                    <div className="account-row">
-                        <span className="account-label">Email</span>
-                        <span className="account-value">{profile?.email ?? supabaseUser?.email ?? "—"}</span>
-                    </div>
-                    <div className="account-row">
-                        <span className="account-label">Username</span>
-                        <span className="account-value">{profile?.username ?? "—"}</span>
-                    </div>
-                    <div className="account-row">
-                        <span className="account-label">Member since</span>
-                        <span className="account-value">
-                            {profile?.createdAt ? formatDate(profile.createdAt) : "—"}
-                        </span>
-                    </div>
+                    {profileLoading ? (
+                        <>
+                            <div className="account-row"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
+                            <div className="account-row"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
+                            <div className="account-row"><span className="skeleton" style={{ width: "60%", height: 16 }} /></div>
+                        </>
+                    ) : profileError ? (
+                        <div className="account-error">
+                            Failed to load profile.{" "}
+                            <button className="btn btn-sm btn-secondary" onClick={() => queryClient.invalidateQueries({ queryKey: ["auth", "me"] })}>Retry</button>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="account-row">
+                                <span className="account-label">Email</span>
+                                <span className="account-value">{profile?.email ?? supabaseUser?.email ?? "—"}</span>
+                            </div>
+                            <div className="account-row">
+                                <span className="account-label">Username</span>
+                                <span className="account-value">{profile?.username ?? "—"}</span>
+                            </div>
+                            <div className="account-row">
+                                <span className="account-label">Member since</span>
+                                <span className="account-value">
+                                    {profile?.createdAt ? formatDate(profile.createdAt) : "—"}
+                                </span>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -156,7 +171,7 @@ export function Account() {
                         const isPlaceholder = p.key === "telegram" || p.key === "twitter" || p.key === "discord"
 
                         return (
-                            <div key={p.key} className="account-provider">
+                            <div key={p.key} className="account-provider" style={{ minWidth: 0 }}>
                                 <span className="account-provider-icon">{p.icon}</span>
                                 <span className="account-provider-name">{p.label}</span>
                                 {isLinked ? (
@@ -181,7 +196,14 @@ export function Account() {
             <div className="account-section">
                 <div className="account-section-header">Wallets</div>
                 <div className="account-section-body">
-                    {wallets.length === 0 ? (
+                    {walletsLoading ? (
+                        <div className="account-row"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
+                    ) : walletsError ? (
+                        <div className="account-error">
+                            Failed to load wallets.{" "}
+                            <button className="btn btn-sm btn-secondary" onClick={() => queryClient.invalidateQueries({ queryKey: ["wallets"] })}>Retry</button>
+                        </div>
+                    ) : wallets.length === 0 ? (
                         <div className="account-wallet-empty">No wallets linked yet.</div>
                     ) : (
                         wallets.map(w => (
@@ -197,14 +219,18 @@ export function Account() {
                         ))
                     )}
                     <form className="account-wallet-form" onSubmit={handleLinkWallet}>
+                        <label htmlFor="wallet-address" className="sr-only">Wallet address</label>
                         <input
+                            id="wallet-address"
+                            name="wallet-address"
                             type="text"
                             placeholder="0x..."
+                            autoComplete="off"
                             value={walletInput}
                             onChange={e => setWalletInput(e.target.value)}
                         />
                         <button type="submit" className="btn btn-sm" disabled={linkWallet.isPending}>
-                            {linkWallet.isPending ? "Linking..." : "+ Link wallet"}
+                            {linkWallet.isPending ? "Linking\u2026" : "+ Link wallet"}
                         </button>
                     </form>
                     {walletError && <div className="account-wallet-error">{walletError}</div>}

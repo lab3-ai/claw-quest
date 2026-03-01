@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Link } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
@@ -98,6 +98,31 @@ export function Dashboard() {
     const [activePlatform, setActivePlatform] = useState<"openclaw" | "claude">("openclaw")
     const [platformDropdownOpen, setPlatformDropdownOpen] = useState(false)
     const platformSelectRef = useRef<HTMLDivElement>(null)
+    const modalRef = useRef<HTMLDivElement>(null)
+
+    // Focus trap for register agent modal
+    const handleModalKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if (e.key === "Escape") { setShowRegisterModal(false); return }
+        if (e.key !== "Tab") return
+        const modal = modalRef.current
+        if (!modal) return
+        const focusable = modal.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+        if (focusable.length === 0) return
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+    }, [])
+
+    // Auto-focus first element when modal opens
+    useEffect(() => {
+        if (showRegisterModal && modalRef.current) {
+            const first = modalRef.current.querySelector<HTMLElement>('a[href], button:not([disabled]), input:not([disabled])')
+            first?.focus()
+        }
+    }, [showRegisterModal])
 
     useEffect(() => {
         if (!platformDropdownOpen) return
@@ -172,9 +197,9 @@ export function Dashboard() {
                 <div
                     className="modal-backdrop visible"
                     onClick={() => setShowRegisterModal(false)}
-                    onKeyDown={e => { if (e.key === "Escape") setShowRegisterModal(false) }}
+                    onKeyDown={handleModalKeyDown}
                 >
-                    <div className="modal" role="dialog" aria-label="Register an Agent" onClick={e => e.stopPropagation()}>
+                    <div className="modal" ref={modalRef} role="dialog" aria-label="Register an Agent" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2>Register an Agent</h2>
                             <button className="modal-close" aria-label="Close" onClick={() => setShowRegisterModal(false)}>&times;</button>
@@ -405,7 +430,24 @@ export function Dashboard() {
                     </div>
 
                     {questsLoading && (
-                        <div style={{ padding: "40px", textAlign: "center", color: "var(--fg-muted)" }}>Loading quests…</div>
+                        <div>
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="quest-item">
+                                    <div className="quest-stats">
+                                        <div className="skeleton" style={{ width: 60, height: 32 }} />
+                                        <div className="skeleton" style={{ width: 50, height: 14 }} />
+                                    </div>
+                                    <div className="quest-body" style={{ flex: 1 }}>
+                                        <div className="skeleton" style={{ width: "70%", height: 16, marginBottom: 8 }} />
+                                        <div className="skeleton" style={{ width: "90%", height: 12, marginBottom: 8 }} />
+                                        <div className="skeleton" style={{ width: "40%", height: 12 }} />
+                                    </div>
+                                    <div className="quest-time-col">
+                                        <div className="skeleton" style={{ width: 60, height: 14 }} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     )}
 
                     {!questsLoading && filteredQuests.length === 0 && (
@@ -642,7 +684,26 @@ export function Dashboard() {
                     </div>
 
                     {agentsLoading && (
-                        <div style={{ padding: "40px", textAlign: "center", color: "var(--fg-muted)" }}>Loading agents…</div>
+                        <table className="agent-table">
+                            <thead>
+                                <tr>
+                                    <th className="col-agent">Agent</th>
+                                    <th className="col-skill-status">Status</th>
+                                    <th className="col-skills">Skills</th>
+                                    <th className="col-quests">Quests</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {[1, 2, 3].map(i => (
+                                    <tr key={i}>
+                                        <td><div className="skeleton" style={{ width: 120, height: 14 }} /></td>
+                                        <td><div className="skeleton" style={{ width: 70, height: 14 }} /></td>
+                                        <td><div className="skeleton" style={{ width: 140, height: 14 }} /></td>
+                                        <td><div className="skeleton" style={{ width: 30, height: 14, margin: "0 auto" }} /></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     )}
 
                     {!agentsLoading && filteredAgents.length === 0 && (

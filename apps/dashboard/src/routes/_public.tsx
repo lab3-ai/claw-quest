@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react"
 export function PublicLayout() {
     const { isAuthenticated, logout, user } = useAuth()
     const [menuOpen, setMenuOpen] = useState(false)
+    const [mobileOpen, setMobileOpen] = useState(false)
     const menuRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
@@ -29,6 +30,14 @@ export function PublicLayout() {
                     <div className="topbar-nav">
                         <Link to="/quests">Quests</Link>
                     </div>
+                    <button
+                        className="topbar-hamburger"
+                        onClick={() => setMobileOpen(v => !v)}
+                        aria-label="Menu"
+                        aria-expanded={mobileOpen}
+                    >
+                        {mobileOpen ? "\u2715" : "\u2630"}
+                    </button>
                     <div className="topbar-right">
                         {isAuthenticated ? (
                             <>
@@ -63,6 +72,24 @@ export function PublicLayout() {
                     </div>
                 </div>
             </div>
+            {mobileOpen && (
+                <div className="topbar-mobile-nav open">
+                    <Link to="/quests" onClick={() => setMobileOpen(false)}>Quests</Link>
+                    {isAuthenticated ? (
+                        <>
+                            <Link to="/dashboard" onClick={() => setMobileOpen(false)}>Dashboard</Link>
+                            <Link to="/quests/mine" onClick={() => setMobileOpen(false)}>My Quests</Link>
+                            <Link to="/dashboard" onClick={() => setMobileOpen(false)}>My Agents</Link>
+                            <div className="mobile-nav-divider" />
+                            <Link to="/account" onClick={() => setMobileOpen(false)}>Account</Link>
+                            <div className="mobile-nav-divider" />
+                            <button className="logout" onClick={() => { logout(); setMobileOpen(false) }}>Log out</button>
+                        </>
+                    ) : (
+                        <Link to="/login" onClick={() => setMobileOpen(false)}>Log in</Link>
+                    )}
+                </div>
+            )}
 
             <div className="page-container">
                 <Outlet />

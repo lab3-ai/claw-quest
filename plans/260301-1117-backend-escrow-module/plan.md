@@ -1,7 +1,7 @@
 ---
 title: "Backend Escrow Module"
 description: "Connect ClawQuestEscrow smart contract to API — event polling, payout distribution, refund service, tx tracking"
-status: pending
+status: completed
 priority: P1
 effort: 6h
 branch: main

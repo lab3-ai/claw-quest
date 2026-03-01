@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { parseEventLogs, type Log } from 'viem';
 import { ESCROW_ABI } from '@clawquest/shared';
-import { escrowConfig, isEscrowConfigured } from './escrow.config';
+import { escrowConfig, isEscrowConfigured, getContractAddress } from './escrow.config';
 import { getPublicClient } from './escrow.client';
 import { handleQuestFunded } from './escrow.service';
 
@@ -40,7 +40,7 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
 
         // Fetch QuestFunded event logs
         const logs = await client.getLogs({
-            address: escrowConfig.contractAddress,
+            address: getContractAddress(chainId),
             event: {
                 type: 'event',
                 name: 'QuestFunded',

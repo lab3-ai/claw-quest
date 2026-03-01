@@ -216,6 +216,8 @@ const start = async () => {
     } catch (err) {
         server.log.error(err);
         await prisma.$disconnect();
+        const { disconnectTestnetPrisma } = await import('./modules/admin/admin.prisma');
+        await disconnectTestnetPrisma();
         process.exit(1);
     }
 };

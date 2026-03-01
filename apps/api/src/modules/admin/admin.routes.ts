@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { requireAdmin } from './admin.middleware';
+import { getAdminPrisma, isTestnetDbConfigured, type AdminEnv } from './admin.prisma';
 import {
     listQuests,
     getQuestDetail,
@@ -9,12 +10,20 @@ import {
     forceQuestStatus,
     listUsers,
     getUserDetail,
+    listUserAgents,
+    listUserQuests,
     adminUpdateUser,
+    listQuestParticipations,
     getEscrowOverview,
     listEscrowQuests,
     getAnalyticsOverview,
     getTimeseries,
 } from './admin.service';
+
+// ─── Env query param schema (shared across admin routes) ────────────────────
+const envQuerySchema = z.object({
+    env: z.enum(['mainnet', 'testnet']).default('mainnet'),
+});
 
 // ─── Admin Routes ────────────────────────────────────────────────────────────
 // All routes require: authenticate + requireAdmin
@@ -23,6 +32,24 @@ export async function adminRoutes(server: FastifyInstance) {
     // Apply auth + admin check to all routes in this plugin
     server.addHook('onRequest', server.authenticate);
     server.addHook('onRequest', requireAdmin);
+
+    // ── GET /admin/env-status ───────────────────────────────────────────────
+    server.get(
+        '/env-status',
+        {
+            schema: {
+                tags: ['Admin'],
+                summary: 'Get environment configuration status',
+                security: [{ bearerAuth: [] }],
+            },
+        },
+        async () => {
+            return {
+                testnetDbConfigured: isTestnetDbConfigured(),
+                currentDefault: 'mainnet',
+            };
+        }
+    );
 
     // ═══════════════════════════════════════════════════════════════════════════
     // QUEST MANAGEMENT
@@ -46,12 +73,14 @@ export async function adminRoutes(server: FastifyInstance) {
                     order: z.enum(['asc', 'desc']).default('desc'),
                     page: z.coerce.number().int().min(1).default(1),
                     pageSize: z.coerce.number().int().min(1).max(100).default(25),
+                    env: z.enum(['mainnet', 'testnet']).default('mainnet'),
                 }),
             },
         },
         async (request) => {
-            const params = request.query as any;
-            return listQuests(server.prisma, params);
+            const { env, ...params } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
+            return listQuests(prisma, params);
         }
     );
 
@@ -64,13 +93,40 @@ export async function adminRoutes(server: FastifyInstance) {
                 summary: 'Get full quest detail (admin)',
                 security: [{ bearerAuth: [] }],
                 params: z.object({ id: z.string().uuid() }),
+                querystring: envQuerySchema,
             },
         },
         async (request, reply) => {
             const { id } = request.params as any;
-            const quest = await getQuestDetail(server.prisma, id);
+            const { env } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
+            const quest = await getQuestDetail(prisma, id);
             if (!quest) return reply.status(404).send({ message: 'Quest not found' });
             return quest;
+        }
+    );
+
+    // ── GET /admin/quests/:id/participations ──────────────────────────────────
+    server.get(
+        '/quests/:id/participations',
+        {
+            schema: {
+                tags: ['Admin'],
+                summary: 'List quest participations (admin)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                querystring: z.object({
+                    page: z.coerce.number().int().min(1).default(1),
+                    pageSize: z.coerce.number().int().min(1).max(100).default(25),
+                    env: z.enum(['mainnet', 'testnet']).default('mainnet'),
+                }),
+            },
+        },
+        async (request) => {
+            const { id } = request.params as any;
+            const { env, ...params } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
+            return listQuestParticipations(prisma, id, params);
         }
     );
 
@@ -83,6 +139,7 @@ export async function adminRoutes(server: FastifyInstance) {
                 summary: 'Update any quest (admin bypass)',
                 security: [{ bearerAuth: [] }],
                 params: z.object({ id: z.string().uuid() }),
+                querystring: envQuerySchema,
                 body: z.object({
                     title: z.string().optional(),
                     description: z.string().optional(),
@@ -102,7 +159,9 @@ export async function adminRoutes(server: FastifyInstance) {
         },
         async (request, reply) => {
             const { id } = request.params as any;
-            const result = await adminUpdateQuest(server.prisma, id, request.body as any);
+            const { env } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
+            const result = await adminUpdateQuest(prisma, id, request.body as any);
             if (!result) return reply.status(404).send({ message: 'Quest not found' });
             return result;
         }
@@ -117,11 +176,14 @@ export async function adminRoutes(server: FastifyInstance) {
                 summary: 'Delete a quest (admin)',
                 security: [{ bearerAuth: [] }],
                 params: z.object({ id: z.string().uuid() }),
+                querystring: envQuerySchema,
             },
         },
         async (request, reply) => {
             const { id } = request.params as any;
-            const result = await adminDeleteQuest(server.prisma, id);
+            const { env } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
+            const result = await adminDeleteQuest(prisma, id);
             if (!result) return reply.status(404).send({ message: 'Quest not found' });
             if ('error' in result) {
                 return reply.status(400).send({
@@ -142,6 +204,7 @@ export async function adminRoutes(server: FastifyInstance) {
                 summary: 'Force quest status change (admin)',
                 security: [{ bearerAuth: [] }],
                 params: z.object({ id: z.string().uuid() }),
+                querystring: envQuerySchema,
                 body: z.object({
                     status: z.string(),
                     reason: z.string().min(1),
@@ -150,8 +213,10 @@ export async function adminRoutes(server: FastifyInstance) {
         },
         async (request, reply) => {
             const { id } = request.params as any;
+            const { env } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
             const { status, reason } = request.body as any;
-            const result = await forceQuestStatus(server.prisma, id, status, reason, request.user.email);
+            const result = await forceQuestStatus(prisma, id, status, reason, request.user.email);
             if (!result) return reply.status(404).send({ message: 'Quest not found' });
 
             server.log.info(
@@ -182,12 +247,14 @@ export async function adminRoutes(server: FastifyInstance) {
                     order: z.enum(['asc', 'desc']).default('desc'),
                     page: z.coerce.number().int().min(1).default(1),
                     pageSize: z.coerce.number().int().min(1).max(100).default(25),
+                    env: z.enum(['mainnet', 'testnet']).default('mainnet'),
                 }),
             },
         },
         async (request) => {
-            const params = request.query as any;
-            return listUsers(server.prisma, params);
+            const { env, ...params } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
+            return listUsers(prisma, params);
         }
     );
 
@@ -200,13 +267,64 @@ export async function adminRoutes(server: FastifyInstance) {
                 summary: 'Get user detail (admin)',
                 security: [{ bearerAuth: [] }],
                 params: z.object({ id: z.string().uuid() }),
+                querystring: envQuerySchema,
             },
         },
         async (request, reply) => {
             const { id } = request.params as any;
-            const user = await getUserDetail(server.prisma, id);
+            const { env } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
+            const user = await getUserDetail(prisma, id);
             if (!user) return reply.status(404).send({ message: 'User not found' });
             return user;
+        }
+    );
+
+    // ── GET /admin/users/:id/agents ───────────────────────────────────────────
+    server.get(
+        '/users/:id/agents',
+        {
+            schema: {
+                tags: ['Admin'],
+                summary: 'List user agents (admin)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                querystring: z.object({
+                    page: z.coerce.number().int().min(1).default(1),
+                    pageSize: z.coerce.number().int().min(1).max(100).default(25),
+                    env: z.enum(['mainnet', 'testnet']).default('mainnet'),
+                }),
+            },
+        },
+        async (request) => {
+            const { id } = request.params as any;
+            const { env, ...params } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
+            return listUserAgents(prisma, id, params);
+        }
+    );
+
+    // ── GET /admin/users/:id/quests ───────────────────────────────────────────
+    server.get(
+        '/users/:id/quests',
+        {
+            schema: {
+                tags: ['Admin'],
+                summary: 'List user created quests (admin)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                querystring: z.object({
+                    page: z.coerce.number().int().min(1).default(1),
+                    pageSize: z.coerce.number().int().min(1).max(100).default(25),
+                    env: z.enum(['mainnet', 'testnet']).default('mainnet'),
+                }),
+            },
+        },
+        async (request) => {
+            const { id } = request.params as any;
+            const { env, ...params } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
+            return listUserQuests(prisma, id, params);
         }
     );
 
@@ -219,6 +337,7 @@ export async function adminRoutes(server: FastifyInstance) {
                 summary: 'Update user role (admin)',
                 security: [{ bearerAuth: [] }],
                 params: z.object({ id: z.string().uuid() }),
+                querystring: envQuerySchema,
                 body: z.object({
                     role: z.enum(['user', 'admin']).optional(),
                     username: z.string().min(3).max(30).optional(),
@@ -228,7 +347,9 @@ export async function adminRoutes(server: FastifyInstance) {
         },
         async (request, reply) => {
             const { id } = request.params as any;
-            const result = await adminUpdateUser(server.prisma, id, request.body as any, request.user.id);
+            const { env } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
+            const result = await adminUpdateUser(prisma, id, request.body as any, request.user.id);
             if (!result) return reply.status(404).send({ message: 'User not found' });
             if ('error' in result) {
                 return reply.status(400).send({
@@ -252,10 +373,13 @@ export async function adminRoutes(server: FastifyInstance) {
                 tags: ['Admin'],
                 summary: 'Escrow aggregate stats (admin)',
                 security: [{ bearerAuth: [] }],
+                querystring: envQuerySchema,
             },
         },
-        async () => {
-            return getEscrowOverview(server.prisma);
+        async (request) => {
+            const { env } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
+            return getEscrowOverview(prisma);
         }
     );
 
@@ -270,12 +394,14 @@ export async function adminRoutes(server: FastifyInstance) {
                 querystring: z.object({
                     page: z.coerce.number().int().min(1).default(1),
                     pageSize: z.coerce.number().int().min(1).max(100).default(25),
+                    env: z.enum(['mainnet', 'testnet']).default('mainnet'),
                 }),
             },
         },
         async (request) => {
-            const params = request.query as any;
-            return listEscrowQuests(server.prisma, params);
+            const { env, ...params } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
+            return listEscrowQuests(prisma, params);
         }
     );
 
@@ -291,10 +417,13 @@ export async function adminRoutes(server: FastifyInstance) {
                 tags: ['Admin'],
                 summary: 'Platform analytics overview (admin)',
                 security: [{ bearerAuth: [] }],
+                querystring: envQuerySchema,
             },
         },
-        async () => {
-            return getAnalyticsOverview(server.prisma);
+        async (request) => {
+            const { env } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
+            return getAnalyticsOverview(prisma);
         }
     );
 
@@ -311,14 +440,16 @@ export async function adminRoutes(server: FastifyInstance) {
                     period: z.enum(['day', 'week', 'month']).default('day'),
                     from: z.string().optional(),
                     to: z.string().optional(),
+                    env: z.enum(['mainnet', 'testnet']).default('mainnet'),
                 }),
             },
         },
         async (request) => {
-            const { metric, period, from, to } = request.query as any;
+            const { metric, period, from, to, env } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env);
             const fromDate = from ? new Date(from) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
             const toDate = to ? new Date(to) : new Date();
-            return getTimeseries(server.prisma, metric, period, fromDate, toDate);
+            return getTimeseries(prisma, metric, period, fromDate, toDate);
         }
     );
 }

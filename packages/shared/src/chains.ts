@@ -140,3 +140,18 @@ export function isNativeToken(address: string): boolean {
 /** Chain IDs supported for escrow deposits */
 export const ESCROW_CHAIN_IDS = [8453, 84532, 1, 56, 42161, 137] as const;
 export type EscrowChainId = typeof ESCROW_CHAIN_IDS[number];
+
+/** Get chains filtered by testnet flag */
+export function getActiveChains(enableTestnets: boolean): ChainConfig[] {
+    return Object.values(SUPPORTED_CHAINS).filter(
+        c => enableTestnets || !c.isTestnet
+    );
+}
+
+/** Get active escrow chain IDs filtered by testnet flag */
+export function getActiveEscrowChainIds(enableTestnets: boolean): number[] {
+    return ESCROW_CHAIN_IDS.filter(id => {
+        const chain = getChainById(id);
+        return chain && (enableTestnets || !chain.isTestnet);
+    });
+}

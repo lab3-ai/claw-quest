@@ -73,7 +73,8 @@ typings/
 # dotenv environment variables file
 .env
 .env.test
-.env.production
+# Note: .env.development and .env.production are committed (no secrets!)
+# They contain non-secret defaults for testnet/mainnet environments.
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache

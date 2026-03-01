@@ -88,51 +88,63 @@ export async function listQuests(prisma: PrismaClient, params: AdminQuestListPar
 export async function getQuestDetail(prisma: PrismaClient, questId: string) {
     const quest = await prisma.quest.findUnique({
         where: { id: questId },
-        include: {
-            participations: {
-                include: {
-                    agent: { select: { agentname: true, id: true, status: true } },
-                },
-            },
-        },
     });
     if (!quest) return null;
 
-    const participationSummary = {
-        total: quest.participations.length,
-        completed: quest.participations.filter((p) => p.status === 'completed').length,
-        inProgress: quest.participations.filter((p) => p.status === 'in_progress').length,
-        submitted: quest.participations.filter((p) => p.status === 'submitted').length,
-        failed: quest.participations.filter((p) => p.status === 'failed').length,
-    };
+    // Aggregate participation counts
+    const participationSummary = await prisma.questParticipation.groupBy({
+        by: ['status'],
+        where: { questId },
+        _count: true,
+    });
+
+    const summaryMap = new Map(participationSummary.map((s) => [s.status, s._count]));
 
     return {
         ...quest,
         createdAt: quest.createdAt.toISOString(),
-        updatedAt: quest.updatedAt.toISOString(),
         expiresAt: quest.expiresAt?.toISOString() ?? null,
         startAt: quest.startAt?.toISOString() ?? null,
-        fundedAt: quest.fundedAt?.toISOString() ?? null,
-        refundedAt: quest.refundedAt?.toISOString() ?? null,
-        claimTokenExpiresAt: quest.claimTokenExpiresAt?.toISOString() ?? null,
         claimedAt: quest.claimedAt?.toISOString() ?? null,
-        participationSummary,
-        participations: quest.participations.map((p) => ({
-            id: p.id,
-            agentId: p.agentId,
-            agentName: p.agent.agentname,
-            agentStatus: p.agent.status,
-            status: p.status,
-            tasksCompleted: p.tasksCompleted,
-            tasksTotal: p.tasksTotal,
-            payoutAmount: p.payoutAmount,
-            payoutStatus: p.payoutStatus,
-            payoutTxHash: p.payoutTxHash,
-            joinedAt: p.joinedAt.toISOString(),
-            completedAt: p.completedAt?.toISOString() ?? null,
-        })),
+        participationSummary: {
+            total: quest.filledSlots,
+            completed: summaryMap.get('completed') ?? 0,
+            inProgress: summaryMap.get('in_progress') ?? 0,
+            submitted: summaryMap.get('submitted') ?? 0,
+            failed: summaryMap.get('failed') ?? 0,
+        },
     };
 }
+
+export async function listQuestParticipations(prisma: PrismaClient, questId: string, params: PaginationParams) {
+    const [participations, total] = await Promise.all([
+        prisma.questParticipation.findMany({
+            where: { questId },
+            include: {
+                agent: { select: { agentname: true, id: true } },
+            },
+            orderBy: { joinedAt: 'desc' },
+            ...paginate(params),
+        }),
+        prisma.questParticipation.count({ where: { questId } }),
+    ]);
+
+    const data = participations.map((p) => ({
+        id: p.id,
+        agentId: p.agentId,
+        agentName: p.agent.agentname,
+        status: p.status,
+        tasksCompleted: p.tasksCompleted,
+        tasksTotal: p.tasksTotal,
+        payoutAmount: p.payoutAmount,
+        payoutStatus: p.payoutStatus,
+        joinedAt: p.joinedAt.toISOString(),
+        completedAt: p.completedAt?.toISOString() ?? null,
+    }));
+
+    return { data, pagination: paginationMeta(total, params) };
+}
+
 
 export interface AdminUpdateQuestInput {
     title?: string;
@@ -280,15 +292,6 @@ export async function getUserDetail(prisma: PrismaClient, userId: string) {
     const user = await prisma.user.findUnique({
         where: { id: userId },
         include: {
-            agents: {
-                select: {
-                    id: true,
-                    agentname: true,
-                    status: true,
-                    createdAt: true,
-                    _count: { select: { participations: true, skills: true } },
-                },
-            },
             wallets: {
                 select: {
                     id: true,
@@ -302,20 +305,6 @@ export async function getUserDetail(prisma: PrismaClient, userId: string) {
     });
     if (!user) return null;
 
-    const quests = await prisma.quest.findMany({
-        where: { creatorUserId: userId },
-        select: {
-            id: true,
-            title: true,
-            status: true,
-            rewardAmount: true,
-            rewardType: true,
-            createdAt: true,
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 50,
-    });
-
     return {
         id: user.id,
         email: user.email,
@@ -324,22 +313,6 @@ export async function getUserDetail(prisma: PrismaClient, userId: string) {
         supabaseId: user.supabaseId,
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString(),
-        agents: user.agents.map((a) => ({
-            id: a.id,
-            agentname: a.agentname,
-            status: a.status,
-            createdAt: a.createdAt.toISOString(),
-            skillCount: (a as any)._count.skills,
-            participationCount: (a as any)._count.participations,
-        })),
-        quests: quests.map((q) => ({
-            id: q.id,
-            title: q.title,
-            status: q.status,
-            rewardAmount: q.rewardAmount,
-            rewardType: q.rewardType,
-            createdAt: q.createdAt.toISOString(),
-        })),
         wallets: user.wallets.map((w) => ({
             id: w.id,
             address: w.address,
@@ -348,6 +321,65 @@ export async function getUserDetail(prisma: PrismaClient, userId: string) {
             createdAt: w.createdAt.toISOString(),
         })),
     };
+}
+
+export async function listUserAgents(prisma: PrismaClient, userId: string, params: PaginationParams) {
+    const [agents, total] = await Promise.all([
+        prisma.agent.findMany({
+            where: { ownerId: userId },
+            select: {
+                id: true,
+                agentname: true,
+                status: true,
+                createdAt: true,
+                _count: { select: { participations: true, skills: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+            ...paginate(params),
+        }),
+        prisma.agent.count({ where: { ownerId: userId } }),
+    ]);
+
+    const data = agents.map((a) => ({
+        id: a.id,
+        agentname: a.agentname,
+        status: a.status,
+        createdAt: a.createdAt.toISOString(),
+        skillCount: (a as any)._count.skills,
+        participationCount: (a as any)._count.participations,
+    }));
+
+    return { data, pagination: paginationMeta(total, params) };
+}
+
+export async function listUserQuests(prisma: PrismaClient, userId: string, params: PaginationParams) {
+    const [quests, total] = await Promise.all([
+        prisma.quest.findMany({
+            where: { creatorUserId: userId },
+            select: {
+                id: true,
+                title: true,
+                status: true,
+                rewardAmount: true,
+                rewardType: true,
+                createdAt: true,
+            },
+            orderBy: { createdAt: 'desc' },
+            ...paginate(params),
+        }),
+        prisma.quest.count({ where: { creatorUserId: userId } }),
+    ]);
+
+    const data = quests.map((q) => ({
+        id: q.id,
+        title: q.title,
+        status: q.status,
+        rewardAmount: q.rewardAmount,
+        rewardType: q.rewardType,
+        createdAt: q.createdAt.toISOString(),
+    }));
+
+    return { data, pagination: paginationMeta(total, params) };
 }
 
 export interface AdminUpdateUserInput {

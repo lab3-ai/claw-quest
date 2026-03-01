@@ -48,6 +48,9 @@ export const escrowConfig = {
     /** Event polling interval in ms */
     pollingIntervalMs: parseInt(process.env.ESCROW_POLL_INTERVAL || '15000', 10),
 
+    /** Number of blocks behind chain tip to process (re-org safety buffer) */
+    confirmationBlocks: parseInt(process.env.ESCROW_CONFIRMATION_BLOCKS || '5', 10),
+
     /** RPC URLs per chain */
     rpcUrls: {
         8453: process.env.RPC_URL_BASE || SUPPORTED_CHAINS.base.rpcUrl,

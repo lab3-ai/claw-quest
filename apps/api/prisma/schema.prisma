@@ -200,6 +200,12 @@ model WalletLink {
   @@index([address])
 }
 
+model EscrowCursor {
+  chainId   Int      @id
+  lastBlock BigInt
+  updatedAt DateTime @updatedAt
+}
+
 // External data — crawled from ClawHub registry
 model clawhub_skills {
   id                  String    @id @default(uuid()) @db.Uuid

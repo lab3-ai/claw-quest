@@ -1,8 +1,9 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { getDepositParams, getEscrowStatus, executeDistribute, executeRefund } from './escrow.service';
-import { isEscrowConfigured, escrowConfig, isChainAllowed, getContractAddress } from './escrow.config';
-import { getActiveEscrowChainIds } from '@clawquest/shared';
+import { isEscrowConfigured, escrowConfig, isChainAllowed } from './escrow.config';
+import { getPublicClient } from './escrow.client';
+import { escrowPollerHealth } from './escrow.poller';
 // ─── Escrow Routes ───────────────────────────────────────────────────────────
 
 export async function escrowRoutes(server: FastifyInstance) {
@@ -210,9 +211,9 @@ export async function escrowRoutes(server: FastifyInstance) {
 
             try {
                 const txHash = await executeDistribute(server.prisma, questId, targetChainId);
-                return { message: 'Distribution successful', txHash };
+                return { message: 'Distribution submitted — poller will confirm', txHash };
             } catch (err: any) {
-                server.log.error({ err, questId }, 'Distribution failed');
+                server.log.error({ err, questId }, '[escrow:distribute] failed');
                 return reply.status(500).send({ message: `Distribution failed: ${err.message}` } as any);
             }
         }
@@ -273,11 +274,92 @@ export async function escrowRoutes(server: FastifyInstance) {
 
             try {
                 const txHash = await executeRefund(server.prisma, questId, targetChainId);
-                return { message: 'Refund successful', txHash };
+                return { message: 'Refund submitted — poller will confirm', txHash };
             } catch (err: any) {
-                server.log.error({ err, questId }, 'Refund failed');
+                server.log.error({ err, questId }, '[escrow:refund] failed');
                 return reply.status(500).send({ message: `Refund failed: ${err.message}` } as any);
             }
+        }
+    );
+
+    // ── GET /escrow/tx-status/:txHash ─────────────────────────────────────────
+    // Check on-chain receipt status for a given tx hash.
+    server.get(
+        '/tx-status/:txHash',
+        {
+            schema: {
+                tags: ['Escrow'],
+                summary: 'Check transaction receipt status',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ txHash: z.string() }),
+                querystring: z.object({ chainId: z.coerce.number().optional() }),
+                response: {
+                    200: z.object({
+                        txHash: z.string(),
+                        status: z.enum(['pending', 'confirmed', 'failed']),
+                        blockNumber: z.number().optional(),
+                        gasUsed: z.string().optional(),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request) => {
+            const { txHash } = request.params as any;
+            const { chainId } = request.query as any;
+            const targetChainId = chainId || escrowConfig.defaultChainId;
+            const client = getPublicClient(targetChainId);
+
+            try {
+                const receipt = await client.getTransactionReceipt({ hash: txHash as `0x${string}` });
+                return {
+                    txHash,
+                    status: receipt.status === 'success' ? 'confirmed' as const : 'failed' as const,
+                    blockNumber: Number(receipt.blockNumber),
+                    gasUsed: receipt.gasUsed.toString(),
+                };
+            } catch {
+                // Not mined yet
+                return { txHash, status: 'pending' as const };
+            }
+        }
+    );
+
+    // ── GET /escrow/health ────────────────────────────────────────────────────
+    // Returns poller health state. Admin auth required.
+    server.get(
+        '/health',
+        {
+            schema: {
+                tags: ['Escrow'],
+                summary: 'Escrow poller health status',
+                security: [{ bearerAuth: [] }],
+                response: {
+                    200: z.object({
+                        configured: z.boolean(),
+                        defaultChainId: z.number(),
+                        poller: z.object({
+                            running: z.boolean(),
+                            lastPollAt: z.string().nullable(),
+                            lastError: z.string().nullable(),
+                            eventsProcessed: z.number(),
+                        }),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async () => {
+            return {
+                configured: isEscrowConfigured(),
+                defaultChainId: escrowConfig.defaultChainId,
+                poller: {
+                    running: escrowPollerHealth.running,
+                    lastPollAt: escrowPollerHealth.lastPollAt?.toISOString() ?? null,
+                    lastError: escrowPollerHealth.lastError,
+                    eventsProcessed: escrowPollerHealth.eventsProcessed,
+                },
+            };
         }
     );
 }

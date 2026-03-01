@@ -176,13 +176,14 @@ if (TELEGRAM_BOT_TOKEN) {
 
 // Escrow Event Poller (detect on-chain deposits)
 import { startEscrowPoller } from './modules/escrow/escrow.poller';
+import { isEscrowConfigured } from './modules/escrow/escrow.config';
 
-if (process.env.ESCROW_CONTRACT) {
+if (isEscrowConfigured()) {
     startEscrowPoller(server).catch((err) => {
         console.error('⚠️  Escrow poller failed (non-fatal):', err.message);
     });
 } else {
-    console.warn('⚠️  Missing ESCROW_CONTRACT — escrow poller will not start');
+    console.warn('⚠️  Escrow not configured (missing contract address or operator key) — poller will not start');
 }
 
 // Serve skill.md for agents to read

@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import {
     uuidToBytes32,
-    bytes32ToUuid,
     toSmallestUnit,
     fromSmallestUnit,
     getTokenInfo,
@@ -48,7 +47,6 @@ export async function getDepositParams(
     const chain = getChainById(targetChainId);
     if (!chain) throw new Error(`Unsupported chain: ${targetChainId}`);
 
-    // Determine token from quest's rewardType
     const rewardType = quest.rewardType.toUpperCase();
     const tokenInfo = getTokenInfo(targetChainId, rewardType);
     if (!tokenInfo) {
@@ -57,9 +55,7 @@ export async function getDepositParams(
 
     const questIdBytes32 = uuidToBytes32(questId);
     const amountSmallestUnit = toSmallestUnit(quest.rewardAmount, tokenInfo.decimals);
-    const expiresAt = quest.expiresAt
-        ? Math.floor(quest.expiresAt.getTime() / 1000)
-        : 0;
+    const expiresAt = quest.expiresAt ? Math.floor(quest.expiresAt.getTime() / 1000) : 0;
 
     return {
         contractAddress: getContractAddress(targetChainId),
@@ -81,14 +77,14 @@ export async function getDepositParams(
 export interface EscrowStatus {
     sponsor: string;
     token: string;
-    deposited: string;      // bigint as string
+    deposited: string;
     distributed: string;
     refunded: string;
     remaining: string;
     createdAt: number;
     expiresAt: number;
     cancelled: boolean;
-    depositedHuman: number; // human-readable
+    depositedHuman: number;
     distributedHuman: number;
     refundedHuman: number;
     remainingHuman: number;
@@ -112,12 +108,8 @@ export async function getEscrowStatus(
             args: [questIdBytes32],
         }) as any;
 
-        // Check if quest exists (sponsor is zero address = not funded)
-        if (result.sponsor === '0x0000000000000000000000000000000000000000') {
-            return null;
-        }
+        if (result.sponsor === '0x0000000000000000000000000000000000000000') return null;
 
-        // Get token decimals for human-readable conversion
         const tokenInfo = Object.values(TOKEN_REGISTRY[chainId] || {}).find(
             t => t.address.toLowerCase() === result.token.toLowerCase()
         );
@@ -144,7 +136,6 @@ export async function getEscrowStatus(
             remainingHuman: fromSmallestUnit(remaining, decimals),
         };
     } catch (err: any) {
-        // Contract revert = quest not found on-chain
         if (err.message?.includes('QuestNotFound')) return null;
         throw err;
     }
@@ -161,7 +152,6 @@ export interface PayoutEntry {
 
 /**
  * Calculate payout distribution for a quest based on its type.
- * Returns array of { wallet, amount } entries.
  */
 export async function calculateDistribution(
     prisma: PrismaClient,
@@ -176,7 +166,6 @@ export async function calculateDistribution(
 
     const totalAmount = toSmallestUnit(quest.rewardAmount, tokenInfo.decimals);
 
-    // Get completed participations with wallet addresses
     const participations = await prisma.questParticipation.findMany({
         where: {
             questId,
@@ -192,48 +181,27 @@ export async function calculateDistribution(
 
     switch (quest.type) {
         case 'FCFS': {
-            // Equal split among all completed participants
             const perPerson = totalAmount / BigInt(participations.length);
             for (const p of participations) {
-                entries.push({
-                    participationId: p.id,
-                    agentId: p.agentId,
-                    wallet: p.payoutWallet!,
-                    amount: perPerson,
-                });
+                entries.push({ participationId: p.id, agentId: p.agentId, wallet: p.payoutWallet!, amount: perPerson });
             }
             break;
         }
         case 'LEADERBOARD': {
-            // Weighted by rank (1st gets more, decreasing)
-            // Simple linear weighting: rank 1 gets N shares, rank 2 gets N-1, etc.
             const n = participations.length;
             const totalShares = BigInt((n * (n + 1)) / 2);
             for (let i = 0; i < n; i++) {
                 const shares = BigInt(n - i);
-                const amount = (totalAmount * shares) / totalShares;
-                entries.push({
-                    participationId: participations[i].id,
-                    agentId: participations[i].agentId,
-                    wallet: participations[i].payoutWallet!,
-                    amount,
-                });
+                entries.push({ participationId: participations[i].id, agentId: participations[i].agentId, wallet: participations[i].payoutWallet!, amount: (totalAmount * shares) / totalShares });
             }
             break;
         }
         case 'LUCKY_DRAW': {
-            // Random selection — pick min(totalSlots, participations.length) winners
             const maxWinners = Math.min(quest.totalSlots, participations.length);
-            const shuffled = [...participations].sort(() => Math.random() - 0.5);
-            const winners = shuffled.slice(0, maxWinners);
+            const winners = [...participations].sort(() => Math.random() - 0.5).slice(0, maxWinners);
             const perWinner = totalAmount / BigInt(winners.length);
             for (const p of winners) {
-                entries.push({
-                    participationId: p.id,
-                    agentId: p.agentId,
-                    wallet: p.payoutWallet!,
-                    amount: perWinner,
-                });
+                entries.push({ participationId: p.id, agentId: p.agentId, wallet: p.payoutWallet!, amount: perWinner });
             }
             break;
         }
@@ -244,11 +212,36 @@ export async function calculateDistribution(
     return entries;
 }
 
+// ─── Write Contract With Retry ────────────────────────────────────────────────
+
+/**
+ * Write a contract call with one automatic retry on nonce/replacement errors.
+ */
+async function writeContractWithRetry(
+    walletClient: ReturnType<typeof getOperatorWalletClient>,
+    params: Parameters<ReturnType<typeof getOperatorWalletClient>['writeContract']>[0],
+    maxRetries = 1,
+): Promise<`0x${string}`> {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+            return await walletClient.writeContract(params as any);
+        } catch (err: any) {
+            const isNonceError = err.message?.includes('nonce') || err.message?.includes('replacement');
+            if (isNonceError && attempt < maxRetries) {
+                await new Promise(r => setTimeout(r, 2000));
+                continue;
+            }
+            throw err;
+        }
+    }
+    throw new Error('Unreachable');
+}
+
 // ─── Execute On-chain Distribute ─────────────────────────────────────────────
 
 /**
- * Execute on-chain distribute for a quest.
- * Calls the escrow contract's distribute() function.
+ * Submit on-chain distribute tx. Returns tx hash immediately (fire-and-forget).
+ * Poller reconciles DB state when QuestDistributed event is picked up.
  */
 export async function executeDistribute(
     prisma: PrismaClient,
@@ -261,13 +254,11 @@ export async function executeDistribute(
     const questIdBytes32 = uuidToBytes32(questId);
     const recipients = payouts.map(p => p.wallet as `0x${string}`);
     const amounts = payouts.map(p => p.amount);
-
     const walletClient = getOperatorWalletClient(chainId);
     const publicClient = getPublicClient(chainId);
-
     const contractAddr = getContractAddress(chainId);
 
-    // Simulate first
+    // Simulate first to catch revert errors early
     await publicClient.simulateContract({
         address: contractAddr,
         abi: ESCROW_ABI,
@@ -276,47 +267,32 @@ export async function executeDistribute(
         account: walletClient.account!,
     });
 
-    // Execute
-    const txHash = await walletClient.writeContract({
+    const txHash = await writeContractWithRetry(walletClient, {
         address: contractAddr,
         abi: ESCROW_ABI,
         functionName: 'distribute',
         args: [questIdBytes32, recipients, amounts],
     });
 
-    // Wait for confirmation
-    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
-    if (receipt.status !== 'success') {
-        throw new Error(`Distribute tx reverted: ${txHash}`);
-    }
-
-    // Update DB — mark payouts
+    // Mark pending — poller upgrades to 'paid' when QuestDistributed event arrives
     const questData = await prisma.quest.findUnique({ where: { id: questId } });
     const decimals = questData?.tokenDecimals || 6;
     for (const payout of payouts) {
         await prisma.questParticipation.update({
             where: { id: payout.participationId },
-            data: {
-                payoutAmount: fromSmallestUnit(payout.amount, decimals),
-                payoutStatus: 'paid',
-                payoutTxHash: txHash,
-            },
+            data: { payoutAmount: fromSmallestUnit(payout.amount, decimals), payoutStatus: 'pending', payoutTxHash: txHash },
         });
     }
 
-    // Update quest status
-    await prisma.quest.update({
-        where: { id: questId },
-        data: { status: 'completed' },
-    });
-
+    console.log(`[escrow:distribute] Quest ${questId}: tx submitted ${txHash}`);
     return txHash;
 }
 
 // ─── Execute On-chain Refund ─────────────────────────────────────────────────
 
 /**
- * Execute on-chain refund for a quest (returns remaining funds to sponsor).
+ * Submit on-chain refund tx. Returns tx hash immediately (fire-and-forget).
+ * Poller reconciles DB state when QuestRefunded event is picked up.
  */
 export async function executeRefund(
     prisma: PrismaClient,
@@ -326,10 +302,8 @@ export async function executeRefund(
     const questIdBytes32 = uuidToBytes32(questId);
     const walletClient = getOperatorWalletClient(chainId);
     const publicClient = getPublicClient(chainId);
-
     const contractAddr = getContractAddress(chainId);
 
-    // Simulate first
     await publicClient.simulateContract({
         address: contractAddr,
         abi: ESCROW_ABI,
@@ -338,96 +312,27 @@ export async function executeRefund(
         account: walletClient.account!,
     });
 
-    // Execute
-    const txHash = await walletClient.writeContract({
+    const txHash = await writeContractWithRetry(walletClient, {
         address: contractAddr,
         abi: ESCROW_ABI,
         functionName: 'refund',
         args: [questIdBytes32],
     });
 
-    // Wait for confirmation
-    const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
-    if (receipt.status !== 'success') {
-        throw new Error(`Refund tx reverted: ${txHash}`);
-    }
-
-    // Update DB
+    // Mark pending — poller upgrades to 'completed' when QuestRefunded event arrives
     await prisma.quest.update({
         where: { id: questId },
-        data: {
-            refundStatus: 'completed',
-            refundTxHash: txHash,
-            refundedAt: new Date(),
-        },
+        data: { refundStatus: 'pending', refundTxHash: txHash },
     });
 
+    console.log(`[escrow:refund] Quest ${questId}: tx submitted ${txHash}`);
     return txHash;
 }
 
-// ─── Handle QuestFunded Event ────────────────────────────────────────────────
-
-/**
- * Process a QuestFunded event: update DB, transition quest status.
- */
-export async function handleQuestFunded(
-    prisma: PrismaClient,
-    questIdBytes32: string,
-    sponsor: string,
-    token: string,
-    amount: bigint,
-    expiresAt: bigint,
-    txHash: string,
-    chainId: number,
-): Promise<void> {
-    const questId = bytes32ToUuid(questIdBytes32);
-
-    const quest = await prisma.quest.findUnique({ where: { id: questId } });
-    if (!quest) {
-        console.warn(`[escrow] QuestFunded event for unknown quest: ${questId}`);
-        return;
-    }
-
-    if (quest.fundingStatus === 'confirmed') {
-        console.warn(`[escrow] Quest ${questId} already confirmed, skipping duplicate event`);
-        return;
-    }
-
-    // Determine token info
-    const tokenInfo = Object.values(TOKEN_REGISTRY[chainId] || {}).find(
-        t => t.address.toLowerCase() === token.toLowerCase()
-    );
-
-    const humanAmount = tokenInfo
-        ? fromSmallestUnit(amount, tokenInfo.decimals)
-        : Number(amount);
-
-    // Determine new quest status
-    let newStatus = quest.status;
-    if (quest.status === 'draft') {
-        if (quest.startAt && quest.startAt > new Date()) {
-            newStatus = 'scheduled';
-        } else {
-            newStatus = 'live';
-        }
-    }
-
-    await prisma.quest.update({
-        where: { id: questId },
-        data: {
-            fundingMethod: 'crypto',
-            fundingStatus: 'confirmed',
-            cryptoTxHash: txHash,
-            cryptoChainId: chainId,
-            fundedAt: new Date(),
-            fundedAmount: Math.round(humanAmount),
-            sponsorWallet: sponsor,
-            tokenAddress: token,
-            tokenDecimals: tokenInfo?.decimals || null,
-            escrowQuestId: questIdBytes32,
-            status: newStatus,
-        },
-    });
-
-    console.log(`[escrow] Quest ${questId} funded: ${humanAmount} ${tokenInfo?.symbol || 'tokens'} on chain ${chainId} (tx: ${txHash})`);
-}
+// Re-export event handlers so existing importers keep working
+export {
+    handleQuestFunded,
+    handleQuestDistributed,
+    handleQuestRefunded,
+    handleEmergencyWithdrawal,
+} from './escrow-event-handlers';

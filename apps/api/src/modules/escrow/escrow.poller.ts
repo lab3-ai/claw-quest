@@ -1,122 +1,162 @@
 import type { FastifyInstance } from 'fastify';
-import { parseEventLogs, type Log } from 'viem';
+import { parseEventLogs } from 'viem';
 import { ESCROW_ABI } from '@clawquest/shared';
 import { escrowConfig, isEscrowConfigured, getContractAddress } from './escrow.config';
 import { getPublicClient } from './escrow.client';
-import { handleQuestFunded } from './escrow.service';
+import {
+    handleQuestFunded,
+    handleQuestDistributed,
+    handleQuestRefunded,
+    handleEmergencyWithdrawal,
+} from './escrow-event-handlers';
 
 // ─── Escrow Event Poller ─────────────────────────────────────────────────────
-// Polls for QuestFunded events on-chain and updates the database.
-// Runs as a background process alongside the API server.
+// Polls for all escrow events and updates the database.
+// Uses DB-persisted cursor so restarts resume without gaps or re-scans.
 
-/** Track last processed block per chain to avoid duplicate processing */
-const lastProcessedBlock = new Map<number, bigint>();
+/** Max block range per getLogs call (RPC rate-limit safety) */
+const MAX_RANGE = 2000n;
+
+/** Health state — exported for /escrow/health endpoint */
+export const escrowPollerHealth = {
+    running: false,
+    lastPollAt: null as Date | null,
+    lastError: null as string | null,
+    eventsProcessed: 0,
+};
+
+/** Read persisted cursor from DB, or default to recent blocks on first run */
+async function getCursor(server: FastifyInstance, chainId: number, currentBlock: bigint): Promise<bigint> {
+    const row = await server.prisma.escrowCursor.findUnique({ where: { chainId } });
+    if (row) return row.lastBlock;
+    // First run: start from last ~100 blocks to catch recent events
+    return currentBlock > 100n ? currentBlock - 100n : 0n;
+}
+
+/** Persist the last processed block for a chain */
+async function saveCursor(server: FastifyInstance, chainId: number, lastBlock: bigint): Promise<void> {
+    await server.prisma.escrowCursor.upsert({
+        where: { chainId },
+        create: { chainId, lastBlock },
+        update: { lastBlock },
+    });
+}
 
 /**
- * Poll for QuestFunded events on a specific chain.
+ * Poll for all escrow events on a specific chain.
+ * Uses confirmation buffer to avoid processing re-org'd blocks.
  */
 async function pollChain(server: FastifyInstance, chainId: number): Promise<void> {
     const client = getPublicClient(chainId);
 
     try {
         const currentBlock = await client.getBlockNumber();
-
-        // First run: start from recent blocks (last ~100 blocks)
-        let fromBlock = lastProcessedBlock.get(chainId);
-        if (fromBlock === undefined) {
-            fromBlock = currentBlock > 100n ? currentBlock - 100n : 0n;
-        } else {
-            fromBlock = fromBlock + 1n; // Start after last processed
-        }
-
-        // No new blocks to process
-        if (fromBlock > currentBlock) return;
-
-        // Cap range to avoid RPC limits (usually 2000-10000 blocks)
-        const maxRange = 2000n;
-        const toBlock = fromBlock + maxRange < currentBlock
-            ? fromBlock + maxRange
+        // Safe block = tip minus confirmation buffer (re-org protection)
+        const safeBlock = currentBlock > BigInt(escrowConfig.confirmationBlocks)
+            ? currentBlock - BigInt(escrowConfig.confirmationBlocks)
             : currentBlock;
 
-        // Fetch QuestFunded event logs
-        const logs = await client.getLogs({
+        const cursorBlock = await getCursor(server, chainId, currentBlock);
+        const fromBlock = cursorBlock + 1n;
+
+        // No new safe blocks to process
+        if (fromBlock > safeBlock) return;
+
+        // Cap range to avoid RPC rate limits
+        const toBlock = fromBlock + MAX_RANGE - 1n < safeBlock
+            ? fromBlock + MAX_RANGE - 1n
+            : safeBlock;
+
+        // Fetch all escrow event logs in one call
+        const rawLogs = await client.getLogs({
             address: getContractAddress(chainId),
-            event: {
-                type: 'event',
-                name: 'QuestFunded',
-                inputs: [
-                    { name: 'questId', type: 'bytes32', indexed: true },
-                    { name: 'sponsor', type: 'address', indexed: true },
-                    { name: 'token', type: 'address', indexed: false },
-                    { name: 'amount', type: 'uint128', indexed: false },
-                    { name: 'expiresAt', type: 'uint64', indexed: false },
-                ],
-            },
             fromBlock,
             toBlock,
         });
 
-        // Process each event
-        for (const log of logs) {
-            const { questId, sponsor, token, amount, expiresAt } = log.args as any;
-            const txHash = log.transactionHash;
+        if (rawLogs.length === 0) {
+            await saveCursor(server, chainId, toBlock);
+            return;
+        }
 
-            if (!questId || !sponsor || !txHash) {
-                server.log.warn({ log }, '[escrow-poller] Incomplete QuestFunded event');
-                continue;
-            }
+        // Decode logs using the full ABI — unknown events are filtered out
+        const events = parseEventLogs({ abi: ESCROW_ABI, logs: rawLogs });
+        let processed = 0;
+
+        for (const event of events) {
+            const txHash = event.transactionHash;
+            if (!txHash) continue;
 
             try {
-                await handleQuestFunded(
-                    server.prisma,
-                    questId,
-                    sponsor,
-                    token,
-                    BigInt(amount),
-                    BigInt(expiresAt),
-                    txHash,
-                    chainId,
-                );
+                switch (event.eventName) {
+                    case 'QuestFunded': {
+                        const { questId, sponsor, token, amount, expiresAt } = event.args as any;
+                        await handleQuestFunded(server.prisma, questId, sponsor, token, BigInt(amount), BigInt(expiresAt), txHash, chainId);
+                        break;
+                    }
+                    case 'QuestDistributed': {
+                        const { questId, recipients, amounts, totalPayout } = event.args as any;
+                        await handleQuestDistributed(server.prisma, questId, recipients, amounts.map(BigInt), BigInt(totalPayout), txHash, chainId);
+                        break;
+                    }
+                    case 'QuestRefunded': {
+                        const { questId, sponsor, amount } = event.args as any;
+                        await handleQuestRefunded(server.prisma, questId, sponsor, BigInt(amount), txHash, chainId);
+                        break;
+                    }
+                    case 'EmergencyWithdrawal': {
+                        const { questId, sponsor, amount } = event.args as any;
+                        await handleEmergencyWithdrawal(server.prisma, questId, sponsor, BigInt(amount), txHash, chainId);
+                        break;
+                    }
+                    default:
+                        continue; // skip non-quest events (Paused, TokenAllowlist, etc.)
+                }
+                processed++;
             } catch (err: any) {
-                server.log.error({ err, questId, txHash }, '[escrow-poller] Error handling QuestFunded');
+                server.log.error({ err, eventName: event.eventName, txHash }, '[escrow:poller] Error handling event');
             }
         }
 
-        if (logs.length > 0) {
-            server.log.info(`[escrow-poller] Processed ${logs.length} QuestFunded events on chain ${chainId} (blocks ${fromBlock}-${toBlock})`);
+        if (processed > 0) {
+            server.log.info(`[escrow:poller] Processed ${processed} events on chain ${chainId} (blocks ${fromBlock}-${toBlock})`);
+            escrowPollerHealth.eventsProcessed += processed;
         }
 
-        lastProcessedBlock.set(chainId, toBlock);
+        await saveCursor(server, chainId, toBlock);
+        escrowPollerHealth.lastPollAt = new Date();
+        escrowPollerHealth.lastError = null;
     } catch (err: any) {
-        server.log.error({ err, chainId }, '[escrow-poller] Error polling chain');
+        escrowPollerHealth.lastError = err.message;
+        server.log.error({ err, chainId }, '[escrow:poller] Error polling chain');
     }
 }
 
 /**
  * Start the escrow event poller.
- * Polls the default chain for QuestFunded events at a regular interval.
+ * Polls the default chain for all escrow events at a regular interval.
  */
 export async function startEscrowPoller(server: FastifyInstance): Promise<void> {
     if (!isEscrowConfigured()) {
-        server.log.warn('[escrow-poller] Escrow not configured (missing ESCROW_CONTRACT or OPERATOR_PRIVATE_KEY), skipping poller');
+        server.log.warn('[escrow:poller] Escrow not configured — skipping poller');
         return;
     }
 
     const chainId = escrowConfig.defaultChainId;
-    server.log.info(`[escrow-poller] Starting event poller for chain ${chainId} (interval: ${escrowConfig.pollingIntervalMs}ms)`);
+    server.log.info(`[escrow:poller] Starting for chain ${chainId} (interval: ${escrowConfig.pollingIntervalMs}ms, confirmations: ${escrowConfig.confirmationBlocks})`);
 
+    escrowPollerHealth.running = true;
     let interval: NodeJS.Timeout | undefined;
 
-    // Cleanup on server close
     server.addHook('onClose', () => {
+        escrowPollerHealth.running = false;
         if (interval) clearInterval(interval);
-        server.log.info('[escrow-poller] Stopped');
+        server.log.info('[escrow:poller] Stopped');
     });
 
     // Initial poll
     await pollChain(server, chainId);
 
-    // Start interval
     interval = setInterval(async () => {
         await pollChain(server, chainId);
     }, escrowConfig.pollingIntervalMs);

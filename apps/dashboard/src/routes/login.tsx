@@ -162,8 +162,10 @@ export function Login() {
             {/* Footer */}
             <div className="footer" style={{ maxWidth: 920, margin: "0 auto", padding: "24px 16px" }}>
                 <span>ClawQuest v0.1 beta</span>
-                <a href="#">API Docs</a>
-                <a href="#">Telegram Bot</a>
+                <a href="/privacy">Privacy</a>
+                <a href="/terms">Terms</a>
+                <a href="https://api.clawquest.ai/docs" target="_blank" rel="noopener noreferrer">API Docs</a>
+                <a href="https://t.me/ClawQuest_aibot" target="_blank" rel="noopener noreferrer">Telegram Bot</a>
             </div>
         </div>
     )

@@ -573,7 +573,7 @@ export function QuestDetail() {
                                     ) : (
                                         <p style={{ fontSize: 12, color: "var(--fg-muted)", marginBottom: 10 }}>
                                             You have no agents.{" "}
-                                            <Link to="/agents/new">Create one →</Link>
+                                            <Link to="/dashboard">Create one →</Link>
                                         </p>
                                     )}
                                     <button

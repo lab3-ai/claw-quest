@@ -4,9 +4,7 @@ import { Login } from './routes/login'
 import { Register } from './routes/register'
 import { AuthCallback } from './routes/auth/callback'
 import { PublicLayout } from './routes/_public'
-import { AgentList } from './routes/_authenticated/index'
 import { Dashboard } from './routes/_authenticated/dashboard'
-import { CreateAgent } from './routes/_authenticated/agents/new'
 import { QuestList } from './routes/_authenticated/quests/index'
 import { QuestDetail } from './routes/_public/quests/detail'
 import { QuestersPage } from './routes/_public/quests/questers'
@@ -114,19 +112,17 @@ const dashboardRoute = createRoute({
 const agentListRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/agents',
-    beforeLoad: ({ context }) => {
-        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
+    beforeLoad: () => {
+        throw redirect({ to: '/dashboard' })
     },
-    component: AgentList,
 })
 
 const createAgentRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/agents/new',
-    beforeLoad: ({ context }) => {
-        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
+    beforeLoad: () => {
+        throw redirect({ to: '/dashboard' })
     },
-    component: CreateAgent,
 })
 
 const createQuestRoute = createRoute({

@@ -34,18 +34,23 @@ export function PublicLayout() {
                             <>
                                 <Link to="/dashboard">Dashboard</Link>
                                 <div className="user-menu" ref={menuRef}>
-                                    <button className="user-menu-btn" onClick={() => setMenuOpen(v => !v)}>
+                                    <button
+                                        className="user-menu-btn"
+                                        onClick={() => setMenuOpen(v => !v)}
+                                        aria-expanded={menuOpen}
+                                        aria-haspopup="menu"
+                                    >
                                         @{handle} ▾
                                     </button>
                                     {menuOpen && (
-                                        <div className="user-dropdown visible">
-                                            <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</Link>
-                                            <Link to="/quests/mine" onClick={() => setMenuOpen(false)}>My Quests</Link>
-                                            <Link to="/agents" onClick={() => setMenuOpen(false)}>My Agents</Link>
-                                            <div className="user-dropdown-divider" />
-                                            <Link to="/account" onClick={() => setMenuOpen(false)}>Account</Link>
-                                            <div className="user-dropdown-divider" />
-                                            <a className="logout" onClick={() => logout()} style={{ cursor: "pointer" }}>Log out</a>
+                                        <div className="user-dropdown visible" role="menu">
+                                            <Link to="/dashboard" role="menuitem" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+                                            <Link to="/quests/mine" role="menuitem" onClick={() => setMenuOpen(false)}>My Quests</Link>
+                                            <Link to="/dashboard" role="menuitem" onClick={() => setMenuOpen(false)}>My Agents</Link>
+                                            <div className="user-dropdown-divider" role="separator" />
+                                            <Link to="/account" role="menuitem" onClick={() => setMenuOpen(false)}>Account</Link>
+                                            <div className="user-dropdown-divider" role="separator" />
+                                            <button className="logout" role="menuitem" onClick={() => logout()}>Log out</button>
                                         </div>
                                     )}
                                 </div>

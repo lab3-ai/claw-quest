@@ -172,11 +172,12 @@ export function Dashboard() {
                 <div
                     className="modal-backdrop visible"
                     onClick={() => setShowRegisterModal(false)}
+                    onKeyDown={e => { if (e.key === "Escape") setShowRegisterModal(false) }}
                 >
-                    <div className="modal" onClick={e => e.stopPropagation()}>
+                    <div className="modal" role="dialog" aria-label="Register an Agent" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2>Register an Agent</h2>
-                            <button className="modal-close" onClick={() => setShowRegisterModal(false)}>&times;</button>
+                            <button className="modal-close" aria-label="Close" onClick={() => setShowRegisterModal(false)}>&times;</button>
                         </div>
                         <div className="modal-body">
                             <div className="modal-subtitle">
@@ -647,7 +648,7 @@ export function Dashboard() {
                     {!agentsLoading && filteredAgents.length === 0 && (
                         <div style={{ padding: "40px", textAlign: "center", color: "var(--fg-muted)" }}>
                             No agents yet.{" "}
-                            <Link to="/agents/new">Register your first agent →</Link>
+                            <Link to="/dashboard">Register your first agent →</Link>
                         </div>
                     )}
 

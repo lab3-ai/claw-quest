@@ -570,7 +570,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const navigate = useNavigate()
     const { session } = useAuth()
     const isEditMode = !!editQuestId
-    const [tab, setTab] = useState<Tab>("details")
+    const [tab, setTab] = useState<Tab | null>("details")
     const [form, setForm] = useState<FormData>({
         title: "", description: "", startAt: "", endAt: "",
         rail: "crypto", network: "Base", token: "USDC", type: "FCFS",
@@ -808,6 +808,21 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
         ? Math.max(0, Math.round((new Date(form.endAt).getTime() - new Date(form.startAt).getTime()) / 86400000))
         : null
 
+    // Step summaries for completed-step accordions
+    const stepSummaries: Record<Tab, string> = {
+        details: form.title
+            ? `${form.title.slice(0, 40)}${form.title.length > 40 ? "\u2026" : ""} \u00b7 ${durationDays ? `${durationDays}d` : "no dates"}`
+            : "",
+        reward: `${form.type} \u00b7 ${activeTotal > 0 ? `${activeTotal} ${tokenLabel}` : "\u2014"} \u00b7 ${form.network} \u00b7 ${activeWinners} winners`,
+        tasks: [
+            humanTasks.length > 0 ? `${humanTasks.length} social` : "",
+            requiredSkills.length > 0 ? `${requiredSkills.length} skill${requiredSkills.length > 1 ? "s" : ""}` : "",
+        ].filter(Boolean).join(" \u00b7 ") || "No tasks",
+        preview: "",
+    }
+
+    const TABS: Tab[] = ["details", "tasks", "reward", "preview"]
+
     // Token display info (dynamic by network + token)
     const isNativeToken = form.token === "NATIVE"
     const nativeInfo = NATIVE_TOKENS[form.network] ?? { symbol: "?", name: "?" }
@@ -855,33 +870,32 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 </div>
             </div>
 
-            {/* Step tabs */}
-            <div className="step-tabs">
-                {(["details", "reward", "tasks", "preview"] as Tab[]).map((t, i) => {
-                    const label = t === "preview" ? "Preview & Fund" : t.charAt(0).toUpperCase() + t.slice(1)
-                    return (
-                        <button
-                            key={t}
-                            className={`step-tab ${tab === t ? "active" : ""} ${tabDone[t] && tab !== t ? "done" : ""}`}
-                            onClick={() => setTab(t)}
-                        >
-                            <span className="tab-num">
-                                <span className="num">{tabDone[t] && tab !== t ? "✓" : i + 1}</span>
-                            </span>
-                            {label}
-                        </button>
-                    )
-                })}
-            </div>
-
             <div className="form-layout">
-                <div className="form-main">
+              <div className="accordion-stepper">
 
-                    {/* ══ TAB 1: DETAILS ══ */}
-                    {tab === "details" && (
-                        <div className="tab-panel active">
+                    {/* ══ STEP 1: DETAILS ══ */}
+                    <div className={`accordion-step${tab === "details" ? " active" : ""}${tabDone.details && tab !== "details" ? " done" : ""}`}>
+                        <div className="accordion-step-header" onClick={() => setTab(tab === "details" ? null : "details")}>
+                            <span className="accordion-step-icon">{tabDone.details && tab !== "details" ? "\u2713" : "1"}</span>
+                            <div className="accordion-step-left">
+                                <div className="accordion-step-title-row">
+                                    <span className="accordion-step-title">Quest Details</span>
+                                    {tabDone.details && tab !== "details" && <span className="accordion-step-status completed">Completed</span>}
+                                    {tab === "details" && <span className="accordion-step-status in-progress">In Progress</span>}
+                                    {!tabDone.details && tab !== "details" && <span className="accordion-step-status not-started">Not Started</span>}
+                                </div>
+                                <div className="accordion-step-desc">
+                                    {tab !== "details" && stepSummaries.details ? stepSummaries.details : "Title, description, and timing"}
+                                </div>
+                            </div>
+                            <div className="accordion-step-right">
+                                <span className="accordion-step-counter">Step 1 of 4</span>
+                                <span className="accordion-step-hint">{tabDone.details && tab !== "details" ? "Modify if required" : tab === "details" ? "" : "Fill the details"}</span>
+                            </div>
+                        </div>
+                        {tab === "details" && (
+                        <div className="accordion-step-body"><div className="accordion-step-body-inner">
                             <div className="form-section">
-                                <div className="form-section-title">Quest Details</div>
                                 <div className="form-group">
                                     <label className="form-label">Title</label>
                                     <input
@@ -920,260 +934,35 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             </div>
                             <div className="tab-nav-row">
                                 <span />
-                                <button className="btn btn-primary" onClick={() => setTab("reward")}>Next: Reward →</button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ══ TAB 2: REWARD ══ */}
-                    {tab === "reward" && (
-                        <div className="tab-panel active">
-                            {/* Payment Rail */}
-                            <div className="form-section">
-                                <div className="form-section-title">Payment</div>
-                                <div className="form-group">
-                                    <label className="form-label">Payment Method</label>
-                                    <div className="rail-toggle">
-                                        <button
-                                            className={`rail-toggle-btn ${form.rail === "crypto" ? "active" : ""}`}
-                                            onClick={() => set("rail", "crypto")}
-                                        >
-                                            <span className="rail-icon">⛓</span> Crypto
-                                        </button>
-                                        <button
-                                            className={`rail-toggle-btn ${form.rail === "fiat" ? "active" : ""}`}
-                                            onClick={() => set("rail", "fiat")}
-                                        >
-                                            <span className="rail-icon">💳</span> Fiat (USD)
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Network & Token (crypto only) */}
-                            {form.rail === "crypto" && (
-                                <div className="form-section">
-                                    <div className="form-section-title">Network & Token</div>
-                                    <div className="network-select-row">
-                                        <div className="form-group">
-                                            <label className="form-label">Network</label>
-                                            <select className="form-select" value={form.network} onChange={e => set("network", e.target.value)}>
-                                                <optgroup label="Primary">
-                                                    {NETWORKS_PRIMARY.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
-                                                </optgroup>
-                                                <optgroup label="Other Networks">
-                                                    {NETWORKS_OTHER.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
-                                                </optgroup>
-                                            </select>
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label">Token</label>
-                                            <select className="form-select" value={form.token} onChange={e => set("token", e.target.value)}>
-                                                <optgroup label="Stablecoin">
-                                                    <option value="USDC">USDC</option>
-                                                    <option value="USDT">USDT</option>
-                                                </optgroup>
-                                                <optgroup label="Native">
-                                                    <option value="NATIVE">{nativeInfo.symbol}</option>
-                                                </optgroup>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="token-display" style={{ marginTop: 8 }}>
-                                        <div className="token-icon" style={{ background: tokenIconColor }}>
-                                            {tokenIconChar}
-                                        </div>
-                                        <div className="token-info">
-                                            <div className="token-name">{tokenDisplaySymbol} on {form.network}</div>
-                                            <div className="token-contract">{tokenContract}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Fiat */}
-                            {form.rail === "fiat" && (
-                                <div className="form-section">
-                                    <div className="form-section-title">Fiat Payment</div>
-                                    <div className="fiat-info">
-                                        <span className="info-icon">ℹ️</span>
-                                        <span>Sponsor pays via <strong>Stripe</strong> (charged upfront at quest creation). Winners withdraw rewards as crypto.</span>
-                                    </div>
-                                    <div className="token-display" style={{ marginTop: 10 }}>
-                                        <div className="token-icon" style={{ background: "#635bff" }}>S</div>
-                                        <div className="token-info">
-                                            <div className="token-name">USD via Stripe</div>
-                                            <div className="token-contract" style={{ fontFamily: "var(--font)" }}>
-                                                Credit / debit card · Apple Pay · Google Pay
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Distribution Method */}
-                            <div className="form-section">
-                                <div className="form-section-title">Distribution Method</div>
-                                <div className="radio-group">
-                                    {[
-                                        { id: "payout-fcfs", val: "FCFS" as QuestType, label: "FCFS" },
-                                        { id: "payout-draw", val: "LUCKY_DRAW" as QuestType, label: "Lucky Draw" },
-                                        { id: "payout-leaderboard", val: "LEADERBOARD" as QuestType, label: "Leaderboard" },
-                                    ].map(opt => (
-                                        <div key={opt.val} className="radio-option">
-                                            <input
-                                                type="radio"
-                                                id={opt.id}
-                                                name="payout"
-                                                checked={form.type === opt.val}
-                                                onChange={() => {
-                                                    setForm(prev => {
-                                                        let winners = prev.winners
-                                                        if (opt.val === "LEADERBOARD") {
-                                                            const n = parseInt(winners) || 2
-                                                            winners = String(Math.min(100, Math.max(2, n)))
-                                                        }
-                                                        return { ...prev, type: opt.val, winners }
-                                                    })
-                                                }}
-                                            />
-                                            <label htmlFor={opt.id}>{opt.label}</label>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Shared: Total Reward + Winners — shown for all modes */}
-                                <div style={{ marginTop: 12 }}>
-                                    <div className="form-row">
-                                        <div className="form-group">
-                                            <label className="form-label">Total Reward ({tokenLabel})</label>
-                                            <input
-                                                className="form-input form-input-mono"
-                                                type="text"
-                                                value={form.total}
-                                                onChange={e => set("total", e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label">
-                                                Number of Winners
-                                                {form.type === "LEADERBOARD" && (
-                                                    <span style={{ fontSize: 10, color: "var(--fg-muted)", marginLeft: 4 }}>(min 2, max 100)</span>
-                                                )}
-                                            </label>
-                                            <input
-                                                className="form-input"
-                                                type="number"
-                                                min={form.type === "LEADERBOARD" ? 2 : 1}
-                                                max={form.type === "LEADERBOARD" ? 100 : undefined}
-                                                value={form.winners}
-                                                onChange={e => {
-                                                    let v = e.target.value
-                                                    if (form.type === "LEADERBOARD") {
-                                                        const n = parseInt(v) || 2
-                                                        v = String(Math.min(100, Math.max(2, n)))
-                                                    }
-                                                    set("winners", v)
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* FCFS fields */}
-                                {form.type === "FCFS" && (
-                                    <div className="conditional visible" style={{ marginTop: 4 }}>
-                                        <div className="form-hint" style={{ marginBottom: 8 }}>
-                                            First N eligible agents get paid immediately.
-                                        </div>
-                                        <div className="form-calc">
-                                            Per winner: <strong>{perWinner} {tokenLabel}</strong>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Lucky Draw fields */}
-                                {form.type === "LUCKY_DRAW" && (
-                                    <div className="conditional visible" style={{ marginTop: 4 }}>
-                                        <div className="form-hint" style={{ marginBottom: 8 }}>
-                                            All eligible submissions enter a raffle. N winners drawn at end.
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label">Draw Time</label>
-                                            <input
-                                                className="form-input"
-                                                type="datetime-local"
-                                                value={form.drawTime}
-                                                onChange={e => set("drawTime", e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="form-calc">
-                                            Per winner: <strong>{perWinner} {tokenLabel}</strong>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Leaderboard fields */}
-                                {form.type === "LEADERBOARD" && (
-                                    <div className="conditional visible" style={{ marginTop: 4 }}>
-                                        <div className="form-hint" style={{ marginBottom: 8 }}>
-                                            All verified submissions ranked by completion time. At quest end, top N get tiered rewards (1st gets more than 2nd, etc.).
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label">Payout Structure ({tokenLabel})</label>
-                                            <div className="form-hint">
-                                                Auto-generated from total &amp; winners count. Weighted decay: 1st gets most.
-                                            </div>
-                                            <div className="lb-payout-visual">
-                                                {/* Show first 5 + ellipsis + last 2 if > 20, else show all */}
-                                                {lbWinnersNum <= 20
-                                                    ? lbPayouts.map((amt, i) => (
-                                                        <div key={i} className="lb-payout-item">
-                                                            <span className="pos">#{i + 1}</span>
-                                                            <span className="amt">{amt.toFixed(2)}</span>
-                                                        </div>
-                                                    ))
-                                                    : (
-                                                        <>
-                                                            {lbPayouts.slice(0, 5).map((amt, i) => (
-                                                                <div key={i} className="lb-payout-item">
-                                                                    <span className="pos">#{i + 1}</span>
-                                                                    <span className="amt">{amt.toFixed(2)}</span>
-                                                                </div>
-                                                            ))}
-                                                            <span style={{ color: "var(--fg-muted)", padding: "2px 4px", fontSize: 11 }}>…</span>
-                                                            {lbPayouts.slice(-2).map((amt, i) => (
-                                                                <div key={`last-${i}`} className="lb-payout-item">
-                                                                    <span className="pos">#{lbWinnersNum - 1 + i}</span>
-                                                                    <span className="amt">{amt.toFixed(2)}</span>
-                                                                </div>
-                                                            ))}
-                                                        </>
-                                                    )
-                                                }
-                                            </div>
-                                        </div>
-                                        <div className="form-calc">
-                                            <span>1st: <strong>{lbPayouts[0]?.toFixed(2)} {tokenLabel}</strong></span>
-                                            <span style={{ marginLeft: 8 }}>→ Last: <strong>{lbPayouts[lbPayouts.length - 1]?.toFixed(2)} {tokenLabel}</strong></span>
-                                            <span style={{ marginLeft: "auto" }}>Total: <strong>{activeTotal.toFixed(2)} {tokenLabel}</strong></span>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="tab-nav-row">
-                                <button className="btn btn-secondary" onClick={() => setTab("details")}>← Details</button>
                                 <button className="btn btn-primary" onClick={() => setTab("tasks")}>Next: Tasks →</button>
                             </div>
-                        </div>
-                    )}
+                        </div></div>
+                        )}
+                    </div>
 
-                    {/* ══ TAB 3: TASKS ══ */}
-                    {tab === "tasks" && (
-                        <div className="tab-panel active">
+                    {/* ══ STEP 2: TASKS ══ */}
+                    <div className={`accordion-step${tab === "tasks" ? " active" : ""}${tabDone.tasks && tab !== "tasks" ? " done" : ""}${TABS.indexOf(tab as Tab) < TABS.indexOf("tasks") && !tabDone.tasks ? " future" : ""}`}>
+                        <div className="accordion-step-header" onClick={() => setTab(tab === "tasks" ? null : "tasks")}>
+                            <span className="accordion-step-icon">{tabDone.tasks && tab !== "tasks" ? "\u2713" : "2"}</span>
+                            <div className="accordion-step-left">
+                                <div className="accordion-step-title-row">
+                                    <span className="accordion-step-title">Tasks</span>
+                                    {tabDone.tasks && tab !== "tasks" && <span className="accordion-step-status completed">Completed</span>}
+                                    {tab === "tasks" && <span className="accordion-step-status in-progress">In Progress</span>}
+                                    {!tabDone.tasks && tab !== "tasks" && <span className="accordion-step-status not-started">Not Started</span>}
+                                </div>
+                                <div className="accordion-step-desc">
+                                    {tab !== "tasks" && stepSummaries.tasks !== "No tasks" ? stepSummaries.tasks : "Human social actions and agent skill requirements"}
+                                </div>
+                            </div>
+                            <div className="accordion-step-right">
+                                <span className="accordion-step-counter">Step 2 of 4</span>
+                                <span className="accordion-step-hint">{tabDone.tasks && tab !== "tasks" ? "Modify if required" : tab === "tasks" ? "" : "Add tasks"}</span>
+                            </div>
+                        </div>
+                        {tab === "tasks" && (
+                        <div className="accordion-step-body"><div className="accordion-step-body-inner">
                             <div className="form-section">
-                                <div className="form-section-title">Tasks</div>
                                 <div className="form-hint" style={{ marginBottom: 14 }}>
                                     Define what needs to be done. Human tasks are social actions.
                                     Agent tasks require specific skills from{" "}
@@ -1439,15 +1228,295 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             </div>
 
                             <div className="tab-nav-row">
-                                <button className="btn btn-secondary" onClick={() => setTab("reward")}>← Reward</button>
-                                <button className="btn btn-primary" onClick={() => setTab("preview")}>Next: Preview →</button>
+                                <button className="btn btn-secondary" onClick={() => setTab("details")}>← Details</button>
+                                <button className="btn btn-primary" onClick={() => setTab("reward")}>Next: Reward →</button>
+                            </div>
+                        </div></div>
+                        )}
+                    </div>
+
+                    {/* ══ STEP 3: REWARD ══ */}
+                    <div className={`accordion-step${tab === "reward" ? " active" : ""}${tabDone.reward && tab !== "reward" ? " done" : ""}${TABS.indexOf(tab as Tab) < TABS.indexOf("reward") && !tabDone.reward ? " future" : ""}`}>
+                        <div className="accordion-step-header" onClick={() => setTab(tab === "reward" ? null : "reward")}>
+                            <span className="accordion-step-icon">{tabDone.reward && tab !== "reward" ? "\u2713" : "3"}</span>
+                            <div className="accordion-step-left">
+                                <div className="accordion-step-title-row">
+                                    <span className="accordion-step-title">Reward</span>
+                                    {tabDone.reward && tab !== "reward" && <span className="accordion-step-status completed">Completed</span>}
+                                    {tab === "reward" && <span className="accordion-step-status in-progress">In Progress</span>}
+                                    {!tabDone.reward && tab !== "reward" && <span className="accordion-step-status not-started">Not Started</span>}
+                                </div>
+                                <div className="accordion-step-desc">
+                                    {tab !== "reward" && stepSummaries.reward ? stepSummaries.reward : "Reward method, network, token, and distribution"}
+                                </div>
+                            </div>
+                            <div className="accordion-step-right">
+                                <span className="accordion-step-counter">Step 3 of 4</span>
+                                <span className="accordion-step-hint">{tabDone.reward && tab !== "reward" ? "Modify if required" : tab === "reward" ? "" : "Fill the details"}</span>
                             </div>
                         </div>
-                    )}
+                        {tab === "reward" && (
+                        <div className="accordion-step-body"><div className="accordion-step-body-inner">
+                            {/* Payment Rail */}
+                            <div className="form-section">
+                                <div className="form-group">
+                                    <label className="form-label">Reward Method</label>
+                                    <div className="rail-toggle">
+                                        <button
+                                            className={`rail-toggle-btn ${form.rail === "crypto" ? "active" : ""}`}
+                                            onClick={() => set("rail", "crypto")}
+                                        >
+                                            <span className="rail-icon">⛓</span> Crypto
+                                        </button>
+                                        <button
+                                            className={`rail-toggle-btn ${form.rail === "fiat" ? "active" : ""}`}
+                                            onClick={() => set("rail", "fiat")}
+                                        >
+                                            <span className="rail-icon">💳</span> Fiat (USD)
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
 
-                    {/* ══ TAB 4: PREVIEW & FUND ══ */}
-                    {tab === "preview" && (
-                        <div className="tab-panel active">
+                            {/* Network & Token (crypto only) */}
+                            {form.rail === "crypto" && (
+                                <div className="form-section">
+                                    <div className="form-section-title">Network & Token</div>
+                                    <div className="network-select-row">
+                                        <div className="form-group">
+                                            <label className="form-label">Network</label>
+                                            <select className="form-select" value={form.network} onChange={e => set("network", e.target.value)}>
+                                                <optgroup label="Primary">
+                                                    {NETWORKS_PRIMARY.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
+                                                </optgroup>
+                                                <optgroup label="Other Networks">
+                                                    {NETWORKS_OTHER.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Token</label>
+                                            <select className="form-select" value={form.token} onChange={e => set("token", e.target.value)}>
+                                                <optgroup label="Stablecoin">
+                                                    <option value="USDC">USDC</option>
+                                                    <option value="USDT">USDT</option>
+                                                </optgroup>
+                                                <optgroup label="Native">
+                                                    <option value="NATIVE">{nativeInfo.symbol}</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="token-display" style={{ marginTop: 8 }}>
+                                        <div className="token-icon" style={{ background: tokenIconColor }}>
+                                            {tokenIconChar}
+                                        </div>
+                                        <div className="token-info">
+                                            <div className="token-name">{tokenDisplaySymbol} on {form.network}</div>
+                                            <div className="token-contract">{tokenContract}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Fiat */}
+                            {form.rail === "fiat" && (
+                                <div className="form-section">
+                                    <div className="form-section-title">Fiat Payment</div>
+                                    <div className="fiat-info">
+                                        <span className="info-icon">ℹ️</span>
+                                        <span>Sponsor pays via <strong>Stripe</strong> (charged upfront at quest creation). Winners withdraw rewards as crypto.</span>
+                                    </div>
+                                    <div className="token-display" style={{ marginTop: 10 }}>
+                                        <div className="token-icon" style={{ background: "#635bff" }}>S</div>
+                                        <div className="token-info">
+                                            <div className="token-name">USD via Stripe</div>
+                                            <div className="token-contract" style={{ fontFamily: "var(--font)" }}>
+                                                Credit / debit card · Apple Pay · Google Pay
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Distribution Method */}
+                            <div className="form-section">
+                                <div className="form-section-title">Distribution Method</div>
+                                <div className="radio-group">
+                                    {[
+                                        { id: "payout-fcfs", val: "FCFS" as QuestType, label: "FCFS" },
+                                        { id: "payout-draw", val: "LUCKY_DRAW" as QuestType, label: "Lucky Draw" },
+                                        { id: "payout-leaderboard", val: "LEADERBOARD" as QuestType, label: "Leaderboard" },
+                                    ].map(opt => (
+                                        <div key={opt.val} className="radio-option">
+                                            <input
+                                                type="radio"
+                                                id={opt.id}
+                                                name="payout"
+                                                checked={form.type === opt.val}
+                                                onChange={() => {
+                                                    setForm(prev => {
+                                                        let winners = prev.winners
+                                                        if (opt.val === "LEADERBOARD") {
+                                                            const n = parseInt(winners) || 2
+                                                            winners = String(Math.min(100, Math.max(2, n)))
+                                                        }
+                                                        return { ...prev, type: opt.val, winners }
+                                                    })
+                                                }}
+                                            />
+                                            <label htmlFor={opt.id}>{opt.label}</label>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Shared: Total Reward + Winners — shown for all modes */}
+                                <div style={{ marginTop: 12 }}>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label className="form-label">Total Reward ({tokenLabel})</label>
+                                            <input
+                                                className="form-input form-input-mono"
+                                                type="text"
+                                                value={form.total}
+                                                onChange={e => set("total", e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">
+                                                Number of Winners
+                                                {form.type === "LEADERBOARD" && (
+                                                    <span style={{ fontSize: 10, color: "var(--fg-muted)", marginLeft: 4 }}>(min 2, max 100)</span>
+                                                )}
+                                            </label>
+                                            <input
+                                                className="form-input"
+                                                type="number"
+                                                min={form.type === "LEADERBOARD" ? 2 : 1}
+                                                max={form.type === "LEADERBOARD" ? 100 : undefined}
+                                                value={form.winners}
+                                                onChange={e => {
+                                                    let v = e.target.value
+                                                    if (form.type === "LEADERBOARD") {
+                                                        const n = parseInt(v) || 2
+                                                        v = String(Math.min(100, Math.max(2, n)))
+                                                    }
+                                                    set("winners", v)
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* FCFS fields */}
+                                {form.type === "FCFS" && (
+                                    <div className="conditional visible" style={{ marginTop: 4 }}>
+                                        <div className="form-hint" style={{ marginBottom: 8 }}>
+                                            First N eligible agents get paid immediately.
+                                        </div>
+                                        <div className="form-calc">
+                                            Per winner: <strong>{perWinner} {tokenLabel}</strong>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Lucky Draw fields */}
+                                {form.type === "LUCKY_DRAW" && (
+                                    <div className="conditional visible" style={{ marginTop: 4 }}>
+                                        <div className="form-hint" style={{ marginBottom: 8 }}>
+                                            All eligible submissions enter a raffle. N winners drawn at end.
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Draw Time</label>
+                                            <input
+                                                className="form-input"
+                                                type="datetime-local"
+                                                value={form.drawTime}
+                                                onChange={e => set("drawTime", e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="form-calc">
+                                            Per winner: <strong>{perWinner} {tokenLabel}</strong>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Leaderboard fields */}
+                                {form.type === "LEADERBOARD" && (
+                                    <div className="conditional visible" style={{ marginTop: 4 }}>
+                                        <div className="form-hint" style={{ marginBottom: 8 }}>
+                                            All verified submissions ranked by completion time. At quest end, top N get tiered rewards (1st gets more than 2nd, etc.).
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Payout Structure ({tokenLabel})</label>
+                                            <div className="form-hint">
+                                                Auto-generated from total &amp; winners count. Weighted decay: 1st gets most.
+                                            </div>
+                                            <div className="lb-payout-visual">
+                                                {/* Show first 5 + ellipsis + last 2 if > 20, else show all */}
+                                                {lbWinnersNum <= 20
+                                                    ? lbPayouts.map((amt, i) => (
+                                                        <div key={i} className="lb-payout-item">
+                                                            <span className="pos">#{i + 1}</span>
+                                                            <span className="amt">{amt.toFixed(2)}</span>
+                                                        </div>
+                                                    ))
+                                                    : (
+                                                        <>
+                                                            {lbPayouts.slice(0, 5).map((amt, i) => (
+                                                                <div key={i} className="lb-payout-item">
+                                                                    <span className="pos">#{i + 1}</span>
+                                                                    <span className="amt">{amt.toFixed(2)}</span>
+                                                                </div>
+                                                            ))}
+                                                            <span style={{ color: "var(--fg-muted)", padding: "2px 4px", fontSize: 11 }}>…</span>
+                                                            {lbPayouts.slice(-2).map((amt, i) => (
+                                                                <div key={`last-${i}`} className="lb-payout-item">
+                                                                    <span className="pos">#{lbWinnersNum - 1 + i}</span>
+                                                                    <span className="amt">{amt.toFixed(2)}</span>
+                                                                </div>
+                                                            ))}
+                                                        </>
+                                                    )
+                                                }
+                                            </div>
+                                        </div>
+                                        <div className="form-calc">
+                                            <span>1st: <strong>{lbPayouts[0]?.toFixed(2)} {tokenLabel}</strong></span>
+                                            <span style={{ marginLeft: 8 }}>→ Last: <strong>{lbPayouts[lbPayouts.length - 1]?.toFixed(2)} {tokenLabel}</strong></span>
+                                            <span style={{ marginLeft: "auto" }}>Total: <strong>{activeTotal.toFixed(2)} {tokenLabel}</strong></span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="tab-nav-row">
+                                <button className="btn btn-secondary" onClick={() => setTab("tasks")}>← Tasks</button>
+                                <button className="btn btn-primary" onClick={() => setTab("preview")}>Next: Preview →</button>
+                            </div>
+                        </div></div>
+                        )}
+                    </div>
+
+                    {/* ══ STEP 4: PREVIEW & FUND ══ */}
+                    <div className={`accordion-step${tab === "preview" ? " active" : ""}${TABS.indexOf(tab as Tab) < TABS.indexOf("preview") ? " future" : ""}`}>
+                        <div className="accordion-step-header" onClick={() => setTab(tab === "preview" ? null : "preview")}>
+                            <span className="accordion-step-icon">4</span>
+                            <div className="accordion-step-left">
+                                <div className="accordion-step-title-row">
+                                    <span className="accordion-step-title">Preview & Fund</span>
+                                    {tab === "preview" && <span className="accordion-step-status in-progress">In Progress</span>}
+                                    {tab !== "preview" && <span className="accordion-step-status not-started">Not Started</span>}
+                                </div>
+                                <div className="accordion-step-desc">Review your quest and deposit funds</div>
+                            </div>
+                            <div className="accordion-step-right">
+                                <span className="accordion-step-counter">Step 4 of 4</span>
+                                <span className="accordion-step-hint">{tab === "preview" ? "" : "Review & fund"}</span>
+                            </div>
+                        </div>
+                        {tab === "preview" && (
+                        <div className="accordion-step-body"><div className="accordion-step-body-inner">
                             {/* Header badges */}
                             <div className="page-header-meta" style={{ marginBottom: 16 }}>
                                 <span className="badge badge-draft">draft</span>
@@ -1554,6 +1623,76 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 </div>
                             )}
 
+                            {/* Payment Summary */}
+                            <div className="payment-summary">
+                                <div className="payment-summary-header">Payment Summary</div>
+                                <div className="payment-summary-body">
+                                    <div className="preview-row">
+                                        <span className="label">Payment</span>
+                                        <span className="value">{form.rail === "crypto" ? "Crypto" : "Fiat (Stripe)"}</span>
+                                    </div>
+                                    {form.rail === "crypto" && (
+                                        <div className="preview-row">
+                                            <span className="label">Network</span>
+                                            <span className="value">{form.network}</span>
+                                        </div>
+                                    )}
+                                    <div className="preview-row">
+                                        <span className="label">Token</span>
+                                        <span className="value">{tokenLabel}</span>
+                                    </div>
+                                    <div className="preview-row">
+                                        <span className="label">Winners</span>
+                                        <span className="value">
+                                            {form.type === "LEADERBOARD" ? `${lbWinnersNum} spots` : activeWinners}
+                                        </span>
+                                    </div>
+                                    <div className="preview-row">
+                                        <span className="label">Per winner</span>
+                                        <span className="value green">
+                                            {form.type === "LEADERBOARD"
+                                                ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
+                                                : `${perWinner} ${tokenLabel}`}
+                                        </span>
+                                    </div>
+                                    <div className="preview-total">
+                                        <span>Total Fund</span>
+                                        <span className="value">
+                                            {activeTotal > 0 ? `${activeTotal.toFixed(2)} ${tokenLabel}` : "\u2014"}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Pay With */}
+                            <div className="pay-with-section">
+                                <div className="pay-with-title">Pay with</div>
+                                {form.rail === "crypto" ? (
+                                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                                        <span style={{ fontSize: 20 }}>{"\uD83D\uDD17"}</span>
+                                        <div>
+                                            <div style={{ fontSize: 12, fontWeight: 600 }}>Smart Contract Escrow</div>
+                                            <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>
+                                                {form.network} {"\u00b7"} {tokenLabel}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="token-display" style={{ marginBottom: 8 }}>
+                                            <div className="token-icon" style={{ background: "#635bff" }}>S</div>
+                                            <div className="token-info">
+                                                <div className="token-name">Pay via Stripe</div>
+                                                <div className="token-contract" style={{ fontFamily: "var(--font)" }}>
+                                                    Card {"\u00b7"} Apple Pay {"\u00b7"} Google Pay
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="fund-coming-soon">Stripe integration coming soon</div>
+                                    </>
+                                )}
+                            </div>
+
                             {/* Mutation error */}
                             {mutation.isError && (
                                 <div style={{ marginTop: 16, padding: "10px 12px", background: "var(--red-bg)", border: "1px solid var(--red)", borderRadius: 3, fontSize: 12, color: "var(--red)" }}>
@@ -1562,316 +1701,42 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             )}
 
                             <div className="tab-nav-row">
-                                <button className="btn btn-secondary" onClick={() => setTab("tasks")}>← Tasks</button>
-                                <span />
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* ── Sidebar ── */}
-                <div>
-                    {tab !== "preview" ? (
-                        /* Steps 1-3: Quest summary preview */
-                        <div className="preview-box">
-                            <div className="preview-header">Quest Preview</div>
-
-                            {/* Quest card preview */}
-                            <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--border)" }}>
-                                <div className="preview-quest-card">
-                                    <div className="preview-quest-title">
-                                        {form.title || <span style={{ color: "var(--fg-muted)" }}>Quest title…</span>}
-                                    </div>
-                                    {form.description && (
-                                        <div className="preview-quest-desc">{form.description}</div>
-                                    )}
-                                    <div className="preview-quest-meta">
-                                        <span className={`badge badge-${form.type === "FCFS" ? "fcfs" : form.type === "LEADERBOARD" ? "leaderboard" : "luckydraw"}`}>
-                                            {form.type === "LUCKY_DRAW" ? "Lucky Draw" : form.type === "LEADERBOARD" ? "Leaderboard" : "FCFS"}
-                                        </span>
-                                        {form.rail === "crypto" && <span className="badge badge-network">{form.network}</span>}
-                                        {humanTasks.length > 0 && <span className="badge badge-social">Social</span>}
-                                        {requiredSkills.length > 0 && <span className="badge badge-skill">Skill</span>}
-                                        {durationDays !== null && durationDays > 0 && (
-                                            <span style={{ color: "var(--fg-muted)", marginLeft: "auto" }}>
-                                                by <strong style={{ color: "var(--fg)" }}>you</strong> · {durationDays}d
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Payout rows */}
-                            <div className="preview-body">
-                                <div className="preview-row">
-                                    <span className="label">Payment</span>
-                                    <span className="value">{form.rail === "crypto" ? "Crypto" : "Fiat (Stripe)"}</span>
-                                </div>
-                                {form.rail === "crypto" && (
-                                    <div className="preview-row">
-                                        <span className="label">Network</span>
-                                        <span className="value">{form.network}</span>
-                                    </div>
-                                )}
-                                <div className="preview-row">
-                                    <span className="label">Token</span>
-                                    <span className="value">{tokenLabel}</span>
-                                </div>
-                                <div className="preview-row">
-                                    <span className="label">Mode</span>
-                                    <span className="value">
-                                        <span className={`badge badge-${form.type === "FCFS" ? "fcfs" : form.type === "LEADERBOARD" ? "leaderboard" : "luckydraw"}`}>
-                                            {form.type === "LUCKY_DRAW" ? "Lucky Draw" : form.type === "LEADERBOARD" ? "Leaderboard" : "FCFS"}
-                                        </span>
-                                    </span>
-                                </div>
-                                <div className="preview-row">
-                                    <span className="label">Winners</span>
-                                    <span className="value">
-                                        {form.type === "LEADERBOARD" ? `${lbWinnersNum} spots` : activeWinners}
-                                    </span>
-                                </div>
-                                <div className="preview-row">
-                                    <span className="label">Per winner</span>
-                                    <span className="value green">
-                                        {form.type === "LEADERBOARD"
-                                            ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
-                                            : `${perWinner} ${tokenLabel}`}
-                                    </span>
-                                </div>
-                                {durationDays !== null && durationDays > 0 && (
-                                    <div className="preview-row">
-                                        <span className="label">Duration</span>
-                                        <span className="value">{durationDays} {durationDays === 1 ? "day" : "days"}</span>
-                                    </div>
-                                )}
-                                <div className="preview-total">
-                                    <span>Total Fund</span>
-                                    <span className="value">
-                                        {activeTotal > 0 ? `${activeTotal.toFixed(2)} ${tokenLabel}` : "—"}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Tasks section */}
-                            {(humanTasks.length > 0 || requiredSkills.length > 0) && (
-                                <div className="preview-body" style={{ borderTop: "1px solid var(--border)" }}>
-                                    <div style={{ fontSize: 11, fontWeight: 600, color: "var(--fg)", marginBottom: 6 }}>Tasks</div>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                                        {humanTasks.length > 0 && (
-                                            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
-                                                <span style={{ color: "var(--human-fg)" }}>👤</span>
-                                                <span style={{ color: "var(--fg-muted)" }}>Human:</span>
-                                                <span style={{ fontWeight: 600 }}>{humanTasks.length} social</span>
-                                            </div>
-                                        )}
-                                        {requiredSkills.length > 0 && (
-                                            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
-                                                <span style={{ color: "var(--agent-fg)" }}>🤖</span>
-                                                <span style={{ color: "var(--fg-muted)" }}>Agent:</span>
-                                                <span style={{ fontWeight: 600 }}>{requiredSkills.length} skill{requiredSkills.length > 1 ? "s" : ""}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Eligibility section */}
-                            {requiredSkills.length > 0 && (
-                                <div style={{ padding: "10px 14px", borderTop: "1px solid var(--border)" }}>
-                                    <div style={{ fontSize: 11, fontWeight: 600, color: "var(--fg)", marginBottom: 6 }}>Eligibility</div>
-                                    <div style={{ fontSize: 11, color: "var(--fg-muted)", lineHeight: 1.5 }}>
-                                        {requiredSkills.map(s => {
-                                            const isCustom = s.id.startsWith("http")
-                                            return (
-                                                <div key={s.id} style={{ display: "flex", justifyContent: "space-between", padding: "2px 0", gap: 8 }}>
-                                                    <span style={{ fontFamily: "var(--font-mono)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                                        {isCustom ? s.name : `${s.id}@${s.version ?? "latest"}`}
-                                                    </span>
-                                                    <span style={{ fontWeight: 600, color: "var(--fg)", flexShrink: 0 }}>
-                                                        {isCustom ? "custom" : `${s.agents} agents`}
-                                                    </span>
-                                                </div>
-                                            )
-                                        })}
-                                        {(() => {
-                                            const clawHubSkills = requiredSkills.filter(s => !s.id.startsWith("http"))
-                                            const hasCustom = requiredSkills.some(s => s.id.startsWith("http"))
-                                            return (
-                                                <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderTop: "1px solid #f0f0f0", marginTop: 4 }}>
-                                                    <span style={{ fontWeight: 600, color: "var(--fg)" }}>
-                                                        {requiredSkills.length > 1 ? "All required" : "Eligible"}
-                                                    </span>
-                                                    <span style={{ fontWeight: 700, color: "var(--accent)" }}>
-                                                        {clawHubSkills.length > 0
-                                                            ? `~${Math.round(Math.min(...clawHubSkills.map(s => s.agents)) * (requiredSkills.length > 1 ? 0.7 : 1))} agents`
-                                                            : hasCustom ? "?" : "0 agents"
-                                                        }
-                                                    </span>
-                                                </div>
-                                            )
-                                        })()}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Actions */}
-                            <div className="preview-actions">
-                                <button
-                                    className="btn btn-primary"
-                                    style={{ width: "100%" }}
-                                    onClick={() => setTab("preview")}
-                                >
-                                    Next: Preview →
-                                </button>
-                            </div>
-                            <div className="preview-note">
-                                Funds held in escrow. Skill tasks verified via CQ Skill proof. Social tasks verified via platform API.
-                            </div>
-                        </div>
-                    ) : (
-                        /* Step 4: Funding sidebar */
-                        <div className="preview-box fund-sidebar">
-                            <div className="preview-header">Payment Summary</div>
-
-                            {/* Reward hero */}
-                            <div className="reward-hero">
-                                <div className="reward-hero-amount">
-                                    {activeTotal > 0 ? activeTotal.toLocaleString() : "—"}
-                                </div>
-                                <div className="reward-hero-sub">
-                                    <span className={`badge ${form.rail === "fiat" ? "badge-fiat" : "badge-crypto"}`}>{tokenLabel}</span>
-                                    <span className={`badge badge-${form.type === "FCFS" ? "fcfs" : form.type === "LEADERBOARD" ? "leaderboard" : "luckydraw"}`}>
-                                        {form.type === "LUCKY_DRAW" ? "Lucky Draw" : form.type === "LEADERBOARD" ? "Leaderboard" : "FCFS"}
-                                    </span>
-                                </div>
-                                <div className="reward-hero-label">total quest fund</div>
-                            </div>
-
-                            {/* Payout summary */}
-                            <div className="preview-body">
-                                <div className="preview-row">
-                                    <span className="label">Payment</span>
-                                    <span className="value">{form.rail === "crypto" ? "Crypto" : "Fiat (Stripe)"}</span>
-                                </div>
-                                {form.rail === "crypto" && (
-                                    <div className="preview-row">
-                                        <span className="label">Network</span>
-                                        <span className="value">{form.network}</span>
-                                    </div>
-                                )}
-                                <div className="preview-row">
-                                    <span className="label">Token</span>
-                                    <span className="value">{tokenLabel}</span>
-                                </div>
-                                <div className="preview-row">
-                                    <span className="label">Winners</span>
-                                    <span className="value">
-                                        {form.type === "LEADERBOARD" ? `${lbWinnersNum} spots` : activeWinners}
-                                    </span>
-                                </div>
-                                <div className="preview-row">
-                                    <span className="label">Per winner</span>
-                                    <span className="value green">
-                                        {form.type === "LEADERBOARD"
-                                            ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
-                                            : `${perWinner} ${tokenLabel}`}
-                                    </span>
-                                </div>
-                                <div className="preview-total">
-                                    <span>Total Fund</span>
-                                    <span className="value">
-                                        {activeTotal > 0 ? `${activeTotal.toFixed(2)} ${tokenLabel}` : "—"}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Pay With section */}
-                            <div className="fund-pay-section">
-                                <div className="fund-pay-title">Pay with</div>
-
-                                {form.rail === "crypto" ? (
-                                    <div className="fund-crypto-box">
-                                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                                            <span style={{ fontSize: 20 }}>🔗</span>
-                                            <div>
-                                                <div style={{ fontSize: 12, fontWeight: 600 }}>Smart Contract Escrow</div>
-                                                <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>
-                                                    {form.network} · {tokenLabel}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <p style={{ fontSize: 11, color: "var(--fg-muted)", margin: 0 }}>
-                                            After saving, you'll connect your wallet and deposit via smart contract.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="fund-fiat-box">
-                                        <div className="fund-stripe-info">
-                                            <div className="token-display" style={{ marginBottom: 8 }}>
-                                                <div className="token-icon" style={{ background: "#635bff" }}>S</div>
-                                                <div className="token-info">
-                                                    <div className="token-name">Pay via Stripe</div>
-                                                    <div className="token-contract" style={{ fontFamily: "var(--font)" }}>
-                                                        Card · Apple Pay · Google Pay
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <button className="cta-btn disabled" disabled>
-                                            Pay with Stripe →
-                                        </button>
-                                        <div className="fund-coming-soon">
-                                            Stripe integration coming soon
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Mutation error in sidebar */}
-                            {mutation.isError && (
-                                <div style={{ margin: "0 14px 8px", padding: "8px 10px", background: "var(--red-bg)", border: "1px solid var(--red)", borderRadius: 3, fontSize: 11, color: "var(--red)" }}>
-                                    {(mutation.error as Error).message}
-                                </div>
-                            )}
-
-                            {/* Action buttons */}
-                            <div className="preview-actions">
-                                {form.rail === "crypto" && (
+                                <button className="btn btn-secondary" onClick={() => setTab("reward")}>{"\u2190"} Reward</button>
+                                <div style={{ display: "flex", gap: 8 }}>
                                     <button
-                                        className="btn btn-primary btn-lg"
-                                        style={{ width: "100%", marginBottom: 8 }}
+                                        className={`btn ${form.rail === "crypto" ? "btn-secondary" : "btn-primary"}`}
                                         disabled={mutation.isPending}
-                                        onClick={() => { fundAfterSave.current = true; mutation.mutate() }}
+                                        onClick={() => { fundAfterSave.current = false; mutation.mutate() }}
                                     >
-                                        {mutation.isPending && fundAfterSave.current
-                                            ? "Saving…"
-                                            : isEditMode ? "Update & Fund Now →" : "Save & Fund Now →"}
+                                        {mutation.isPending && !fundAfterSave.current
+                                            ? "Saving\u2026"
+                                            : isEditMode ? "Update Draft" : "Save Draft"}
                                     </button>
-                                )}
-                                <button
-                                    className={`btn ${form.rail === "crypto" ? "btn-secondary" : "btn-primary"} btn-lg`}
-                                    style={{ width: "100%" }}
-                                    disabled={mutation.isPending}
-                                    onClick={() => { fundAfterSave.current = false; mutation.mutate() }}
-                                >
-                                    {mutation.isPending && !fundAfterSave.current
-                                        ? "Saving…"
-                                        : isEditMode ? "Update Draft" : "Save Draft"}
-                                </button>
+                                    {form.rail === "crypto" && (
+                                        <button
+                                            className="btn btn-primary"
+                                            disabled={mutation.isPending}
+                                            onClick={() => { fundAfterSave.current = true; mutation.mutate() }}
+                                        >
+                                            {mutation.isPending && fundAfterSave.current
+                                                ? "Saving\u2026"
+                                                : isEditMode ? "Update & Fund Now \u2192" : "Save & Fund Now \u2192"}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
-                            <div className="preview-note">
+                            <div className="payment-note">
                                 {form.rail === "crypto"
-                                    ? isEditMode
-                                        ? "Update & Fund connects your wallet to deposit via escrow contract."
-                                        : "Save & Fund connects your wallet to deposit via escrow contract."
+                                    ? "Funds held in escrow. Skill tasks verified via CQ Skill proof. Social tasks verified via platform API."
                                     : isEditMode
                                         ? "Quest updated as draft. Fund later to go live."
                                         : "Quest saved as draft. Fund later to go live."}
                             </div>
-                        </div>
-                    )}
-                </div>
+                        </div></div>
+                        )}
+                    </div>
+
+              </div>{/* /accordion-stepper */}
             </div>
         </div>
     )

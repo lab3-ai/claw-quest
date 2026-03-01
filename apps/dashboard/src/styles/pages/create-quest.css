@@ -2,34 +2,75 @@
    CREATE QUEST — Page-specific styles
    ============================================== */
 
-/* === FORM LAYOUT (grid: form + preview sidebar) === */
-.form-layout { display: grid; grid-template-columns: 1fr 300px; gap: 32px; align-items: start; }
-.form-layout > .form-main { min-width: 0; }
-@media (max-width: 768px) { .form-layout { grid-template-columns: 1fr; } }
+/* === FORM LAYOUT (single-column, no sidebar) === */
+.form-layout { display: block; max-width: 720px; }
 
-/* === HORIZONTAL WIZARD TABS === */
-.step-tabs {
-  display: flex; gap: 0; border-bottom: 1px solid var(--border);
-  margin-bottom: 20px; padding-top: 12px;
+/* === ACCORDION STEPPER === */
+.accordion-stepper { position: relative; }
+
+/* Vertical connector line between steps */
+.accordion-step { position: relative; margin-bottom: 0; border: none; border-radius: 0; }
+.accordion-step:not(:last-child)::before {
+  content: ''; position: absolute; left: 13px; top: 0; bottom: 0;
+  width: 2px; background: var(--border); z-index: 0;
 }
-.step-tab {
-  padding: 10px 20px; font-size: 13px; font-weight: 500; color: var(--fg-muted);
-  cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
-  display: flex; align-items: center; gap: 8px; transition: color 0.1s;
-  background: none; border-top: none; border-left: none; border-right: none;
-  font-family: var(--font);
+.accordion-step:first-child::before { top: 28px; }
+.accordion-step.done:not(:last-child)::before { background: var(--green); }
+
+/* Header */
+.accordion-step-header {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 0; cursor: pointer; user-select: none;
+  font-size: 12px; position: relative; z-index: 1;
 }
-.step-tab:hover { color: var(--fg); }
-.step-tab.active { color: var(--fg); font-weight: 600; border-bottom-color: var(--accent); }
-.step-tab .tab-num {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 20px; height: 20px; border-radius: 3px; font-size: 11px; font-weight: 700;
-  background: var(--border); color: #fff;
+.accordion-step-header:hover .accordion-step-title { color: var(--link); }
+
+/* Step icon (circle) */
+.accordion-step-icon {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+  background: var(--border); border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--border);
 }
-.step-tab.active .tab-num { background: var(--accent); }
-.step-tab.done .tab-num { background: var(--green); }
-.step-tab.done .tab-num::after { content: '\2713'; }
-.step-tab.done .tab-num .num { display: none; }
+.accordion-step.done .accordion-step-icon { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+.accordion-step.active .accordion-step-icon { background: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.accordion-step.future .accordion-step-icon { background: #d1d5db; box-shadow: 0 0 0 2px #d1d5db; }
+
+/* Left content (title + desc + status) */
+.accordion-step-left { flex: 1; min-width: 0; }
+.accordion-step-title-row { display: flex; align-items: center; gap: 8px; }
+.accordion-step-title { font-weight: 600; font-size: 14px; color: var(--fg); }
+.accordion-step-status {
+  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+  white-space: nowrap;
+}
+.accordion-step-status.completed { background: var(--green-bg); color: var(--green); }
+.accordion-step-status.in-progress { background: #fff8e1; color: #f59e0b; }
+.accordion-step-status.not-started { background: var(--sidebar-bg); color: var(--fg-muted); }
+.accordion-step-desc {
+  font-size: 12px; color: var(--fg-muted); margin-top: 2px; line-height: 1.4;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Right content (step counter + toggle) */
+.accordion-step-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+  flex-shrink: 0; padding-top: 2px;
+}
+.accordion-step-counter { font-size: 11px; color: var(--fg-muted); white-space: nowrap; }
+.accordion-step-hint { font-size: 10px; color: var(--link); white-space: nowrap; }
+.accordion-step.future .accordion-step-hint { color: var(--fg-muted); }
+
+/* Body */
+.accordion-step-body {
+  display: none; padding: 0 0 16px 40px;
+}
+.accordion-step.active .accordion-step-body { display: block; }
+.accordion-step-body-inner {
+  padding: 16px; border: 1px solid var(--border);
+  border-radius: 3px; background: transparent;
+}
 
 /* === TAB NAV ROW (form navigation buttons) === */
 .tab-nav-row { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
@@ -247,10 +288,15 @@
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* === PREVIEW SIDEBAR === */
-.preview-box { border: 1px solid var(--border); border-radius: 3px; position: sticky; top: 55px; }
-.preview-header { background: var(--sidebar-bg); padding: 10px 14px; font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--border); }
-.preview-body { padding: 12px 14px; }
+/* === STEP 4: PAYMENT SUMMARY (inline in main panel) === */
+.payment-summary {
+  border: 1px solid var(--border); border-radius: 3px; margin-top: 16px; overflow: hidden;
+}
+.payment-summary-header {
+  background: var(--sidebar-bg); padding: 10px 14px;
+  font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--border);
+}
+.payment-summary-body { padding: 12px 14px; }
 .preview-row {
   display: flex; justify-content: space-between; padding: 5px 0; font-size: 12px;
   border-bottom: 1px solid #f0f0f0;
@@ -264,20 +310,9 @@
   display: flex; justify-content: space-between; font-size: 14px; font-weight: 700;
 }
 .preview-total .value { color: var(--green); }
-.preview-actions { padding: 12px 14px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
-.preview-actions .btn { text-align: center; }
-.preview-note { padding: 10px 14px; border-top: 1px solid var(--border); font-size: 11px; color: var(--fg-muted); line-height: 1.5; }
-
-/* === PREVIEW QUEST CARD (mini card) === */
-.preview-quest-card {
-  border: 1px solid var(--border); border-radius: 3px; padding: 12px; margin-bottom: 10px; background: #fff;
+.payment-note {
+  font-size: 11px; color: var(--fg-muted); line-height: 1.5; margin-top: 12px;
 }
-.preview-quest-title { font-size: 14px; font-weight: 400; color: var(--link); margin-bottom: 4px; line-height: 1.3; }
-.preview-quest-desc {
-  font-size: 11px; color: var(--fg-muted); margin-bottom: 8px; line-height: 1.5;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-.preview-quest-meta { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 11px; }
 
 /* === PAYMENT RAIL TOGGLE === */
 .rail-toggle { display: inline-flex; border: 1px solid var(--border-heavy); border-radius: 3px; overflow: hidden; }
@@ -380,49 +415,12 @@
 }
 .chip-preview.more { color: var(--fg-muted); background: var(--sidebar-bg); }
 
-/* === STEP 4: FUNDING SIDEBAR === */
-.fund-sidebar .reward-hero { padding: 16px 12px; text-align: center; border-bottom: 1px solid var(--border); }
-
-.fund-pay-section {
-  padding: 12px 14px; border-top: 1px solid var(--border);
-}
-.fund-pay-title {
+/* === STEP 4: PAY-WITH SECTION (inline) === */
+.pay-with-section { margin-top: 16px; }
+.pay-with-title {
   font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
   color: var(--fg-muted); margin-bottom: 10px;
 }
-
-/* Crypto box */
-.fund-crypto-box {}
-.fund-field { margin-bottom: 6px; }
-.fund-field-label {
-  font-size: 11px; font-weight: 600; color: var(--fg-muted); margin-bottom: 4px;
-}
-.fund-address-row {
-  display: flex; align-items: center; gap: 0;
-  border: 1px solid var(--border-heavy); border-radius: 3px; overflow: hidden;
-  background: #1b1f23;
-}
-.fund-address-text {
-  flex: 1; padding: 7px 10px;
-  font-family: var(--font-mono); font-size: 10px; color: #c9d1d9;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.fund-copy-btn {
-  padding: 7px 12px; background: #2d333b; border: none; border-left: 1px solid #3d444d;
-  color: #8b949e; font-size: 10px; font-weight: 600; cursor: pointer;
-  font-family: var(--font); white-space: nowrap;
-}
-.fund-copy-btn:hover { background: #3d444d; color: #c9d1d9; }
-.fund-send-note {
-  font-size: 11px; color: var(--fg-muted); line-height: 1.5; margin-top: 8px;
-}
-.fund-send-note strong { color: var(--fg); }
-
-/* Fiat box */
-.fund-fiat-box {}
-.fund-stripe-info { margin-bottom: 8px; }
-
-/* Coming soon label */
 .fund-coming-soon {
   font-size: 10px; color: var(--fg-muted); text-align: center;
   margin-top: 6px; font-style: italic;

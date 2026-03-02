@@ -1,4 +1,4 @@
-import { SUPPORTED_CHAINS, ESCROW_CHAIN_IDS } from '@clawquest/shared';
+import { SUPPORTED_CHAINS, ESCROW_CHAIN_IDS, type NetworkMode } from '@clawquest/shared';
 
 // ─── Escrow Configuration ────────────────────────────────────────────────────
 // All values loaded from environment variables.
@@ -42,8 +42,8 @@ export const escrowConfig = {
     /** Default chain ID for the escrow (Base Sepolia for dev) */
     defaultChainId: parseInt(process.env.ESCROW_CHAIN_ID || '84532', 10),
 
-    /** Whether testnet chains are enabled */
-    enableTestnets: process.env.ENABLE_TESTNETS !== 'false', // default true for dev
+    /** Network mode: 'testnet' shows only testnets, 'mainnet' shows only mainnets */
+    networkMode: (process.env.ESCROW_NETWORK_MODE || 'testnet') as NetworkMode,
 
     /** Event polling interval in ms */
     pollingIntervalMs: parseInt(process.env.ESCROW_POLL_INTERVAL || '15000', 10),
@@ -55,10 +55,8 @@ export const escrowConfig = {
     rpcUrls: {
         8453: process.env.RPC_URL_BASE || SUPPORTED_CHAINS.base.rpcUrl,
         84532: process.env.RPC_URL_BASE_SEPOLIA || SUPPORTED_CHAINS.baseSepolia.rpcUrl,
-        1: process.env.RPC_URL_ETH || SUPPORTED_CHAINS.ethereum.rpcUrl,
         56: process.env.RPC_URL_BNB || SUPPORTED_CHAINS.bnb.rpcUrl,
-        42161: process.env.RPC_URL_ARB || SUPPORTED_CHAINS.arbitrum.rpcUrl,
-        137: process.env.RPC_URL_POLYGON || SUPPORTED_CHAINS.polygon.rpcUrl,
+        97: process.env.RPC_URL_BSC_TESTNET || SUPPORTED_CHAINS.bscTestnet.rpcUrl,
     } as Record<number, string>,
 } as const;
 
@@ -87,6 +85,14 @@ export function getRpcUrl(chainId: number): string {
 export function isChainAllowed(chainId: number): boolean {
     const chain = Object.values(SUPPORTED_CHAINS).find(c => c.id === chainId);
     if (!chain) return false;
-    if (chain.isTestnet && !escrowConfig.enableTestnets) return false;
-    return true;
+    const isTestnetMode = escrowConfig.networkMode === 'testnet';
+    return isTestnetMode ? chain.isTestnet : !chain.isTestnet;
+}
+
+// Startup validation: warn if defaultChainId conflicts with networkMode
+if (!isChainAllowed(escrowConfig.defaultChainId)) {
+    console.warn(
+        `[escrow] ESCROW_CHAIN_ID=${escrowConfig.defaultChainId} is not allowed in ` +
+        `ESCROW_NETWORK_MODE=${escrowConfig.networkMode}. Update ESCROW_CHAIN_ID.`
+    );
 }

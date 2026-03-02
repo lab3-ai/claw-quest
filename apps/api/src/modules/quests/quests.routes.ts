@@ -101,6 +101,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     agentName: p.agent.agentname,
                     humanHandle: p.agent.owner?.username ?? p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
                 })),
+                drawTime: q.drawTime ? q.drawTime.toISOString() : null,
                 startAt: q.startAt ? q.startAt.toISOString() : null,
                 expiresAt: q.expiresAt ? q.expiresAt.toISOString() : null,
                 createdAt: q.createdAt.toISOString(),

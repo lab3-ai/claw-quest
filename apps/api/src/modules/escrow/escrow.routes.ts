@@ -23,17 +23,20 @@ export async function escrowRoutes(server: FastifyInstance) {
                             name: z.string(),
                             isTestnet: z.boolean(),
                         })),
-                        enableTestnets: z.boolean(),
+                        networkMode: z.enum(['testnet', 'mainnet']),
                     }),
                 },
             },
         },
         async () => {
-            const { getActiveChains } = await import('@clawquest/shared');
-            const chains = getActiveChains(escrowConfig.enableTestnets);
+            const { getActiveEscrowChainIds, getChainById } = await import('@clawquest/shared');
+            const chainIds = getActiveEscrowChainIds(escrowConfig.networkMode);
+            const chains = chainIds
+                .map(id => getChainById(id))
+                .filter((c): c is NonNullable<typeof c> => !!c);
             return {
                 chains: chains.map(c => ({ id: c.id, name: c.name, isTestnet: c.isTestnet })),
-                enableTestnets: escrowConfig.enableTestnets,
+                networkMode: escrowConfig.networkMode,
             };
         }
     );
@@ -304,10 +307,17 @@ export async function escrowRoutes(server: FastifyInstance) {
             },
             onRequest: [server.authenticate],
         },
-        async (request) => {
+        async (request, reply) => {
             const { txHash } = request.params as any;
             const { chainId } = request.query as any;
             const targetChainId = chainId || escrowConfig.defaultChainId;
+
+            if (!isChainAllowed(targetChainId)) {
+                return reply.status(400).send({
+                    message: `Chain ${targetChainId} is not available in this environment`,
+                } as any);
+            }
+
             const client = getPublicClient(targetChainId);
 
             try {

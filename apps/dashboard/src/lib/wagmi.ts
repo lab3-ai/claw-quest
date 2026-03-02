@@ -1,16 +1,15 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
-import { base, baseSepolia, mainnet, bsc, arbitrum, polygon } from 'wagmi/chains';
+import { base, baseSepolia, bsc, bscTestnet } from 'wagmi/chains';
 
-const enableTestnets = import.meta.env.VITE_ENABLE_TESTNETS !== 'false'; // default true for dev
+const networkMode = import.meta.env.VITE_ESCROW_NETWORK_MODE || 'testnet';
 
-const allChains = [base, baseSepolia, mainnet, bsc, arbitrum, polygon] as const;
+const testnetChains = [baseSepolia, bscTestnet] as const;
+const mainnetChains = [base, bsc] as const;
 
-const activeChains = enableTestnets
-    ? allChains
-    : allChains.filter(c => !c.testnet);
+const chains = networkMode === 'testnet' ? testnetChains : mainnetChains;
 
 export const wagmiConfig = getDefaultConfig({
     appName: 'ClawQuest',
     projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'demo-project-id',
-    chains: activeChains as any,
+    chains: chains as any,
 });

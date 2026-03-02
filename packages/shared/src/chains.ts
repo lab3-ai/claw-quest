@@ -56,6 +56,15 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
         explorerUrl: 'https://arbiscan.io',
         isTestnet: false,
     },
+    bscTestnet: {
+        id: 97,
+        name: 'BSC Testnet',
+        shortName: 'bsc-testnet',
+        nativeCurrency: { symbol: 'tBNB', name: 'Test BNB', decimals: 18 },
+        rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+        explorerUrl: 'https://testnet.bscscan.com',
+        isTestnet: true,
+    },
     polygon: {
         id: 137,
         name: 'Polygon',
@@ -107,6 +116,11 @@ export const TOKEN_REGISTRY: Record<number, Record<string, TokenInfo>> = {
         USDT: { address: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', decimals: 6, symbol: 'USDT', name: 'Tether USD' },
         NATIVE: { address: '0x0000000000000000000000000000000000000000', decimals: 18, symbol: 'ETH', name: 'Ether' },
     },
+    // BSC Testnet
+    97: {
+        USDT: { address: '0x337610d27c682E347C9cD60BD4b3b107C9d34dDd', decimals: 18, symbol: 'USDT', name: 'Tether USD' },
+        NATIVE: { address: '0x0000000000000000000000000000000000000000', decimals: 18, symbol: 'tBNB', name: 'Test BNB' },
+    },
     // Polygon
     137: {
         USDC: { address: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359', decimals: 6, symbol: 'USDC', name: 'USD Coin' },
@@ -138,20 +152,22 @@ export function isNativeToken(address: string): boolean {
 }
 
 /** Chain IDs supported for escrow deposits */
-export const ESCROW_CHAIN_IDS = [8453, 84532, 1, 56, 42161, 137] as const;
+export const ESCROW_CHAIN_IDS = [8453, 84532, 56, 97] as const;
 export type EscrowChainId = typeof ESCROW_CHAIN_IDS[number];
 
-/** Get chains filtered by testnet flag */
-export function getActiveChains(enableTestnets: boolean): ChainConfig[] {
+export type NetworkMode = 'testnet' | 'mainnet';
+
+/** Get chains filtered by network mode */
+export function getActiveChains(mode: NetworkMode): ChainConfig[] {
     return Object.values(SUPPORTED_CHAINS).filter(
-        c => enableTestnets || !c.isTestnet
+        c => mode === 'testnet' ? c.isTestnet : !c.isTestnet
     );
 }
 
-/** Get active escrow chain IDs filtered by testnet flag */
-export function getActiveEscrowChainIds(enableTestnets: boolean): number[] {
+/** Get active escrow chain IDs filtered by network mode */
+export function getActiveEscrowChainIds(mode: NetworkMode): number[] {
     return ESCROW_CHAIN_IDS.filter(id => {
         const chain = getChainById(id);
-        return chain && (enableTestnets || !chain.isTestnet);
+        return chain && (mode === 'testnet' ? chain.isTestnet : !chain.isTestnet);
     });
 }

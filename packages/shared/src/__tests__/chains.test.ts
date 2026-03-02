@@ -14,7 +14,7 @@ import {
 
 describe('SUPPORTED_CHAINS', () => {
     it('contains all expected chains', () => {
-        const expectedKeys = ['base', 'baseSepolia', 'ethereum', 'bnb', 'arbitrum', 'polygon'];
+        const expectedKeys = ['base', 'baseSepolia', 'ethereum', 'bnb', 'bscTestnet', 'arbitrum', 'polygon'];
         for (const key of expectedKeys) {
             expect(SUPPORTED_CHAINS).toHaveProperty(key);
         }
@@ -164,9 +164,13 @@ describe('ESCROW_CHAIN_IDS', () => {
     it('contains all expected chain IDs', () => {
         expect(ESCROW_CHAIN_IDS).toContain(8453);    // Base
         expect(ESCROW_CHAIN_IDS).toContain(84532);   // Base Sepolia
-        expect(ESCROW_CHAIN_IDS).toContain(1);       // Ethereum
         expect(ESCROW_CHAIN_IDS).toContain(56);      // BNB
-        expect(ESCROW_CHAIN_IDS).toContain(42161);   // Arbitrum
-        expect(ESCROW_CHAIN_IDS).toContain(137);     // Polygon
+        expect(ESCROW_CHAIN_IDS).toContain(97);      // BSC Testnet
+    });
+
+    it('does not contain removed chains', () => {
+        expect(ESCROW_CHAIN_IDS).not.toContain(1);       // Ethereum removed
+        expect(ESCROW_CHAIN_IDS).not.toContain(42161);   // Arbitrum removed
+        expect(ESCROW_CHAIN_IDS).not.toContain(137);     // Polygon removed
     });
 });

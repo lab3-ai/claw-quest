@@ -23,7 +23,11 @@ runs = 1024
 [rpc_endpoints]
 base_sepolia = "https://sepolia.base.org"
 base = "https://mainnet.base.org"
+bnb = "https://bsc-dataseed.binance.org"
+bsc_testnet = "https://data-seed-prebsc-1-s1.binance.org:8545"
 
 [etherscan]
 base_sepolia = { key = "${BASESCAN_API_KEY}", url = "https://api-sepolia.basescan.org/api" }
 base = { key = "${BASESCAN_API_KEY}", url = "https://api.basescan.org/api" }
+bnb = { key = "${BSCSCAN_API_KEY}", url = "https://api.bscscan.com/api" }
+bsc_testnet = { key = "${BSCSCAN_API_KEY}", url = "https://api-testnet.bscscan.com/api" }

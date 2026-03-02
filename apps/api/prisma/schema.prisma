@@ -15,7 +15,7 @@ model User {
   username          String?  @unique
   password          String?            // Legacy — kept for backward compat
   role              String   @default("user") // "user" | "admin"
-  telegramId        BigInt?  @unique          // Telegram user ID (from OIDC sub claim)
+  telegramId        String?  @unique          // Telegram user ID stored as string (BigInt overflows PG bigint)
   telegramUsername  String?                   // Telegram @username
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt

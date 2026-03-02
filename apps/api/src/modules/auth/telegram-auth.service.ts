@@ -26,17 +26,11 @@ export async function handleTelegramLogin(params: {
 
     // 2. Verify ID token
     const claims = await verifyTelegramIdToken(tokens.id_token);
-    const telegramIdStr = claims.telegramId; // keep as string for Prisma compat
-    const placeholderEmail = `tg_${telegramIdStr}@tg.clawquest.ai`;
+    const telegramId = claims.telegramId; // string — safe for IDs beyond PG bigint range
+    const placeholderEmail = `tg_${telegramId}@tg.clawquest.ai`;
 
-    // 3. Find existing user by telegramId (cast string to bigint in SQL)
-    const existingUsers = await prisma.$queryRawUnsafe<Array<{ id: string }>>(
-        `SELECT id FROM "User" WHERE "telegramId" = $1::bigint LIMIT 1`,
-        telegramIdStr
-    );
-    let user = existingUsers.length > 0
-        ? await prisma.user.findUnique({ where: { id: existingUsers[0].id } })
-        : null;
+    // 3. Find existing user by telegramId (normal Prisma query — column is now TEXT)
+    let user = await prisma.user.findUnique({ where: { telegramId } });
     let isNewUser = false;
 
     if (!user) {
@@ -69,26 +63,26 @@ export async function handleTelegramLogin(params: {
 
                 // Upsert Prisma user to handle race conditions
                 user = await prisma.user.upsert({
-                    where: { telegramId: BigInt(telegramIdStr) },
+                    where: { telegramId },
                     update: { supabaseId: sessionUser.user.id },
                     create: {
                         supabaseId: sessionUser.user.id,
                         email: placeholderEmail,
                         username: claims.username ?? `tg_${claims.telegramId}`,
-                        telegramId: BigInt(telegramIdStr),
+                        telegramId,
                         telegramUsername: claims.username ?? null,
                     },
                 });
 
                 // Short-circuit: we already have the session
-                const linkedAgents = await autoLinkAgents(prisma, BigInt(telegramIdStr), user.id);
+                const linkedAgents = await autoLinkAgents(prisma, telegramId, user.id);
                 return {
                     session,
                     user: {
                         id: user.id,
                         email: user.email,
                         username: user.username,
-                        telegramId: String(user.telegramId),
+                        telegramId: user.telegramId!,
                         telegramUsername: user.telegramUsername,
                     },
                     isNewUser: true,
@@ -100,13 +94,13 @@ export async function handleTelegramLogin(params: {
         } else {
             // Upsert Prisma user to handle concurrent first-login race
             user = await prisma.user.upsert({
-                where: { telegramId: BigInt(telegramIdStr) },
+                where: { telegramId },
                 update: { supabaseId: supabaseUser.user.id },
                 create: {
                     supabaseId: supabaseUser.user.id,
                     email: placeholderEmail,
                     username: claims.username ?? `tg_${claims.telegramId}`,
-                    telegramId: BigInt(telegramIdStr),
+                    telegramId,
                     telegramUsername: claims.username ?? null,
                 },
             });
@@ -121,8 +115,8 @@ export async function handleTelegramLogin(params: {
         }
     }
 
-    // 4. Auto-link agents via TelegramLink matching
-    const linkedAgents = await autoLinkAgents(prisma, BigInt(telegramIdStr), user.id);
+    // 4. Auto-link agents via TelegramLink matching (TelegramLink.telegramId is still BigInt)
+    const linkedAgents = await autoLinkAgents(prisma, telegramId, user.id);
 
     // 5. Generate Supabase session via magiclink OTP
     const session = await generateSupabaseSession(supabaseAdmin, user.email);
@@ -133,7 +127,7 @@ export async function handleTelegramLogin(params: {
             id: user.id,
             email: user.email,
             username: user.username,
-            telegramId: String(user.telegramId),
+            telegramId: user.telegramId!,
             telegramUsername: user.telegramUsername,
         },
         isNewUser,
@@ -156,14 +150,11 @@ export async function handleTelegramLink(params: {
     // 1. Exchange + verify
     const tokens = await exchangeTelegramCode({ code, codeVerifier, redirectUri });
     const claims = await verifyTelegramIdToken(tokens.id_token);
-    const telegramIdStr = claims.telegramId;
+    const telegramId = claims.telegramId;
 
-    // 2. Check telegramId not already linked to another user (raw query for BigInt compat)
-    const existing = await prisma.$queryRawUnsafe<Array<{ id: string }>>(
-        `SELECT id FROM "User" WHERE "telegramId" = $1::bigint LIMIT 1`,
-        telegramIdStr
-    );
-    if (existing.length > 0 && existing[0].id !== userId) {
+    // 2. Check telegramId not already linked to another user
+    const existing = await prisma.user.findUnique({ where: { telegramId } });
+    if (existing && existing.id !== userId) {
         throw new Error('This Telegram account is already linked to another user');
     }
 
@@ -171,19 +162,19 @@ export async function handleTelegramLink(params: {
     const user = await prisma.user.update({
         where: { id: userId },
         data: {
-            telegramId: BigInt(telegramIdStr),
+            telegramId,
             telegramUsername: claims.username ?? null,
         },
     });
 
     // 4. Auto-link agents
-    const linkedAgents = await autoLinkAgents(prisma, BigInt(telegramIdStr), userId);
+    const linkedAgents = await autoLinkAgents(prisma, telegramId, userId);
 
     return {
         user: {
             id: user.id,
             email: user.email,
-            telegramId: user.telegramId ? String(user.telegramId) : null,
+            telegramId: user.telegramId,
             telegramUsername: user.telegramUsername,
         },
         linkedAgents,
@@ -192,17 +183,22 @@ export async function handleTelegramLink(params: {
 
 /**
  * Find unowned agents with TelegramLink matching this telegramId and claim them in batch.
+ * TelegramLink.telegramId is BigInt (existing data) — use raw query for cross-type comparison.
  */
-async function autoLinkAgents(prisma: PrismaClient, telegramId: bigint, userId: string): Promise<string[]> {
-    const telegramLinks = await prisma.telegramLink.findMany({
-        where: { telegramId },
-        include: { agent: { select: { id: true, ownerId: true, agentname: true } } },
-    });
+async function autoLinkAgents(prisma: PrismaClient, telegramId: string, userId: string): Promise<string[]> {
+    // TelegramLink.telegramId is still BigInt — cast string for comparison
+    const telegramLinks = await prisma.$queryRawUnsafe<Array<{ agentId: string; agentname: string; ownerId: string | null }>>(
+        `SELECT tl."agentId", a."agentname", a."ownerId"
+         FROM "TelegramLink" tl
+         JOIN "Agent" a ON a.id = tl."agentId"
+         WHERE tl."telegramId" = $1::bigint`,
+        telegramId
+    );
 
-    const unownedLinks = telegramLinks.filter(link => !link.agent.ownerId);
+    const unownedLinks = telegramLinks.filter(row => !row.ownerId);
     if (unownedLinks.length === 0) return [];
 
-    const agentIds = unownedLinks.map(link => link.agent.id);
+    const agentIds = unownedLinks.map(row => row.agentId);
 
     // Batch update instead of N+1
     await prisma.agent.updateMany({
@@ -210,7 +206,7 @@ async function autoLinkAgents(prisma: PrismaClient, telegramId: bigint, userId: 
         data: { ownerId: userId, claimedAt: new Date(), claimedVia: 'telegram' },
     });
 
-    return unownedLinks.map(link => link.agent.agentname);
+    return unownedLinks.map(row => row.agentname);
 }
 
 /**

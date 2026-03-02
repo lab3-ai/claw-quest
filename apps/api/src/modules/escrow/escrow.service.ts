@@ -143,6 +143,14 @@ export async function getEscrowStatus(
 
 // ─── Payout Distribution Calculation ─────────────────────────────────────────
 
+import {
+    computeFcfs,
+    computeLeaderboard,
+    computeLuckyDraw,
+    type PayoutResult,
+    type Participant,
+} from './distribution-calculator';
+
 export interface PayoutEntry {
     participationId: string;
     agentId: string;
@@ -152,6 +160,7 @@ export interface PayoutEntry {
 
 /**
  * Calculate payout distribution for a quest based on its type.
+ * Uses extracted calculator module for pure computation.
  */
 export async function calculateDistribution(
     prisma: PrismaClient,
@@ -159,6 +168,10 @@ export async function calculateDistribution(
 ): Promise<PayoutEntry[]> {
     const quest = await prisma.quest.findUnique({ where: { id: questId } });
     if (!quest) throw new Error('Quest not found');
+
+    if (quest.status !== 'live' && quest.status !== 'completed') {
+        throw new Error(`Cannot distribute: quest status is "${quest.status}"`);
+    }
 
     const chainId = quest.cryptoChainId || escrowConfig.defaultChainId;
     const tokenInfo = getTokenInfo(chainId, quest.rewardType.toUpperCase());
@@ -177,39 +190,38 @@ export async function calculateDistribution(
 
     if (participations.length === 0) return [];
 
-    const entries: PayoutEntry[] = [];
+    // Check for already-distributed payouts
+    const alreadyPaid = participations.some(p => p.payoutStatus === 'paid');
+    if (alreadyPaid) throw new Error('Quest already has paid distributions');
+
+    const participants: Participant[] = participations.map(p => ({
+        id: p.id,
+        agentId: p.agentId,
+        wallet: p.payoutWallet!,
+    }));
+
+    let results: PayoutResult[];
 
     switch (quest.type) {
-        case 'FCFS': {
-            const perPerson = totalAmount / BigInt(participations.length);
-            for (const p of participations) {
-                entries.push({ participationId: p.id, agentId: p.agentId, wallet: p.payoutWallet!, amount: perPerson });
-            }
+        case 'FCFS':
+            results = computeFcfs(totalAmount, quest.totalSlots, participants);
             break;
-        }
-        case 'LEADERBOARD': {
-            const n = participations.length;
-            const totalShares = BigInt((n * (n + 1)) / 2);
-            for (let i = 0; i < n; i++) {
-                const shares = BigInt(n - i);
-                entries.push({ participationId: participations[i].id, agentId: participations[i].agentId, wallet: participations[i].payoutWallet!, amount: (totalAmount * shares) / totalShares });
-            }
+        case 'LEADERBOARD':
+            results = computeLeaderboard(totalAmount, participants, quest.rewardTiers as number[] | null);
             break;
-        }
-        case 'LUCKY_DRAW': {
-            const maxWinners = Math.min(quest.totalSlots, participations.length);
-            const winners = [...participations].sort(() => Math.random() - 0.5).slice(0, maxWinners);
-            const perWinner = totalAmount / BigInt(winners.length);
-            for (const p of winners) {
-                entries.push({ participationId: p.id, agentId: p.agentId, wallet: p.payoutWallet!, amount: perWinner });
-            }
+        case 'LUCKY_DRAW':
+            results = computeLuckyDraw(totalAmount, quest.totalSlots, participants);
             break;
-        }
         default:
             throw new Error(`Unknown quest type: ${quest.type}`);
     }
 
-    return entries;
+    return results.map(r => ({
+        participationId: r.participantId,
+        agentId: r.agentId,
+        wallet: r.wallet,
+        amount: r.amount,
+    }));
 }
 
 // ─── Write Contract With Retry ────────────────────────────────────────────────

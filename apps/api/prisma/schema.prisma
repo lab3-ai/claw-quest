@@ -85,6 +85,7 @@ model Quest {
   requiredSkills String[] @default([]) // skill names agent must have to accept
   tasks         Json      @default("[]")  // QuestTask[] — social task definitions
 
+  rewardTiers   Json?                   // LEADERBOARD: [40, 25, 15, 20] = % per rank (last = split among rest)
   network     String?                 // blockchain name (e.g. "Base", "BNB Smart Chain")
   drawTime    DateTime?               // Lucky Draw deadline
 

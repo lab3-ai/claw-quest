@@ -186,12 +186,12 @@ export async function handleTelegramLink(params: {
  * TelegramLink.telegramId is BigInt (existing data) — use raw query for cross-type comparison.
  */
 async function autoLinkAgents(prisma: PrismaClient, telegramId: string, userId: string): Promise<string[]> {
-    // TelegramLink.telegramId is still BigInt — cast string for comparison
+    // TelegramLink.telegramId is BigInt — cast column to text for safe comparison (avoids bigint overflow)
     const telegramLinks = await prisma.$queryRawUnsafe<Array<{ agentId: string; agentname: string; ownerId: string | null }>>(
         `SELECT tl."agentId", a."agentname", a."ownerId"
          FROM "TelegramLink" tl
          JOIN "Agent" a ON a.id = tl."agentId"
-         WHERE tl."telegramId" = $1::bigint`,
+         WHERE tl."telegramId"::text = $1`,
         telegramId
     );
 

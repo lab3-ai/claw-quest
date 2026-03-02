@@ -2,7 +2,7 @@ import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
 
 const TELEGRAM_ISSUER = 'https://oauth.telegram.org';
 const TELEGRAM_JWKS_URL = 'https://oauth.telegram.org/.well-known/jwks.json';
-const TELEGRAM_TOKEN_URL = 'https://oauth.telegram.org/auth/token';
+const TELEGRAM_TOKEN_URL = 'https://oauth.telegram.org/token';
 
 // Remote JWKS set — jose handles caching + rotation automatically
 const jwks = createRemoteJWKSet(new URL(TELEGRAM_JWKS_URL));

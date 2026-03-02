@@ -16,10 +16,12 @@ import {
     QuestNotEditableError,
     QuestForbiddenError,
 } from './quests.service';
+import { validatePublishRequirements } from './quests.publish-validator';
 
 const CreateQuestSchema = QuestSchema.omit({
     id: true,
     createdAt: true,
+    updatedAt: true,
     filledSlots: true,
     questers: true,
     questerNames: true,
@@ -28,11 +30,14 @@ const CreateQuestSchema = QuestSchema.omit({
     description: z.string().default(''),
     sponsor: z.string().default('System'),
     status: z.nativeEnum(QUEST_STATUS).default(QUEST_STATUS.DRAFT),
+    rewardAmount: z.number().default(0),
     startAt: z.string().datetime().optional(),
     expiresAt: z.string().datetime().optional(),
     tags: z.array(z.string()).default([]),
     tasks: z.array(QuestTaskSchema).default([]),
     requiredSkills: z.array(z.string()).default([]),
+    network: z.string().optional(),
+    drawTime: z.string().datetime().optional(),
 });
 
 export async function questsRoutes(server: FastifyInstance) {
@@ -826,16 +831,18 @@ export async function questsRoutes(server: FastifyInstance) {
                 params: z.object({ id: z.string().uuid() }),
                 body: z.object({
                     title: z.string().min(1).optional(),
-                    description: z.string().min(1).optional(),
+                    description: z.string().optional(),
                     sponsor: z.string().optional(),
                     type: z.nativeEnum(QUEST_TYPE).optional(),
-                    rewardAmount: z.number().min(1).optional(),
+                    rewardAmount: z.number().min(0).optional(),
                     rewardType: z.string().optional(),
                     totalSlots: z.number().min(1).optional(),
                     tags: z.array(z.string()).optional(),
                     requiredSkills: z.array(z.string()).optional(),
                     tasks: z.array(QuestTaskSchema).optional(),
                     expiresAt: z.string().datetime().nullable().optional(),
+                    network: z.string().optional(),
+                    drawTime: z.string().datetime().nullable().optional(),
                     startAt: z.string().datetime().nullable().optional(),
                 }),
                 response: {
@@ -900,6 +907,17 @@ export async function questsRoutes(server: FastifyInstance) {
                     message: `Invalid status transition: ${quest.status} → ${newStatus}`,
                     code: 'INVALID_TRANSITION',
                 } as any);
+            }
+
+            // Validate publish requirements when going draft → live
+            if (quest.status === 'draft' && newStatus === 'live') {
+                const publishErr = validatePublishRequirements(quest);
+                if (publishErr) {
+                    return reply.status(400).send({
+                        message: 'Quest does not meet publish requirements',
+                        ...publishErr,
+                    } as any);
+                }
             }
 
             const previousStatus = quest.status;

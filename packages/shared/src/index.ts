@@ -88,6 +88,8 @@ export const QuestSchema = z.object({
         agentName: z.string(),
         humanHandle: z.string(), // owner email prefix (e.g. "alice" from "alice@example.com")
     })).default([]),
+    network: z.string().nullable().optional(),   // blockchain name (e.g. "Base", "BNB Smart Chain")
+    drawTime: z.string().datetime().nullable().optional(), // Lucky Draw deadline
     startAt: z.string().datetime().nullable().optional(), // ISO string — null = live immediately after funding
     expiresAt: z.string().datetime().nullable(), // ISO string
     createdAt: z.string().datetime(), // ISO string for API

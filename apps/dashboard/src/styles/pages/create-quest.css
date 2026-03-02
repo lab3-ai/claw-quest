@@ -2,6 +2,20 @@
    CREATE QUEST — Page-specific styles
    ============================================== */
 
+/* === DRAFT RESTORED BANNER === */
+.draft-restored-banner {
+  background: var(--accent-bg, #f0f7ff);
+  border: 1px solid var(--accent, #3b82f6);
+  border-radius: 8px;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--fg);
+}
+
 /* === FORM LAYOUT (single-column, no sidebar) === */
 .form-layout { display: block; max-width: 720px; }
 

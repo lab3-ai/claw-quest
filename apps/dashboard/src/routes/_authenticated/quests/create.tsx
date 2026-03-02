@@ -4,6 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { PlatformIcon } from "@/components/PlatformIcon"
 import { useSkillSearch, isSkillUrl, fetchSkillFromUrl, type ClawHubSkill } from "@/hooks/useSkillSearch"
+import { useDraftPersistence } from "@/hooks/use-draft-persistence"
 import "@/styles/pages/create-quest.css"
 import "@/styles/pages/quest-detail.css"
 import "@/styles/actor-sections.css"
@@ -589,6 +590,36 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const [urlPreview, setUrlPreview] = useState<ClawHubSkill | null>(null)
     const fundAfterSave = useRef(false)
     const editPopulated = useRef(false)
+    const [restoredBanner, setRestoredBanner] = useState(false)
+    const { save: saveDraft, restore: restoreDraft, clear: clearDraft } = useDraftPersistence(editQuestId)
+
+    // ── Restore draft from localStorage (new quests only) ───────────────────
+    useEffect(() => {
+        if (isEditMode) return
+        const draft = restoreDraft()
+        if (draft) {
+            setForm(draft.form as FormData)
+            if (draft.socialEntries?.length) setHumanTasks(draft.socialEntries)
+            if (draft.selectedSkills?.length) setRequiredSkills(draft.selectedSkills)
+            setRestoredBanner(true)
+        }
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ── Auto-save form state to localStorage (new quests only) ──────────────
+    useEffect(() => {
+        if (!isEditMode) {
+            saveDraft({ form, socialEntries: humanTasks, selectedSkills: requiredSkills })
+        }
+    }, [form, humanTasks, requiredSkills]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ── Warn on unsaved changes before navigating away ──────────────────────
+    useEffect(() => {
+        const handler = (e: BeforeUnloadEvent) => {
+            if (form.title.trim()) e.preventDefault()
+        }
+        window.addEventListener('beforeunload', handler)
+        return () => window.removeEventListener('beforeunload', handler)
+    }, [form.title])
 
     // ── Fetch existing quest for edit mode ─────────────────────────────────────
     const { data: editQuest, isLoading: editLoading } = useQuery<any>({
@@ -753,6 +784,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 tasks,
                 expiresAt: form.endAt ? new Date(form.endAt).toISOString() : undefined,
                 startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
+                network: form.network || undefined,
+                drawTime: form.drawTime ? new Date(form.drawTime).toISOString() : undefined,
             }
             if (!isEditMode) payload.status = "draft"
 
@@ -775,6 +808,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
             return res.json()
         },
         onSuccess: (data: any) => {
+            clearDraft()
             const questId = data?.id || editQuestId
             if (fundAfterSave.current && questId) {
                 navigate({ to: "/quests/$questId/fund", params: { questId } })
@@ -871,6 +905,12 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
             </div>
 
             <div className="form-layout">
+              {restoredBanner && (
+                <div className="draft-restored-banner">
+                    <span>Draft restored from local backup</span>
+                    <button className="btn btn-sm" onClick={() => setRestoredBanner(false)}>Dismiss</button>
+                </div>
+              )}
               <div className="accordion-stepper">
 
                     {/* ══ STEP 1: DETAILS ══ */}

@@ -129,6 +129,12 @@
 
 /* === DASHBOARD BADGES === */
 .badge-draft { background: var(--sidebar-bg); color: var(--fg-muted); border: 1px solid var(--border); }
+
+/* Draft card styling */
+.quest-item-draft { border-style: dashed; opacity: 0.85; }
+.quest-item-draft:hover { opacity: 1; }
+.draft-progress { font-size: 0.8rem; color: var(--fg-muted); }
+.draft-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
 .badge-pending { background: var(--yellow-bg); color: var(--yellow); }
 .badge-scheduled { background: var(--tag-bg); color: var(--tag-fg); }
 .badge-live { background: var(--green-bg); color: var(--green); }

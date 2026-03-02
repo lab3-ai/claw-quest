@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Link } from "@tanstack/react-router"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { QuestersPopup } from "@/components/QuestersPopup"
 import { PlatformIcon } from "@/components/PlatformIcon"
@@ -51,6 +51,28 @@ function statusBadgeClass(status: string) {
     return map[status] ?? ""
 }
 
+function getPublishErrors(quest: MineQuest): Record<string, string> {
+    const errors: Record<string, string> = {}
+    if (!quest.title?.trim()) errors.title = 'Title required'
+    if (!quest.description?.trim()) errors.description = 'Description required'
+    if (!quest.rewardAmount || quest.rewardAmount <= 0) errors.rewardAmount = 'Reward required'
+    if (!quest.totalSlots || quest.totalSlots <= 0) errors.totalSlots = 'Slots required'
+    const tasks = (quest.tasks as any[]) ?? []
+    if (tasks.length === 0) errors.tasks = 'Tasks required'
+    return errors
+}
+
+function getDraftCompletion(quest: MineQuest): { done: number; total: number } {
+    const checks = [
+        !!quest.title?.trim(),
+        !!quest.description?.trim(),
+        quest.rewardAmount > 0,
+        ((quest.tasks as any[]) ?? []).length > 0,
+        !!quest.expiresAt,
+    ]
+    return { done: checks.filter(Boolean).length, total: checks.length }
+}
+
 function formatTimeLeft(expiresAt: string | null): { val: string; label: string; cls: string } {
     if (!expiresAt) return { val: "—", label: "", cls: "muted" }
     const diff = new Date(expiresAt).getTime() - Date.now()
@@ -88,6 +110,7 @@ function CmdBlock({ cmd }: { cmd: string }) {
 
 export function Dashboard() {
     const { session, user } = useAuth()
+    const queryClient = useQueryClient()
     const [mainTab, setMainTab] = useState<MainTab>("quests")
     const [questFilter, setQuestFilter] = useState<QuestFilter>("all")
     const [questView, setQuestView] = useState<"card" | "list">("card")
@@ -158,6 +181,26 @@ export function Dashboard() {
         },
         enabled: !!session?.access_token,
     })
+
+    // ── Publish handler ─────────────────────────────────────────────────────
+    async function handlePublish(questId: string) {
+        if (!confirm('Publish this quest? It will become visible to agents.')) return
+        const res = await fetch(`${API_BASE}/quests/${questId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+            body: JSON.stringify({ status: 'live' }),
+        })
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({ message: 'Failed to publish' }))
+            if (err.code === 'PUBLISH_VALIDATION') {
+                alert(`Cannot publish:\n${Object.values(err.fields as Record<string, string>).join('\n')}`)
+            } else {
+                alert(err.message || 'Failed to publish')
+            }
+            return
+        }
+        queryClient.invalidateQueries({ queryKey: ['my-quests'] })
+    }
 
     // Quest filter counts
     const questCounts = {
@@ -468,7 +511,7 @@ export function Dashboard() {
                                     ? { to: "/quests/$questId" as const, params: { questId: quest.id }, search: { token: quest.previewToken } }
                                     : { to: "/quests/$questId" as const, params: { questId: quest.id } }
                                 return (
-                                    <li key={quest.id} className="quest-item" data-status={quest.status}>
+                                    <li key={quest.id} className={`quest-item${isDraft ? ' quest-item-draft' : ''}`} data-status={quest.status}>
                                         <div className="quest-stats">
                                             <div className="quest-stat">
                                                 <span className="quest-stat-val reward">
@@ -534,14 +577,23 @@ export function Dashboard() {
                                         </div>
 
                                         <div className="quest-time-col">
-                                            {isDraft ? (
-                                                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                                                    {quest.fundingStatus === "pending" && (
-                                                        <Link to="/quests/$questId/fund" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Fund</Link>
-                                                    )}
-                                                    <Link to="/quests/$questId/edit" params={{ questId: quest.id }} className="btn btn-sm btn-secondary">Edit</Link>
-                                                </div>
-                                            ) : (
+                                            {isDraft ? (() => {
+                                                const comp = getDraftCompletion(quest)
+                                                const errors = getPublishErrors(quest)
+                                                const canPublish = Object.keys(errors).length === 0
+                                                return (
+                                                    <div className="draft-actions">
+                                                        <span className="draft-progress">{comp.done}/{comp.total} complete</span>
+                                                        <Link to="/quests/$questId/edit" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Continue Editing</Link>
+                                                        <button
+                                                            className="btn btn-sm btn-accent"
+                                                            disabled={!canPublish}
+                                                            title={canPublish ? 'Publish quest' : `Missing: ${Object.values(errors).join(', ')}`}
+                                                            onClick={() => handlePublish(quest.id)}
+                                                        >Publish</button>
+                                                    </div>
+                                                )
+                                            })() : (
                                                 <>
                                                     <span className={`quest-time-val ${time.cls}`}>{time.val}</span>
                                                     {time.label && <span className="quest-time-lbl">{time.label}</span>}
@@ -617,14 +669,21 @@ export function Dashboard() {
                                                 )}
                                             </td>
                                             <td className="col-time">
-                                                {isDraft ? (
-                                                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                                                        {quest.fundingStatus === "pending" && (
-                                                            <Link to="/quests/$questId/fund" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Fund</Link>
-                                                        )}
-                                                        <Link to="/quests/$questId/edit" params={{ questId: quest.id }} className="btn btn-sm btn-secondary">Edit</Link>
-                                                    </div>
-                                                ) : (
+                                                {isDraft ? (() => {
+                                                    const errors = getPublishErrors(quest)
+                                                    const canPublish = Object.keys(errors).length === 0
+                                                    return (
+                                                        <div className="draft-actions">
+                                                            <Link to="/quests/$questId/edit" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Edit</Link>
+                                                            <button
+                                                                className="btn btn-sm btn-accent"
+                                                                disabled={!canPublish}
+                                                                title={canPublish ? 'Publish quest' : `Missing: ${Object.values(errors).join(', ')}`}
+                                                                onClick={() => handlePublish(quest.id)}
+                                                            >Publish</button>
+                                                        </div>
+                                                    )
+                                                })() : (
                                                     <>
                                                         <div className={`tbl-time ${time.cls}`}>{time.val}</div>
                                                         {time.label && <div className="tbl-time-label">{time.label}</div>}

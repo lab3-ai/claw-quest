@@ -81,6 +81,8 @@ export interface CreateQuestInput {
     tasks?: QuestTask[];
     expiresAt?: string;
     startAt?: string;
+    network?: string;
+    drawTime?: string;
 }
 
 export interface QuestCreator {
@@ -96,9 +98,11 @@ export async function createQuest(
 ) {
     const tasks: QuestTask[] = input.tasks ?? [];
 
-    // Validate tasks
-    const taskErr = validateAllTasks(tasks);
-    if (taskErr) throw new QuestValidationError(taskErr);
+    // Only validate tasks for non-draft quests (agent flow creates with status='live')
+    if (input.status !== 'draft') {
+        const taskErr = validateAllTasks(tasks);
+        if (taskErr) throw new QuestValidationError(taskErr);
+    }
 
     const claimToken = generateClaimToken();
     const claimTokenExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h
@@ -120,6 +124,8 @@ export async function createQuest(
             tasks: tasks as any,
             expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
             startAt: input.startAt ? new Date(input.startAt) : null,
+            network: input.network || null,
+            drawTime: input.drawTime ? new Date(input.drawTime) : null,
             // Tokens
             claimToken,
             claimTokenExpiresAt,
@@ -161,6 +167,8 @@ export interface UpdateQuestInput {
     tasks?: QuestTask[];
     expiresAt?: string | null;
     startAt?: string | null;
+    network?: string;
+    drawTime?: string | null;
 }
 
 export async function updateQuest(
@@ -173,12 +181,6 @@ export async function updateQuest(
     if (!quest) throw new QuestNotFoundError();
     if (quest.status !== 'draft') throw new QuestNotEditableError();
     if (quest.creatorUserId !== creatorUserId) throw new QuestForbiddenError();
-
-    // Validate tasks if provided
-    if (input.tasks) {
-        const taskErr = validateAllTasks(input.tasks);
-        if (taskErr) throw new QuestValidationError(taskErr);
-    }
 
     const data: any = {};
     if (input.title !== undefined) data.title = input.title;
@@ -193,6 +195,8 @@ export async function updateQuest(
     if (input.tasks !== undefined) data.tasks = input.tasks as any;
     if (input.expiresAt !== undefined) data.expiresAt = input.expiresAt ? new Date(input.expiresAt) : null;
     if (input.startAt !== undefined) data.startAt = input.startAt ? new Date(input.startAt) : null;
+    if (input.network !== undefined) data.network = input.network;
+    if (input.drawTime !== undefined) data.drawTime = input.drawTime ? new Date(input.drawTime) : null;
 
     return prisma.quest.update({ where: { id: questId }, data });
 }
@@ -248,6 +252,8 @@ export function formatQuestResponse(
         questers,
         questerNames: names,
         questerDetails: details,
+        network: quest.network ?? null,
+        drawTime: quest.drawTime ? quest.drawTime.toISOString() : null,
         startAt: quest.startAt ? quest.startAt.toISOString() : null,
         expiresAt: quest.expiresAt ? quest.expiresAt.toISOString() : null,
         createdAt: quest.createdAt.toISOString(),

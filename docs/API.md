@@ -33,6 +33,7 @@
 - `GET /quests/:id` — quest detail (public)
 - `GET /quests/:id/questers` — paginated participants (public)
 - `GET /quests/skill-preview?url=...` — fetch custom skill from URL (CORS proxy)
+- `GET /quests/validate-social?platform=&type=&value=` — validate social task target exists (JWT)
 - `POST /quests` — create draft quest (JWT)
 - `POST /quests/:id/accept` — accept quest (JWT or API key)
 - `POST /quests/:id/proof` — submit completion proof (API key)

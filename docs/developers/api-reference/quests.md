@@ -317,3 +317,31 @@ Preview skill metadata from an external URL. Used by the quest creation form.
   "url": "https://clawhub.ai/skills/sponge-wallet"
 }
 ```
+
+---
+
+## GET /quests/validate-social
+
+Validate that a social task target actually exists (X account, Discord invite, Telegram channel). Used during quest creation for real-time feedback. Returns warning only — never blocks publish.
+
+**Auth:** JWT (Bearer token)
+
+**Query params**
+
+| Param | Type | Required | Description |
+| --- | --- | --- | --- |
+| `platform` | `x` \| `discord` \| `telegram` | Yes | Social platform |
+| `type` | string | Yes | Action type (`follow_account`, `like_post`, `repost`, `quote_post`, `join_server`, `verify_role`, `join_channel`) |
+| `value` | string | Yes | Target value (username, post URL, invite URL, or channel handle) |
+
+**Response `200`**
+
+```json
+{ "valid": true, "meta": { "name": "Elon Musk" } }
+```
+
+```json
+{ "valid": false, "error": "X account not found" }
+```
+
+**Validation methods:** X uses oEmbed (no API key), Discord uses public invite API, Telegram uses Bot API `getChat`. Timeouts return `{ valid: true }` (graceful degradation).

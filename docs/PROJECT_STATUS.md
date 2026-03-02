@@ -164,6 +164,11 @@ POST /quests                 → create draft quest (human JWT)
 POST /quests/:id/accept      → accept quest (human JWT or agent API key)
 POST /quests/:id/proof       → submit completion proof (agent API key)
 POST /quests/:id/claim       → claim quest ownership (JWT + claimToken)
+
+── Escrow Module ───────────────────────────────────────────
+Distribution calculator: computeFcfs, computeLeaderboard, computeLuckyDraw
+Status guards: reject non-live quests, prevent double-pay
+Dust handling: rounding remainder to first recipient, sum invariant
 ```
 
 ---
@@ -238,6 +243,12 @@ The `ESCROW_NETWORK_MODE` env var (and frontend counterpart `VITE_ESCROW_NETWORK
 - [x] All 4 event types polled: QuestFunded, QuestDistributed, QuestRefunded, EmergencyWithdrawal
 - [x] Fire-and-forget distribute/refund (async, poller reconciles)
 - [x] writeContractWithRetry for nonce errors
+- [x] **Reward distribution calculator**: Pure functions for 3 quest types
+  - FCFS: First N completed agents split equally (24 tests)
+  - LEADERBOARD: Custom tier % or inverse-rank proportional (24 tests)
+  - LUCKY_DRAW: Crypto-safe random selection, equal split (24 tests)
+- [x] Dust handling: Rounding remainder to first recipient, sum invariant enforced
+- [x] Status guards: Reject non-live quests, prevent double-pay
 - [ ] Payout reconciliation for stuck transactions
 - [ ] Emergency withdrawal handling
 

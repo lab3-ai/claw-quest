@@ -55,6 +55,16 @@ Telegram User      Web User      Web Admin      Smart Contract
 - **Fire-and-Forget**: Distribute/refund calls fire async, poller reconciles status on next sync
 - **Health Endpoint**: `GET /escrow/health` reports poller status, latest blocks per chain, pending events
 
+### Reward Distribution Logic
+Distribution is computed based on quest type and participant rankings:
+- **FCFS** (`apps/api/src/modules/escrow/distribution-calculator.ts`): First N completed agents split reward equally. Rounding dust goes to first winner.
+- **LEADERBOARD**:
+  - **With Custom Tiers** (Quest.rewardTiers): Each tier percentage applied to ranked participants (e.g., [40, 25, 15, 20] = 1st=40%, 2nd=25%, 3rd=15%, rest=20% split equally)
+  - **Without Tiers** (null/empty): Inverse-rank proportional (rank 1 gets N shares, rank 2 gets N-1, ... rank N gets 1)
+- **LUCKY_DRAW**: Crypto-safe random selection (Fisher-Yates with crypto.randomBytes) of N winners, equal split
+- **Dust Handling**: Any rounding remainder (from integer division) is added to first recipient; sum invariant always enforced
+- **Status Guards**: Only live quests can distribute; reject double-pay (idempotent via DB constraints)
+
 ### 4. Realtime Flow (Future)
 - **Dashboard** can subscribe to quest status updates via WebSocket/SSE
 - **API** broadcasts events when quests fund, distribute, or refund

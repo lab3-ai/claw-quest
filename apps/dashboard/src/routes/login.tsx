@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { useAuth } from "@/context/AuthContext"
 import { supabase } from "@/lib/supabase"
+import { startTelegramLogin } from "@/lib/telegram-oidc"
 import "@/styles/login-modal.css"
 import "@/styles/login-page.css"
 
@@ -11,6 +12,7 @@ export function Login() {
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
     const [googleLoading, setGoogleLoading] = useState(false)
+    const [telegramLoading, setTelegramLoading] = useState(false)
     const { isAuthenticated } = useAuth()
     const navigate = useNavigate()
 
@@ -109,6 +111,35 @@ export function Login() {
                                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                                 </svg>
                                 Continue with Google
+                            </>
+                        )}
+                    </button>
+
+                    {/* Telegram OIDC button */}
+                    <button
+                        type="button"
+                        className="btn btn-outline"
+                        style={{ width: "100%", padding: "10px", fontSize: "13px", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                        onClick={async () => {
+                            setTelegramLoading(true)
+                            setError("")
+                            try {
+                                await startTelegramLogin()
+                            } catch (e: any) {
+                                setError(e.message ?? "Failed to start Telegram login")
+                                setTelegramLoading(false)
+                            }
+                        }}
+                        disabled={telegramLoading}
+                    >
+                        {telegramLoading ? (
+                            "Redirecting..."
+                        ) : (
+                            <>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.03-1.99 1.27-5.62 3.72-.53.36-1.01.54-1.44.53-.47-.01-1.38-.27-2.06-.49-.83-.27-1.49-.42-1.43-.88.03-.24.37-.49 1.02-.74 3.98-1.73 6.63-2.87 7.97-3.44 3.79-1.58 4.58-1.86 5.09-1.87.11 0 .37.03.54.17.14.12.18.28.2.45-.01.06.01.24 0 .38z" fill="#2AABEE"/>
+                                </svg>
+                                Continue with Telegram
                             </>
                         )}
                     </button>

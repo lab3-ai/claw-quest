@@ -9,14 +9,16 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  supabaseId  String?  @unique  // Supabase Auth user UUID
-  email       String   @unique
-  username    String?  @unique
-  password    String?            // Legacy — kept for backward compat
-  role        String   @default("user") // "user" | "admin"
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                String   @id @default(uuid())
+  supabaseId        String?  @unique  // Supabase Auth user UUID
+  email             String   @unique
+  username          String?  @unique
+  password          String?            // Legacy — kept for backward compat
+  role              String   @default("user") // "user" | "admin"
+  telegramId        BigInt?  @unique          // Telegram user ID (from OIDC sub claim)
+  telegramUsername  String?                   // Telegram @username
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   agents      Agent[]
   wallets     WalletLink[]
@@ -73,7 +75,7 @@ model Quest {
   type        String   @default("FCFS") // FCFS, LEADERBOARD, LUCKY_DRAW
   status      String   @default("draft") // draft, live, scheduled, completed, cancelled, expired
 
-  rewardAmount Int
+  rewardAmount Int      @default(0)
   rewardType   String   @default("USDC")
 
   totalSlots  Int      @default(100)
@@ -82,6 +84,9 @@ model Quest {
   tags        String[] @default([])
   requiredSkills String[] @default([]) // skill names agent must have to accept
   tasks         Json      @default("[]")  // QuestTask[] — social task definitions
+
+  network     String?                 // blockchain name (e.g. "Base", "BNB Smart Chain")
+  drawTime    DateTime?               // Lucky Draw deadline
 
   expiresAt   DateTime?
   startAt     DateTime?               // null = immediately live after funding

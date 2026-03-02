@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
+import { startTelegramLogin } from "@/lib/telegram-oidc"
 import "@/styles/pages/account.css"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
@@ -18,6 +19,8 @@ interface UserProfile {
     email: string
     username: string | null
     role: string
+    telegramId: string | null
+    telegramUsername: string | null
     createdAt: string
 }
 
@@ -144,7 +147,11 @@ export function Account() {
                         <>
                             <div className="account-row">
                                 <span className="account-label">Email</span>
-                                <span className="account-value">{profile?.email ?? supabaseUser?.email ?? "—"}</span>
+                                <span className="account-value">
+                                    {profile?.email?.match(/^tg_\d+@tg\.clawquest\.ai$/)
+                                        ? <span style={{ color: "var(--text-muted)", fontStyle: "italic" }}>No email linked</span>
+                                        : (profile?.email ?? supabaseUser?.email ?? "—")}
+                                </span>
                             </div>
                             <div className="account-row">
                                 <span className="account-label">Username</span>
@@ -168,13 +175,32 @@ export function Account() {
                     {providers.map(p => {
                         const identity = identities.find(i => i.provider === p.key)
                         const isLinked = linkedProviders.has(p.key)
-                        const isPlaceholder = p.key === "telegram" || p.key === "twitter" || p.key === "discord"
+                        const isTelegram = p.key === "telegram"
+                        const telegramLinked = isTelegram && !!profile?.telegramId
+                        const isPlaceholder = p.key === "twitter" || p.key === "discord"
 
                         return (
                             <div key={p.key} className="account-provider" style={{ minWidth: 0 }}>
                                 <span className="account-provider-icon">{p.icon}</span>
                                 <span className="account-provider-name">{p.label}</span>
-                                {isLinked ? (
+                                {isTelegram ? (
+                                    telegramLinked ? (
+                                        <>
+                                            <span className="account-provider-status-linked">Connected</span>
+                                            <span className="account-provider-detail">
+                                                {profile?.telegramUsername ? `@${profile.telegramUsername}` : ""}
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <button
+                                            className="btn btn-sm btn-outline"
+                                            style={{ marginLeft: "auto", fontSize: "12px", padding: "4px 10px" }}
+                                            onClick={() => startTelegramLogin("link")}
+                                        >
+                                            Link
+                                        </button>
+                                    )
+                                ) : isLinked ? (
                                     <>
                                         <span className="account-provider-status-linked">Connected</span>
                                         <span className="account-provider-detail">

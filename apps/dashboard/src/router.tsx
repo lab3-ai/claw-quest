@@ -3,6 +3,7 @@ import type { AuthContextType } from './context/AuthContext'
 import { Login } from './routes/login'
 import { Register } from './routes/register'
 import { AuthCallback } from './routes/auth/callback'
+import { TelegramCallback } from './routes/auth/telegram-callback'
 import { PublicLayout } from './routes/_public'
 import { Dashboard } from './routes/_authenticated/dashboard'
 import { QuestList } from './routes/_authenticated/quests/index'
@@ -44,6 +45,12 @@ const authCallbackRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/auth/callback',
     component: AuthCallback,
+})
+
+const telegramCallbackRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/auth/telegram/callback',
+    component: TelegramCallback,
 })
 
 const privacyRoute = createRoute({
@@ -200,6 +207,7 @@ const routeTree = rootRoute.addChildren([
     loginRoute,
     registerRoute,
     authCallbackRoute,
+    telegramCallbackRoute,
     privacyRoute,
     termsRoute,
     appLayoutRoute.addChildren([

@@ -24,12 +24,24 @@ All USDC rewards on ClawQuest settle onchain. This section covers how payouts wo
 
 ## Supported chains
 
+Supported chains depend on the `ESCROW_NETWORK_MODE` environment variable:
+
+### Testnet Mode
+| Chain | Chain ID | Token | Status |
+| --- | --- | --- | --- |
+| Base Sepolia | 84532 | USDC | Supported |
+| BSC Testnet | 97 | BNB | Supported |
+
+### Mainnet Mode
 | Chain | Chain ID | Token | Status |
 | --- | --- | --- | --- |
 | Base | 8453 | USDC | Supported |
-| Polygon | 137 | USDC | Planned |
-| Ethereum | 1 | USDC | Planned |
-| Arbitrum | 42161 | USDC | Planned |
+| BNB Chain | 56 | BNB | Supported |
+
+### Future Expansion
+- Polygon (137) — planned
+- Ethereum (1) — planned
+- Arbitrum (42161) — planned
 
 ## API endpoints
 

@@ -44,13 +44,16 @@ Telegram User      Web User      Web Admin      Smart Contract
 - API processes the message, updates state in DB, and responds via Telegram API.
 
 ### 3. Escrow Module: Blockchain ↔ API ↔ Database
-- **Poller** runs continuously in background, querying blockchain events
-- **Block Cursor**: DB-persisted (`EscrowCursor`) to track latest block processed
+- **Network Mode**: `ESCROW_NETWORK_MODE` env var controls active chains (testnet|mainnet)
+  - **Testnet**: Base Sepolia (84532) + BSC Testnet (97)
+  - **Mainnet**: Base (8453) + BNB Chain (56)
+- **Poller** runs continuously in background, querying blockchain events on active chains
+- **Block Cursor**: DB-persisted (`EscrowCursor`) per chain to track latest block processed
 - **5-block Confirmation Buffer**: Re-org safety — only process events confirmed 5+ blocks deep
 - **Event Polling**: All 4 event types (QuestFunded, QuestDistributed, QuestRefunded, EmergencyWithdrawal)
 - **Idempotent Handlers**: Same event processed multiple times = same result
 - **Fire-and-Forget**: Distribute/refund calls fire async, poller reconciles status on next sync
-- **Health Endpoint**: `GET /escrow/health` reports poller status, latest block, pending events
+- **Health Endpoint**: `GET /escrow/health` reports poller status, latest blocks per chain, pending events
 
 ### 4. Realtime Flow (Future)
 - **Dashboard** can subscribe to quest status updates via WebSocket/SSE

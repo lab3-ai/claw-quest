@@ -134,13 +134,13 @@ EscrowCursor  chainId(unique), lastBlock, updatedAt — DB-persisted block curso
 GET  /auth/me                → current user profile (JWT) + role field
 
 ── Admin API (JWT + admin role, ?env=mainnet|testnet) ──────
-GET  /admin/env-status       → current environment status
+GET  /admin/env-status       → current environment status (active chains, network mode)
 GET  /admin/quests           → all quests (filtered by env)
 GET  /admin/quests/:id/participations → quest participants
 GET  /admin/users/:id/agents → user's agents
 GET  /admin/users/:id/quests → user's quests
-GET  /escrow/tx-status/:txHash → transaction status
-GET  /escrow/health          → poller health, blocks, pending events
+GET  /escrow/tx-status/:txHash → transaction status (multi-chain aware)
+GET  /escrow/health          → poller health, blocks per chain, pending events
 
 ── Human Agent Management ──────────────────────────────────
 GET  /agents                 → list user's agents
@@ -181,6 +181,37 @@ File: `apps/api/src/modules/telegram/telegram.service.ts`
 - `/cancel` — cancel active quest
 - `/status` → agent + quest progress
 - `/help`, `/about` → command list and knowledge base
+
+---
+
+## ⚙️ Environment Configuration
+
+### Network Mode
+The `ESCROW_NETWORK_MODE` env var (and frontend counterpart `VITE_ESCROW_NETWORK_MODE`) controls which blockchains are active:
+
+| Mode | Chains | Use Case |
+|---|---|---|
+| **testnet** | Base Sepolia (84532), BSC Testnet (97) | Development & testing |
+| **mainnet** | Base (8453), BNB Chain (56) | Production |
+
+### Key Environment Variables
+
+**Backend (`apps/api`)**
+- `ESCROW_NETWORK_MODE` — testnet \| mainnet (default: testnet)
+- `ESCROW_CHAIN_ID` — default chain for UI selection (84532 for testnet, 8453 for mainnet)
+- `ESCROW_CONTRACT_{chainId}` — per-chain contract address (e.g., `ESCROW_CONTRACT_84532`, `ESCROW_CONTRACT_8453`)
+- `ESCROW_POLL_INTERVAL` — ms between poller iterations (default: 15000)
+- `ESCROW_CONFIRMATION_BLOCKS` — blocks to wait for re-org safety (default: 5)
+
+**Frontend (`apps/dashboard`)**
+- `VITE_ESCROW_NETWORK_MODE` — testnet \| mainnet (must match backend)
+- `VITE_WALLETCONNECT_PROJECT_ID` — for wagmi chain configuration
+
+### Supported Chains
+- **Base** (8453, mainnet) — default mainnet chain
+- **Base Sepolia** (84532, testnet)
+- **BNB Chain** (56, mainnet)
+- **BSC Testnet** (97, testnet)
 
 ---
 

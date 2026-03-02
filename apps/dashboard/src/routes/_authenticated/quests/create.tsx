@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext"
 import { PlatformIcon } from "@/components/PlatformIcon"
 import { useSkillSearch, isSkillUrl, fetchSkillFromUrl, type ClawHubSkill } from "@/hooks/useSkillSearch"
 import { useDraftPersistence } from "@/hooks/use-draft-persistence"
+import { useSocialValidation, type ChipStatus } from "@/hooks/use-social-validation"
 import "@/styles/pages/create-quest.css"
 import "@/styles/pages/quest-detail.css"
 import "@/styles/actor-sections.css"
@@ -317,7 +318,7 @@ function questTasksToSocialEntries(tasks: any[]): SocialEntry[] {
 }
 
 // ─── Chip Input (Enter-to-confirm, multi-value) ─────────────────────────────
-function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, maxChips, error: externalError }: {
+function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, maxChips, error: externalError, chipStatus }: {
     chips: string[]
     onAdd: (value: string) => void
     onRemove: (index: number) => void
@@ -326,6 +327,7 @@ function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, 
     formatChip?: (value: string) => string
     maxChips?: number
     error?: string
+    chipStatus?: (value: string) => ChipStatus | undefined
 }) {
     const [input, setInput] = useState("")
     const [error, setError] = useState<string | null>(null)
@@ -359,13 +361,22 @@ function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, 
         <div className="chip-input-wrapper">
             {chips.length > 0 && (
                 <div className="chip-list">
-                    {chips.map((chip, i) => (
-                        <span key={i} className="chip">
-                            <span className="chip-check">✓</span>
-                            <span className="chip-text">{formatChip ? formatChip(chip) : chip}</span>
-                            <button className="chip-remove" onClick={() => onRemove(i)}>×</button>
-                        </span>
-                    ))}
+                    {chips.map((chip, i) => {
+                        const status = chipStatus?.(chip)
+                        const cls = status === "pending" ? " chip-pending"
+                            : status === "invalid" ? " chip-invalid" : ""
+                        return (
+                            <span key={i} className={`chip${cls}`}>
+                                {status === "pending"
+                                    ? <span className="chip-spinner" />
+                                    : status === "invalid"
+                                        ? <span className="chip-warn">⚠</span>
+                                        : <span className="chip-check">✓</span>}
+                                <span className="chip-text">{formatChip ? formatChip(chip) : chip}</span>
+                                <button className="chip-remove" onClick={() => onRemove(i)}>×</button>
+                            </span>
+                        )
+                    })}
                 </div>
             )}
             {!atMax && (
@@ -387,7 +398,7 @@ function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, 
 }
 
 // ─── Social entry field components ───────────────────────────────────────────
-function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, removeChip, errors }: {
+function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, removeChip, errors, chipStatus }: {
     task: SocialEntry
     idx: number
     setTaskParam: (i: number, key: string, val: string) => void
@@ -395,6 +406,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
     addChip: (i: number, value: string) => void
     removeChip: (i: number, chipIdx: number) => void
     errors?: TaskValidationError[]
+    chipStatus?: (value: string) => ChipStatus | undefined
 }) {
     const chipError = errors?.find(e => e.index === idx && e.field === "chips")?.message
     const fieldError = (field: string) => errors?.find(e => e.index === idx && e.field === field)?.message
@@ -416,6 +428,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                         formatChip={v => `@${v}`}
                         validate={v => X_USERNAME_RE.test(v.trim()) ? null : "Invalid X username (1–15 chars, letters/numbers/underscore)"}
                         error={chipError}
+                        chipStatus={chipStatus}
                     />
                 </div>
             )}
@@ -430,6 +443,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                         placeholder="https://x.com/user/status/..."
                         validate={v => X_POST_URL_RE.test(v.trim()) ? null : "Must be a valid x.com or twitter.com post URL"}
                         error={chipError}
+                        chipStatus={chipStatus}
                     />
                 </div>
             )}
@@ -471,6 +485,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                             validate={v => X_POST_URL_RE.test(v.trim()) ? null : "Must be a valid X post URL"}
                             maxChips={1}
                             error={chipError}
+                            chipStatus={chipStatus}
                         />
                     </div>
                     <div className="form-group" style={{ marginBottom: 8 }}>
@@ -507,6 +522,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                         validate={v => DISCORD_INVITE_RE.test(v.trim()) ? null : "Must be a valid Discord invite link (discord.gg/… or discord.com/invite/…)"}
                         maxChips={1}
                         error={chipError}
+                        chipStatus={chipStatus}
                     />
                 </div>
             )}
@@ -528,6 +544,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                             validate={v => DISCORD_INVITE_RE.test(v.trim()) ? null : "Must be a valid Discord invite link"}
                             maxChips={1}
                             error={chipError}
+                            chipStatus={chipStatus}
                         />
                     </div>
                     <div className="form-group" style={{ marginBottom: 0 }}>
@@ -558,6 +575,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                         validate={v => TELEGRAM_CHANNEL_RE.test(v.trim()) ? null : "Use @channel or t.me/channel format"}
                         maxChips={1}
                         error={chipError}
+                        chipStatus={chipStatus}
                     />
                 </div>
             )}
@@ -587,6 +605,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const [expandedDescs, setExpandedDescs] = useState<Set<string>>(new Set())
     const [urlFetching, setUrlFetching] = useState(false)
     const [urlFetchError, setUrlFetchError] = useState<string | null>(null)
+    const socialValidation = useSocialValidation(session?.access_token)
     const [urlPreview, setUrlPreview] = useState<ClawHubSkill | null>(null)
     const fundAfterSave = useRef(false)
     const editPopulated = useRef(false)
@@ -725,10 +744,17 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const addChip = (i: number, value: string) => {
         setHumanTasks(prev => prev.map((t, idx) => idx === i ? { ...t, chips: [...t.chips, value] } : t))
         setTaskErrors(prev => prev.filter(e => !(e.index === i && e.field === "chips")))
+        // Fire existence validation for the new chip
+        const task = humanTasks[i]
+        if (task) socialValidation.validate(task.platform.toLowerCase(), task.actionType, value)
     }
 
     const removeChip = (i: number, chipIdx: number) => {
+        const task = humanTasks[i]
+        const chipValue = task?.chips[chipIdx]
         setHumanTasks(prev => prev.map((t, idx) => idx === i ? { ...t, chips: t.chips.filter((_, ci) => ci !== chipIdx) } : t))
+        // Clean up validation state
+        if (task && chipValue) socialValidation.remove(task.platform.toLowerCase(), task.actionType, chipValue)
     }
 
     // ── Skills ────────────────────────────────────────────────────────────────
@@ -1080,11 +1106,16 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                                     </div>
                                                     {expandedTask !== i && task.chips.length > 0 && (
                                                         <div className="social-entry-chips-preview">
-                                                            {task.chips.slice(0, 4).map((c, ci) => (
-                                                                <span key={ci} className="chip-preview">
-                                                                    ✓ {task.actionType === "follow_account" ? `@${c.replace(/^@/, "")}` : c.length > 35 ? c.slice(0, 35) + "…" : c}
-                                                                </span>
-                                                            ))}
+                                                            {task.chips.slice(0, 4).map((c, ci) => {
+                                                                const st = socialValidation.getStatus(task.platform.toLowerCase(), task.actionType, c)
+                                                                const icon = st === "pending" ? "⋯" : st === "invalid" ? "⚠" : "✓"
+                                                                const cls = st === "invalid" ? " chip-preview-invalid" : st === "pending" ? " chip-preview-pending" : ""
+                                                                return (
+                                                                    <span key={ci} className={`chip-preview${cls}`}>
+                                                                        {icon} {task.actionType === "follow_account" ? `@${c.replace(/^@/, "")}` : c.length > 35 ? c.slice(0, 35) + "…" : c}
+                                                                    </span>
+                                                                )
+                                                            })}
                                                             {task.chips.length > 4 && <span className="chip-preview more">+{task.chips.length - 4} more</span>}
                                                         </div>
                                                     )}
@@ -1097,6 +1128,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                                             addChip={addChip}
                                                             removeChip={removeChip}
                                                             errors={taskErrors}
+                                                            chipStatus={v => socialValidation.getStatus(task.platform.toLowerCase(), task.actionType, v)}
                                                         />
                                                     )}
                                                 </div>

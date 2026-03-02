@@ -17,6 +17,7 @@ import {
     QuestForbiddenError,
 } from './quests.service';
 import { validatePublishRequirements } from './quests.publish-validator';
+import { validateSocialTarget } from './social-validator';
 
 const CreateQuestSchema = QuestSchema.omit({
     id: true,
@@ -521,6 +522,35 @@ export async function questsRoutes(server: FastifyInstance) {
             else desc = desc.slice(0, 350);
 
             return { name, desc, version, url };
+        }
+    );
+
+    // ── Social Task Validation ─────────────────────────────────────────────
+    server.get(
+        '/validate-social',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Validate social task target exists (X account, Discord invite, Telegram channel)',
+                querystring: z.object({
+                    platform: z.enum(['x', 'discord', 'telegram']),
+                    type: z.string(),
+                    value: z.string().min(1),
+                }),
+                response: {
+                    200: z.object({
+                        valid: z.boolean(),
+                        error: z.string().optional(),
+                        meta: z.record(z.string()).optional(),
+                    }),
+                },
+            },
+            preHandler: [server.authenticate],
+        },
+        async (request) => {
+            const { platform, type, value } = request.query as { platform: string; type: string; value: string }
+            const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN
+            return validateSocialTarget(platform, type, value, telegramBotToken)
         }
     );
 

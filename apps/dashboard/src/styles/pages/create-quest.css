@@ -407,6 +407,22 @@
   font-family: var(--font);
 }
 .chip .chip-remove:hover { color: var(--red, #dc2626); }
+
+/* Chip validation states */
+.chip-pending {
+  background: var(--sidebar-bg, #f5f5f5); border-color: var(--border, #e0e0e0);
+}
+.chip-invalid {
+  background: var(--red-bg, #fef2f2); border-color: var(--orange, #f59e0b);
+}
+.chip .chip-warn { color: var(--orange, #f59e0b); font-size: 10px; font-weight: 700; }
+.chip .chip-spinner {
+  display: inline-block; width: 10px; height: 10px;
+  border: 1.5px solid var(--border, #e0e0e0); border-top-color: var(--fg-muted);
+  border-radius: 50%; animation: chip-spin 0.6s linear infinite;
+}
+@keyframes chip-spin { to { transform: rotate(360deg); } }
+
 .chip-input { font-size: 12px !important; padding: 5px 8px !important; }
 
 /* Chip count badge in task header */
@@ -428,6 +444,8 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;
 }
 .chip-preview.more { color: var(--fg-muted); background: var(--sidebar-bg); }
+.chip-preview-invalid { color: var(--orange, #f59e0b); background: var(--red-bg, #fef2f2); }
+.chip-preview-pending { color: var(--fg-muted); background: var(--sidebar-bg, #f5f5f5); }
 
 /* === STEP 4: PAY-WITH SECTION (inline) === */
 .pay-with-section { margin-top: 16px; }

@@ -183,30 +183,34 @@ export async function handleTelegramLink(params: {
 
 /**
  * Find unowned agents with TelegramLink matching this telegramId and claim them in batch.
- * TelegramLink.telegramId is BigInt (existing data) — use raw query for cross-type comparison.
+ * TelegramLink.telegramId is BigInt — if the ID exceeds bigint range, no rows can exist, so skip.
  */
 async function autoLinkAgents(prisma: PrismaClient, telegramId: string, userId: string): Promise<string[]> {
-    // TelegramLink.telegramId is BigInt — cast column to text for safe comparison (avoids bigint overflow)
-    const telegramLinks = await prisma.$queryRawUnsafe<Array<{ agentId: string; agentname: string; ownerId: string | null }>>(
-        `SELECT tl."agentId", a."agentname", a."ownerId"
-         FROM "TelegramLink" tl
-         JOIN "Agent" a ON a.id = tl."agentId"
-         WHERE tl."telegramId"::text = $1`,
-        telegramId
-    );
+    // TelegramLink.telegramId is BigInt — check if value fits before querying
+    const PG_BIGINT_MAX = BigInt('9223372036854775807');
+    try {
+        const tgBigInt = BigInt(telegramId);
+        if (tgBigInt < 0 || tgBigInt > PG_BIGINT_MAX) return [];
+    } catch {
+        return []; // not a valid numeric ID
+    }
 
-    const unownedLinks = telegramLinks.filter(row => !row.ownerId);
+    const telegramLinks = await prisma.telegramLink.findMany({
+        where: { telegramId: BigInt(telegramId) },
+        include: { agent: { select: { id: true, agentname: true, ownerId: true } } },
+    });
+
+    const unownedLinks = telegramLinks.filter(row => !row.agent.ownerId);
     if (unownedLinks.length === 0) return [];
 
-    const agentIds = unownedLinks.map(row => row.agentId);
+    const agentIds = unownedLinks.map(row => row.agent.id);
 
-    // Batch update instead of N+1
     await prisma.agent.updateMany({
         where: { id: { in: agentIds } },
         data: { ownerId: userId, claimedAt: new Date(), claimedVia: 'telegram' },
     });
 
-    return unownedLinks.map(row => row.agentname);
+    return unownedLinks.map(row => row.agent.agentname);
 }
 
 /**

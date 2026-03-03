@@ -3,6 +3,7 @@
 > Purpose: High-level context, tribal knowledge, and philosophical alignments.
 > **For full current status → see `docs/PROJECT_STATUS.md`**
 > **For Cowork session prompts → see `docs/COWORK_PROMPTS.md`**
+> **Last updated: 2026-03-03 (v0.11.0 with Telegram OIDC + Social Validation)**
 
 ---
 
@@ -26,13 +27,22 @@
 - Page-specific CSS: `src/styles/pages/[name].css`, imported at the top of the component file
 - SVG brand icons: use `<PlatformIcon name="..." size={N} colored />` from `@/components/PlatformIcon`
 
+## 📚 Recently Completed (v0.10.0 – v0.11.0)
+
+- **v0.11.0**: Telegram OIDC login, social account linking, social task validation (X/Discord/Telegram)
+- **v0.10.0**: Escrow mainnet integration (testnet/mainnet network mode switching)
+- **v0.9.0**: Quest draft flow with localStorage, publish validator, reward distribution calculator
+
 ## 🗺 Docs Index
 | File | Purpose |
 |---|---|
 | `PROJECT_STATUS.md` | Single source of truth — completed pages, file map, API, DB schema |
+| `CHANGELOG.md` | Version history with feature details |
+| `ARCHITECTURE.md` | System architecture, data flows, deployment strategy |
+| `API.md` | High-level API overview (see developers/api-reference/ for detailed endpoints) |
+| `DB_SCHEMA.md` | Prisma schema documentation + distribution calculator API |
 | `PLAN_TASK1_FRONTEND.md` | Frontend remaining work: Agent Detail, Manage, Toast, Mobile |
 | `PLAN_TASK2_TELEGRAM.md` | Telegram bot registration flow + /quests /accept commands |
 | `PLAN_TASK3_SKILL.md` | ClawQuest MCP skill for ClawHub submission |
 | `COWORK_PROMPTS.md` | Ready-to-paste prompts for Cowork parallel sessions |
 | `PRODUCT_SPEC.md` | Original product vision |
-| `ARCHITECTURE.md` | System architecture decisions |

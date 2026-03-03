@@ -1,5 +1,5 @@
 # ClawQuest — Project Status
-> Last updated: 2026-03-01. Single source of truth for AI sessions (Cowork, Claude Code, etc.)
+> Last updated: 2026-03-03. Single source of truth for AI sessions (Cowork, Claude Code, etc.)
 
 ---
 
@@ -89,21 +89,38 @@ clawquest/
 ### `/quests/:questId/questers` → Questers Page (`quests/questers.tsx`)
 - Filter bar, full rank table, pager
 
+### `/auth/callback` → Supabase OAuth Callback (`auth/callback.tsx`)
+- OAuth redirect handler (email, Google)
+
+### `/auth/telegram-callback` → Telegram OIDC Callback (`auth/telegram-callback.tsx`)
+- Telegram OAuth redirect handler (server-side code exchange, JWKS verification)
+- Supports both login and account linking flows
+- Placeholder email pattern: `tg_{telegramId}@tg.clawquest.ai`
+
+### `/account` → User Account Settings (`_authenticated/account.tsx`)
+- Profile display (email, Telegram handle)
+- Connected Accounts section: Email, Telegram, Discord (coming soon), X (coming soon)
+- Telegram link/unlink flow
+
 ### `/quests/new` → Create Quest (`quests/create.tsx`)
-- **3-step wizard**: Details → Reward → Tasks
+- **4-step accordion stepper**: Details → Tasks → Reward → Preview & Fund
 - **Step 1 – Details**: title, description, start/end datetime
-- **Step 2 – Reward**:
+- **Step 2 – Tasks**:
+  - Human tasks: platform template picker (X/Discord/Telegram SVG icons + per-action rich fields via `SocialEntryBody`)
+  - Real-time social task validation: `GET /quests/validate-social?platform=&type=&value=` checks target exists (X oEmbed, Discord invites, Telegram channels)
+  - Agent tasks: skill search + required skills list (direct URLs supported for custom skills)
+  - Custom skill URL support: accepts GitHub, skills.sh, or any URL alongside ClawHub search
+- **Step 3 – Reward**:
   - Payment rail: Crypto (8 networks, USDC/USDT + native token) | Fiat (Stripe)
   - Distribution type: FCFS | Leaderboard | Lucky Draw
   - **Shared fields**: Total Reward + Number of Winners (carry over across tabs)
-  - LB: linear decay payout (`weights[i] = n - i`), visual shows top 5 + `…` + last 2 when winners > 20
+  - LB: custom tiers (JSON) or inverse-rank proportional fallback; visual shows top 5 + `…` + last 2 when winners > 20
   - Lucky Draw: extra "Draw Time" field
   - Winners auto-clamp to 2–100 when switching to Leaderboard
-- **Step 3 – Tasks**:
-  - Human tasks: platform template picker (X/Discord/Telegram SVG icons + per-action rich fields via `SocialEntryBody`)
-  - Agent tasks: skill search + required skills list
-- Live preview sidebar (always visible)
-- CTA: "Create Quest & Pay with Stripe" (fiat) vs "Create Quest & Fund" (crypto)
+- **Step 4 – Preview & Fund**: review all details, CTA to fund via escrow contract
+- **Draft Flow**: Save Draft with only title required → stored in localStorage + server → can resume editing later from My Quests tab
+- Live preview sidebar (always visible, shows completion progress)
+- CTA: "Create Quest & Fund" (crypto deposit to escrow)
 
 ---
 
@@ -131,7 +148,9 @@ EscrowCursor  chainId(unique), lastBlock, updatedAt — DB-persisted block curso
 
 ```
 ── Human Auth ──────────────────────────────────────────────
-GET  /auth/me                → current user profile (JWT) + role field
+GET  /auth/me                → current user profile (JWT) + role + telegramId/telegramUsername
+POST /auth/telegram          → Telegram OIDC code exchange (server-side, generates JWT session)
+POST /auth/telegram/link     → Link Telegram account to existing user (protected JWT)
 
 ── Admin API (JWT + admin role, ?env=mainnet|testnet) ──────
 GET  /admin/env-status       → current environment status (active chains, network mode)
@@ -159,8 +178,11 @@ GET  /agents/me/skills       → list agent's installed skills
 GET  /quests                 → list quests (public, excludes draft)
 GET  /quests/:id             → quest detail (public)
 GET  /quests/:id/questers    → paginated questers (public)
-GET  /quests/skill-preview?url=... → fetch custom skill from URL
+GET  /quests/skill-preview?url=... → fetch custom skill from URL (CORS proxy)
+GET  /quests/validate-social?platform=&type=&value= → validate social task target exists (JWT)
 POST /quests                 → create draft quest (human JWT)
+PATCH /quests/:id            → edit draft quest (human JWT)
+PATCH /quests/:id/status     → publish/transition quest status (human JWT)
 POST /quests/:id/accept      → accept quest (human JWT or agent API key)
 POST /quests/:id/proof       → submit completion proof (agent API key)
 POST /quests/:id/claim       → claim quest ownership (JWT + claimToken)
@@ -220,39 +242,49 @@ The `ESCROW_NETWORK_MODE` env var (and frontend counterpart `VITE_ESCROW_NETWORK
 
 ---
 
-## 🚧 Remaining Work (v0.9.0+)
+## ✅ Recently Completed (v0.10.0 – v0.11.0)
 
-### Dashboard Fund Page
-- [x] Multi-env admin API support (`?env=mainnet|testnet`)
-- [x] Contract verified on Base Sepolia (`0xe1d2b3d041934e2f245d5a366396e4787d3802c1`)
-- [x] Dashboard fund page with allowance, balance checks, error decoding
-- [x] Mobile responsive layout (9 focused components)
-- [ ] Deploy to mainnet (contract upgrade, USDC allowlist, operator role)
+### v0.11.0 — Social Task Validation + Account Linking
+- [x] Social task existence validation (`GET /quests/validate-social`)
+- [x] X (Twitter) oEmbed validation (free, no API key)
+- [x] Discord invite validation (public API)
+- [x] Telegram channel validation (uses existing bot token)
+- [x] Graceful degradation: timeouts return `valid:true` (never blocks UX)
+- [x] Frontend chip validation feedback (spinner → ✓ valid or ⚠ invalid)
+- [x] Telegram OIDC login flow (server-side code exchange + JWKS verification)
+- [x] Telegram account linking in user account settings
+- [x] User.telegramId and User.telegramUsername fields
+- [x] Agent auto-linking via TelegramLink when user logs in with Telegram
 
-### Edit Quest Page
-- [x] Edit button for draft quests in My Quests tab
-- [ ] Full edit form (Details, Reward, Tasks)
+### v0.10.0 — Escrow Mainnet Integration
+- [x] `ESCROW_NETWORK_MODE` env var (testnet | mainnet)
+- [x] Multi-chain support: Base Sepolia (84532), Base (8453), BSC Testnet (97), BNB Chain (56)
+- [x] Admin API multi-env support (`?env=mainnet|testnet` query param)
+- [x] Frontend wagmi config filters chains by network mode
+- [x] NetworkMode type exported from shared package
 
-### Admin Dashboard (separate repo)
-- [x] Multi-env switcher, escrow health monitoring, TX status lookup
-- [x] Quest participations table, user agents/quests tabs
-- [ ] Integration testing with Base Sepolia
+### v0.9.0 – v0.9.x — Quest Draft Flow + Escrow Hardening
+- [x] Quest save draft with only title required
+- [x] localStorage persistence (auto-save form state)
+- [x] Publish validator (checks all required fields before going live)
+- [x] Backend escrow module: DB-persisted block cursor, event polling, async distribution
+- [x] Reward distribution calculator (FCFS, LEADERBOARD, LUCKY_DRAW with 72 unit tests)
+- [x] Dashboard fund page (9 components, allowance checks, error decoding)
+- [x] Contract deployed to Base Sepolia (`0xe1d2b3d041934e2f245d5a366396e4787d3802c1`)
+- [x] Multi-env admin API (14 endpoints)
+- [x] Edit quest page for draft quests
 
-### Backend Escrow Module
-- [x] DB-persisted block cursor (5-block confirmation buffer)
-- [x] All 4 event types polled: QuestFunded, QuestDistributed, QuestRefunded, EmergencyWithdrawal
-- [x] Fire-and-forget distribute/refund (async, poller reconciles)
-- [x] writeContractWithRetry for nonce errors
-- [x] **Reward distribution calculator**: Pure functions for 3 quest types
-  - FCFS: First N completed agents split equally (24 tests)
-  - LEADERBOARD: Custom tier % or inverse-rank proportional (24 tests)
-  - LUCKY_DRAW: Crypto-safe random selection, equal split (24 tests)
-- [x] Dust handling: Rounding remainder to first recipient, sum invariant enforced
-- [x] Status guards: Reject non-live quests, prevent double-pay
+## 🚧 Remaining Work (v0.12.0+)
+
+### Infrastructure & Deployment
+- [ ] Deploy escrow contract to mainnet (Base, BNB Chain)
+- [ ] BaseScan contract verification (needs BASESCAN_API_KEY)
+- [ ] Mobile responsive polish pass
+- [ ] E2E integration tests (faucet USDC + test deposits)
+
+### Features (Backlog)
+- [ ] Discord bot role validation (verify user has specific Discord role)
+- [ ] X/Twitter account linking (OAuth)
+- [ ] Emergency withdrawal handling (contract feature, needs admin UI)
 - [ ] Payout reconciliation for stuck transactions
-- [ ] Emergency withdrawal handling
-
-### Testing & Deployment
-- [ ] Browser test claim flow end-to-end
-- [ ] Deploy to mainnet (Base, Optimism, Arbitrum)
-- [ ] Load test escrow poller
+- [ ] Telegram bot commands integration with new auth system

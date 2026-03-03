@@ -1,5 +1,47 @@
 # Changelog
 
+## v0.11.0 — Social Account Linking + Social Task Validation (2026-03-02)
+
+### Telegram OIDC Login
+- [New] `POST /auth/telegram` — server-side code exchange, JWKS verification, session creation
+- [New] `POST /auth/telegram/link` — link Telegram to existing user account
+- [New] User.telegramId and User.telegramUsername fields (supports BigInt Telegram IDs)
+- [New] `/auth/telegram-callback` route for OAuth redirect handling
+- [New] Telegram button on login and register pages
+- [New] Account linking UI in user account settings page
+- [New] Agent auto-linking when user logs in with Telegram (matches TelegramLink.telegramId)
+- [Fix] Telegram BigInt overflow handling (casts to String, uses raw queries for compatibility)
+
+### Social Task Validation
+- [New] `GET /quests/validate-social?platform=x|discord|telegram&type=&value=` — real-time target validation
+- [New] X (Twitter) validation via oEmbed endpoint (free, no API key)
+- [New] Discord validation via public invite API (no auth required)
+- [New] Telegram validation via bot API `getChat` (uses existing TELEGRAM_BOT_TOKEN)
+- [New] Frontend validation hook: `use-social-validation.ts` with spinner + status icons
+- [New] Graceful degradation: network timeouts return `{ valid: true }` (never blocks quest creation)
+- [New] 45 unit tests covering X, Discord, Telegram validation + edge cases
+
+---
+
+## v0.10.0 — Escrow Mainnet Integration (2026-02-28)
+
+### Network Mode Configuration
+- [New] `ESCROW_NETWORK_MODE` env var (testnet | mainnet) — controls active blockchains
+- [New] Testnet: Base Sepolia (84532) + BSC Testnet (97)
+- [New] Mainnet: Base (8453) + BNB Chain (56)
+- [New] `VITE_ESCROW_NETWORK_MODE` frontend env var (mirrors backend setting)
+- [Update] `getActiveChains()` and `getActiveEscrowChainIds()` functions take NetworkMode param
+- [Update] Frontend wagmi config dynamically filters chains by network mode
+- [Update] Admin API endpoints support `?env=mainnet|testnet` query param for multi-env queries
+- [New] `NetworkMode` type exported from `packages/shared`
+
+### Admin API Enhancements
+- [Update] All escrow endpoints (health, tx-status) now multi-env aware
+- [Update] Quest and user endpoints support environment filtering
+- [New] Clear separation of testnet vs mainnet data in admin queries
+
+---
+
 ## v0.9.0 — Escrow Hardening + Admin Dashboard + Fund Page (2026-03-01)
 
 ### Escrow Module Hardened
@@ -45,8 +87,20 @@
 - [Update] Bot menu now shows 9 commands
 - [New] In-memory session store for multi-step flows
 
-### Edit Quest Page
-- [New] Edit buttons for draft quests in My Quests tab (card + list view)
+### Quest Draft Flow & Edit
+- [New] Quest save draft with only title required (all other fields optional)
+- [New] localStorage persistence: form auto-saves to browser storage
+- [New] Publish validator: checks all required fields before quest can go live
+- [New] Structured validation errors: API returns field-level errors on invalid transitions
+- [New] Draft quest cards in My Quests tab with completion progress bar
+- [New] Edit buttons for draft quests (card + list view, navigates to create wizard)
+- [Update] Quest schema: rewardAmount defaults to 0, supports network + drawTime fields
+
+### Custom Skill URLs
+- [New] Quest creation accepts direct URLs alongside ClawHub search
+- [New] `GET /quests/skill-preview?url=...` — CORS proxy for external skill metadata
+- [New] HTML parsing: JSON-LD → specific meta → body text → generic meta
+- [New] YAML frontmatter support for raw markdown URLs (GitHub raw)
 
 ### Bug Fixes (v0.8.1)
 - [Fix] GET /quests/:id 500 error (updatedAt serialization)

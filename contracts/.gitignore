@@ -2,3 +2,7 @@
 cache/
 out/
 lib/
+
+# Secrets — never commit private keys
+.env
+.env.*

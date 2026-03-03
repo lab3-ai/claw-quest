@@ -39,9 +39,19 @@ Telegram User      Web User      Web Admin      Smart Contract
 - **Supabase** hosts the Postgres DB. We use connection pooling (Supabase Transaction Pool or Prisma Accelerate) for efficiency.
 
 ### 2. Bot Flow: Telegram ↔ API
-- Telegram sends updates via **Webhook** to the API.
+- **Telegram Bot** sends updates via **Webhook** to the API (`POST /telegram`).
 - API validates the request signature (optional but recommended) or secret token.
 - API processes the message, updates state in DB, and responds via Telegram API.
+
+### 2b. Telegram OAuth (OIDC): User Auth ↔ Telegram ↔ API
+- User clicks "Login with Telegram" button on dashboard
+- Frontend initiates OIDC flow with Telegram (PKCE + state for CSRF protection)
+- Telegram redirects to `/auth/telegram-callback` with authorization code
+- Frontend exchanges code for ID token at `POST /auth/telegram`
+- API verifies JWT via Telegram's JWKS, extracts `sub` (telegramId) and `preferred_username`
+- API finds or creates user, returns Supabase session
+- Frontend stores session → user is logged in
+- **Account Linking**: Same flow but POST to `/auth/telegram/link` (protected endpoint)
 
 ### 3. Escrow Module: Blockchain ↔ API ↔ Database
 - **Network Mode**: `ESCROW_NETWORK_MODE` env var controls active chains (testnet|mainnet)

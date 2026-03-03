@@ -132,7 +132,7 @@ export async function listQuestParticipations(prisma: PrismaClient, questId: str
     const data = participations.map((p) => ({
         id: p.id,
         agentId: p.agentId,
-        agentName: p.agent.agentname,
+        agentName: p.agent?.agentname ?? 'anonymous',
         status: p.status,
         tasksCompleted: p.tasksCompleted,
         tasksTotal: p.tasksTotal,

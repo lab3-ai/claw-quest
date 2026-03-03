@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { startTelegramLogin } from "@/lib/telegram-oidc"
+import { supabase } from "@/lib/supabase"
 import "@/styles/pages/account.css"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
@@ -21,6 +22,10 @@ interface UserProfile {
     role: string
     telegramId: string | null
     telegramUsername: string | null
+    xId: string | null
+    xHandle: string | null
+    discordId: string | null
+    discordHandle: string | null
     createdAt: string
 }
 
@@ -40,6 +45,14 @@ function formatDate(iso: string) {
     return new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric" }).format(new Date(iso))
 }
 
+const providers = [
+    { key: "google", label: "Google", icon: "G", supabaseProvider: "google" },
+    { key: "github", label: "GitHub", icon: "GH", supabaseProvider: "github" },
+    { key: "telegram", label: "Telegram", icon: "TG", supabaseProvider: null },
+    { key: "twitter", label: "X (Twitter)", icon: "X", supabaseProvider: "twitter" },
+    { key: "discord", label: "Discord", icon: "DC", supabaseProvider: "discord" },
+]
+
 export function Account() {
     const { session, user: supabaseUser } = useAuth()
     const queryClient = useQueryClient()
@@ -47,6 +60,8 @@ export function Account() {
 
     const [walletInput, setWalletInput] = useState("")
     const [walletError, setWalletError] = useState("")
+    const [unlinkError, setUnlinkError] = useState("")
+    const [unlinkPending, setUnlinkPending] = useState("")
 
     // Fetch profile from API
     const { data: profile, isLoading: profileLoading, isError: profileError } = useQuery<UserProfile>({
@@ -105,13 +120,54 @@ export function Account() {
     const identities = supabaseUser?.identities ?? []
     const linkedProviders = new Set(identities.map(i => i.provider))
 
-    const providers = [
-        { key: "google", label: "Google", icon: "G" },
-        { key: "github", label: "GitHub", icon: "GH" },
-        { key: "telegram", label: "Telegram", icon: "TG" },
-        { key: "twitter", label: "X (Twitter)", icon: "X" },
-        { key: "discord", label: "Discord", icon: "DC" },
-    ]
+    async function handleLinkProvider(supabaseProvider: string) {
+        // Store provider so callback.tsx can detect this is an identity-link flow
+        localStorage.setItem("clawquest_linking_provider", supabaseProvider)
+        await supabase.auth.linkIdentity({
+            provider: supabaseProvider as any,
+            options: { redirectTo: `${window.location.origin}/auth/callback` },
+        })
+    }
+
+    async function handleUnlinkProvider(providerKey: string) {
+        setUnlinkError("")
+
+        // Lockout prevention: block if this is the only remaining sign-in method
+        const nonTelegramIdentities = identities.filter(i => i.provider !== "telegram")
+        const hasTelegram = !!profile?.telegramId
+        if (!hasTelegram && nonTelegramIdentities.length <= 1) {
+            setUnlinkError("Cannot unlink — this is your only sign-in method.")
+            return
+        }
+
+        const identity = identities.find(i => i.provider === providerKey)
+        if (!identity) return
+
+        setUnlinkPending(providerKey)
+        try {
+            const { error } = await supabase.auth.unlinkIdentity(identity)
+            if (error) throw error
+
+            // Clear Prisma fields for Twitter/Discord only
+            if (providerKey === "twitter" || providerKey === "discord") {
+                const res = await fetch(`${API_BASE}/auth/social/${providerKey}`, {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                })
+                if (!res.ok) {
+                    const body = await res.json().catch(() => ({}))
+                    throw new Error(body?.error?.message ?? "Failed to clear social profile data")
+                }
+            }
+
+            queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : "Failed to unlink provider"
+            setUnlinkError(msg)
+        } finally {
+            setUnlinkPending("")
+        }
+    }
 
     function handleLinkWallet(e: React.FormEvent) {
         e.preventDefault()
@@ -177,12 +233,19 @@ export function Account() {
                         const isLinked = linkedProviders.has(p.key)
                         const isTelegram = p.key === "telegram"
                         const telegramLinked = isTelegram && !!profile?.telegramId
-                        const isPlaceholder = p.key === "twitter" || p.key === "discord"
+
+                        // Build handle/email detail text
+                        let detail = ""
+                        if (p.key === "twitter" && profile?.xHandle) detail = `@${profile.xHandle}`
+                        else if (p.key === "discord" && profile?.discordHandle) detail = `@${profile.discordHandle}`
+                        else if (identity?.identity_data?.email) detail = identity.identity_data.email as string
+                        else if (identity?.identity_data?.user_name) detail = identity.identity_data.user_name as string
 
                         return (
                             <div key={p.key} className="account-provider" style={{ minWidth: 0 }}>
                                 <span className="account-provider-icon">{p.icon}</span>
                                 <span className="account-provider-name">{p.label}</span>
+
                                 {isTelegram ? (
                                     telegramLinked ? (
                                         <>
@@ -203,18 +266,32 @@ export function Account() {
                                 ) : isLinked ? (
                                     <>
                                         <span className="account-provider-status-linked">Connected</span>
-                                        <span className="account-provider-detail">
-                                            {identity?.identity_data?.email ?? ""}
-                                        </span>
+                                        {detail && <span className="account-provider-detail">{detail}</span>}
+                                        <button
+                                            className="btn btn-sm btn-outline"
+                                            style={{ marginLeft: "8px", fontSize: "12px", padding: "4px 10px" }}
+                                            disabled={unlinkPending === p.key}
+                                            onClick={() => handleUnlinkProvider(p.key)}
+                                        >
+                                            {unlinkPending === p.key ? "Unlinking…" : "Unlink"}
+                                        </button>
                                     </>
-                                ) : isPlaceholder ? (
-                                    <span className="account-provider-status-placeholder">Coming soon</span>
                                 ) : (
-                                    <span className="account-provider-status-placeholder">Not linked</span>
+                                    <button
+                                        className="btn btn-sm btn-outline"
+                                        style={{ marginLeft: "auto", fontSize: "12px", padding: "4px 10px" }}
+                                        onClick={() => handleLinkProvider(p.supabaseProvider!)}
+                                    >
+                                        Link
+                                    </button>
                                 )}
                             </div>
                         )
                     })}
+
+                    {unlinkError && (
+                        <div className="account-error" style={{ marginTop: "8px" }}>{unlinkError}</div>
+                    )}
                 </div>
             </div>
 

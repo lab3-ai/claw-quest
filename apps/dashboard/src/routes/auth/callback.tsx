@@ -2,6 +2,8 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "@tanstack/react-router"
 import { supabase } from "@/lib/supabase"
 
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
+
 export function AuthCallback() {
     const navigate = useNavigate()
     const [error, setError] = useState<string | null>(null)
@@ -19,9 +21,31 @@ export function AuthCallback() {
             }
         }
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === "SIGNED_IN" && session) {
                 redirectAfterLogin()
+            } else if (event === "USER_UPDATED" && session) {
+                // Identity linking callback — guard with localStorage key to avoid spurious triggers
+                const linkingProvider = localStorage.getItem("clawquest_linking_provider")
+                if (linkingProvider) {
+                    localStorage.removeItem("clawquest_linking_provider")
+                    // Sync handle to Prisma for Twitter/Discord (Google/GitHub are no-ops on backend)
+                    if (linkingProvider === "twitter" || linkingProvider === "discord") {
+                        try {
+                            await fetch(`${API_BASE}/auth/social/sync`, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    Authorization: `Bearer ${session.access_token}`,
+                                },
+                                body: JSON.stringify({ provider: linkingProvider }),
+                            })
+                        } catch {
+                            // Non-fatal: auth identity is linked, handle will be missing in profile
+                        }
+                    }
+                    navigate({ to: "/account" })
+                }
             } else if (event === "SIGNED_OUT") {
                 navigate({ to: "/login" })
             }

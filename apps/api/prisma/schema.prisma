@@ -17,6 +17,10 @@ model User {
   role              String   @default("user") // "user" | "admin"
   telegramId        String?  @unique          // Telegram user ID stored as string (BigInt overflows PG bigint)
   telegramUsername  String?                   // Telegram @username
+  xId               String?  @unique          // Twitter/X user ID (from identity_data.sub)
+  xHandle           String?                   // Twitter/X username (from identity_data.user_name)
+  discordId         String?  @unique          // Discord user ID
+  discordHandle     String?                   // Discord username
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 

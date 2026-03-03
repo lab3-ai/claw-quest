@@ -6,7 +6,7 @@ function InsufficientBalanceWarning({ tokenSymbol, questId }: { tokenSymbol: str
     return (
         <div className="fund-insufficient-warning">
             Insufficient {tokenSymbol} balance to fund this quest.
-            <Link to="/quests/$questId/manage" params={{ questId }} className="fund-edit-link">
+            <Link to="/quests/$questId/edit" params={{ questId }} className="fund-edit-link">
                 Edit reward amount
             </Link>
         </div>

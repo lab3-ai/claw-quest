@@ -15,6 +15,7 @@ import { questsRoutes } from './modules/quests/quests.routes';
 import { escrowRoutes } from './modules/escrow/escrow.routes';
 import { walletsRoutes } from './modules/wallets/wallets.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
+import { discordRoutes } from './modules/discord/discord.routes';
 
 // ─── Supabase Admin Client ──────────────────────────────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
@@ -161,6 +162,7 @@ server.register(questsRoutes, { prefix: '/quests' });
 server.register(escrowRoutes, { prefix: '/escrow' });
 server.register(walletsRoutes, { prefix: '/wallets' });
 server.register(adminRoutes, { prefix: '/admin' });
+server.register(discordRoutes, { prefix: '/discord' });
 
 // Telegram Bot (Polling for local dev)
 import { TelegramService } from './modules/telegram/telegram.service';

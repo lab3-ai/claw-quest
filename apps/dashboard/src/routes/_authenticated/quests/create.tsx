@@ -178,7 +178,7 @@ function validateSocialTasks(tasks: SocialEntry[]): TaskValidationError[] {
             case "verify_role":
                 if (task.chips.length === 0)
                     errors.push({ index: i, field: "chips", message: "Add a Discord invite URL (type & press ↵)" })
-                if (!task.params.role?.trim())
+                if (!task.params.roleId?.trim() && !task.params.role?.trim())
                     errors.push({ index: i, field: "role", message: "Select a role to verify" })
                 break
             case "join_channel":
@@ -233,7 +233,9 @@ function socialEntriesToTasks(entries: SocialEntry[]): any[] {
                 if (entry.chips.length > 0)
                     tasks.push({ id: crypto.randomUUID(), platform, actionType: "verify_role",
                         label: entry.action, params: { inviteUrl: entry.chips[0].trim(),
-                            roleName: (entry.params.role ?? "").trim() }, requireTagFriends: false })
+                            guildId: (entry.params.guildId ?? "").trim(),
+                            roleId: (entry.params.roleId ?? "").trim(),
+                            roleName: (entry.params.roleName ?? entry.params.role ?? "").trim() }, requireTagFriends: false })
                 break
             case "join_channel":
                 if (entry.chips.length > 0)
@@ -307,6 +309,9 @@ function questTasksToSocialEntries(tasks: any[]): SocialEntry[] {
                 break
             case "verify_role":
                 entry.chips.push(task.params?.inviteUrl ?? "")
+                entry.params.guildId = task.params?.guildId ?? ""
+                entry.params.roleId = task.params?.roleId ?? ""
+                entry.params.roleName = task.params?.roleName ?? ""
                 entry.params.role = task.params?.roleName ?? ""
                 break
             case "join_channel":
@@ -394,6 +399,157 @@ function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, 
             )}
             {displayError && <div className="form-error">{displayError}</div>}
         </div>
+    )
+}
+
+// ─── Discord role fields (dynamic fetch) ─────────────────────────────────────
+
+interface DiscordRoleOption { id: string; name: string; color: number; position: number }
+
+function DiscordRoleFields({ task, idx, setTaskParam, addChip, removeChip, chipError, chipStatus, fieldError }: {
+    task: SocialEntry; idx: number
+    setTaskParam: (i: number, key: string, val: string) => void
+    addChip: (i: number, value: string) => void
+    removeChip: (i: number, chipIdx: number) => void
+    chipError?: string; chipStatus?: (value: string) => ChipStatus | undefined
+    fieldError: (field: string) => string | undefined
+}) {
+    const { session } = useAuth()
+    const [guildId, setGuildId] = useState(task.params.guildId ?? "")
+    const [guildName, setGuildName] = useState("")
+    const [botPresent, setBotPresent] = useState<boolean | null>(null)
+    const [roles, setRoles] = useState<DiscordRoleOption[]>([])
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
+    const [refreshCount, setRefreshCount] = useState(0)
+
+    // Extract invite code from URL
+    const extractInviteCode = (url: string): string | null => {
+        const m = url.match(/discord\.(?:gg|com\/invite)\/([A-Za-z0-9-]+)/)
+        return m ? m[1] : null
+    }
+
+    // Fetch guild info when chip changes
+    const currentChip = task.chips[0] ?? ""
+    useEffect(() => {
+        if (!currentChip) {
+            setGuildId(""); setGuildName(""); setBotPresent(null); setRoles([]); setError("")
+            return
+        }
+        const code = extractInviteCode(currentChip)
+        if (!code) return
+
+        let cancelled = false
+        setLoading(true); setError("")
+
+        fetch(`${API_BASE}/discord/guild-info?inviteCode=${encodeURIComponent(code)}`)
+            .then(r => r.json())
+            .then(json => {
+                if (cancelled) return
+                if (json.error) { setError(json.error.message); setBotPresent(null); setLoading(false); return }
+                const d = json.data as { guildId: string; guildName: string; botPresent: boolean }
+                setGuildId(d.guildId); setGuildName(d.guildName); setBotPresent(d.botPresent)
+                setTaskParam(idx, "guildId", d.guildId)
+
+                if (d.botPresent && session?.access_token) {
+                    fetch(`${API_BASE}/discord/guild-roles?guildId=${encodeURIComponent(d.guildId)}`, {
+                        headers: { Authorization: `Bearer ${session.access_token}` },
+                    })
+                        .then(r2 => r2.json())
+                        .then(j2 => {
+                            if (cancelled) return
+                            if (j2.data?.roles) setRoles(j2.data.roles)
+                            setLoading(false)
+                        })
+                        .catch(() => { if (!cancelled) setLoading(false) })
+                } else {
+                    setLoading(false)
+                }
+            })
+            .catch(() => { if (!cancelled) { setError("Failed to check server"); setLoading(false) } })
+
+        return () => { cancelled = true }
+    }, [currentChip, refreshCount]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Open bot invite URL
+    const handleInviteBot = async (e: React.MouseEvent) => {
+        e.stopPropagation()
+        const gid = guildId || ""
+        try {
+            const res = await fetch(`${API_BASE}/discord/bot-invite-url?guildId=${encodeURIComponent(gid)}`)
+            const json = await res.json()
+            if (json.data?.url) window.open(json.data.url, "_blank")
+        } catch { /* ignore */ }
+    }
+
+    // Re-check bot presence after inviting
+    const handleRefresh = () => {
+        if (!currentChip) return
+        setRefreshCount(c => c + 1)
+    }
+
+    // Handle role selection — store both roleId and roleName
+    const handleRoleSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const roleId = e.target.value
+        const role = roles.find(r => r.id === roleId)
+        setTaskParam(idx, "roleId", roleId)
+        setTaskParam(idx, "roleName", role?.name ?? "")
+        setTaskParam(idx, "role", role?.name ?? "") // backward compat for display
+    }
+
+    return (
+        <>
+            <div className="bot-invite-banner">
+                <span>🤖</span>
+                <span style={{ flex: 1 }}>
+                    {botPresent === true && guildName
+                        ? <>Bot is in <strong>{guildName}</strong> — roles loaded.</>
+                        : <>Add the <strong>ClawQuest bot</strong> to your server to enable role verification.</>}
+                </span>
+                {botPresent !== true && (
+                    <button className="btn btn-sm btn-primary" onClick={handleInviteBot}>Invite Bot</button>
+                )}
+                {botPresent === false && (
+                    <button className="btn btn-sm btn-ghost" onClick={handleRefresh} style={{ marginLeft: 4 }}>Refresh</button>
+                )}
+            </div>
+            <div className="form-group" style={{ marginBottom: 8 }}>
+                <label className="form-label">Discord Server URL</label>
+                <div className="form-hint">Invite link. Press ↵ to confirm.</div>
+                <ChipInput
+                    chips={task.chips}
+                    onAdd={val => addChip(idx, val)}
+                    onRemove={ci => removeChip(idx, ci)}
+                    placeholder="https://discord.gg/..."
+                    validate={v => DISCORD_INVITE_RE.test(v.trim()) ? null : "Must be a valid Discord invite link"}
+                    maxChips={1}
+                    error={chipError}
+                    chipStatus={chipStatus}
+                />
+                {loading && <div className="form-hint" style={{ color: "var(--accent)" }}>Checking server...</div>}
+                {error && <div className="form-error">{error}</div>}
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Required Role</label>
+                <div className="form-hint">
+                    {botPresent === true ? "Select a role from the server." : "Invite the bot first to load roles."}
+                </div>
+                <select
+                    className={`form-select${fieldError("role") ? " form-input-error" : ""}`}
+                    value={task.params.roleId ?? ""}
+                    onChange={handleRoleSelect}
+                    disabled={roles.length === 0}
+                >
+                    <option value="" disabled>
+                        {loading ? "Loading roles..." : roles.length === 0 ? "— No roles available —" : "— Select a role —"}
+                    </option>
+                    {roles.map(r => (
+                        <option key={r.id} value={r.id}>{r.name}</option>
+                    ))}
+                </select>
+                {fieldError("role") && <div className="form-error">{fieldError("role")}</div>}
+            </div>
+        </>
     )
 }
 
@@ -527,41 +683,13 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                 </div>
             )}
             {(fields === "discord_role") && (
-                <>
-                    <div className="bot-invite-banner">
-                        <span>🤖</span>
-                        <span style={{ flex: 1 }}>Add the <strong>ClawQuest bot</strong> to your server to enable role verification and auto-fetch roles.</span>
-                        <button className="btn btn-sm btn-primary" onClick={e => e.stopPropagation()}>Invite Bot</button>
-                    </div>
-                    <div className="form-group" style={{ marginBottom: 8 }}>
-                        <label className="form-label">Discord Server URL</label>
-                        <div className="form-hint">Invite link. Press ↵ to confirm.</div>
-                        <ChipInput
-                            chips={task.chips}
-                            onAdd={val => addChip(idx, val)}
-                            onRemove={ci => removeChip(idx, ci)}
-                            placeholder="https://discord.gg/..."
-                            validate={v => DISCORD_INVITE_RE.test(v.trim()) ? null : "Must be a valid Discord invite link"}
-                            maxChips={1}
-                            error={chipError}
-                            chipStatus={chipStatus}
-                        />
-                    </div>
-                    <div className="form-group" style={{ marginBottom: 0 }}>
-                        <label className="form-label">Required Role</label>
-                        <div className="form-hint">Select a role from the server (requires bot installed).</div>
-                        <select className={`form-select${fieldError("role") ? " form-input-error" : ""}`}
-                            value={task.params["role"] ?? ""}
-                            onChange={e => setTaskParam(idx, "role", e.target.value)}>
-                            <option value="" disabled>— Select a role —</option>
-                            <option value="verified">Verified</option>
-                            <option value="member">Member</option>
-                            <option value="og">OG</option>
-                            <option value="contributor">Contributor</option>
-                        </select>
-                        {fieldError("role") && <div className="form-error">{fieldError("role")}</div>}
-                    </div>
-                </>
+                <DiscordRoleFields
+                    task={task} idx={idx}
+                    setTaskParam={setTaskParam}
+                    addChip={addChip} removeChip={removeChip}
+                    chipError={chipError} chipStatus={chipStatus}
+                    fieldError={fieldError}
+                />
             )}
             {(fields === "telegram_join") && (
                 <div className="form-group" style={{ marginBottom: 0 }}>

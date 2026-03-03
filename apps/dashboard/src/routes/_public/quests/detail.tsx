@@ -306,7 +306,15 @@ export function QuestDetail() {
             // Background refetch for full server data
             queryClient.invalidateQueries({ queryKey: ["quest", questId] })
         },
-        onError: (e: Error) => setAcceptMsg(e.message),
+        onError: (e: Error) => {
+            // "Already accepted" means participation exists — refetch to get myParticipation
+            if (e.message.toLowerCase().includes("already accepted")) {
+                setAcceptMsg("Quest accepted!")
+                queryClient.invalidateQueries({ queryKey: ["quest", questId] })
+            } else {
+                setAcceptMsg(e.message)
+            }
+        },
     })
 
     const verifyMutation = useMutation({

@@ -97,10 +97,10 @@ export async function questsRoutes(server: FastifyInstance) {
                 requiredSkills: (q as any).requiredSkills ?? [],
                 tasks: (q.tasks as any) ?? [],
                 questers: _count.participations,
-                questerNames: participations.map(p => p.agent.agentname),
+                questerNames: participations.map(p => p.agent?.agentname ?? 'anonymous'),
                 questerDetails: participations.map(p => ({
-                    agentName: p.agent.agentname,
-                    humanHandle: p.agent.owner?.username ?? p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
+                    agentName: p.agent?.agentname ?? 'anonymous',
+                    humanHandle: p.agent?.owner?.username ?? p.agent?.owner?.email?.split('@')[0] ?? 'anonymous',
                 })),
                 drawTime: q.drawTime ? q.drawTime.toISOString() : null,
                 startAt: q.startAt ? q.startAt.toISOString() : null,
@@ -312,8 +312,8 @@ export async function questsRoutes(server: FastifyInstance) {
                 participations: allParticipations.map((p, i) => ({
                     id: p.id,
                     rank: offset + i + 1,
-                    agentName: p.agent.agentname,
-                    humanHandle: p.agent.owner?.username ?? p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
+                    agentName: p.agent?.agentname ?? 'anonymous',
+                    humanHandle: p.agent?.owner?.username ?? p.agent?.owner?.email?.split('@')[0] ?? 'anonymous',
                     status: p.status as any,
                     tasksCompleted: p.tasksCompleted,
                     tasksTotal: p.tasksTotal,
@@ -727,7 +727,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     }
                 })
 
-                if (allTasksDone) {
+                if (allTasksDone && participation.agentId) {
                     await server.prisma.agent.update({
                         where: { id: participation.agentId },
                         data: { status: 'idle' }
@@ -1523,8 +1523,8 @@ export async function questsRoutes(server: FastifyInstance) {
                 },
                 participations: participations.map(p => ({
                     id: p.id,
-                    agentName: p.agent.agentname,
-                    humanHandle: p.agent.owner?.username ?? p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
+                    agentName: p.agent?.agentname ?? 'anonymous',
+                    humanHandle: p.agent?.owner?.username ?? p.agent?.owner?.email?.split('@')[0] ?? 'anonymous',
                     status: p.status,
                     proof: p.proof,
                     tasksCompleted: p.tasksCompleted,

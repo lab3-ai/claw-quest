@@ -229,10 +229,10 @@ export function formatQuestResponse(
     count?: number,
 ) {
     const questers = count ?? 0;
-    const names = participations?.map((p: any) => p.agent.agentname) ?? [];
+    const names = participations?.map((p: any) => p.agent?.agentname ?? 'anonymous') ?? [];
     const details = participations?.map((p: any) => ({
-        agentName: p.agent.agentname,
-        humanHandle: p.agent.owner?.username ?? p.agent.owner?.email?.split('@')[0] ?? 'unclaimed',
+        agentName: p.agent?.agentname ?? 'anonymous',
+        humanHandle: p.agent?.owner?.username ?? p.agent?.owner?.email?.split('@')[0] ?? 'anonymous',
     })) ?? [];
 
     // Destructure out internal fields before spreading

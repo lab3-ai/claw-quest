@@ -78,20 +78,50 @@ function platformLabel(platform: string) {
 
 function TaskCheck({ status }: { status: string }) {
     if (status === "done") return <span className="task-check done">✓</span>
-    if (status === "running") return <span className="task-check verifying">↻</span>
+    if (status === "verifying") return <span className="task-check verifying">↻</span>
     return <span className="task-check"></span>
 }
 
-function TaskActionBtn({ status, onClick, actionUrl, label }: { status: string; onClick?: () => void; actionUrl?: string; label?: string }) {
-    if (status === "done") return <button className="task-action-btn done-btn" disabled>Done</button>
-    if (status === "verifying") return <button className="task-action-btn running" disabled>Verifying…</button>
-
-    const handleClick = () => {
-        if (actionUrl) window.open(actionUrl, "_blank")
-        if (onClick) onClick()
+/** Get the external URL for a task based on its actionType and params */
+function getTaskActionUrl(task: any): string | undefined {
+    const p = task.params || {}
+    switch (task.actionType) {
+        case "follow_account": return `https://x.com/${p.username}`
+        case "like_post":
+        case "repost": return p.postUrl
+        case "post": return "https://x.com/compose/tweet"
+        case "join_server": return p.inviteUrl
+        case "join_channel": {
+            const ch = p.channelUrl || ""
+            return ch.startsWith("http") ? ch : `https://t.me/${ch.replace(/^@/, "")}`
+        }
+        case "verify_role": return p.inviteUrl
+        default: return undefined
     }
+}
 
-    return <button className="task-action-btn do-it" onClick={handleClick}>{label || "Do it"} →</button>
+/** Get the button label for a task based on its actionType and opened state */
+function getTaskBtnLabel(actionType: string, opened: boolean): string {
+    if (opened) return "Verify"
+    switch (actionType) {
+        case "join_server":
+        case "join_channel": return "Join"
+        case "verify_role": return "Verify"
+        default: return "Do it"
+    }
+}
+
+function TaskActionBtn({ status, disabled, onClick, label }: {
+    status: string; disabled?: boolean; onClick?: () => void; label: string
+}) {
+    if (status === "done") return <button className="task-action-btn done-btn" disabled>Done ✓</button>
+    if (status === "verifying") return <button className="task-action-btn running" disabled>Checking…</button>
+    if (status === "failed") return <button className="task-action-btn do-it" onClick={onClick} style={{ borderColor: "var(--red)" }}>Retry →</button>
+    if (disabled) return (
+        <button className="task-action-btn do-it" disabled title="Accept quest first"
+            style={{ opacity: 0.4, cursor: "not-allowed" }}>{label} →</button>
+    )
+    return <button className="task-action-btn do-it" onClick={onClick}>{label} →</button>
 }
 
 // ─── Extended types ──────────────────────────────────────────────────────────
@@ -127,6 +157,8 @@ export function QuestDetail() {
     const [claimStatus, setClaimStatus] = useState<"idle" | "claiming" | "success" | "error">("idle")
     const [claimError, setClaimError] = useState("")
     const [verifyingIndex, setVerifyingIndex] = useState<number | null>(null)
+    const [openedTasks, setOpenedTasks] = useState<Set<number>>(new Set())
+    const [taskErrors, setTaskErrors] = useState<Record<number, string>>({})
     const claimAttempted = useRef(false)
     const { address: connectedWallet, isConnected: isWalletConnected } = useAccount()
 
@@ -272,12 +304,18 @@ export function QuestDetail() {
             }
             return res.json()
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ["quest", questId] })
+            // Show per-task errors for failed verifications
+            const errors: Record<number, string> = {}
+            for (const r of data.results ?? []) {
+                if (!r.valid && r.error) errors[r.taskIndex] = r.error
+            }
+            setTaskErrors(errors)
             setVerifyingIndex(null)
         },
-        onError: (e) => {
-            alert(e.message)
+        onError: (e: Error) => {
+            setTaskErrors({ [-1]: e.message })
             setVerifyingIndex(null)
         }
     })
@@ -421,9 +459,14 @@ export function QuestDetail() {
                                 <span className="hint">Complete these yourself</span>
                             </div>
                             {quest.tasks.map((task: any, idx: number) => {
+                                const hasAccepted = !!quest.myParticipation
                                 const isVerified = quest.myParticipation?.proof?.verifiedIndices?.includes(idx)
                                 const isVerifying = verifyingIndex === idx
-                                const taskStatus = isVerified ? "done" : isVerifying ? "verifying" : "pending"
+                                const isOpened = openedTasks.has(idx)
+                                const hasFailed = !!taskErrors[idx]
+                                const taskStatus = isVerified ? "done" : isVerifying ? "verifying" : hasFailed ? "failed" : "pending"
+                                const btnLabel = getTaskBtnLabel(task.actionType, isOpened && !isVerified)
+                                const actionUrl = getTaskActionUrl(task)
 
                                 return (
                                     <div key={idx} className="task-card">
@@ -433,16 +476,35 @@ export function QuestDetail() {
                                             <span className="badge badge-social">{platformLabel(task.platform)}</span>
                                             <TaskActionBtn
                                                 status={taskStatus}
-                                                label={task.actionType === 'verify_role' ? "Verify" : "Join"}
-                                                actionUrl={task.params?.inviteUrl || task.params?.tweetUrl}
+                                                disabled={!hasAccepted}
+                                                label={btnLabel}
                                                 onClick={() => {
-                                                    if (task.actionType === 'verify_role' && quest.myParticipation) {
+                                                    if (!hasAccepted) return
+                                                    // verify_role: always trigger verify directly
+                                                    if (task.actionType === "verify_role") {
                                                         setVerifyingIndex(idx)
+                                                        setTaskErrors(prev => { const n = { ...prev }; delete n[idx]; return n })
                                                         verifyMutation.mutate()
+                                                        return
                                                     }
+                                                    // First click: open external link, mark as opened
+                                                    if (!isOpened && actionUrl) {
+                                                        window.open(actionUrl, "_blank")
+                                                        setOpenedTasks(prev => new Set(prev).add(idx))
+                                                        return
+                                                    }
+                                                    // Second click (Verify): trigger verify all
+                                                    setVerifyingIndex(idx)
+                                                    setTaskErrors(prev => { const n = { ...prev }; delete n[idx]; return n })
+                                                    verifyMutation.mutate()
                                                 }}
                                             />
                                         </div>
+                                        {hasFailed && (
+                                            <div style={{ fontSize: 11, color: "var(--red)", marginTop: 4, paddingLeft: 24 }}>
+                                                {taskErrors[idx]}
+                                            </div>
+                                        )}
                                     </div>
                                 )
                             })}
@@ -465,7 +527,7 @@ export function QuestDetail() {
                                             Requires skill: <code style={{ fontSize: 11, background: "var(--code-bg, #f5f5f5)", padding: "1px 4px", borderRadius: 2 }}>{skill}</code>
                                         </span>
                                         <span className="badge badge-skill">Skill</span>
-                                        <TaskActionBtn status="pending" />
+                                        <TaskActionBtn status="pending" disabled label="Agent" />
                                     </div>
                                 </div>
                             ))}

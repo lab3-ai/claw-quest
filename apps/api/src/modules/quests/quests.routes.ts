@@ -633,22 +633,9 @@ export async function questsRoutes(server: FastifyInstance) {
             const quest = await server.prisma.quest.findUnique({ where: { id: questId } })
             if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any)
 
-            // Find participation via user's agents
-            const userAgents = await server.prisma.agent.findMany({
-                where: { ownerId: userId },
-                select: { id: true },
-            })
-            const agentIds = userAgents.map(a => a.id)
-
-            if (agentIds.length === 0) {
-                return reply.status(400).send({ message: 'No agents found. Please create an agent first.' } as any)
-            }
-
-            let participation = await server.prisma.questParticipation.findFirst({
-                where: {
-                    questId,
-                    agentId: { in: agentIds },
-                },
+            // Find participation by userId
+            let participation = await server.prisma.questParticipation.findUnique({
+                where: { questId_userId: { questId, userId } },
             })
 
             if (!participation) {

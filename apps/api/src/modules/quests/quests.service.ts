@@ -237,19 +237,19 @@ export function isValidTransition(from: string, to: string): boolean {
 export function resolveHumanHandle(p: { user?: any; agent?: any }): string {
     const u = p.user;
     if (u) {
-        return u.username ?? u.telegramUsername ?? u.xHandle ?? u.discordHandle ?? u.email?.split('@')[0] ?? 'anonymous';
+        return u.displayName ?? u.username ?? u.telegramUsername ?? u.xHandle ?? u.discordHandle ?? u.email?.split('@')[0] ?? 'anonymous';
     }
     // Legacy fallback: agent.owner path (for pre-migrated queries)
     const owner = p.agent?.owner;
     if (owner) {
-        return owner.username ?? owner.email?.split('@')[0] ?? 'anonymous';
+        return owner.displayName ?? owner.username ?? owner.email?.split('@')[0] ?? 'anonymous';
     }
     return 'anonymous';
 }
 
 /** Standard Prisma select for user identity fields on participation. */
 export const USER_IDENTITY_SELECT = {
-    username: true, email: true, telegramUsername: true, xHandle: true, discordHandle: true,
+    displayName: true, username: true, email: true, telegramUsername: true, xHandle: true, discordHandle: true,
 } as const;
 
 // ─── Response helpers ─────────────────────────────────────────────────────────

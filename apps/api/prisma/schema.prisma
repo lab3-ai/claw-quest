@@ -13,6 +13,7 @@ model User {
   supabaseId        String?  @unique  // Supabase Auth user UUID
   email             String   @unique
   username          String?  @unique
+  displayName       String?            // Human-friendly name (synced from Supabase user_metadata.full_name)
   password          String?            // Legacy — kept for backward compat
   role              String   @default("user") // "user" | "admin"
   telegramId        String?  @unique          // Telegram user ID stored as string (BigInt overflows PG bigint)

@@ -1,5 +1,42 @@
 # Changelog
 
+## v0.12.1 — Auth Redirect Fix + Login Cleanup (2026-03-04)
+
+### Bug Fixes
+- [Fix] "Log in to Accept Quest" button now saves quest URL to localStorage before redirecting to login — user returns to quest page after auth (previously landed on `/quests`)
+- [Fix] Fund page shows wrong chain — resolve chainId from `quest.network`
+- [Fix] Edit link on fund page points to edit page instead of manage
+- [Fix] Add edit link when insufficient balance on fund page
+- [Fix] Quest detail Edit button not visible for creator (`isCreator` missing from response schema)
+
+### Cleanup
+- [Remove] GitHub login button (provider disabled in Supabase)
+
+---
+
+## v0.12.0 — Multi-Chain Escrow + Real Social Verification (2026-03-03)
+
+### Multi-Chain Escrow Simplification
+- [New] `ESCROW_CHAIN_IDS` env var — comma-separated source of truth for active chains
+- [New] `ESCROW_CONTRACT` shared address for all chains (CREATE2 deterministic deploy)
+- [New] Multi-chain poller via `Promise.allSettled()` (1 chain fail won't block others)
+- [New] Per-chain health tracking in `escrowPollerHealth.chains[chainId]`
+- [New] `defineChain()` fallback for chains not in viem's built-in CHAIN_MAP
+- [New] CREATE2 deploy script: `contracts/script/DeployCreate2.s.sol`
+- [New] Chain expansion guide: `docs/CHAIN_EXPANSION_GUIDE.md`
+- [Deploy] Base mainnet + BNB mainnet — proxy `0xF86f5498165D62E044964740F30540D6c5675b99`
+
+### Real Social Task Verification
+- [New] Completion-time verification: confirms user actually performed social action
+- [New] X REST client with OAuth PKCE: checkFollowing, getLikingUsers, getRetweetedBy, getTweet
+- [New] Social action verifier: dispatcher for 8 task types across 3 platforms (X, Discord, Telegram)
+- [New] X OAuth flow: `/auth/x/authorize` + `/auth/x/callback` with token storage
+- [New] `/auth/me` returns `hasXToken`, `hasDiscordToken` booleans
+- [New] Frontend proof URL input for post/quote_post verification
+- [New] 161 tests passing (31 new for social verification)
+
+---
+
 ## v0.11.0 — Social Account Linking + Social Task Validation (2026-03-02)
 
 ### Telegram OIDC Login

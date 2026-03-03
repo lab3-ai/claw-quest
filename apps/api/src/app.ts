@@ -36,7 +36,7 @@ declare module 'fastify' {
         telegram: TelegramService;
     }
     interface FastifyRequest {
-        user: { id: string; email: string; username: string | null; supabaseId: string; role: string };
+        user: { id: string; email: string; username: string | null; displayName: string | null; supabaseId: string; role: string };
     }
 }
 
@@ -103,20 +103,31 @@ server.decorate('authenticate', async (request: FastifyRequest, reply: FastifyRe
             });
         } else {
             // Create new Prisma user
+            const fullName = (supabaseUser.user_metadata?.full_name as string) || null;
             user = await server.prisma.user.create({
                 data: {
                     supabaseId: supabaseUser.id,
                     email: supabaseUser.email!,
-                    username: supabaseUser.email!.split('@')[0],
+                    displayName: fullName,
                 },
             });
         }
+    }
+
+    // Sync displayName from Supabase metadata if not yet set
+    const metaFullName = (supabaseUser.user_metadata?.full_name as string) || null;
+    if (!user.displayName && metaFullName) {
+        user = await server.prisma.user.update({
+            where: { id: user.id },
+            data: { displayName: metaFullName },
+        });
     }
 
     request.user = {
         id: user.id,
         email: user.email,
         username: user.username,
+        displayName: user.displayName,
         supabaseId: supabaseUser.id,
         role: user.role ?? 'user',
     };

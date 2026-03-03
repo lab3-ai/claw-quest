@@ -222,7 +222,8 @@ export function Dashboard() {
         : agentFilter === "claimed" ? claimedAgents
         : pendingAgents
 
-    const handle = user?.email?.split("@")[0] ?? "user"
+    const displayName = user?.user_metadata?.full_name as string | undefined
+    const handle = displayName ?? user?.email?.split("@")[0] ?? "user"
 
     return (
         <div className="page-container dashboard-page">
@@ -396,7 +397,7 @@ export function Dashboard() {
             <div className="page-header">
                 <div>
                     <h1>Dashboard</h1>
-                    <div className="page-header-meta">@{handle} · {agents.length} agents · {quests.length} quests</div>
+                    <div className="page-header-meta">{displayName ? handle : `@${handle}`} · {agents.length} agents · {quests.length} quests</div>
                 </div>
                 <div className="page-header-actions">
                     <button className="btn btn-agent" onClick={() => setShowRegisterModal(true)}>+ Register Agent</button>

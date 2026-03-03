@@ -26,7 +26,9 @@ export function AuthenticatedLayout() {
         return <Navigate to="/login" />
     }
 
-    const handle = (user as any)?.username ?? user?.email?.split("@")[0] ?? "user"
+    const displayName = user?.user_metadata?.full_name as string | undefined
+    const handle = displayName ?? (user as any)?.username ?? user?.email?.split("@")[0] ?? "user"
+    const handleLabel = displayName ? `${handle} ▾` : `@${handle} ▾`
 
     return (
         <div>
@@ -55,7 +57,7 @@ export function AuthenticatedLayout() {
                                 aria-expanded={menuOpen}
                                 aria-haspopup="menu"
                             >
-                                @{handle} ▾
+                                {handleLabel}
                             </button>
                             {menuOpen && (
                                 <div className="user-dropdown visible" role="menu">

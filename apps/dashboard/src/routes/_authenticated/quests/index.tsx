@@ -8,7 +8,7 @@ import { QuestersPopup } from "@/components/QuestersPopup"
 import type { Quest } from "@clawquest/shared"
 import "@/styles/pages/quest-explore.css"
 
-type Tab = "featured" | "highest-reward" | "ending-soon" | "new"
+type Tab = "featured" | "highest-reward" | "ending-soon" | "new" | "upcoming"
 type View = "card" | "list"
 
 function formatTimeLeft(expiresAt: string | null): { label: string; cls: string } {
@@ -49,27 +49,48 @@ function isEnded(quest: Quest): boolean {
 }
 
 function filterAndSortQuests(quests: Quest[], tab: Tab): Quest[] {
-    const active = quests.filter(q => !isEnded(q))
+    const live = quests.filter(q => q.status === "live" && !isEnded(q))
     switch (tab) {
         case "featured":
-            return [...active]
-                .sort((a, b) => b.questers - a.questers)
-                .slice(0, 5)
-        case "highest-reward":
-            return [...active].sort((a, b) => b.rewardAmount - a.rewardAmount)
-        case "ending-soon":
-            return [...active]
+            // Composite: reward × (1 + questers) — boosts popular + high-value quests
+            return [...live]
                 .sort((a, b) => {
-                    const ta = a.expiresAt ? new Date(a.expiresAt).getTime() : Infinity
-                    const tb = b.expiresAt ? new Date(b.expiresAt).getTime() : Infinity
+                    const sa = a.rewardAmount * (1 + a.questers)
+                    const sb = b.rewardAmount * (1 + b.questers)
+                    return sb - sa
+                })
+                .slice(0, 6)
+        case "highest-reward":
+            return [...live].sort((a, b) => b.rewardAmount - a.rewardAmount)
+        case "ending-soon":
+            // Only quests with a deadline, soonest first
+            return [...live]
+                .filter(q => q.expiresAt)
+                .sort((a, b) => {
+                    const ta = new Date(a.expiresAt!).getTime()
+                    const tb = new Date(b.expiresAt!).getTime()
                     return ta - tb
                 })
-        case "new":
-            return [...active].sort((a, b) =>
+        case "new": {
+            // Prefer quests created within 7 days; fallback to all live if < 3
+            const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+            const recent = live.filter(q => new Date(q.createdAt).getTime() >= weekAgo)
+            const source = recent.length >= 3 ? recent : live
+            return [...source].sort((a, b) =>
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             )
+        }
+        case "upcoming":
+            // Scheduled quests not yet live, sorted by start time
+            return quests
+                .filter(q => q.status === "scheduled")
+                .sort((a, b) => {
+                    const ta = a.startAt ? new Date(a.startAt).getTime() : Infinity
+                    const tb = b.startAt ? new Date(b.startAt).getTime() : Infinity
+                    return ta - tb
+                })
         default:
-            return active
+            return live
     }
 }
 
@@ -97,12 +118,14 @@ export function QuestList() {
         "highest-reward": filterAndSortQuests(quests, "highest-reward").length,
         "ending-soon": filterAndSortQuests(quests, "ending-soon").length,
         new: filterAndSortQuests(quests, "new").length,
+        upcoming: filterAndSortQuests(quests, "upcoming").length,
     }
     const tabs: { id: Tab; label: string }[] = [
         { id: "featured", label: "Featured" },
         { id: "highest-reward", label: "Highest Reward" },
         { id: "ending-soon", label: "Ending Soon" },
         { id: "new", label: "New" },
+        { id: "upcoming", label: "Upcoming" },
     ]
 
     return (
@@ -197,7 +220,7 @@ export function QuestList() {
                 <div className="quest-list-wrap">
                     {sorted.length === 0 ? (
                         <div style={{ padding: "48px 0", textAlign: "center", color: "var(--fg-muted)" }}>
-                            No active quests found.
+                            {tab === "upcoming" ? "No upcoming quests scheduled." : "No active quests found."}
                         </div>
                     ) : (
                         <ul className="quest-list">

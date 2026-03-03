@@ -48,13 +48,16 @@ export function acceptHandler(server: FastifyInstance): Composer<BotContext> {
                     id: true,
                     title: true,
                     status: true,
+                    type: true,
                     totalSlots: true,
                     filledSlots: true,
                     tasks: true,
+                    requiredSkills: true,
                 },
             });
             if (!quest || quest.status !== 'live') return ctx.reply(MSG.acceptNoQuest);
-            if (quest.filledSlots >= quest.totalSlots) return ctx.reply(MSG.acceptQuestFull);
+            // LUCKY_DRAW allows unlimited participants — totalSlots = number of winners
+            if (quest.type !== 'LUCKY_DRAW' && quest.filledSlots >= quest.totalSlots) return ctx.reply(MSG.acceptQuestFull);
 
             // Check for duplicate participation
             const existing = await server.prisma.questParticipation.findUnique({
@@ -62,9 +65,10 @@ export function acceptHandler(server: FastifyInstance): Composer<BotContext> {
             });
             if (existing) return ctx.reply(MSG.acceptAlreadyJoined);
 
-            // Count tasks for tasksTotal
+            // Count tasks for tasksTotal (quest tasks + required skills, consistent with REST API)
             const tasks = Array.isArray(quest.tasks) ? quest.tasks : [];
-            const tasksTotal = tasks.length || 1;
+            const requiredSkills = (quest.requiredSkills as string[]) ?? [];
+            const tasksTotal = (tasks.length + requiredSkills.length) || 1;
 
             // Create participation + increment filledSlots + set agent to questing
             const [participation] = await server.prisma.$transaction([

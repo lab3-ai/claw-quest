@@ -217,6 +217,29 @@ export function isValidTransition(from: string, to: string): boolean {
     return (VALID_TRANSITIONS[from] ?? []).includes(to);
 }
 
+// ─── Identity helpers ────────────────────────────────────────────────────────
+
+/** Resolve human-readable handle from a participation's user relation.
+ *  Requires participation to include `user` with select: { username, email, telegramUsername, xHandle, discordHandle }.
+ *  Falls back through linked identities before defaulting to 'anonymous'. */
+export function resolveHumanHandle(p: { user?: any; agent?: any }): string {
+    const u = p.user;
+    if (u) {
+        return u.username ?? u.telegramUsername ?? u.xHandle ?? u.discordHandle ?? u.email?.split('@')[0] ?? 'anonymous';
+    }
+    // Legacy fallback: agent.owner path (for pre-migrated queries)
+    const owner = p.agent?.owner;
+    if (owner) {
+        return owner.username ?? owner.email?.split('@')[0] ?? 'anonymous';
+    }
+    return 'anonymous';
+}
+
+/** Standard Prisma select for user identity fields on participation. */
+export const USER_IDENTITY_SELECT = {
+    username: true, email: true, telegramUsername: true, xHandle: true, discordHandle: true,
+} as const;
+
 // ─── Response helpers ─────────────────────────────────────────────────────────
 
 /** Format a raw Prisma quest (with includes) into the API response shape.
@@ -232,7 +255,7 @@ export function formatQuestResponse(
     const names = participations?.map((p: any) => p.agent?.agentname ?? 'anonymous') ?? [];
     const details = participations?.map((p: any) => ({
         agentName: p.agent?.agentname ?? 'anonymous',
-        humanHandle: p.agent?.owner?.username ?? p.agent?.owner?.email?.split('@')[0] ?? 'anonymous',
+        humanHandle: resolveHumanHandle(p),
     })) ?? [];
 
     // Destructure out internal fields before spreading

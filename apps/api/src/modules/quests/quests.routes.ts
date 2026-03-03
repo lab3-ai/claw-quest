@@ -11,6 +11,8 @@ import {
     isQuestCreatorOrAdmin,
     verifyParticipation,
     bulkVerifyParticipations,
+    resolveHumanHandle,
+    USER_IDENTITY_SELECT,
     QuestValidationError,
     QuestNotFoundError,
     QuestNotEditableError,
@@ -18,6 +20,7 @@ import {
 } from './quests.service';
 import { validatePublishRequirements } from './quests.publish-validator';
 import { validateSocialTarget } from './social-validator';
+import { verifySocialAction, VerificationContext } from './social-action-verifier';
 
 const CreateQuestSchema = QuestSchema.omit({
     id: true,
@@ -79,12 +82,8 @@ export async function questsRoutes(server: FastifyInstance) {
                     participations: {
                         take: 5,
                         select: {
-                            agent: {
-                                select: {
-                                    agentname: true,
-                                    owner: { select: { email: true, username: true } },
-                                },
-                            },
+                            user: { select: { username: true, email: true, telegramUsername: true, xHandle: true, discordHandle: true } },
+                            agent: { select: { agentname: true } },
                         },
                         orderBy: { joinedAt: 'asc' },
                     },
@@ -100,7 +99,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 questerNames: participations.map(p => p.agent?.agentname ?? 'anonymous'),
                 questerDetails: participations.map(p => ({
                     agentName: p.agent?.agentname ?? 'anonymous',
-                    humanHandle: p.agent?.owner?.username ?? p.agent?.owner?.email?.split('@')[0] ?? 'anonymous',
+                    humanHandle: resolveHumanHandle(p),
                 })),
                 drawTime: q.drawTime ? q.drawTime.toISOString() : null,
                 startAt: q.startAt ? q.startAt.toISOString() : null,
@@ -156,12 +155,8 @@ export async function questsRoutes(server: FastifyInstance) {
                     participations: {
                         take: 5,
                         include: {
-                            agent: {
-                                select: {
-                                    agentname: true,
-                                    owner: { select: { email: true, username: true } },
-                                },
-                            },
+                            user: { select: USER_IDENTITY_SELECT },
+                            agent: { select: { agentname: true } },
                         },
                         orderBy: { joinedAt: 'asc' },
                     },
@@ -285,7 +280,10 @@ export async function questsRoutes(server: FastifyInstance) {
             const [allParticipations, totalCount] = await Promise.all([
                 server.prisma.questParticipation.findMany({
                     where: { questId: id, ...statusFilter },
-                    include: { agent: { select: { agentname: true, owner: { select: { email: true, username: true } } } } },
+                    include: {
+                        user: { select: { username: true, email: true, telegramUsername: true, xHandle: true, discordHandle: true } },
+                        agent: { select: { agentname: true } },
+                    },
                     orderBy: [{ completedAt: 'asc' }, { joinedAt: 'asc' }],
                     skip: (page - 1) * pageSize,
                     take: pageSize,
@@ -316,7 +314,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     id: p.id,
                     rank: offset + i + 1,
                     agentName: p.agent?.agentname ?? 'anonymous',
-                    humanHandle: p.agent?.owner?.username ?? p.agent?.owner?.email?.split('@')[0] ?? 'anonymous',
+                    humanHandle: resolveHumanHandle(p),
                     status: p.status as any,
                     tasksCompleted: p.tasksCompleted,
                     tasksTotal: p.tasksTotal,
@@ -579,24 +577,23 @@ export async function questsRoutes(server: FastifyInstance) {
 
             const tasks = (quest.tasks as QuestTask[]) ?? []
             const user = await server.prisma.user.findUnique({ where: { id: request.user.id } })
-            const discordId = user?.discordId ?? null
-            const discordAccessToken = user?.discordAccessToken ?? null
 
             const results: Array<{ taskIndex: number; actionType: string; valid: boolean; error?: string; meta?: Record<string, string> }> = []
 
             for (let i = 0; i < tasks.length; i++) {
                 const task = tasks[i]
-                // Only auto-verify tasks that we can check programmatically
-                if (task.actionType === 'verify_role') {
-                    const result = await validateSocialTarget(
-                        task.platform,
-                        task.actionType,
-                        task.params.inviteUrl ?? '',
-                        undefined,
-                        { discordId, discordAccessToken, params: task.params as Record<string, string> },
-                    )
-                    results.push({ taskIndex: i, actionType: task.actionType, ...result })
+                const ctx: VerificationContext = {
+                    userId: request.user.id,
+                    prisma: server.prisma,
+                    xId: user?.xId, xAccessToken: user?.xAccessToken,
+                    xRefreshToken: user?.xRefreshToken, xTokenExpiry: user?.xTokenExpiry,
+                    discordId: user?.discordId, discordAccessToken: user?.discordAccessToken,
+                    telegramId: user?.telegramId,
+                    params: task.params as Record<string, string>,
+                    telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
                 }
+                const result = await verifySocialAction(task.platform, task.actionType, i, ctx)
+                results.push({ taskIndex: i, actionType: task.actionType, ...result })
             }
 
             return { results }
@@ -604,14 +601,19 @@ export async function questsRoutes(server: FastifyInstance) {
     );
 
     // ── POST /quests/:id/tasks/verify — Auto-verify and Save progress ───────────
+    const VerifyTasksBody = z.object({
+        proofUrls: z.record(z.string(), z.string().url()).optional(),
+    }).optional();
+
     server.post(
         '/:id/tasks/verify',
         {
             schema: {
                 tags: ['Quests'],
-                summary: 'Auto-verify and save progress for human tasks (e.g. Discord role)',
+                summary: 'Auto-verify and save progress for all social tasks',
                 security: [{ bearerAuth: [] }],
                 params: z.object({ id: z.string().uuid() }),
+                body: VerifyTasksBody,
                 response: {
                     200: z.object({
                         message: z.string(),
@@ -658,6 +660,13 @@ export async function questsRoutes(server: FastifyInstance) {
             const tasks = (quest.tasks as QuestTask[]) ?? []
             const user = await server.prisma.user.findUnique({ where: { id: userId } })
 
+            // Parse proof URLs from body
+            const body = request.body as { proofUrls?: Record<string, string> } | undefined
+            const rawProofUrls = body?.proofUrls
+            const proofUrlsMap: Record<number, string> | undefined = rawProofUrls
+                ? Object.fromEntries(Object.entries(rawProofUrls).map(([k, v]) => [Number(k), v]))
+                : undefined
+
             const proof = (participation.proof as any) || {}
             const verifiedIndices = new Set<number>(proof.verifiedIndices || [])
 
@@ -671,32 +680,31 @@ export async function questsRoutes(server: FastifyInstance) {
                     continue
                 }
 
-                if (task.actionType === 'verify_role') {
-                    const validationResult = await validateSocialTarget(
-                        task.platform,
-                        task.actionType,
-                        task.params.inviteUrl ?? '',
-                        undefined,
-                        {
-                            discordId: user?.discordId,
-                            discordAccessToken: user?.discordAccessToken,
-                            params: task.params as any
-                        }
-                    )
+                const ctx: VerificationContext = {
+                    userId,
+                    prisma: server.prisma,
+                    xId: user?.xId, xAccessToken: user?.xAccessToken,
+                    xRefreshToken: user?.xRefreshToken, xTokenExpiry: user?.xTokenExpiry,
+                    discordId: user?.discordId, discordAccessToken: user?.discordAccessToken,
+                    telegramId: user?.telegramId,
+                    proofUrls: proofUrlsMap,
+                    params: task.params as Record<string, string>,
+                    telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
+                }
+                const validationResult = await verifySocialAction(
+                    task.platform, task.actionType, i, ctx,
+                )
 
-                    results.push({
-                        taskIndex: i,
-                        actionType: task.actionType,
-                        valid: validationResult.valid,
-                        error: validationResult.error
-                    })
+                results.push({
+                    taskIndex: i,
+                    actionType: task.actionType,
+                    valid: validationResult.valid,
+                    error: validationResult.error,
+                })
 
-                    if (validationResult.valid) {
-                        verifiedIndices.add(i)
-                        newVerification = true
-                    }
-                } else {
-                    results.push({ taskIndex: i, actionType: task.actionType, valid: false, error: 'Manual verification required' })
+                if (validationResult.valid) {
+                    verifiedIndices.add(i)
+                    newVerification = true
                 }
             }
 
@@ -908,6 +916,14 @@ export async function questsRoutes(server: FastifyInstance) {
                     });
                     if (!owned) return reply.status(403).send({ message: 'Agent not found or not owned by you' } as any);
                     agentId = bodyAgentId;
+                } else {
+                    // Auto-resolve user's first agent if none specified
+                    const defaultAgent = await server.prisma.agent.findFirst({
+                        where: { ownerId: userId },
+                        select: { id: true },
+                        orderBy: { createdAt: 'asc' },
+                    });
+                    if (defaultAgent) agentId = defaultAgent.id;
                 }
             }
 
@@ -1187,9 +1203,8 @@ export async function questsRoutes(server: FastifyInstance) {
                     participations: {
                         take: 5,
                         include: {
-                            agent: {
-                                select: { agentname: true, owner: { select: { email: true, username: true } } },
-                            },
+                            user: { select: USER_IDENTITY_SELECT },
+                            agent: { select: { agentname: true } },
                         },
                         orderBy: { joinedAt: 'asc' },
                     },
@@ -1479,12 +1494,8 @@ export async function questsRoutes(server: FastifyInstance) {
             const participations = await server.prisma.questParticipation.findMany({
                 where: { questId },
                 include: {
-                    agent: {
-                        select: {
-                            agentname: true,
-                            owner: { select: { email: true, username: true } },
-                        },
-                    },
+                    user: { select: USER_IDENTITY_SELECT },
+                    agent: { select: { agentname: true } },
                 },
                 orderBy: [{ completedAt: 'asc' }, { joinedAt: 'asc' }],
             });
@@ -1515,7 +1526,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 participations: participations.map(p => ({
                     id: p.id,
                     agentName: p.agent?.agentname ?? 'anonymous',
-                    humanHandle: p.agent?.owner?.username ?? p.agent?.owner?.email?.split('@')[0] ?? 'anonymous',
+                    humanHandle: resolveHumanHandle(p),
                     status: p.status,
                     proof: p.proof,
                     tasksCompleted: p.tasksCompleted,

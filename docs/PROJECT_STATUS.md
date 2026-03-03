@@ -242,7 +242,20 @@ The `ESCROW_NETWORK_MODE` env var (and frontend counterpart `VITE_ESCROW_NETWORK
 
 ---
 
-## ✅ Recently Completed (v0.10.0 – v0.11.0)
+## ✅ Recently Completed (v0.10.0 – v0.12.0)
+
+### v0.12.0 — Real Social Task Verification
+- [x] X OAuth token storage (xAccessToken, xRefreshToken, xTokenExpiry on User model)
+- [x] X REST client (x-rest-client.ts) with 7 functions: checkFollowing, getLikingUsers, getRetweetedBy, getTweet, lookupUserByUsername, token refresh
+- [x] Social action verifier (social-action-verifier.ts) for real completion-time verification
+- [x] Verify all 8 social task types (follow_account, like_post, repost, post, quote_post, join_server, verify_role, join_channel)
+- [x] Real API verification: X (uses OAuth tokens), Discord (getUserGuildMember), Telegram (getChatMember via bot token)
+- [x] URL proof input for post/quote_post tasks on quest detail page
+- [x] Link-account warnings on quest detail when user missing required social accounts
+- [x] Token refresh auto-handling (lazy refresh on 5min expiry buffer)
+- [x] Graceful degradation: API errors return actionable messages (never silent pass)
+- [x] Extended /check-tasks and /tasks/verify routes to handle all task types
+- [x] 31 new tests (17 x-rest-client + 14 social-action-verifier); all 161 tests passing
 
 ### v0.11.0 — Social Task Validation + Account Linking
 - [x] Social task existence validation (`GET /quests/validate-social`)
@@ -284,7 +297,7 @@ The `ESCROW_NETWORK_MODE` env var (and frontend counterpart `VITE_ESCROW_NETWORK
 
 ### Features (Backlog)
 - [x] Discord bot role validation (verify user has specific Discord role)
-- [ ] X/Twitter account linking (OAuth)
+- [x] X/Twitter real verification (OAuth tokens + API verification)
 - [ ] Emergency withdrawal handling (contract feature, needs admin UI)
 - [ ] Payout reconciliation for stuck transactions
 - [ ] Telegram bot commands integration with new auth system

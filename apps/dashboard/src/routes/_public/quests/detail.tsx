@@ -159,6 +159,7 @@ export function QuestDetail() {
     const [verifyingIndex, setVerifyingIndex] = useState<number | null>(null)
     const [openedTasks, setOpenedTasks] = useState<Set<number>>(new Set())
     const [taskErrors, setTaskErrors] = useState<Record<number, string>>({})
+    const [proofUrls, setProofUrls] = useState<Record<number, string>>({})
     const claimAttempted = useRef(false)
     const { address: connectedWallet, isConnected: isWalletConnected } = useAccount()
 
@@ -319,12 +320,17 @@ export function QuestDetail() {
 
     const verifyMutation = useMutation({
         mutationFn: async () => {
+            const filteredProofs = Object.fromEntries(
+                Object.entries(proofUrls).filter(([, v]) => v.trim())
+            )
+            const hasProofs = Object.keys(filteredProofs).length > 0
             const res = await fetch(`${API_BASE}/quests/${questId}/tasks/verify`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${session?.access_token}`,
                 },
+                body: hasProofs ? JSON.stringify({ proofUrls: filteredProofs }) : undefined,
             })
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}))
@@ -547,9 +553,27 @@ export function QuestDetail() {
                                                 }}
                                             />
                                         </div>
+                                        {/* Proof URL input for post/quote_post */}
+                                        {(task.actionType === "post" || task.actionType === "quote_post") && hasAccepted && !isVerified && (
+                                            <div className="proof-url-row">
+                                                <input
+                                                    type="url"
+                                                    className="proof-url-input"
+                                                    placeholder="Paste your tweet URL here..."
+                                                    value={proofUrls[idx] || ""}
+                                                    onChange={(e) => setProofUrls(prev => ({ ...prev, [idx]: e.target.value }))}
+                                                />
+                                            </div>
+                                        )}
                                         {hasFailed && (
                                             <div style={{ fontSize: 11, color: "var(--red)", marginTop: 4, paddingLeft: 24 }}>
                                                 {taskErrors[idx]}
+                                                {taskErrors[idx]?.includes("re-link") && (
+                                                    <> — <Link to="/dashboard" style={{ color: "var(--link)" }}>Go to Settings</Link></>
+                                                )}
+                                                {taskErrors[idx]?.includes("Link your") && (
+                                                    <> — <Link to="/dashboard" style={{ color: "var(--link)" }}>Go to Settings</Link></>
+                                                )}
                                             </div>
                                         )}
                                     </div>

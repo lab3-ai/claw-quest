@@ -19,6 +19,9 @@ model User {
   telegramUsername  String?                   // Telegram @username
   xId               String?  @unique          // Twitter/X user ID (from identity_data.sub)
   xHandle           String?                   // Twitter/X username (from identity_data.user_name)
+  xAccessToken      String?                   // X OAuth2 access token (2h lifetime)
+  xRefreshToken     String?                   // X OAuth2 refresh token (one-time use, 6mo)
+  xTokenExpiry      DateTime?                 // When the X access token expires
   discordId         String?  @unique          // Discord user ID
   discordHandle     String?                   // Discord username
   discordAccessToken  String?                 // Discord OAuth access token (guilds.members.read)

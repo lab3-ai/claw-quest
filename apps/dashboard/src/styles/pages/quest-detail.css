@@ -263,3 +263,8 @@
 .view-toggle-btn:last-child { border-right: none; }
 .view-toggle-btn:hover { background: var(--sidebar-bg); color: var(--fg); }
 .view-toggle-btn.active { background: var(--tag-bg); color: var(--tag-fg); font-weight: 600; }
+
+/* === Proof URL input for post/quote_post tasks === */
+.proof-url-row { padding: 4px 0 0 24px; }
+.proof-url-input { width: 100%; padding: 6px 8px; font-size: 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg, #fff); color: var(--fg); font-family: var(--font); }
+.proof-url-input:focus { border-color: var(--accent); outline: none; }

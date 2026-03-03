@@ -8,8 +8,18 @@ import {
     isNativeToken,
     ESCROW_ABI,
     TOKEN_REGISTRY,
+    SUPPORTED_CHAINS,
 } from '@clawquest/shared';
 import { escrowConfig, getContractAddress } from './escrow.config';
+
+/** Resolve numeric chain ID from quest.network string (e.g. "Base" → 8453) */
+function resolveChainIdFromNetwork(networkName: string | null | undefined): number | undefined {
+    if (!networkName) return undefined;
+    const chain = Object.values(SUPPORTED_CHAINS).find(
+        c => c.name.toLowerCase() === networkName.toLowerCase()
+    );
+    return chain?.id;
+}
 import { getPublicClient, getOperatorWalletClient } from './escrow.client';
 
 // ─── Deposit Params (for frontend) ──────────────────────────────────────────
@@ -39,7 +49,7 @@ export async function getDepositParams(
     const quest = await prisma.quest.findUnique({ where: { id: questId } });
     if (!quest) throw new Error('Quest not found');
 
-    const targetChainId = chainId || quest.cryptoChainId || escrowConfig.defaultChainId;
+    const targetChainId = chainId || quest.cryptoChainId || resolveChainIdFromNetwork(quest.network) || escrowConfig.defaultChainId;
     const chain = getChainById(targetChainId);
     if (!chain) throw new Error(`Unsupported chain: ${targetChainId}`);
 
@@ -179,7 +189,7 @@ export async function calculateDistribution(
         throw new Error(`Cannot distribute: quest status is "${quest.status}"`);
     }
 
-    const chainId = quest.cryptoChainId || escrowConfig.defaultChainId;
+    const chainId = quest.cryptoChainId || resolveChainIdFromNetwork(quest.network) || escrowConfig.defaultChainId;
     const tokenInfo = getTokenInfo(chainId, quest.rewardType.toUpperCase());
     if (!tokenInfo) throw new Error(`Token ${quest.rewardType} not found for chain ${chainId}`);
 

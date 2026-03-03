@@ -75,7 +75,8 @@ export function QuestersAvatarStack({ details, total, onClick }: QuestersAvatarS
 
 export function QuestCard({ quest }: QuestCardProps) {
     const time = formatTimeLeft(quest.expiresAt)
-    const slotsLeft = quest.totalSlots - quest.filledSlots
+    const isLuckyDraw = quest.type === "LUCKY_DRAW"
+    const slotsLeft = isLuckyDraw ? Infinity : quest.totalSlots - quest.filledSlots
     const [showPopup, setShowPopup] = useState(false)
 
     return (
@@ -106,10 +107,19 @@ export function QuestCard({ quest }: QuestCardProps) {
                     </div>
                 )}
                 <div className="quest-stat">
-                    <span className="quest-stat-val" style={{ color: slotsLeft < 5 ? "var(--red)" : "var(--fg)" }}>
-                        {slotsLeft}
-                    </span>
-                    <span className="quest-stat-label">slots left</span>
+                    {isLuckyDraw ? (
+                        <>
+                            <span className="quest-stat-val">{quest.filledSlots}</span>
+                            <span className="quest-stat-label">entered</span>
+                        </>
+                    ) : (
+                        <>
+                            <span className="quest-stat-val" style={{ color: slotsLeft < 5 ? "var(--red)" : "var(--fg)" }}>
+                                {slotsLeft}
+                            </span>
+                            <span className="quest-stat-label">slots left</span>
+                        </>
+                    )}
                 </div>
             </div>
 

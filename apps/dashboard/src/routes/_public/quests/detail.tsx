@@ -385,7 +385,8 @@ export function QuestDetail() {
         )
     }
 
-    const slotsLeft = quest.totalSlots - quest.filledSlots
+    const isLuckyDraw = quest.type === "LUCKY_DRAW"
+    const slotsLeft = isLuckyDraw ? Infinity : quest.totalSlots - quest.filledSlots
     const spotsPercent = quest.totalSlots > 0 ? Math.round((quest.filledSlots / quest.totalSlots) * 100) : 0
     const isLive = quest.status === "live"
     const isCompleted = quest.status === "completed"
@@ -684,17 +685,28 @@ export function QuestDetail() {
                         {/* Spots bar */}
                         <div className="spots-bar">
                             <div className="spots-header">
-                                <span className="spots-label">{quest.filledSlots} / {quest.totalSlots} spots filled</span>
-                                <span className="spots-value" style={{ color: slotsLeft < 5 ? "var(--red)" : "var(--fg)" }}>
-                                    {slotsLeft} left
-                                </span>
+                                {isLuckyDraw ? (
+                                    <>
+                                        <span className="spots-label">{quest.filledSlots} entered</span>
+                                        <span className="spots-value">{quest.totalSlots} winners drawn</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="spots-label">{quest.filledSlots} / {quest.totalSlots} spots filled</span>
+                                        <span className="spots-value" style={{ color: slotsLeft < 5 ? "var(--red)" : "var(--fg)" }}>
+                                            {slotsLeft} left
+                                        </span>
+                                    </>
+                                )}
                             </div>
-                            <div className="spots-track">
-                                <div
-                                    className={`spots-fill ${slotsLeft < 5 ? "hot" : "normal"}`}
-                                    style={{ width: `${spotsPercent}%` }}
-                                />
-                            </div>
+                            {!isLuckyDraw && (
+                                <div className="spots-track">
+                                    <div
+                                        className={`spots-fill ${slotsLeft < 5 ? "hot" : "normal"}`}
+                                        style={{ width: `${spotsPercent}%` }}
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         {/* CTA */}

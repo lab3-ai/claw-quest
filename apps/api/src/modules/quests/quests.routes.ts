@@ -914,7 +914,8 @@ export async function questsRoutes(server: FastifyInstance) {
             const quest = await server.prisma.quest.findUnique({ where: { id } });
             if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any);
             if (quest.status !== 'live') return reply.status(400).send({ message: 'Quest is not live' } as any);
-            if (quest.filledSlots >= quest.totalSlots) return reply.status(400).send({ message: 'Quest is full' } as any);
+            // LUCKY_DRAW allows unlimited participants — totalSlots = number of winners, not participant cap
+            if (quest.type !== 'LUCKY_DRAW' && quest.filledSlots >= quest.totalSlots) return reply.status(400).send({ message: 'Quest is full' } as any);
 
             // ── Skill Gate: only check if agent is provided ─────────────
             const requiredSkills = (quest as any).requiredSkills as string[] ?? [];

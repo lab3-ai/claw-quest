@@ -1,8 +1,21 @@
+import { Link } from '@tanstack/react-router'
 import type { DepositParams } from '@/components/escrow/fund-types'
 import { TxLink } from '@/components/escrow/tx-link'
 
+function InsufficientBalanceWarning({ tokenSymbol, questId }: { tokenSymbol: string; questId: string }) {
+    return (
+        <div className="fund-insufficient-warning">
+            Insufficient {tokenSymbol} balance to fund this quest.
+            <Link to="/quests/$questId/manage" params={{ questId }} className="fund-edit-link">
+                Edit reward amount
+            </Link>
+        </div>
+    )
+}
+
 interface FundApproveProps {
     params: DepositParams
+    questId: string
     approveLoading: boolean
     approveTxHash?: string
     approveConfirmed: boolean
@@ -13,6 +26,7 @@ interface FundApproveProps {
 
 export function FundApprove({
     params,
+    questId,
     approveLoading,
     approveTxHash,
     approveConfirmed,
@@ -28,9 +42,7 @@ export function FundApprove({
                 </p>
             )}
             {hasInsufficientBalance && (
-                <div className="fund-insufficient-warning">
-                    Insufficient {params.tokenSymbol} balance to fund this quest.
-                </div>
+                <InsufficientBalanceWarning tokenSymbol={params.tokenSymbol} questId={questId} />
             )}
             <p>Approve {params.tokenSymbol} spending</p>
             <button
@@ -49,6 +61,7 @@ export function FundApprove({
 
 interface FundDepositProps {
     params: DepositParams
+    questId: string
     depositLoading: boolean
     depositTxHash?: string
     depositConfirmed: boolean
@@ -59,6 +72,7 @@ interface FundDepositProps {
 
 export function FundDeposit({
     params,
+    questId,
     depositLoading,
     depositTxHash,
     depositConfirmed,
@@ -74,9 +88,7 @@ export function FundDeposit({
                 </p>
             )}
             {hasInsufficientBalance && (
-                <div className="fund-insufficient-warning">
-                    Insufficient {params.tokenSymbol} balance to fund this quest.
-                </div>
+                <InsufficientBalanceWarning tokenSymbol={params.tokenSymbol} questId={questId} />
             )}
             <p>Deposit {params.amount} {params.tokenSymbol} to escrow</p>
             <button

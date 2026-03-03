@@ -158,13 +158,13 @@ export function FundQuest() {
                     )}
 
                     {!wrongChain && step === 'approve' && (
-                        <FundApprove params={params} approveLoading={approveLoading} approveTxHash={approveTxHash}
+                        <FundApprove params={params} questId={questId} approveLoading={approveLoading} approveTxHash={approveTxHash}
                             approveConfirmed={approveConfirmed} walletBalance={walletBalance}
                             hasInsufficientBalance={hasInsufficientBalance} onApprove={handleApprove} />
                     )}
 
                     {!wrongChain && step === 'deposit' && (
-                        <FundDeposit params={params} depositLoading={depositLoading} depositTxHash={depositTxHash}
+                        <FundDeposit params={params} questId={questId} depositLoading={depositLoading} depositTxHash={depositTxHash}
                             depositConfirmed={depositConfirmed} walletBalance={walletBalance}
                             hasInsufficientBalance={hasInsufficientBalance} onDeposit={handleDeposit} />
                     )}

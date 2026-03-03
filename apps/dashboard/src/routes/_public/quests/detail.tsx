@@ -282,8 +282,28 @@ export function QuestDetail() {
             }
             return res.json()
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             setAcceptMsg("Quest accepted!")
+            // Optimistic update: set myParticipation immediately so buttons enable instantly
+            queryClient.setQueryData<QuestWithParticipation>(["quest", questId, token], (old) => {
+                if (!old) return old
+                return {
+                    ...old,
+                    filledSlots: old.filledSlots + 1,
+                    myParticipation: {
+                        id: data.participationId,
+                        status: "in_progress",
+                        payoutWallet: null,
+                        payoutStatus: null,
+                        payoutAmount: null,
+                        payoutTxHash: null,
+                        tasksCompleted: 0,
+                        tasksTotal: old.tasks?.length ?? 0,
+                        proof: null,
+                    },
+                }
+            })
+            // Background refetch for full server data
             queryClient.invalidateQueries({ queryKey: ["quest", questId] })
         },
         onError: (e: Error) => setAcceptMsg(e.message),
@@ -305,14 +325,32 @@ export function QuestDetail() {
             return res.json()
         },
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ["quest", questId] })
             // Show per-task errors for failed verifications
             const errors: Record<number, string> = {}
+            const newVerified: number[] = []
             for (const r of data.results ?? []) {
-                if (!r.valid && r.error) errors[r.taskIndex] = r.error
+                if (r.valid) newVerified.push(r.taskIndex)
+                else if (r.error) errors[r.taskIndex] = r.error
             }
             setTaskErrors(errors)
             setVerifyingIndex(null)
+            // Optimistic update: merge verified indices immediately
+            if (newVerified.length > 0) {
+                queryClient.setQueryData<QuestWithParticipation>(["quest", questId, token], (old) => {
+                    if (!old?.myParticipation) return old
+                    const existing = old.myParticipation.proof?.verifiedIndices ?? []
+                    const merged = [...new Set([...existing, ...newVerified])]
+                    return {
+                        ...old,
+                        myParticipation: {
+                            ...old.myParticipation,
+                            proof: { ...old.myParticipation.proof, verifiedIndices: merged },
+                        },
+                    }
+                })
+            }
+            // Background refetch for full server data
+            queryClient.invalidateQueries({ queryKey: ["quest", questId] })
         },
         onError: (e: Error) => {
             setTaskErrors({ [-1]: e.message })

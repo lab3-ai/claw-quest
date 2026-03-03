@@ -908,7 +908,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 userId = agent.ownerId;
             } else {
                 // Human Supabase token path
-                try { await app.authenticate(request, reply); } catch { return reply.status(401).send({ message: 'Unauthorized' } as any); }
+                try { await server.authenticate(request, reply); } catch { return reply.status(401).send({ message: 'Unauthorized' } as any); }
                 userId = (request as any).user.id;
                 const { agentId: bodyAgentId } = request.body as any;
                 if (bodyAgentId) {

@@ -39,10 +39,6 @@ export async function getDepositParams(
     const quest = await prisma.quest.findUnique({ where: { id: questId } });
     if (!quest) throw new Error('Quest not found');
 
-    if (quest.fundingStatus === 'confirmed') {
-        throw new Error('Quest already funded');
-    }
-
     const targetChainId = chainId || quest.cryptoChainId || escrowConfig.defaultChainId;
     const chain = getChainById(targetChainId);
     if (!chain) throw new Error(`Unsupported chain: ${targetChainId}`);
@@ -53,8 +49,18 @@ export async function getDepositParams(
         throw new Error(`Token ${rewardType} not available on chain ${targetChainId}`);
     }
 
+    // Top-up mode: if already funded, calculate the difference needed
+    let depositAmount = quest.rewardAmount;
+    if (quest.fundingStatus === 'confirmed' && quest.cryptoChainId) {
+        const onChain = await getEscrowStatus(questId, targetChainId);
+        const alreadyDeposited = onChain?.depositedHuman ?? 0;
+        const diff = quest.rewardAmount - alreadyDeposited;
+        if (diff <= 0) throw new Error('Quest already fully funded');
+        depositAmount = diff;
+    }
+
     const questIdBytes32 = uuidToBytes32(questId);
-    const amountSmallestUnit = toSmallestUnit(quest.rewardAmount, tokenInfo.decimals);
+    const amountSmallestUnit = toSmallestUnit(depositAmount, tokenInfo.decimals);
     const expiresAt = quest.expiresAt ? Math.floor(quest.expiresAt.getTime() / 1000) : 0;
 
     return {
@@ -63,7 +69,7 @@ export async function getDepositParams(
         tokenAddress: tokenInfo.address,
         tokenSymbol: tokenInfo.symbol,
         tokenDecimals: tokenInfo.decimals,
-        amount: quest.rewardAmount,
+        amount: depositAmount,
         amountSmallestUnit: amountSmallestUnit.toString(),
         chainId: targetChainId,
         chainName: chain.name,

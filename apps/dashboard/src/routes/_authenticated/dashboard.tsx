@@ -593,7 +593,14 @@ export function Dashboard() {
                                                         >Publish</button>
                                                     </div>
                                                 )
-                                            })() : (
+                                            })() : quest.status === "scheduled" ? (
+                                                <div className="draft-actions">
+                                                    <span className={`quest-time-val ${time.cls}`}>{time.val}</span>
+                                                    {time.label && <span className="quest-time-lbl">{time.label}</span>}
+                                                    <Link to="/quests/$questId/edit" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Edit</Link>
+                                                    <Link to="/quests/$questId/manage" params={{ questId: quest.id }} className="btn btn-sm btn-secondary">Manage</Link>
+                                                </div>
+                                            ) : (
                                                 <>
                                                     <span className={`quest-time-val ${time.cls}`}>{time.val}</span>
                                                     {time.label && <span className="quest-time-lbl">{time.label}</span>}
@@ -683,7 +690,12 @@ export function Dashboard() {
                                                             >Publish</button>
                                                         </div>
                                                     )
-                                                })() : (
+                                                })() : quest.status === "scheduled" ? (
+                                                    <div className="draft-actions">
+                                                        <Link to="/quests/$questId/edit" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Edit</Link>
+                                                        <Link to="/quests/$questId/manage" params={{ questId: quest.id }} className="btn btn-sm btn-secondary">Manage</Link>
+                                                    </div>
+                                                ) : (
                                                     <>
                                                         <div className={`tbl-time ${time.cls}`}>{time.val}</div>
                                                         {time.label && <div className="tbl-time-label">{time.label}</div>}

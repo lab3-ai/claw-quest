@@ -93,7 +93,7 @@ export async function escrowRoutes(server: FastifyInstance) {
                 if (err.message === 'Quest not found') {
                     return reply.status(404).send({ message: err.message } as any);
                 }
-                if (err.message === 'Quest already funded') {
+                if (err.message === 'Quest already fully funded') {
                     return reply.status(400).send({ message: err.message } as any);
                 }
                 throw err;

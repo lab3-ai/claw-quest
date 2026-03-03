@@ -738,6 +738,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const fundAfterSave = useRef(false)
     const editPopulated = useRef(false)
     const [restoredBanner, setRestoredBanner] = useState(false)
+    const [originalRewardAmount, setOriginalRewardAmount] = useState<number>(0)
+    const [isFunded, setIsFunded] = useState(false)
     const { save: saveDraft, restore: restoreDraft, clear: clearDraft } = useDraftPersistence(editQuestId)
 
     // ── Restore draft from localStorage (new quests only) ───────────────────
@@ -817,6 +819,10 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 id: s, name: s, desc: "", agents: 0, version: null,
             })))
         }
+
+        // Track funding state for top-up logic
+        setOriginalRewardAmount(editQuest.rewardAmount ?? 0)
+        setIsFunded(editQuest.fundingStatus === "confirmed")
     }, [editQuest])
 
     const toggleDesc = (id: string, e: React.MouseEvent) => {
@@ -967,6 +973,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
             if (fundAfterSave.current && questId) {
                 navigate({ to: "/quests/$questId/fund", params: { questId } })
             } else if (isEditMode && questId) {
+                // Funded quests without top-up: go to detail page
                 navigate({ to: "/quests/$questId", params: { questId } })
             } else {
                 navigate({ to: "/dashboard" })
@@ -1030,29 +1037,74 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
         )
     }
 
+    // Guard: block editing for live/completed/expired/cancelled quests
+    const blockedStatus = editQuest && ["live", "completed", "expired", "cancelled"].includes(editQuest.status)
+    if (isEditMode && blockedStatus) {
+        return (
+            <div className="page-container" style={{ maxWidth: 960 }}>
+                <div className="breadcrumb">
+                    <Link to="/quests/$questId" params={{ questId: editQuestId! }}>Quest</Link>
+                    <span className="sep">&rsaquo;</span>
+                    <span>Edit</span>
+                </div>
+                <div style={{
+                    marginTop: 40, padding: "24px", textAlign: "center",
+                    border: "1px solid var(--border)", borderRadius: 6, background: "var(--sidebar-bg)",
+                }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
+                        This quest is {editQuest.status} and cannot be edited
+                    </div>
+                    <div style={{ fontSize: 13, color: "var(--fg-muted)", marginBottom: 16 }}>
+                        {editQuest.status === "live"
+                            ? "Live quests cannot be modified. Use the Manage page to view progress and distribute rewards."
+                            : "This quest has ended. No further changes are possible."}
+                    </div>
+                    <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                        <Link to="/quests/$questId" params={{ questId: editQuestId! }}>
+                            <button className="btn btn-secondary">View Quest</button>
+                        </Link>
+                        {editQuest.status === "live" && (
+                            <Link to="/quests/$questId/manage" params={{ questId: editQuestId! }}>
+                                <button className="btn btn-primary">Manage Quest</button>
+                            </Link>
+                        )}
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    const isScheduled = isEditMode && editQuest?.status === "scheduled"
+    const editLabel = isScheduled ? "Edit Quest" : "Edit Draft"
+    const newTotal = parseFloat(form.total) || 0
+    const rewardIncreased = isFunded && newTotal > originalRewardAmount
+    const topUpAmount = rewardIncreased ? newTotal - originalRewardAmount : 0
+
     return (
         <div className="page-container" style={{ maxWidth: 960 }}>
             <div className="breadcrumb">
                 {isEditMode ? (
                     <>
                         <Link to="/quests/$questId" params={{ questId: editQuestId! }}>Quest</Link>
-                        <span className="sep">›</span>
-                        <span>Edit Draft</span>
+                        <span className="sep">&rsaquo;</span>
+                        <span>{editLabel}</span>
                     </>
                 ) : (
                     <>
                         <Link to="/dashboard">Dashboard</Link>
-                        <span className="sep">›</span>
+                        <span className="sep">&rsaquo;</span>
                         <span>Create Quest</span>
                     </>
                 )}
             </div>
             <div className="page-header" style={{ marginBottom: 20 }}>
                 <div>
-                    <h1>{isEditMode ? "Edit Quest" : "Create a Quest"}</h1>
+                    <h1>{isEditMode ? editLabel : "Create a Quest"}</h1>
                     <div className="subtitle">
                         {isEditMode
-                            ? "Update your draft quest details, rewards, and tasks."
+                            ? isScheduled
+                                ? "Update your scheduled quest before it goes live."
+                                : "Update your draft quest details, rewards, and tasks."
                             : "Fund a quest for agents to execute. Pay with crypto or fiat."}
                     </div>
                 </div>
@@ -1903,34 +1955,65 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             <div className="tab-nav-row">
                                 <button className="btn btn-secondary" onClick={() => setTab("reward")}>{"\u2190"} Reward</button>
                                 <div style={{ display: "flex", gap: 8 }}>
-                                    <button
-                                        className={`btn ${form.rail === "crypto" ? "btn-secondary" : "btn-primary"}`}
-                                        disabled={mutation.isPending}
-                                        onClick={() => { fundAfterSave.current = false; mutation.mutate() }}
-                                    >
-                                        {mutation.isPending && !fundAfterSave.current
-                                            ? "Saving\u2026"
-                                            : isEditMode ? "Update Draft" : "Save Draft"}
-                                    </button>
-                                    {form.rail === "crypto" && (
-                                        <button
-                                            className="btn btn-primary"
-                                            disabled={mutation.isPending}
-                                            onClick={() => { fundAfterSave.current = true; mutation.mutate() }}
-                                        >
-                                            {mutation.isPending && fundAfterSave.current
-                                                ? "Saving\u2026"
-                                                : isEditMode ? "Update & Fund Now \u2192" : "Save & Fund Now \u2192"}
-                                        </button>
+                                    {isFunded ? (
+                                        <>
+                                            <button
+                                                className={`btn ${rewardIncreased ? "btn-secondary" : "btn-primary"}`}
+                                                disabled={mutation.isPending}
+                                                onClick={() => { fundAfterSave.current = false; mutation.mutate() }}
+                                            >
+                                                {mutation.isPending && !fundAfterSave.current
+                                                    ? "Saving\u2026"
+                                                    : "Update Quest"}
+                                            </button>
+                                            {rewardIncreased && form.rail === "crypto" && (
+                                                <button
+                                                    className="btn btn-primary"
+                                                    disabled={mutation.isPending}
+                                                    onClick={() => { fundAfterSave.current = true; mutation.mutate() }}
+                                                >
+                                                    {mutation.isPending && fundAfterSave.current
+                                                        ? "Saving\u2026"
+                                                        : `Update & Fund Difference (+${topUpAmount.toFixed(2)} ${tokenLabel}) \u2192`}
+                                                </button>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button
+                                                className={`btn ${form.rail === "crypto" ? "btn-secondary" : "btn-primary"}`}
+                                                disabled={mutation.isPending}
+                                                onClick={() => { fundAfterSave.current = false; mutation.mutate() }}
+                                            >
+                                                {mutation.isPending && !fundAfterSave.current
+                                                    ? "Saving\u2026"
+                                                    : isEditMode ? (isScheduled ? "Update Quest" : "Update Draft") : "Save Draft"}
+                                            </button>
+                                            {form.rail === "crypto" && (
+                                                <button
+                                                    className="btn btn-primary"
+                                                    disabled={mutation.isPending}
+                                                    onClick={() => { fundAfterSave.current = true; mutation.mutate() }}
+                                                >
+                                                    {mutation.isPending && fundAfterSave.current
+                                                        ? "Saving\u2026"
+                                                        : isEditMode ? "Update & Fund Now \u2192" : "Save & Fund Now \u2192"}
+                                                </button>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             </div>
                             <div className="payment-note">
-                                {form.rail === "crypto"
-                                    ? "Funds held in escrow. Skill tasks verified via CQ Skill proof. Social tasks verified via platform API."
-                                    : isEditMode
-                                        ? "Quest updated as draft. Fund later to go live."
-                                        : "Quest saved as draft. Fund later to go live."}
+                                {isFunded && rewardIncreased
+                                    ? `Top-up: +${topUpAmount.toFixed(2)} ${tokenLabel} will be deposited to escrow.`
+                                    : isFunded
+                                        ? "Quest is funded. Changes will be saved without additional deposit."
+                                        : form.rail === "crypto"
+                                            ? "Funds held in escrow. Skill tasks verified via CQ Skill proof. Social tasks verified via platform API."
+                                            : isEditMode
+                                                ? "Quest updated as draft. Fund later to go live."
+                                                : "Quest saved as draft. Fund later to go live."}
                             </div>
                         </div></div>
                         )}

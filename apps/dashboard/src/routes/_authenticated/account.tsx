@@ -19,6 +19,7 @@ interface UserProfile {
     id: string
     email: string
     username: string | null
+    displayName: string | null
     role: string
     telegramId: string | null
     telegramUsername: string | null
@@ -62,6 +63,11 @@ export function Account() {
     const [walletError, setWalletError] = useState("")
     const [unlinkError, setUnlinkError] = useState("")
     const [unlinkPending, setUnlinkPending] = useState("")
+
+    // Profile editing state
+    const [editingField, setEditingField] = useState<"displayName" | "username" | null>(null)
+    const [editValue, setEditValue] = useState("")
+    const [editError, setEditError] = useState("")
 
     // Fetch profile from API
     const { data: profile, isLoading: profileLoading, isError: profileError } = useQuery<UserProfile>({
@@ -115,6 +121,50 @@ export function Account() {
             setWalletError(err.message)
         },
     })
+
+    // Update profile mutation
+    const updateProfile = useMutation({
+        mutationFn: async (data: { displayName?: string; username?: string }) => {
+            const res = await fetch(`${API_BASE}/auth/me`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(data),
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ error: { message: "Failed to update profile" } }))
+                throw new Error(err.error?.message ?? "Failed to update profile")
+            }
+            return res.json()
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
+            setEditingField(null)
+            setEditValue("")
+            setEditError("")
+        },
+        onError: (err: Error) => {
+            setEditError(err.message)
+        },
+    })
+
+    function startEdit(field: "displayName" | "username") {
+        setEditingField(field)
+        setEditError("")
+        setEditValue(field === "displayName" ? (profile?.displayName ?? "") : (profile?.username ?? ""))
+    }
+
+    function handleSaveEdit() {
+        if (!editingField) return
+        const value = editValue.trim()
+        if (editingField === "username" && value && !/^[a-z0-9][a-z0-9_-]{1,18}[a-z0-9]$/.test(value)) {
+            setEditError("3-20 chars: lowercase letters, numbers, hyphens")
+            return
+        }
+        updateProfile.mutate({ [editingField]: value || (editingField === "displayName" ? "" : undefined) })
+    }
 
     // OAuth identities from Supabase session
     const identities = supabaseUser?.identities ?? []
@@ -175,6 +225,35 @@ export function Account() {
         }
     }
 
+    async function handleUnlinkTelegram() {
+        setUnlinkError("")
+
+        // Lockout prevention: block if Telegram is the only sign-in method
+        const nonTelegramIdentities = identities.filter(i => i.provider !== "telegram")
+        if (nonTelegramIdentities.length === 0) {
+            setUnlinkError("Cannot unlink — this is your only sign-in method.")
+            return
+        }
+
+        setUnlinkPending("telegram")
+        try {
+            const res = await fetch(`${API_BASE}/auth/social/telegram`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}))
+                throw new Error(body?.error?.message ?? "Failed to unlink Telegram")
+            }
+            queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : "Failed to unlink Telegram"
+            setUnlinkError(msg)
+        } finally {
+            setUnlinkPending("")
+        }
+    }
+
     function handleLinkWallet(e: React.FormEvent) {
         e.preventDefault()
         setWalletError("")
@@ -208,16 +287,70 @@ export function Account() {
                     ) : (
                         <>
                             <div className="account-row">
-                                <span className="account-label">Email</span>
+                                <span className="account-label">Display Name</span>
                                 <span className="account-value">
-                                    {profile?.email?.match(/^tg_\d+@tg\.clawquest\.ai$/)
-                                        ? <span style={{ color: "var(--text-muted)", fontStyle: "italic" }}>No email linked</span>
-                                        : (profile?.email ?? supabaseUser?.email ?? "—")}
+                                    {editingField === "displayName" ? (
+                                        <span style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                                            <input
+                                                type="text"
+                                                value={editValue}
+                                                onChange={e => setEditValue(e.target.value)}
+                                                maxLength={50}
+                                                placeholder="Your display name"
+                                                style={{ fontSize: "13px", padding: "3px 8px", width: "180px" }}
+                                                autoFocus
+                                                onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); if (e.key === "Escape") setEditingField(null) }}
+                                            />
+                                            <button className="btn btn-sm" onClick={handleSaveEdit} disabled={updateProfile.isPending}>
+                                                {updateProfile.isPending ? "…" : "Save"}
+                                            </button>
+                                            <button className="btn btn-sm btn-secondary" onClick={() => setEditingField(null)}>Cancel</button>
+                                        </span>
+                                    ) : (
+                                        <span style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                            {profile?.displayName || <span style={{ color: "var(--fg-muted)", fontStyle: "italic" }}>Not set</span>}
+                                            <button className="btn btn-sm btn-outline" style={{ fontSize: "11px", padding: "2px 8px" }} onClick={() => startEdit("displayName")}>Edit</button>
+                                        </span>
+                                    )}
                                 </span>
                             </div>
                             <div className="account-row">
                                 <span className="account-label">Username</span>
-                                <span className="account-value">{profile?.username ?? "—"}</span>
+                                <span className="account-value">
+                                    {editingField === "username" ? (
+                                        <span style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+                                            <input
+                                                type="text"
+                                                value={editValue}
+                                                onChange={e => setEditValue(e.target.value.toLowerCase())}
+                                                maxLength={20}
+                                                placeholder="username"
+                                                style={{ fontSize: "13px", padding: "3px 8px", width: "180px" }}
+                                                autoFocus
+                                                onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); if (e.key === "Escape") setEditingField(null) }}
+                                            />
+                                            <button className="btn btn-sm" onClick={handleSaveEdit} disabled={updateProfile.isPending}>
+                                                {updateProfile.isPending ? "…" : "Save"}
+                                            </button>
+                                            <button className="btn btn-sm btn-secondary" onClick={() => setEditingField(null)}>Cancel</button>
+                                            <span style={{ fontSize: "11px", color: "var(--fg-muted)", width: "100%" }}>3-20 chars, lowercase letters, numbers, hyphens</span>
+                                        </span>
+                                    ) : (
+                                        <span style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                            {profile?.username ? `@${profile.username}` : <span style={{ color: "var(--fg-muted)", fontStyle: "italic" }}>Not set</span>}
+                                            <button className="btn btn-sm btn-outline" style={{ fontSize: "11px", padding: "2px 8px" }} onClick={() => startEdit("username")}>Edit</button>
+                                        </span>
+                                    )}
+                                </span>
+                            </div>
+                            {editError && <div className="account-error" style={{ marginTop: "4px" }}>{editError}</div>}
+                            <div className="account-row">
+                                <span className="account-label">Email</span>
+                                <span className="account-value">
+                                    {profile?.email?.match(/^tg_\d+@tg\.clawquest\.ai$/)
+                                        ? <span style={{ color: "var(--fg-muted)", fontStyle: "italic" }}>No email linked</span>
+                                        : (profile?.email ?? supabaseUser?.email ?? "—")}
+                                </span>
                             </div>
                             <div className="account-row">
                                 <span className="account-label">Member since</span>
@@ -259,6 +392,14 @@ export function Account() {
                                             <span className="account-provider-detail">
                                                 {profile?.telegramUsername ? `@${profile.telegramUsername}` : ""}
                                             </span>
+                                            <button
+                                                className="btn btn-sm btn-outline"
+                                                style={{ marginLeft: "8px", fontSize: "12px", padding: "4px 10px" }}
+                                                disabled={unlinkPending === "telegram"}
+                                                onClick={() => handleUnlinkTelegram()}
+                                            >
+                                                {unlinkPending === "telegram" ? "Unlinking…" : "Unlink"}
+                                            </button>
                                         </>
                                     ) : (
                                         <button

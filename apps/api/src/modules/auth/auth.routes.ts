@@ -10,7 +10,7 @@ const SocialSyncBody = z.object({
 });
 
 const SocialProviderParam = z.object({
-    provider: z.enum(['twitter', 'discord']),
+    provider: z.enum(['twitter', 'discord', 'telegram']),
 });
 
 const ALLOWED_REDIRECT_ORIGINS = [
@@ -52,6 +52,7 @@ export async function authRoutes(app: FastifyInstance) {
                 id: user.id,
                 email: user.email,
                 username: user.username,
+                displayName: user.displayName ?? null,
                 role: user.role ?? 'user',
                 supabaseId: user.supabaseId,
                 telegramId: user.telegramId ? String(user.telegramId) : null,
@@ -64,6 +65,56 @@ export async function authRoutes(app: FastifyInstance) {
                 hasDiscordToken: !!user.discordAccessToken,
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt,
+            };
+        }
+    );
+
+    // ── PATCH /me — Update display name and/or username ──
+    const UpdateProfileBody = z.object({
+        displayName: z.string().max(50).transform(s => s.trim()).optional(),
+        username: z.string().regex(/^[a-z0-9][a-z0-9_-]{1,18}[a-z0-9]$/, 'Username must be 3-20 chars: lowercase letters, numbers, hyphens').optional(),
+    });
+
+    app.patch(
+        '/me',
+        {
+            onRequest: [app.authenticate],
+            schema: {
+                tags: ['Auth'],
+                summary: 'Update current user profile (displayName, username)',
+                security: [{ bearerAuth: [] }],
+                body: UpdateProfileBody,
+            },
+        },
+        async (request, reply) => {
+            const { displayName, username } = UpdateProfileBody.parse(request.body);
+            const data: Record<string, any> = {};
+
+            if (displayName !== undefined) data.displayName = displayName || null;
+            if (username !== undefined) {
+                // Check uniqueness
+                const existing = await app.prisma.user.findUnique({ where: { username } });
+                if (existing && existing.id !== request.user.id) {
+                    return reply.status(409).send({ error: { message: 'Username is already taken', code: 'USERNAME_TAKEN' } });
+                }
+                data.username = username;
+            }
+
+            if (Object.keys(data).length === 0) {
+                return reply.status(400).send({ error: { message: 'No fields to update', code: 'EMPTY_UPDATE' } });
+            }
+
+            const user = await app.prisma.user.update({
+                where: { id: request.user.id },
+                data,
+            });
+
+            return {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                displayName: user.displayName ?? null,
+                role: user.role ?? 'user',
             };
         }
     );
@@ -244,6 +295,13 @@ export async function authRoutes(app: FastifyInstance) {
                     data: {
                         discordId: null, discordHandle: null,
                         discordAccessToken: null, discordRefreshToken: null, discordTokenExpiry: null,
+                    },
+                });
+            } else if (provider === 'telegram') {
+                await app.prisma.user.update({
+                    where: { id: request.user.id },
+                    data: {
+                        telegramId: null, telegramUsername: null,
                     },
                 });
             } else {

@@ -2,13 +2,11 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "@tanstack/react-router"
 import { supabase } from "@/lib/supabase"
 import { consumeOidcParams } from "@/lib/telegram-oidc"
-import { useAuth } from "@/context/AuthContext"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
 export function TelegramCallback() {
     const navigate = useNavigate()
-    const { session } = useAuth()
     const [error, setError] = useState<string | null>(null)
     const [status, setStatus] = useState("Verifying Telegram login...")
 
@@ -45,8 +43,10 @@ export function TelegramCallback() {
 
             if (stored.flow === "link") {
                 // Link flow — attach Telegram to existing account
+                // Get token directly from Supabase (avoids race with useAuth context)
                 setStatus("Linking Telegram account...")
-                const token = session?.access_token
+                const { data: sessionData } = await supabase.auth.getSession()
+                const token = sessionData.session?.access_token
                 if (!token) {
                     setError("Not authenticated — please log in first")
                     return

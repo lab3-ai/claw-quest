@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "@tanstack/react-router"
-import { useAuth } from "@/context/AuthContext"
+import { supabase } from "@/lib/supabase"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
@@ -10,46 +10,51 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
  */
 export function XCallback() {
     const navigate = useNavigate()
-    const { session } = useAuth()
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search)
-        const code = params.get("code")
-        const state = params.get("state")
+        async function handleCallback() {
+            const params = new URLSearchParams(window.location.search)
+            const code = params.get("code")
+            const state = params.get("state")
 
-        // Retrieve PKCE verifier + state from sessionStorage (set before redirect)
-        const savedState = sessionStorage.getItem("x_oauth_state")
-        const codeVerifier = sessionStorage.getItem("x_oauth_code_verifier")
+            // Retrieve PKCE verifier + state from sessionStorage (set before redirect)
+            const savedState = sessionStorage.getItem("x_oauth_state")
+            const codeVerifier = sessionStorage.getItem("x_oauth_code_verifier")
 
-        if (!code) {
-            setError("Missing authorization code from X")
-            return
-        }
-        if (!state || state !== savedState) {
-            setError("OAuth state mismatch — please try again")
-            return
-        }
-        if (!codeVerifier) {
-            setError("Missing PKCE verifier — please try again from Settings")
-            return
-        }
-        if (!session?.access_token) {
-            setError("Not logged in — please log in first")
-            return
-        }
+            if (!code) {
+                setError("Missing authorization code from X")
+                return
+            }
+            if (!state || state !== savedState) {
+                setError("OAuth state mismatch — please try again")
+                return
+            }
+            if (!codeVerifier) {
+                setError("Missing PKCE verifier — please try again from Settings")
+                return
+            }
 
-        // Exchange code for tokens
-        const redirectUri = `${window.location.origin}/auth/x/callback`
-        fetch(`${API_BASE}/auth/x/callback`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({ code, codeVerifier, redirectUri }),
-        })
-            .then(async (res) => {
+            // Get token directly from Supabase (avoids race with useAuth context)
+            const { data: sessionData } = await supabase.auth.getSession()
+            const accessToken = sessionData.session?.access_token
+            if (!accessToken) {
+                setError("Not logged in — please log in first")
+                return
+            }
+
+            // Exchange code for tokens
+            const redirectUri = `${window.location.origin}/auth/x/callback`
+            try {
+                const res = await fetch(`${API_BASE}/auth/x/callback`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify({ code, codeVerifier, redirectUri }),
+                })
+
                 // Clean up sessionStorage
                 sessionStorage.removeItem("x_oauth_state")
                 sessionStorage.removeItem("x_oauth_code_verifier")
@@ -61,11 +66,12 @@ export function XCallback() {
                 }
                 // Success — redirect to account settings
                 navigate({ to: "/account" })
-            })
-            .catch(() => {
+            } catch {
                 setError("Network error — please try again")
-            })
-    }, [session?.access_token, navigate])
+            }
+        }
+        handleCallback()
+    }, [navigate])
 
     if (error) {
         return (

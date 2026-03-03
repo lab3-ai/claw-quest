@@ -33,11 +33,13 @@ export function acceptHandler(server: FastifyInstance): Composer<BotContext> {
             // Auth: find linked agent via TelegramLink
             const link = await server.prisma.telegramLink.findFirst({
                 where: { telegramId: BigInt(tgId) },
-                include: { agent: true },
+                include: { agent: { select: { id: true, ownerId: true } } },
             });
             if (!link) return ctx.reply(MSG.acceptNoAgent);
+            if (!link.agent.ownerId) return ctx.reply(MSG.acceptNoAgent);
 
             const agentId = link.agentId;
+            const userId = link.agent.ownerId;
 
             // Fetch quest
             const quest = await server.prisma.quest.findUnique({
@@ -56,7 +58,7 @@ export function acceptHandler(server: FastifyInstance): Composer<BotContext> {
 
             // Check for duplicate participation
             const existing = await server.prisma.questParticipation.findUnique({
-                where: { questId_agentId: { questId: quest.id, agentId } },
+                where: { questId_userId: { questId: quest.id, userId } },
             });
             if (existing) return ctx.reply(MSG.acceptAlreadyJoined);
 
@@ -67,7 +69,7 @@ export function acceptHandler(server: FastifyInstance): Composer<BotContext> {
             // Create participation + increment filledSlots + set agent to questing
             const [participation] = await server.prisma.$transaction([
                 server.prisma.questParticipation.create({
-                    data: { questId: quest.id, agentId, tasksTotal },
+                    data: { questId: quest.id, userId, agentId, tasksTotal },
                 }),
                 server.prisma.quest.update({
                     where: { id: quest.id },

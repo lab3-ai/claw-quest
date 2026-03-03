@@ -82,10 +82,16 @@ function TaskCheck({ status }: { status: string }) {
     return <span className="task-check"></span>
 }
 
-function TaskActionBtn({ status }: { status: string }) {
+function TaskActionBtn({ status, onClick, actionUrl, label }: { status: string; onClick?: () => void; actionUrl?: string; label?: string }) {
     if (status === "done") return <button className="task-action-btn done-btn" disabled>Done</button>
-    if (status === "running") return <button className="task-action-btn running" disabled>Running…</button>
-    return <button className="task-action-btn do-it">Do it →</button>
+    if (status === "verifying") return <button className="task-action-btn running" disabled>Verifying…</button>
+
+    const handleClick = () => {
+        if (actionUrl) window.open(actionUrl, "_blank")
+        if (onClick) onClick()
+    }
+
+    return <button className="task-action-btn do-it" onClick={handleClick}>{label || "Do it"} →</button>
 }
 
 // ─── Extended types ──────────────────────────────────────────────────────────
@@ -97,11 +103,15 @@ interface MyParticipation {
     payoutStatus: string | null
     payoutAmount: number | null
     payoutTxHash: string | null
+    tasksCompleted?: number
+    tasksTotal?: number
+    proof?: any
 }
 
 interface QuestWithParticipation extends Quest {
     myParticipation?: MyParticipation
     fundingMethod?: string
+    fundingStatus?: string
     creatorUserId?: string
 }
 
@@ -113,10 +123,10 @@ export function QuestDetail() {
     const { isAuthenticated, session, user } = useAuth()
     const queryClient = useQueryClient()
     const navigate = useNavigate()
-    const [selectedAgentId, setSelectedAgentId] = useState<string>("")
     const [acceptMsg, setAcceptMsg] = useState<string | null>(null)
     const [claimStatus, setClaimStatus] = useState<"idle" | "claiming" | "success" | "error">("idle")
     const [claimError, setClaimError] = useState("")
+    const [verifyingIndex, setVerifyingIndex] = useState<number | null>(null)
     const claimAttempted = useRef(false)
     const { address: connectedWallet, isConnected: isWalletConnected } = useAccount()
 
@@ -224,27 +234,15 @@ export function QuestDetail() {
         },
     })
 
-    const { data: agents } = useQuery<{ id: string; name: string; status: string }[]>({
-        queryKey: ["agents"],
-        queryFn: async () => {
-            const res = await fetch(`${API_BASE}/agents`, {
-                headers: { Authorization: `Bearer ${session?.access_token}` },
-            })
-            if (!res.ok) return []
-            return res.json()
-        },
-        enabled: isAuthenticated,
-    })
-
     const acceptMutation = useMutation({
-        mutationFn: async (agentId: string) => {
+        mutationFn: async () => {
             const res = await fetch(`${API_BASE}/quests/${questId}/accept`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${session?.access_token}`,
                 },
-                body: JSON.stringify({ agentId }),
+                body: JSON.stringify({}),
             })
             if (!res.ok) {
                 const err = await res.json()
@@ -252,8 +250,36 @@ export function QuestDetail() {
             }
             return res.json()
         },
-        onSuccess: () => setAcceptMsg("Quest accepted! Your agent is on it."),
+        onSuccess: () => {
+            setAcceptMsg("Quest accepted!")
+            queryClient.invalidateQueries({ queryKey: ["quest", questId] })
+        },
         onError: (e: Error) => setAcceptMsg(e.message),
+    })
+
+    const verifyMutation = useMutation({
+        mutationFn: async () => {
+            const res = await fetch(`${API_BASE}/quests/${questId}/tasks/verify`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session?.access_token}`,
+                },
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error(err.message || "Verification failed")
+            }
+            return res.json()
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["quest", questId] })
+            setVerifyingIndex(null)
+        },
+        onError: (e) => {
+            alert(e.message)
+            setVerifyingIndex(null)
+        }
     })
 
     // Local countdown for quest.expiresAt
@@ -394,16 +420,32 @@ export function QuestDetail() {
                                 <span className="actor-badge human">HUMAN</span>
                                 <span className="hint">Complete these yourself</span>
                             </div>
-                            {quest.tasks.map((task: any) => (
-                                <div key={task.id} className="task-card">
-                                    <div className="task-card-row">
-                                        <TaskCheck status="pending" />
-                                        <span className="task-card-label">{task.label}</span>
-                                        <span className="badge badge-social">{platformLabel(task.platform)}</span>
-                                        <TaskActionBtn status="pending" />
+                            {quest.tasks.map((task: any, idx: number) => {
+                                const isVerified = quest.myParticipation?.proof?.verifiedIndices?.includes(idx)
+                                const isVerifying = verifyingIndex === idx
+                                const taskStatus = isVerified ? "done" : isVerifying ? "verifying" : "pending"
+
+                                return (
+                                    <div key={idx} className="task-card">
+                                        <div className="task-card-row">
+                                            <TaskCheck status={taskStatus} />
+                                            <span className="task-card-label">{task.label}</span>
+                                            <span className="badge badge-social">{platformLabel(task.platform)}</span>
+                                            <TaskActionBtn
+                                                status={taskStatus}
+                                                label={task.actionType === 'verify_role' ? "Verify" : "Join"}
+                                                actionUrl={task.params?.inviteUrl || task.params?.tweetUrl}
+                                                onClick={() => {
+                                                    if (task.actionType === 'verify_role' && quest.myParticipation) {
+                                                        setVerifyingIndex(idx)
+                                                        verifyMutation.mutate()
+                                                    }
+                                                }}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            })}
                         </div>
                     )}
 
@@ -549,169 +591,218 @@ export function QuestDetail() {
 
                         {/* CTA */}
                         <div className="cta-section">
-                            {!isAuthenticated && isLive && (
-                                <Link to="/login">
-                                    <button className="cta-btn primary">Log in to Accept Quest</button>
-                                </Link>
-                            )}
-                            {isAuthenticated && isLive && (
-                                <>
-                                    {agents && agents.length > 0 ? (
-                                        <div style={{ marginBottom: 8 }}>
-                                            <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "var(--fg-muted)", marginBottom: 4 }}>Select agent</label>
-                                            <select
-                                                className="form-select"
-                                                value={selectedAgentId}
-                                                onChange={e => setSelectedAgentId(e.target.value)}
+                            {(() => {
+                                const isCreator = isAuthenticated && quest.creatorUserId === user?.id
+                                const isFunded = quest.fundingStatus === "confirmed"
+                                const isEnded = quest.status === "completed" || quest.status === "expired" || quest.status === "cancelled"
+
+                                // Draft + creator
+                                if (quest.status === "draft" && isCreator) {
+                                    return (
+                                        <>
+                                            <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>
+                                                <button className="cta-btn primary" style={{ marginBottom: 8 }}>Edit Draft</button>
+                                            </Link>
+                                            {isFunded ? (
+                                                <div style={{
+                                                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                                                    padding: "8px 12px", borderRadius: 3,
+                                                    background: "var(--green-bg, #ecfdf5)", border: "1px solid var(--green, #10b981)",
+                                                    fontSize: 13, fontWeight: 600, color: "var(--green, #10b981)",
+                                                }}>
+                                                    Funded
+                                                </div>
+                                            ) : (
+                                                <Link to="/quests/$questId/fund" params={{ questId: quest.id }}>
+                                                    <button className="cta-btn green">Fund Quest</button>
+                                                </Link>
+                                            )}
+                                        </>
+                                    )
+                                }
+
+                                // Scheduled + creator
+                                if (quest.status === "scheduled" && isCreator) {
+                                    return (
+                                        <>
+                                            <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>
+                                                <button className="cta-btn primary" style={{ marginBottom: 8 }}>Edit Quest</button>
+                                            </Link>
+                                            <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>
+                                                <button className="cta-btn secondary">Manage Quest</button>
+                                            </Link>
+                                        </>
+                                    )
+                                }
+
+                                // Live + creator
+                                if (isLive && isCreator) {
+                                    return (
+                                        <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>
+                                            <button className="cta-btn secondary">Manage Quest</button>
+                                        </Link>
+                                    )
+                                }
+
+                                // Ended states (completed/expired/cancelled)
+                                if (isEnded) {
+                                    return <button className="cta-btn disabled" disabled>Quest Ended</button>
+                                }
+
+                                // Draft + not creator
+                                if (quest.status === "draft" && isAuthenticated && !isCreator) {
+                                    return null
+                                }
+                                if (quest.status === "draft" && !isAuthenticated) {
+                                    return (
+                                        <Link to="/login">
+                                            <button className="cta-btn primary">Log in to Edit</button>
+                                        </Link>
+                                    )
+                                }
+
+                                // Live + non-creator + authenticated
+                                if (isLive && isAuthenticated) {
+                                    // Already accepted — show status
+                                    if (quest.myParticipation) {
+                                        return (
+                                            <div style={{ textAlign: "center", padding: "8px 0" }}>
+                                                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--green)", marginBottom: 4 }}>
+                                                    Quest Accepted
+                                                </div>
+                                                <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>
+                                                    Status: {quest.myParticipation.status}
+                                                </div>
+                                            </div>
+                                        )
+                                    }
+                                    return (
+                                        <>
+                                            <button
+                                                className={`cta-btn ${!acceptMutation.isPending && slotsLeft > 0 ? "primary" : "disabled"}`}
+                                                disabled={acceptMutation.isPending || slotsLeft <= 0}
+                                                onClick={() => acceptMutation.mutate()}
                                             >
-                                                <option value="">— choose agent —</option>
-                                                {agents.map(a => (
-                                                    <option key={a.id} value={a.id}>{a.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    ) : (
-                                        <p style={{ fontSize: 12, color: "var(--fg-muted)", marginBottom: 10 }}>
-                                            You have no agents.{" "}
-                                            <Link to="/dashboard">Create one →</Link>
-                                        </p>
-                                    )}
-                                    <button
-                                        className={`cta-btn ${selectedAgentId && !acceptMutation.isPending && slotsLeft > 0 ? "primary" : "disabled"}`}
-                                        disabled={!selectedAgentId || acceptMutation.isPending || slotsLeft <= 0}
-                                        onClick={() => selectedAgentId && acceptMutation.mutate(selectedAgentId)}
-                                    >
-                                        {acceptMutation.isPending ? "Accepting…" : slotsLeft <= 0 ? "Quest Full" : "Accept Quest"}
-                                    </button>
-                                    {acceptMsg && (
-                                        <div style={{
-                                            marginTop: 8,
-                                            fontSize: 12,
-                                            color: acceptMsg.includes("accepted") ? "var(--green)" : "var(--red)"
-                                        }}>
-                                            {acceptMsg}
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                            {isCompleted && (
-                                <button className="cta-btn disabled" disabled>Quest Ended</button>
-                            )}
-                            {quest.status === "draft" && isAuthenticated && (
-                                <>
-                                    <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>
-                                        <button className="cta-btn primary" style={{ marginBottom: 8 }}>Edit Draft</button>
-                                    </Link>
-                                    <Link to="/quests/$questId/fund" params={{ questId: quest.id }}>
-                                        <button className="cta-btn green">Fund Quest</button>
-                                    </Link>
-                                </>
-                            )}
-                            {quest.status === "draft" && !isAuthenticated && (
-                                <Link to="/login">
-                                    <button className="cta-btn primary">Log in to Edit</button>
-                                </Link>
-                            )}
-                            {/* Manage button for quest creator */}
-                            {isAuthenticated && quest.creatorUserId === user?.id && quest.status !== "draft" && (
-                                <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>
-                                    <button className="cta-btn secondary" style={{ marginBottom: 8 }}>Manage Quest</button>
-                                </Link>
-                            )}
-                            {!isLive && !isCompleted && quest.status !== "draft" && (
-                                <button className="cta-btn disabled" disabled>
-                                    {quest.status === "scheduled" ? "Coming Soon" : "Not Available"}
-                                </button>
-                            )}
+                                                {acceptMutation.isPending ? "Accepting..." : slotsLeft <= 0 ? "Quest Full" : "Accept Quest"}
+                                            </button>
+                                            {acceptMsg && (
+                                                <div style={{
+                                                    marginTop: 8,
+                                                    fontSize: 12,
+                                                    color: acceptMsg.includes("accepted") ? "var(--green)" : "var(--red)"
+                                                }}>
+                                                    {acceptMsg}
+                                                </div>
+                                            )}
+                                        </>
+                                    )
+                                }
+
+                                // Live + not authenticated
+                                if (isLive && !isAuthenticated) {
+                                    return (
+                                        <Link to="/login">
+                                            <button className="cta-btn primary">Log in to Accept Quest</button>
+                                        </Link>
+                                    )
+                                }
+
+                                // Scheduled + non-creator
+                                if (quest.status === "scheduled") {
+                                    return <button className="cta-btn disabled" disabled>Coming Soon</button>
+                                }
+
+                                return null
+                            })()}
                         </div>
 
                         {/* ── Claim Reward Section ── */}
                         {isAuthenticated && quest.fundingMethod === "crypto" && quest.myParticipation &&
-                         (quest.myParticipation.status === "completed" || quest.myParticipation.status === "submitted") && (
-                            <div className="claim-reward-section" style={{
-                                marginTop: 16,
-                                padding: "16px 0 0",
-                                borderTop: "1px solid var(--border)",
-                            }}>
-                                {quest.myParticipation.payoutWallet ? (
-                                    // Already claimed
-                                    <div style={{ textAlign: "center" }}>
-                                        {quest.myParticipation.payoutStatus === "paid" ? (
-                                            <>
-                                                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--green)", marginBottom: 4 }}>
-                                                    Reward Paid
-                                                </div>
-                                                <div style={{ fontSize: 11, color: "var(--fg-muted)", wordBreak: "break-all" }}>
-                                                    {quest.myParticipation.payoutAmount} {quest.rewardType} sent to{" "}
-                                                    <code style={{ fontSize: 10, background: "var(--code-bg, #f5f5f5)", padding: "1px 4px", borderRadius: 2 }}>
-                                                        {quest.myParticipation.payoutWallet.slice(0, 6)}...{quest.myParticipation.payoutWallet.slice(-4)}
-                                                    </code>
-                                                </div>
-                                                {quest.myParticipation.payoutTxHash && (
-                                                    <a
-                                                        href={`https://sepolia.basescan.org/tx/${quest.myParticipation.payoutTxHash}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        style={{ fontSize: 11, color: "var(--accent)" }}
-                                                    >
-                                                        View transaction
-                                                    </a>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <>
-                                                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--fg)", marginBottom: 4 }}>
-                                                    Wallet Submitted
-                                                </div>
-                                                <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>
-                                                    Payout incoming to{" "}
-                                                    <code style={{ fontSize: 10, background: "var(--code-bg, #f5f5f5)", padding: "1px 4px", borderRadius: 2 }}>
-                                                        {quest.myParticipation.payoutWallet.slice(0, 6)}...{quest.myParticipation.payoutWallet.slice(-4)}
-                                                    </code>
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
-                                ) : (
-                                    // Need to connect wallet and claim
-                                    <div>
-                                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, textAlign: "center" }}>
-                                            Claim Your Reward
+                            (quest.myParticipation.status === "completed" || quest.myParticipation.status === "submitted") && (
+                                <div className="claim-reward-section" style={{
+                                    marginTop: 16,
+                                    padding: "16px 0 0",
+                                    borderTop: "1px solid var(--border)",
+                                }}>
+                                    {quest.myParticipation.payoutWallet ? (
+                                        // Already claimed
+                                        <div style={{ textAlign: "center" }}>
+                                            {quest.myParticipation.payoutStatus === "paid" ? (
+                                                <>
+                                                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--green)", marginBottom: 4 }}>
+                                                        Reward Paid
+                                                    </div>
+                                                    <div style={{ fontSize: 11, color: "var(--fg-muted)", wordBreak: "break-all" }}>
+                                                        {quest.myParticipation.payoutAmount} {quest.rewardType} sent to{" "}
+                                                        <code style={{ fontSize: 10, background: "var(--code-bg, #f5f5f5)", padding: "1px 4px", borderRadius: 2 }}>
+                                                            {quest.myParticipation.payoutWallet.slice(0, 6)}...{quest.myParticipation.payoutWallet.slice(-4)}
+                                                        </code>
+                                                    </div>
+                                                    {quest.myParticipation.payoutTxHash && (
+                                                        <a
+                                                            href={`https://sepolia.basescan.org/tx/${quest.myParticipation.payoutTxHash}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            style={{ fontSize: 11, color: "var(--accent)" }}
+                                                        >
+                                                            View transaction
+                                                        </a>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--fg)", marginBottom: 4 }}>
+                                                        Wallet Submitted
+                                                    </div>
+                                                    <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>
+                                                        Payout incoming to{" "}
+                                                        <code style={{ fontSize: 10, background: "var(--code-bg, #f5f5f5)", padding: "1px 4px", borderRadius: 2 }}>
+                                                            {quest.myParticipation.payoutWallet.slice(0, 6)}...{quest.myParticipation.payoutWallet.slice(-4)}
+                                                        </code>
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
-                                        <div style={{ fontSize: 11, color: "var(--fg-muted)", marginBottom: 12, textAlign: "center" }}>
-                                            Connect your wallet to receive {quest.rewardType} reward
-                                        </div>
-                                        <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
-                                            <ConnectButton
-                                                showBalance={false}
-                                                chainStatus="icon"
-                                                accountStatus="address"
-                                            />
-                                        </div>
-                                        {isWalletConnected && connectedWallet && (
-                                            <button
-                                                className={`cta-btn ${claimRewardMutation.isPending ? "disabled" : "primary"}`}
-                                                disabled={claimRewardMutation.isPending}
-                                                onClick={() => claimRewardMutation.mutate(connectedWallet)}
-                                                style={{ width: "100%", marginTop: 4 }}
-                                            >
-                                                {claimRewardMutation.isPending ? "Submitting..." : "Claim Reward"}
-                                            </button>
-                                        )}
-                                        {claimRewardMutation.isSuccess && (
-                                            <div style={{ marginTop: 8, fontSize: 12, color: "var(--green)", textAlign: "center" }}>
-                                                Wallet submitted! Payout incoming.
+                                    ) : (
+                                        // Need to connect wallet and claim
+                                        <div>
+                                            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, textAlign: "center" }}>
+                                                Claim Your Reward
                                             </div>
-                                        )}
-                                        {claimRewardMutation.isError && (
-                                            <div style={{ marginTop: 8, fontSize: 12, color: "var(--red)", textAlign: "center" }}>
-                                                {(claimRewardMutation.error as Error).message}
+                                            <div style={{ fontSize: 11, color: "var(--fg-muted)", marginBottom: 12, textAlign: "center" }}>
+                                                Connect your wallet to receive {quest.rewardType} reward
                                             </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                                            <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+                                                <ConnectButton
+                                                    showBalance={false}
+                                                    chainStatus="icon"
+                                                    accountStatus="address"
+                                                />
+                                            </div>
+                                            {isWalletConnected && connectedWallet && (
+                                                <button
+                                                    className={`cta-btn ${claimRewardMutation.isPending ? "disabled" : "primary"}`}
+                                                    disabled={claimRewardMutation.isPending}
+                                                    onClick={() => claimRewardMutation.mutate(connectedWallet)}
+                                                    style={{ width: "100%", marginTop: 4 }}
+                                                >
+                                                    {claimRewardMutation.isPending ? "Submitting..." : "Claim Reward"}
+                                                </button>
+                                            )}
+                                            {claimRewardMutation.isSuccess && (
+                                                <div style={{ marginTop: 8, fontSize: 12, color: "var(--green)", textAlign: "center" }}>
+                                                    Wallet submitted! Payout incoming.
+                                                </div>
+                                            )}
+                                            {claimRewardMutation.isError && (
+                                                <div style={{ marginTop: 8, fontSize: 12, color: "var(--red)", textAlign: "center" }}>
+                                                    {(claimRewardMutation.error as Error).message}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                     </div>
                 </div>
             </div>

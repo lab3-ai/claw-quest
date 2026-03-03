@@ -221,29 +221,21 @@ export async function questsRoutes(server: FastifyInstance) {
                     await (server as any).authenticate(request, reply);
                     const user = (request as any).user;
                     if (user?.id) {
-                        const userAgents = await server.prisma.agent.findMany({
-                            where: { ownerId: user.id },
-                            select: { id: true },
+                        const myParticipation = await server.prisma.questParticipation.findUnique({
+                            where: { questId_userId: { questId: id, userId: user.id } },
                         });
-                        const agentIds = userAgents.map((a: any) => a.id);
-                        if (agentIds.length > 0) {
-                            const myParticipation = await server.prisma.questParticipation.findFirst({
-                                where: {
-                                    questId: id,
-                                    agentId: { in: agentIds },
-                                },
-                                orderBy: { joinedAt: 'desc' },
-                            });
-                            if (myParticipation) {
-                                response.myParticipation = {
-                                    id: myParticipation.id,
-                                    status: myParticipation.status,
-                                    payoutWallet: myParticipation.payoutWallet,
-                                    payoutStatus: myParticipation.payoutStatus,
-                                    payoutAmount: myParticipation.payoutAmount,
-                                    payoutTxHash: myParticipation.payoutTxHash,
-                                };
-                            }
+                        if (myParticipation) {
+                            response.myParticipation = {
+                                id: myParticipation.id,
+                                status: myParticipation.status,
+                                payoutWallet: myParticipation.payoutWallet,
+                                payoutStatus: myParticipation.payoutStatus,
+                                payoutAmount: myParticipation.payoutAmount,
+                                payoutTxHash: myParticipation.payoutTxHash,
+                                tasksCompleted: myParticipation.tasksCompleted,
+                                tasksTotal: myParticipation.tasksTotal,
+                                proof: myParticipation.proof,
+                            };
                         }
                     }
                 } catch {
@@ -608,6 +600,151 @@ export async function questsRoutes(server: FastifyInstance) {
         }
     );
 
+    // ── POST /quests/:id/tasks/verify — Auto-verify and Save progress ───────────
+    server.post(
+        '/:id/tasks/verify',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Auto-verify and save progress for human tasks (e.g. Discord role)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                response: {
+                    200: z.object({
+                        message: z.string(),
+                        tasksCompleted: z.number(),
+                        tasksTotal: z.number(),
+                        status: z.string(),
+                        results: z.array(z.object({
+                            taskIndex: z.number(),
+                            actionType: z.string(),
+                            valid: z.boolean(),
+                            error: z.string().optional(),
+                        })),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id: questId } = request.params as { id: string }
+            const userId = request.user.id
+
+            const quest = await server.prisma.quest.findUnique({ where: { id: questId } })
+            if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any)
+
+            // Find participation via user's agents
+            const userAgents = await server.prisma.agent.findMany({
+                where: { ownerId: userId },
+                select: { id: true },
+            })
+            const agentIds = userAgents.map(a => a.id)
+
+            if (agentIds.length === 0) {
+                return reply.status(400).send({ message: 'No agents found. Please create an agent first.' } as any)
+            }
+
+            let participation = await server.prisma.questParticipation.findFirst({
+                where: {
+                    questId,
+                    agentId: { in: agentIds },
+                },
+            })
+
+            if (!participation) {
+                return reply.status(400).send({ message: 'You must accept the quest first.' } as any)
+            }
+
+            if (participation.status === 'completed') {
+                return reply.status(200).send({
+                    message: 'Quest already completed',
+                    tasksCompleted: participation.tasksCompleted,
+                    tasksTotal: participation.tasksTotal,
+                    status: participation.status,
+                    results: [],
+                } as any)
+            }
+
+            const tasks = (quest.tasks as QuestTask[]) ?? []
+            const user = await server.prisma.user.findUnique({ where: { id: userId } })
+
+            const proof = (participation.proof as any) || {}
+            const verifiedIndices = new Set<number>(proof.verifiedIndices || [])
+
+            const results: any[] = []
+            let newVerification = false
+
+            for (let i = 0; i < tasks.length; i++) {
+                const task = tasks[i]
+                if (verifiedIndices.has(i)) {
+                    results.push({ taskIndex: i, actionType: task.actionType, valid: true })
+                    continue
+                }
+
+                if (task.actionType === 'verify_role') {
+                    const validationResult = await validateSocialTarget(
+                        task.platform,
+                        task.actionType,
+                        task.params.inviteUrl ?? '',
+                        undefined,
+                        {
+                            discordId: user?.discordId,
+                            discordAccessToken: user?.discordAccessToken,
+                            params: task.params as any
+                        }
+                    )
+
+                    results.push({
+                        taskIndex: i,
+                        actionType: task.actionType,
+                        valid: validationResult.valid,
+                        error: validationResult.error
+                    })
+
+                    if (validationResult.valid) {
+                        verifiedIndices.add(i)
+                        newVerification = true
+                    }
+                } else {
+                    results.push({ taskIndex: i, actionType: task.actionType, valid: false, error: 'Manual verification required' })
+                }
+            }
+
+            if (newVerification) {
+                const newTasksCompleted = verifiedIndices.size
+                const allTasksDone = newTasksCompleted >= participation.tasksTotal
+
+                participation = await server.prisma.questParticipation.update({
+                    where: { id: participation.id },
+                    data: {
+                        tasksCompleted: newTasksCompleted,
+                        status: allTasksDone ? 'completed' : participation.status,
+                        completedAt: allTasksDone ? new Date() : participation.completedAt,
+                        proof: {
+                            ...proof,
+                            verifiedIndices: Array.from(verifiedIndices)
+                        }
+                    }
+                })
+
+                if (allTasksDone) {
+                    await server.prisma.agent.update({
+                        where: { id: participation.agentId },
+                        data: { status: 'idle' }
+                    })
+                }
+            }
+
+            return {
+                message: participation.status === 'completed' ? 'Quest fully completed!' : 'Progress updated',
+                tasksCompleted: participation.tasksCompleted,
+                tasksTotal: participation.tasksTotal,
+                status: participation.status,
+                results
+            }
+        }
+    );
+
     // Create Quest — supports agent API key, human JWT, or no auth (MVP)
     server.post(
         '/',
@@ -737,8 +874,8 @@ export async function questsRoutes(server: FastifyInstance) {
     );
 
     // ── Accept Quest — supports both human JWT and agent API key ────────────────
-    // Agent API key: Authorization: Bearer cq_<key> — agentId resolved from key
-    // Human JWT:     Authorization: Bearer <jwt>    — agentId must be provided in body
+    // Agent API key: Authorization: Bearer cq_<key> — agentId+userId resolved from key
+    // Human JWT:     Authorization: Bearer <jwt>    — userId from auth, agentId optional
     server.post(
         '/:id/accept',
         {
@@ -755,28 +892,33 @@ export async function questsRoutes(server: FastifyInstance) {
         async (request, reply) => {
             const { id } = request.params as any;
             const auth = request.headers.authorization ?? '';
-            let agentId: string;
+            let userId: string;
+            let agentId: string | undefined;
 
             if (auth.startsWith('Bearer cq_')) {
-                // Agent API key path — resolve agentId from key
+                // Agent API key path — resolve agentId + userId from key
                 const apiKey = auth.slice(7);
                 const agent = await server.prisma.agent.findUnique({
                     where: { agentApiKey: apiKey },
-                    select: { id: true },
+                    select: { id: true, ownerId: true },
                 });
                 if (!agent) return reply.status(401).send({ message: 'Invalid agent API key' } as any);
+                if (!agent.ownerId) return reply.status(400).send({ message: 'Agent has no owner' } as any);
                 agentId = agent.id;
+                userId = agent.ownerId;
             } else {
-                // Human Supabase token path — verify ownership
+                // Human Supabase token path
                 try { await app.authenticate(request, reply); } catch { return reply.status(401).send({ message: 'Unauthorized' } as any); }
+                userId = (request as any).user.id;
                 const { agentId: bodyAgentId } = request.body as any;
-                if (!bodyAgentId) return reply.status(400).send({ message: 'agentId required for human auth' } as any);
-                const owned = await server.prisma.agent.findFirst({
-                    where: { id: bodyAgentId, ownerId: (request as any).user.id },
-                    select: { id: true },
-                });
-                if (!owned) return reply.status(403).send({ message: 'Agent not found or not owned by you' } as any);
-                agentId = bodyAgentId;
+                if (bodyAgentId) {
+                    const owned = await server.prisma.agent.findFirst({
+                        where: { id: bodyAgentId, ownerId: userId },
+                        select: { id: true },
+                    });
+                    if (!owned) return reply.status(403).send({ message: 'Agent not found or not owned by you' } as any);
+                    agentId = bodyAgentId;
+                }
             }
 
             const quest = await server.prisma.quest.findUnique({ where: { id } });
@@ -784,9 +926,9 @@ export async function questsRoutes(server: FastifyInstance) {
             if (quest.status !== 'live') return reply.status(400).send({ message: 'Quest is not live' } as any);
             if (quest.filledSlots >= quest.totalSlots) return reply.status(400).send({ message: 'Quest is full' } as any);
 
-            // ── Skill Gate: check agent has all required skills ─────────────
+            // ── Skill Gate: only check if agent is provided ─────────────
             const requiredSkills = (quest as any).requiredSkills as string[] ?? [];
-            if (requiredSkills.length > 0) {
+            if (agentId && requiredSkills.length > 0) {
                 const agentSkills = await server.prisma.agentSkill.findMany({
                     where: { agentId, name: { in: requiredSkills } },
                     select: { name: true },
@@ -804,25 +946,30 @@ export async function questsRoutes(server: FastifyInstance) {
             }
 
             const existing = await server.prisma.questParticipation.findUnique({
-                where: { questId_agentId: { questId: id, agentId } },
+                where: { questId_userId: { questId: id, userId } },
             });
-            if (existing) return reply.status(400).send({ message: 'Agent already accepted this quest' } as any);
+            if (existing) return reply.status(400).send({ message: 'You already accepted this quest' } as any);
 
             // Calculate actual task count from quest tasks + required skills
             const questTasks = (quest.tasks as any[]) ?? [];
             const tasksTotal = questTasks.length + requiredSkills.length;
 
             const participation = await server.prisma.questParticipation.create({
-                data: { questId: id, agentId, status: 'in_progress', tasksTotal: tasksTotal || 5 },
+                data: { questId: id, userId, agentId: agentId ?? null, status: 'in_progress', tasksTotal: tasksTotal || 5 },
             });
 
-            await Promise.all([
+            const sideEffects: Promise<any>[] = [
                 server.prisma.quest.update({ where: { id }, data: { filledSlots: { increment: 1 } } }),
-                server.prisma.agent.update({ where: { id: agentId }, data: { status: 'questing' } }),
-                server.prisma.agentLog.create({
-                    data: { agentId, type: 'QUEST_START', message: `Accepted quest: ${quest.title}`, meta: { questId: id } },
-                }),
-            ]);
+            ];
+            if (agentId) {
+                sideEffects.push(
+                    server.prisma.agent.update({ where: { id: agentId }, data: { status: 'questing' } }),
+                    server.prisma.agentLog.create({
+                        data: { agentId, type: 'QUEST_START', message: `Accepted quest: ${quest.title}`, meta: { questId: id } },
+                    }),
+                );
+            }
+            await Promise.all(sideEffects);
 
             return { message: 'Quest accepted', participationId: participation.id };
         }
@@ -872,8 +1019,8 @@ export async function questsRoutes(server: FastifyInstance) {
             const { id: questId } = request.params as any;
             const { proof } = request.body as any;
 
-            const participation = await server.prisma.questParticipation.findUnique({
-                where: { questId_agentId: { questId, agentId: agent.id } },
+            const participation = await server.prisma.questParticipation.findFirst({
+                where: { questId, agentId: agent.id },
             });
             if (!participation) return reply.status(404).send({ error: 'No active participation for this quest' } as any);
             if (participation.status === 'completed') return reply.status(400).send({ error: 'Quest already completed' } as any);

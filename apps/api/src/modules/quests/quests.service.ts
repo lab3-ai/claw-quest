@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import type { QuestTask } from '@clawquest/shared';
+import { resolveInvite } from '../discord/discord-rest-client';
 
 // ─── Regex patterns for task param validation ────────────────────────────────
 export const X_POST_URL_RE = /^https?:\/\/(x\.com|twitter\.com)\/\w+\/status\/\d+/i;
@@ -97,6 +98,17 @@ export async function createQuest(
     creator?: QuestCreator,
 ) {
     const tasks: QuestTask[] = input.tasks ?? [];
+
+    // Auto-resolve Discord invite → guildId for join_server tasks missing guildId
+    for (const task of tasks) {
+        if (task.actionType === 'join_server' && task.params?.inviteUrl && !task.params.guildId) {
+            const code = task.params.inviteUrl.replace(/^https?:\/\/(discord\.gg|discord\.com\/invite)\//, '');
+            const guild = await resolveInvite(code);
+            if (guild) {
+                task.params.guildId = guild.guildId;
+            }
+        }
+    }
 
     // Only validate tasks for non-draft quests (agent flow creates with status='live')
     if (input.status !== 'draft') {

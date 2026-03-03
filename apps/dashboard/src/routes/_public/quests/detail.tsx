@@ -594,9 +594,28 @@ export function QuestDetail() {
                                         {hasAccepted && !isVerified && !hasFailed && (() => {
                                             const warning = getMissingAccountWarning(task, meProfile)
                                             if (!warning) return null
+                                            const needsXGrant = task.platform === "x" && meProfile?.xId && !meProfile?.hasXToken
                                             return (
                                                 <div style={{ fontSize: 11, color: "var(--fg-muted)", marginTop: 4, paddingLeft: 24 }}>
-                                                    ⚠ {warning} — <Link to="/account" style={{ color: "var(--link)" }}>Go to Settings</Link>
+                                                    ⚠ {warning}
+                                                    {needsXGrant ? (
+                                                        <> — <button style={{ background: "none", border: "none", color: "var(--link)", cursor: "pointer", padding: 0, fontSize: 11, textDecoration: "underline" }}
+                                                            onClick={async () => {
+                                                                try {
+                                                                    const res = await fetch(`${API_BASE}/auth/x/authorize`, {
+                                                                        headers: { Authorization: `Bearer ${session?.access_token}` },
+                                                                    })
+                                                                    const data = await res.json()
+                                                                    if (data.url) {
+                                                                        sessionStorage.setItem("x_oauth_state", data.state)
+                                                                        sessionStorage.setItem("x_oauth_code_verifier", data.codeVerifier)
+                                                                        window.location.href = data.url
+                                                                    }
+                                                                } catch { /* noop */ }
+                                                            }}>Grant X access</button></>
+                                                    ) : (
+                                                        <> — <Link to="/account" style={{ color: "var(--link)" }}>Go to Settings</Link></>
+                                                    )}
                                                 </div>
                                             )
                                         })()}

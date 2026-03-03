@@ -705,6 +705,9 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                         error={chipError}
                         chipStatus={chipStatus}
                     />
+                    <div className="form-hint" style={{ marginTop: 6, color: "var(--fg-muted)" }}>
+                        ⚠ Add <strong>@ClawQuest_aibot</strong> as admin to your group/channel for auto-verification to work.
+                    </div>
                 </div>
             )}
         </div>

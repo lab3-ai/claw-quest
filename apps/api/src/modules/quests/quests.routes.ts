@@ -124,6 +124,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 response: {
                     200: QuestSchema.extend({
                         isPreview: z.boolean().optional(),
+                        isCreator: z.boolean().optional(),
                         fundingRequired: z.boolean().optional(),
                         previewToken: z.string().optional(),
                         fundUrl: z.string().optional(),

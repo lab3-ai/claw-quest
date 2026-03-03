@@ -125,7 +125,13 @@ export function Account() {
         localStorage.setItem("clawquest_linking_provider", supabaseProvider)
         await supabase.auth.linkIdentity({
             provider: supabaseProvider as any,
-            options: { redirectTo: `${window.location.origin}/auth/callback` },
+            options: {
+                redirectTo: `${window.location.origin}/auth/callback`,
+                // Request extra Discord scopes for role verification (guilds.members.read)
+                ...(supabaseProvider === "discord" && {
+                    scopes: "identify email guilds guilds.members.read",
+                }),
+            },
         })
     }
 

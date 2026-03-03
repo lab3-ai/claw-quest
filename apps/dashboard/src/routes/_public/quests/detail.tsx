@@ -82,6 +82,16 @@ function TaskCheck({ status }: { status: string }) {
     return <span className="task-check"></span>
 }
 
+/** Check if user has the required linked account for a task platform */
+function getMissingAccountWarning(task: any, profile: any): string | null {
+    if (!profile) return null
+    if (task.platform === "x" && !profile.xId) return "Link your X account in Settings to verify"
+    if (task.platform === "x" && profile.xId && !profile.hasXToken) return "Grant X verification access in Settings"
+    if (task.platform === "discord" && !profile.discordId) return "Link your Discord account in Settings to verify"
+    if (task.platform === "telegram" && !profile.telegramId) return "Link your Telegram account in Settings to verify"
+    return null
+}
+
 /** Get the external URL for a task based on its actionType and params */
 function getTaskActionUrl(task: any): string | undefined {
     const p = task.params || {}
@@ -163,6 +173,20 @@ export function QuestDetail() {
     const [proofUrls, setProofUrls] = useState<Record<number, string>>({})
     const claimAttempted = useRef(false)
     const { address: connectedWallet, isConnected: isWalletConnected } = useAccount()
+
+    // Fetch user profile for linked-account checks (xId, hasXToken, discordId, telegramId)
+    const { data: meProfile } = useQuery({
+        queryKey: ["auth", "me"],
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/auth/me`, {
+                headers: { Authorization: `Bearer ${session?.access_token}` },
+            })
+            if (!res.ok) return null
+            return res.json()
+        },
+        enabled: isAuthenticated && !!session?.access_token,
+        staleTime: 60_000,
+    })
 
     // ── Auto-claim: if user is authenticated and claim token is present ──
     const claimMutation = useMutation({
@@ -566,14 +590,24 @@ export function QuestDetail() {
                                                 />
                                             </div>
                                         )}
+                                        {/* Proactive warning when account not linked */}
+                                        {hasAccepted && !isVerified && !hasFailed && (() => {
+                                            const warning = getMissingAccountWarning(task, meProfile)
+                                            if (!warning) return null
+                                            return (
+                                                <div style={{ fontSize: 11, color: "var(--fg-muted)", marginTop: 4, paddingLeft: 24 }}>
+                                                    ⚠ {warning} — <Link to="/account" style={{ color: "var(--link)" }}>Go to Settings</Link>
+                                                </div>
+                                            )
+                                        })()}
                                         {hasFailed && (
                                             <div style={{ fontSize: 11, color: "var(--red)", marginTop: 4, paddingLeft: 24 }}>
                                                 {taskErrors[idx]}
                                                 {taskErrors[idx]?.includes("re-link") && (
-                                                    <> — <Link to="/dashboard" style={{ color: "var(--link)" }}>Go to Settings</Link></>
+                                                    <> — <Link to="/account" style={{ color: "var(--link)" }}>Go to Settings</Link></>
                                                 )}
                                                 {taskErrors[idx]?.includes("Link your") && (
-                                                    <> — <Link to="/dashboard" style={{ color: "var(--link)" }}>Go to Settings</Link></>
+                                                    <> — <Link to="/account" style={{ color: "var(--link)" }}>Go to Settings</Link></>
                                                 )}
                                             </div>
                                         )}

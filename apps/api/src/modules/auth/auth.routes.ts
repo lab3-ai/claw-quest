@@ -4,6 +4,8 @@ import { handleTelegramLogin, handleTelegramLink } from './telegram-auth.service
 
 const SocialSyncBody = z.object({
     provider: z.enum(['twitter', 'discord', 'google', 'github']),
+    providerToken: z.string().optional(),         // Discord/X OAuth access token
+    providerRefreshToken: z.string().optional(),  // Discord OAuth refresh token
 });
 
 const SocialProviderParam = z.object({
@@ -143,7 +145,7 @@ export async function authRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const { provider } = SocialSyncBody.parse(request.body);
+            const { provider, providerToken, providerRefreshToken } = SocialSyncBody.parse(request.body);
 
             // Google/GitHub don't need Prisma sync — Supabase identities are sufficient
             if (provider === 'google' || provider === 'github') {
@@ -181,9 +183,21 @@ export async function authRoutes(app: FastifyInstance) {
                         data: { xId: sub, xHandle: userName },
                     });
                 } else if (provider === 'discord') {
+                    // Token expiry: Discord tokens last 7 days
+                    const tokenExpiry = providerToken
+                        ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                        : undefined;
                     await app.prisma.user.update({
                         where: { id: request.user.id },
-                        data: { discordId: sub, discordHandle: userName },
+                        data: {
+                            discordId: sub,
+                            discordHandle: userName,
+                            ...(providerToken && {
+                                discordAccessToken: providerToken,
+                                discordRefreshToken: providerRefreshToken ?? null,
+                                discordTokenExpiry: tokenExpiry,
+                            }),
+                        },
                     });
                 }
             } catch (err: any) {

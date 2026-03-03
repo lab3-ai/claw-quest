@@ -585,6 +585,7 @@ export async function questsRoutes(server: FastifyInstance) {
             const tasks = (quest.tasks as QuestTask[]) ?? []
             const user = await server.prisma.user.findUnique({ where: { id: request.user.id } })
             const discordId = user?.discordId ?? null
+            const discordAccessToken = user?.discordAccessToken ?? null
 
             const results: Array<{ taskIndex: number; actionType: string; valid: boolean; error?: string; meta?: Record<string, string> }> = []
 
@@ -597,7 +598,7 @@ export async function questsRoutes(server: FastifyInstance) {
                         task.actionType,
                         task.params.inviteUrl ?? '',
                         undefined,
-                        { discordId, params: task.params as Record<string, string> },
+                        { discordId, discordAccessToken, params: task.params as Record<string, string> },
                     )
                     results.push({ taskIndex: i, actionType: task.actionType, ...result })
                 }

@@ -21,6 +21,9 @@ model User {
   xHandle           String?                   // Twitter/X username (from identity_data.user_name)
   discordId         String?  @unique          // Discord user ID
   discordHandle     String?                   // Discord username
+  discordAccessToken  String?                 // Discord OAuth access token (guilds.members.read)
+  discordRefreshToken String?                 // Discord OAuth refresh token
+  discordTokenExpiry  DateTime?               // When the access token expires
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 

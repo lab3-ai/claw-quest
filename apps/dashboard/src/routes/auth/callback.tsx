@@ -38,7 +38,12 @@ export function AuthCallback() {
                                     "Content-Type": "application/json",
                                     Authorization: `Bearer ${session.access_token}`,
                                 },
-                                body: JSON.stringify({ provider: linkingProvider }),
+                                body: JSON.stringify({
+                                    provider: linkingProvider,
+                                    // Send Discord/Twitter OAuth token for role verification (guilds.members.read)
+                                    providerToken: session.provider_token ?? undefined,
+                                    providerRefreshToken: session.provider_refresh_token ?? undefined,
+                                }),
                             })
                         } catch {
                             // Non-fatal: auth identity is linked, handle will be missing in profile

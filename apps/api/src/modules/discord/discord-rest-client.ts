@@ -88,6 +88,29 @@ export async function getGuildMember(guildId: string, userId: string): Promise<s
   }
 }
 
+/** Get member roles using the USER's own OAuth access token (guilds.members.read scope).
+ *  Does NOT require the bot to be in the server.
+ *  Discord endpoint: GET /users/@me/guilds/{guild.id}/member */
+export async function getUserGuildMember(accessToken: string, guildId: string): Promise<string[] | null> {
+  try {
+    const res = await fetch(
+      `${DISCORD_API}/users/@me/guilds/${encodeURIComponent(guildId)}/member`,
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'User-Agent': 'DiscordBot (https://clawquest.ai, 1.0)',
+        },
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      },
+    )
+    if (!res.ok) return null
+    const data = await res.json() as DiscordMemberResponse
+    return data.roles
+  } catch {
+    return null
+  }
+}
+
 /** Check if Discord integration is configured (bot token + client ID) */
 export function isDiscordConfigured(): boolean {
   return !!process.env.DISCORD_BOT_TOKEN && !!process.env.DISCORD_CLIENT_ID

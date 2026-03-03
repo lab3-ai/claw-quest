@@ -1,4 +1,4 @@
-import { getGuildMember } from '../discord/discord-rest-client'
+import { getGuildMember, getUserGuildMember } from '../discord/discord-rest-client'
 
 /** Response type for social validation */
 export interface SocialValidationResult {
@@ -10,6 +10,7 @@ export interface SocialValidationResult {
 /** Optional user context for role-based verification at quest completion */
 export interface ValidationContext {
   discordId?: string | null
+  discordAccessToken?: string | null   // OAuth2 token with guilds.members.read scope
   params?: Record<string, string>
 }
 
@@ -115,10 +116,12 @@ async function validateTelegramChannel(
   }
 }
 
-/** Verify participant holds a specific Discord role via bot API */
+/** Verify participant holds a specific Discord role.
+ *  Prefers OAuth user token (guilds.members.read) over bot — no bot-in-server required. */
 async function validateDiscordRole(
   params: Record<string, string>,
   discordId: string | null | undefined,
+  discordAccessToken?: string | null,
 ): Promise<SocialValidationResult> {
   if (!discordId) {
     return { valid: false, error: 'Link your Discord account to verify role' }
@@ -128,7 +131,16 @@ async function validateDiscordRole(
     return { valid: false, error: 'Quest task missing guild/role data' }
   }
 
-  const memberRoles = await getGuildMember(guildId, discordId)
+  // Prefer OAuth user token (no bot in server required)
+  let memberRoles: string[] | null = null
+  if (discordAccessToken) {
+    memberRoles = await getUserGuildMember(discordAccessToken, guildId)
+  }
+  // Fallback to bot if no OAuth token or token failed
+  if (!memberRoles) {
+    memberRoles = await getGuildMember(guildId, discordId)
+  }
+
   if (!memberRoles) {
     return { valid: false, error: 'Not a member of the Discord server (or bot not in server)' }
   }
@@ -156,7 +168,7 @@ export async function validateSocialTarget(
     case 'discord': {
       if (type === 'verify_role' && context?.discordId !== undefined) {
         // Completion-time: check if user actually has the role
-        return validateDiscordRole(context.params ?? {}, context.discordId)
+        return validateDiscordRole(context.params ?? {}, context.discordId, context.discordAccessToken)
       }
       if (['join_server', 'verify_role'].includes(type)) return validateDiscordInvite(value)
       return { valid: true }

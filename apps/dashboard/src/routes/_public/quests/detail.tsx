@@ -846,9 +846,15 @@ export function QuestDetail() {
                                 // Live + not authenticated
                                 if (isLive && !isAuthenticated) {
                                     return (
-                                        <Link to="/login">
-                                            <button className="cta-btn primary">Log in to Accept Quest</button>
-                                        </Link>
+                                        <button
+                                            className="cta-btn primary"
+                                            onClick={() => {
+                                                localStorage.setItem(REDIRECT_KEY, window.location.pathname + window.location.search)
+                                                navigate({ to: "/login" })
+                                            }}
+                                        >
+                                            Log in to Accept Quest
+                                        </button>
                                     )
                                 }
 

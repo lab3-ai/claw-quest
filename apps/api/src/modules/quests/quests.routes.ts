@@ -199,9 +199,11 @@ export async function questsRoutes(server: FastifyInstance) {
                 // Return with preview flags
                 const { _count, participations, ...q } = quest;
                 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+                const draftUser = (request as any).user;
                 return {
                     ...formatQuestResponse(q, participations, _count.participations),
                     isPreview: true,
+                    isCreator: !!(draftUser?.id && quest.creatorUserId === draftUser.id),
                     fundingRequired: quest.fundingStatus === 'unfunded',
                     previewToken: quest.previewToken,
                     fundUrl: `${frontendUrl}/quests/${quest.id}/fund`,
@@ -212,13 +214,14 @@ export async function questsRoutes(server: FastifyInstance) {
             const { _count, participations, ...q } = quest;
             const response: any = formatQuestResponse(q, participations, _count.participations);
 
-            // Include user's participation if authenticated
+            // Include user's participation + isCreator if authenticated
             const authHeader = request.headers.authorization;
             if (authHeader?.startsWith('Bearer ') && !authHeader.startsWith('Bearer cq_')) {
                 try {
                     await (server as any).authenticate(request, reply);
                     const user = (request as any).user;
                     if (user?.id) {
+                        response.isCreator = quest.creatorUserId === user.id;
                         const myParticipation = await server.prisma.questParticipation.findUnique({
                             where: { questId_userId: { questId: id, userId: user.id } },
                         });

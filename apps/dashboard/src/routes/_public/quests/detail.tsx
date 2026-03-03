@@ -143,6 +143,7 @@ interface QuestWithParticipation extends Quest {
     fundingMethod?: string
     fundingStatus?: string
     creatorUserId?: string
+    isCreator?: boolean
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -150,7 +151,7 @@ interface QuestWithParticipation extends Quest {
 export function QuestDetail() {
     const { questId } = useParams({ from: "/_app/quests/$questId" })
     const { token, claim } = useSearch({ from: "/_app/quests/$questId" })
-    const { isAuthenticated, session, user } = useAuth()
+    const { isAuthenticated, session } = useAuth()
     const queryClient = useQueryClient()
     const navigate = useNavigate()
     const [acceptMsg, setAcceptMsg] = useState<string | null>(null)
@@ -736,7 +737,7 @@ export function QuestDetail() {
                         {/* CTA */}
                         <div className="cta-section">
                             {(() => {
-                                const isCreator = isAuthenticated && quest.creatorUserId === user?.id
+                                const isCreator = isAuthenticated && !!quest.isCreator
                                 const isFunded = quest.fundingStatus === "confirmed"
                                 const isEnded = quest.status === "completed" || quest.status === "expired" || quest.status === "cancelled"
 

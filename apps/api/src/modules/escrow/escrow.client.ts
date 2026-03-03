@@ -2,13 +2,14 @@ import {
     createPublicClient,
     createWalletClient,
     http,
+    defineChain,
     type PublicClient,
     type WalletClient,
     type Chain,
-    type Transport,
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { base, baseSepolia, mainnet, bsc, arbitrum, polygon } from 'viem/chains';
+import { base, baseSepolia, mainnet, bsc, bscTestnet, arbitrum, polygon } from 'viem/chains';
+import { getChainById } from '@clawquest/shared';
 import { escrowConfig, getRpcUrl } from './escrow.config';
 
 // ─── Chain Mapping ───────────────────────────────────────────────────────────
@@ -18,14 +19,34 @@ const CHAIN_MAP: Record<number, Chain> = {
     84532: baseSepolia,
     1: mainnet,
     56: bsc,
+    97: bscTestnet,
     42161: arbitrum,
     137: polygon,
 };
 
+/** Get viem Chain object. Falls back to defineChain() from SUPPORTED_CHAINS metadata. */
 function getViemChain(chainId: number): Chain {
-    const chain = CHAIN_MAP[chainId];
-    if (!chain) throw new Error(`Unsupported chainId: ${chainId}`);
-    return chain;
+    const known = CHAIN_MAP[chainId];
+    if (known) return known;
+
+    // Dynamic fallback: build Chain from shared SUPPORTED_CHAINS
+    const meta = getChainById(chainId);
+    if (meta) {
+        return defineChain({
+            id: meta.id,
+            name: meta.name,
+            nativeCurrency: meta.nativeCurrency,
+            rpcUrls: {
+                default: { http: [meta.rpcUrl] },
+            },
+            blockExplorers: {
+                default: { name: meta.name, url: meta.explorerUrl },
+            },
+            testnet: meta.isTestnet,
+        });
+    }
+
+    throw new Error(`Unsupported chainId: ${chainId} (not in viem or SUPPORTED_CHAINS)`);
 }
 
 // ─── Client Caches ───────────────────────────────────────────────────────────

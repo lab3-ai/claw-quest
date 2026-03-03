@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { parseEventLogs } from 'viem';
 import { ESCROW_ABI } from '@clawquest/shared';
-import { escrowConfig, isEscrowConfigured, getContractAddress } from './escrow.config';
+import { escrowConfig, isEscrowConfigured, getContractAddress, isChainAllowed } from './escrow.config';
 import { getPublicClient } from './escrow.client';
 import {
     handleQuestFunded,
@@ -11,11 +11,17 @@ import {
 } from './escrow-event-handlers';
 
 // ─── Escrow Event Poller ─────────────────────────────────────────────────────
-// Polls for all escrow events and updates the database.
+// Polls ALL active chains for escrow events and updates the database.
 // Uses DB-persisted cursor so restarts resume without gaps or re-scans.
 
 /** Max block range per getLogs call (RPC rate-limit safety) */
 const MAX_RANGE = 2000n;
+
+interface ChainHealth {
+    lastPollAt: Date | null;
+    lastError: string | null;
+    eventsProcessed: number;
+}
 
 /** Health state — exported for /escrow/health endpoint */
 export const escrowPollerHealth = {
@@ -23,7 +29,19 @@ export const escrowPollerHealth = {
     lastPollAt: null as Date | null,
     lastError: null as string | null,
     eventsProcessed: 0,
+    chains: {} as Record<number, ChainHealth>,
 };
+
+/** Initialize per-chain health entries */
+function initChainHealth(chainIds: number[]): void {
+    for (const id of chainIds) {
+        escrowPollerHealth.chains[id] = {
+            lastPollAt: null,
+            lastError: null,
+            eventsProcessed: 0,
+        };
+    }
+}
 
 /** Read persisted cursor from DB, or default to recent blocks on first run */
 async function getCursor(server: FastifyInstance, chainId: number, currentBlock: bigint): Promise<bigint> {
@@ -58,6 +76,7 @@ async function saveCursor(server: FastifyInstance, chainId: number, lastBlock: b
  */
 async function pollChain(server: FastifyInstance, chainId: number): Promise<void> {
     const client = getPublicClient(chainId);
+    const chainHealth = escrowPollerHealth.chains[chainId];
 
     try {
         const currentBlock = await client.getBlockNumber();
@@ -86,6 +105,10 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
 
         if (rawLogs.length === 0) {
             await saveCursor(server, chainId, toBlock);
+            if (chainHealth) {
+                chainHealth.lastPollAt = new Date();
+                chainHealth.lastError = null;
+            }
             return;
         }
 
@@ -131,20 +154,38 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
         if (processed > 0) {
             server.log.info(`[escrow:poller] Processed ${processed} events on chain ${chainId} (blocks ${fromBlock}-${toBlock})`);
             escrowPollerHealth.eventsProcessed += processed;
+            if (chainHealth) chainHealth.eventsProcessed += processed;
         }
 
         await saveCursor(server, chainId, toBlock);
-        escrowPollerHealth.lastPollAt = new Date();
+
+        const now = new Date();
+        escrowPollerHealth.lastPollAt = now;
         escrowPollerHealth.lastError = null;
+        if (chainHealth) {
+            chainHealth.lastPollAt = now;
+            chainHealth.lastError = null;
+        }
     } catch (err: any) {
-        escrowPollerHealth.lastError = err.message;
+        escrowPollerHealth.lastError = `chain ${chainId}: ${err.message}`;
+        if (chainHealth) chainHealth.lastError = err.message;
         server.log.error({ err, chainId }, '[escrow:poller] Error polling chain');
     }
 }
 
 /**
+ * Poll all active chains in parallel.
+ * Uses Promise.allSettled so one chain failing doesn't block others.
+ */
+async function pollAllChains(server: FastifyInstance, chainIds: number[]): Promise<void> {
+    await Promise.allSettled(
+        chainIds.map(chainId => pollChain(server, chainId))
+    );
+}
+
+/**
  * Start the escrow event poller.
- * Polls the default chain for all escrow events at a regular interval.
+ * Polls ALL active chains for escrow events at a regular interval.
  */
 export async function startEscrowPoller(server: FastifyInstance): Promise<void> {
     if (!isEscrowConfigured()) {
@@ -152,9 +193,19 @@ export async function startEscrowPoller(server: FastifyInstance): Promise<void> 
         return;
     }
 
-    const chainId = escrowConfig.defaultChainId;
-    server.log.info(`[escrow:poller] Starting for chain ${chainId} (interval: ${escrowConfig.pollingIntervalMs}ms, confirmations: ${escrowConfig.confirmationBlocks})`);
+    // Filter activeChainIds to only chains allowed in current networkMode
+    const chainIds = escrowConfig.activeChainIds.filter(id => isChainAllowed(id));
+    if (chainIds.length === 0) {
+        server.log.warn('[escrow:poller] No active chains to poll');
+        return;
+    }
 
+    server.log.info(
+        `[escrow:poller] Starting for chains [${chainIds.join(', ')}] ` +
+        `(interval: ${escrowConfig.pollingIntervalMs}ms, confirmations: ${escrowConfig.confirmationBlocks})`
+    );
+
+    initChainHealth(chainIds);
     escrowPollerHealth.running = true;
     let interval: NodeJS.Timeout | undefined;
 
@@ -165,9 +216,9 @@ export async function startEscrowPoller(server: FastifyInstance): Promise<void> 
     });
 
     // Initial poll
-    await pollChain(server, chainId);
+    await pollAllChains(server, chainIds);
 
     interval = setInterval(async () => {
-        await pollChain(server, chainId);
+        await pollAllChains(server, chainIds);
     }, escrowConfig.pollingIntervalMs);
 }

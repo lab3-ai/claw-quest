@@ -29,9 +29,8 @@ export async function escrowRoutes(server: FastifyInstance) {
             },
         },
         async () => {
-            const { getActiveEscrowChainIds, getChainById } = await import('@clawquest/shared');
-            const chainIds = getActiveEscrowChainIds(escrowConfig.networkMode);
-            const chains = chainIds
+            const { getChainById } = await import('@clawquest/shared');
+            const chains = escrowConfig.activeChainIds
                 .map(id => getChainById(id))
                 .filter((c): c is NonNullable<typeof c> => !!c);
             return {
@@ -348,11 +347,17 @@ export async function escrowRoutes(server: FastifyInstance) {
                     200: z.object({
                         configured: z.boolean(),
                         defaultChainId: z.number(),
+                        activeChainIds: z.array(z.number()),
                         poller: z.object({
                             running: z.boolean(),
                             lastPollAt: z.string().nullable(),
                             lastError: z.string().nullable(),
                             eventsProcessed: z.number(),
+                            chains: z.record(z.string(), z.object({
+                                lastPollAt: z.string().nullable(),
+                                lastError: z.string().nullable(),
+                                eventsProcessed: z.number(),
+                            })),
                         }),
                     }),
                 },
@@ -360,14 +365,24 @@ export async function escrowRoutes(server: FastifyInstance) {
             onRequest: [server.authenticate],
         },
         async () => {
+            const chainStatuses: Record<string, { lastPollAt: string | null; lastError: string | null; eventsProcessed: number }> = {};
+            for (const [chainId, status] of Object.entries(escrowPollerHealth.chains)) {
+                chainStatuses[chainId] = {
+                    lastPollAt: status.lastPollAt?.toISOString() ?? null,
+                    lastError: status.lastError,
+                    eventsProcessed: status.eventsProcessed,
+                };
+            }
             return {
                 configured: isEscrowConfigured(),
                 defaultChainId: escrowConfig.defaultChainId,
+                activeChainIds: [...escrowConfig.activeChainIds],
                 poller: {
                     running: escrowPollerHealth.running,
                     lastPollAt: escrowPollerHealth.lastPollAt?.toISOString() ?? null,
                     lastError: escrowPollerHealth.lastError,
                     eventsProcessed: escrowPollerHealth.eventsProcessed,
+                    chains: chainStatuses,
                 },
             };
         }

@@ -7,7 +7,7 @@
 
 ## Overview
 - **Priority:** Medium
-- **Status:** pending (blocked by social account linking Phase 1)
+- **Status:** complete
 - **Effort:** Medium
 - When participant submits quest with `verify_role` task, backend checks Discord role via bot API.
 

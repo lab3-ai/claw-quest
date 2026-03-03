@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: complete
 created: 2026-03-02
 slug: discord-bot-role-validation
 ---
@@ -37,7 +37,7 @@ Quest Completion:
 | 1 | [Discord REST client + env vars](phase-01-discord-rest-client.md) | done | S | — |
 | 2 | [API endpoints for guild roles](phase-02-api-guild-roles.md) | done | M | Phase 1 |
 | 3 | [Frontend: dynamic role dropdown + invite bot](phase-03-frontend-role-dropdown.md) | done | M | Phase 2 |
-| 4 | [Role verification at quest completion](phase-04-role-verification.md) | blocked | M | Phase 1 + social-linking Phase 1 |
+| 4 | [Role verification at quest completion](phase-04-role-verification.md) | done | M | Phase 1 + social-linking Phase 1 |
 
 ## Files to Modify/Create
 

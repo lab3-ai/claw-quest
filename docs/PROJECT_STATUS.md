@@ -283,7 +283,7 @@ The `ESCROW_NETWORK_MODE` env var (and frontend counterpart `VITE_ESCROW_NETWORK
 - [ ] E2E integration tests (faucet USDC + test deposits)
 
 ### Features (Backlog)
-- [ ] Discord bot role validation (verify user has specific Discord role)
+- [x] Discord bot role validation (verify user has specific Discord role)
 - [ ] X/Twitter account linking (OAuth)
 - [ ] Emergency withdrawal handling (contract feature, needs admin UI)
 - [ ] Payout reconciliation for stuck transactions

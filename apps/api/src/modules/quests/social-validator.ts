@@ -1,8 +1,16 @@
+import { getGuildMember } from '../discord/discord-rest-client'
+
 /** Response type for social validation */
 export interface SocialValidationResult {
   valid: boolean
   error?: string
   meta?: Record<string, string>
+}
+
+/** Optional user context for role-based verification at quest completion */
+export interface ValidationContext {
+  discordId?: string | null
+  params?: Record<string, string>
 }
 
 const TIMEOUT_MS = 8000
@@ -107,12 +115,36 @@ async function validateTelegramChannel(
   }
 }
 
+/** Verify participant holds a specific Discord role via bot API */
+async function validateDiscordRole(
+  params: Record<string, string>,
+  discordId: string | null | undefined,
+): Promise<SocialValidationResult> {
+  if (!discordId) {
+    return { valid: false, error: 'Link your Discord account to verify role' }
+  }
+  const { guildId, roleId, roleName } = params
+  if (!guildId || !roleId) {
+    return { valid: false, error: 'Quest task missing guild/role data' }
+  }
+
+  const memberRoles = await getGuildMember(guildId, discordId)
+  if (!memberRoles) {
+    return { valid: false, error: 'Not a member of the Discord server (or bot not in server)' }
+  }
+  if (!memberRoles.includes(roleId)) {
+    return { valid: false, error: `Missing required role: ${roleName || 'unknown'}` }
+  }
+  return { valid: true, meta: { roleName: roleName || roleId } }
+}
+
 /** Main dispatcher — routes to per-platform validators */
 export async function validateSocialTarget(
   platform: string,
   type: string,
   value: string,
   telegramBotToken?: string,
+  context?: ValidationContext,
 ): Promise<SocialValidationResult> {
   switch (platform) {
     case 'x': {
@@ -122,6 +154,10 @@ export async function validateSocialTarget(
       return { valid: true }
     }
     case 'discord': {
+      if (type === 'verify_role' && context?.discordId !== undefined) {
+        // Completion-time: check if user actually has the role
+        return validateDiscordRole(context.params ?? {}, context.discordId)
+      }
       if (['join_server', 'verify_role'].includes(type)) return validateDiscordInvite(value)
       return { valid: true }
     }

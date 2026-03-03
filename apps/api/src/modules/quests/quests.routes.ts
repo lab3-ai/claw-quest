@@ -554,6 +554,59 @@ export async function questsRoutes(server: FastifyInstance) {
         }
     );
 
+    // ── GET /quests/:id/check-tasks — Auto-verify human tasks for current user ──
+    server.get(
+        '/:id/check-tasks',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Check auto-verifiable human tasks for the authenticated user (e.g. Discord role)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                response: {
+                    200: z.object({
+                        results: z.array(z.object({
+                            taskIndex: z.number(),
+                            actionType: z.string(),
+                            valid: z.boolean(),
+                            error: z.string().optional(),
+                            meta: z.record(z.string()).optional(),
+                        })),
+                    }),
+                },
+            },
+            preHandler: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id: questId } = request.params as { id: string }
+            const quest = await server.prisma.quest.findUnique({ where: { id: questId } })
+            if (!quest) return reply.status(404).send({ error: { message: 'Quest not found', code: 'NOT_FOUND' } } as any)
+
+            const tasks = (quest.tasks as QuestTask[]) ?? []
+            const user = await server.prisma.user.findUnique({ where: { id: request.user.id } })
+            const discordId = user?.discordId ?? null
+
+            const results: Array<{ taskIndex: number; actionType: string; valid: boolean; error?: string; meta?: Record<string, string> }> = []
+
+            for (let i = 0; i < tasks.length; i++) {
+                const task = tasks[i]
+                // Only auto-verify tasks that we can check programmatically
+                if (task.actionType === 'verify_role') {
+                    const result = await validateSocialTarget(
+                        task.platform,
+                        task.actionType,
+                        task.params.inviteUrl ?? '',
+                        undefined,
+                        { discordId, params: task.params as Record<string, string> },
+                    )
+                    results.push({ taskIndex: i, actionType: task.actionType, ...result })
+                }
+            }
+
+            return { results }
+        }
+    );
+
     // Create Quest — supports agent API key, human JWT, or no auth (MVP)
     server.post(
         '/',

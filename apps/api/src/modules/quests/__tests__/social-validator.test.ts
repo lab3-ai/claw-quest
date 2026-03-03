@@ -655,4 +655,109 @@ describe('validateSocialTarget', () => {
       );
     });
   });
+
+  describe('Discord role verification (with context)', () => {
+    const guildId = '123456789';
+    const roleId = '987654321';
+    const roleName = 'VIP Member';
+    const discordId = '111222333';
+    const params = { guildId, roleId, roleName, inviteUrl: 'https://discord.gg/test' };
+
+    beforeAll(() => { process.env.DISCORD_BOT_TOKEN = 'test-bot-token'; });
+    afterAll(() => { delete process.env.DISCORD_BOT_TOKEN; });
+
+    it('passes when user has the required role', async () => {
+      const mockFetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ roles: [roleId, '999'] }),
+      });
+      global.fetch = mockFetch;
+
+      const result = await validateSocialTarget(
+        'discord', 'verify_role', '', undefined,
+        { discordId, params },
+      );
+
+      expect(result.valid).toBe(true);
+      expect(result.meta?.roleName).toBe(roleName);
+    });
+
+    it('fails when user lacks the required role', async () => {
+      const mockFetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ roles: ['999', '888'] }),
+      });
+      global.fetch = mockFetch;
+
+      const result = await validateSocialTarget(
+        'discord', 'verify_role', '', undefined,
+        { discordId, params },
+      );
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('Missing required role');
+      expect(result.error).toContain(roleName);
+    });
+
+    it('fails when user is not in the server', async () => {
+      const mockFetch = vi.fn().mockResolvedValueOnce({ ok: false, status: 404 });
+      global.fetch = mockFetch;
+
+      const result = await validateSocialTarget(
+        'discord', 'verify_role', '', undefined,
+        { discordId, params },
+      );
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('Not a member');
+    });
+
+    it('fails when user has no Discord linked', async () => {
+      const result = await validateSocialTarget(
+        'discord', 'verify_role', '', undefined,
+        { discordId: null, params },
+      );
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('Link your Discord');
+    });
+
+    it('fails when task params missing guildId/roleId', async () => {
+      const result = await validateSocialTarget(
+        'discord', 'verify_role', '', undefined,
+        { discordId, params: { inviteUrl: 'https://discord.gg/test' } },
+      );
+
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('missing guild/role');
+    });
+
+    it('falls back to invite validation when no context provided', async () => {
+      const mockFetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ guild: { name: 'Test Server' } }),
+      });
+      global.fetch = mockFetch;
+
+      // No context = creation-time validation (validate invite exists)
+      const result = await validateSocialTarget('discord', 'verify_role', 'abc123');
+
+      expect(result.valid).toBe(true);
+      expect(result.meta?.name).toBe('Test Server');
+    });
+
+    it('gracefully handles fetch error during role check', async () => {
+      const mockFetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+      global.fetch = mockFetch;
+
+      const result = await validateSocialTarget(
+        'discord', 'verify_role', '', undefined,
+        { discordId, params },
+      );
+
+      // getGuildMember catches and returns null → "Not a member"
+      expect(result.valid).toBe(false);
+      expect(result.error).toContain('Not a member');
+    });
+  });
 });

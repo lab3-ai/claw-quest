@@ -11,7 +11,7 @@ import { FundApprove, FundDeposit, FundConfirming } from '@/components/escrow/fu
 import { FundSuccess } from '@/components/escrow/fund-success'
 import { useTokenBalance, useTokenAllowance } from '@/hooks/use-token-balance'
 import { useFundQuest } from '@/hooks/use-fund-quest'
-import '@/styles/pages/fund-quest.css'
+import { Button } from '@/components/ui/button'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
@@ -102,19 +102,21 @@ export function FundQuest() {
     // ── Loading / error states ───────────────────────────────────────────────
     if (paramsLoading) {
         return (
-            <div className="fund-quest-page">
-                <div className="fund-card"><div className="fund-loading">Loading deposit parameters...</div></div>
+            <div className="max-w-[560px] mx-auto py-8 px-4 max-sm:py-4 max-sm:px-2">
+                <div className="bg-background border border-border rounded p-8 max-sm:p-5 max-sm:px-4">
+                    <div className="text-center text-muted-foreground py-12">Loading deposit parameters...</div>
+                </div>
             </div>
         )
     }
 
     if (paramsError || !params) {
         return (
-            <div className="fund-quest-page">
-                <div className="fund-card">
+            <div className="max-w-[560px] mx-auto py-8 px-4 max-sm:py-4 max-sm:px-2">
+                <div className="bg-background border border-border rounded p-8 max-sm:p-5 max-sm:px-4">
                     <h2>Unable to Load</h2>
-                    <p className="fund-error-msg">{(paramsError as Error)?.message || 'Quest not found or already funded'}</p>
-                    <Link to="/dashboard" className="btn btn-secondary">Back to Dashboard</Link>
+                    <p className="text-destructive text-xs break-words">{(paramsError as Error)?.message || 'Quest not found or already funded'}</p>
+                    <Button asChild variant="secondary"><Link to="/dashboard">Back to Dashboard</Link></Button>
                 </div>
             </div>
         )
@@ -124,36 +126,36 @@ export function FundQuest() {
     const txHash = depositTxHash || quest?.cryptoTxHash
 
     return (
-        <div className="fund-quest-page">
-            <nav className="breadcrumb">
+        <div className="max-w-[560px] mx-auto py-8 px-4 max-sm:py-4 max-sm:px-2">
+            <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
                 <Link to="/quests">Quests</Link>
-                <span className="breadcrumb-sep">/</span>
+                <span>/</span>
                 <Link to="/quests/$questId" params={{ questId }}>{quest?.title || 'Quest'}</Link>
-                <span className="breadcrumb-sep">/</span>
+                <span>/</span>
                 <span>Fund</span>
             </nav>
 
-            <div className="fund-card">
-                <h2 className="fund-title">Fund Quest</h2>
-                {quest && <p className="fund-quest-name">{quest.title}</p>}
+            <div className="bg-background border border-border rounded p-8 max-sm:p-5 max-sm:px-4">
+                <h2 className="text-xl font-semibold text-foreground mb-1">Fund Quest</h2>
+                {quest && <p className="text-xs text-muted-foreground mb-6">{quest.title}</p>}
 
                 <FundSummary params={params} />
                 <FundStepIndicator step={step} isNative={params.isNative} />
 
-                <div className="fund-action">
+                <div className="text-center min-h-[120px]">
                     {step === 'connect' && (
-                        <div className="fund-connect-area">
+                        <div className="flex flex-col items-center gap-4">
                             <p>Connect your wallet to fund this quest</p>
                             <ConnectButton />
                         </div>
                     )}
 
                     {wrongChain && step !== 'connect' && step !== 'success' && step !== 'error' && (
-                        <div className="fund-wrong-chain">
-                            <p>Please switch to <strong>{params.chainName}</strong></p>
-                            <button className="btn btn-primary" onClick={() => switchChain({ chainId: params.chainId })}>
+                        <div className="p-4 bg-warning-light border border-warning rounded">
+                            <p className="text-warning">Please switch to <strong>{params.chainName}</strong></p>
+                            <Button onClick={() => switchChain({ chainId: params.chainId })}>
                                 Switch Network
-                            </button>
+                            </Button>
                         </div>
                     )}
 
@@ -173,17 +175,17 @@ export function FundQuest() {
                     {step === 'success' && <FundSuccess questId={questId} chainId={params.chainId} txHash={txHash} />}
 
                     {step === 'error' && (
-                        <div className="fund-error">
-                            <p className="fund-error-msg">{errorMsg}</p>
-                            <button className="btn btn-secondary" onClick={() => handleRetry(isConnected, params.isNative)}>
+                        <div className="flex flex-col items-center gap-4">
+                            <p className="text-destructive text-xs break-words">{errorMsg}</p>
+                            <Button variant="secondary" onClick={() => handleRetry(isConnected, params.isNative)}>
                                 Try Again
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>
 
                 {isConnected && step !== 'connect' && (
-                    <div className="fund-wallet-info">
+                    <div className="mt-6 pt-4 border-t border-border flex justify-center">
                         <ConnectButton accountStatus="address" chainStatus="icon" showBalance={false} />
                     </div>
                 )}

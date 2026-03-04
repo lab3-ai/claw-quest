@@ -85,15 +85,18 @@ API docs auto-generated via `@fastify/swagger` + Scalar at `/docs`.
 - **Data fetching**: TanStack Query
 - **Styling**: Tailwind CSS (utility-first) + CSS variables for design tokens
 - **UI components**: shadcn/ui (Radix UI primitives) in `src/components/ui/`
-- **Icons**: MingCute (`@mingcute/react`) for UI icons, `<PlatformIcon>` for brand SVGs
+- **Icons**: MingCute (`@mingcute/react`) for UI icons — **Line** variant for default/hover, **Fill** variant for active state. `<PlatformIcon>` for brand SVGs
 - **Auth context**: `src/context/AuthContext.tsx` — provides `useAuth()` → `{ session, user, isAuthenticated, isLoading }`
 
 ### Styling conventions
 
 - Use Tailwind utilities for all new page styles
-- Design tokens defined as CSS variables in `variables.css` (see `docs/design-system.md`)
+- Design tokens defined as CSS variables in `src/index.css` (see `docs/design-system/DESIGN_SYSTEM.md`)
 - Legacy plain CSS files in `src/styles/` — being migrated to Tailwind
 - shadcn/ui components use `cn()` utility for class merging
+- **No hardcoded arbitrary values** in Tailwind classnames when a design token exists. Use the token class instead:
+  - `text-xs` (12px), `text-sm` (14px), `text-base` (16px), `text-md` (16px), `text-lg` (18px), `text-xl` (20px), `text-2xl` (24px), `text-3xl` (28px)
+  - Only use `[value]` syntax when no matching token is defined (e.g. `w-[380px]` for one-off layout widths)
 
 ### Route structure
 
@@ -172,5 +175,6 @@ All internal documentation lives in `docs/`:
 - `DECISIONS.md` — architecture decision records (ADRs)
 - `PRODUCT_SPEC.md` — original product vision
 - `API.md`, `DB_SCHEMA.md`, `GLOSSARY.md` — reference docs
+- `design-system/` — design system v2, brand guidelines, UI patterns, accessibility
 - `PLAN_TASK*.md` — implementation plans for remaining features
 - `product/` — public-facing docs (GitBook-powered)

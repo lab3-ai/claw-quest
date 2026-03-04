@@ -70,16 +70,16 @@ export function AuthCallback() {
 
     if (error) {
         return (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", gap: "16px" }}>
-                <div style={{ color: "var(--red)", fontSize: "14px" }}>Authentication failed: {error}</div>
-                <a href="/login" style={{ color: "var(--link)", fontSize: "13px" }}>Back to login</a>
+            <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+                <div className="text-error text-base">Authentication failed: {error}</div>
+                <a href="/login" className="text-link text-sm">Back to login</a>
             </div>
         )
     }
 
     return (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
-            <div style={{ color: "var(--text-muted)", fontSize: "14px" }}>Signing you in...</div>
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="text-muted-foreground text-base">Signing you in...</div>
         </div>
     )
 }

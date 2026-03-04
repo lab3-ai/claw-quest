@@ -1,47 +1,21 @@
-import { useState } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { Link } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { QuestCard, QuestersAvatarStack } from "@/components/QuestCard"
 import type { QuesterDetail } from "@/components/QuestCard"
+import { QuestGridCard } from "@/components/QuestGridCard"
 import { QuestersPopup } from "@/components/QuestersPopup"
+import { formatTimeShort, typeBadgeClass, statusBadgeClass } from "@/components/quest-utils"
+
+import { cn } from "@/lib/utils"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Badge } from "@/components/ui/badge"
+import { FlashFill, FlashLine, TrophyFill, TrophyLine, ClockFill, ClockLine, StarFill, StarLine, CalendarFill, CalendarLine } from "@mingcute/react"
 import type { Quest } from "@clawquest/shared"
-import "@/styles/pages/quest-explore.css"
 
 type Tab = "featured" | "highest-reward" | "ending-soon" | "new" | "upcoming"
-type View = "card" | "list"
-
-function formatTimeLeft(expiresAt: string | null): { label: string; cls: string } {
-    if (!expiresAt) return { label: "No deadline", cls: "normal" }
-    const diff = new Date(expiresAt).getTime() - Date.now()
-    if (diff <= 0) return { label: "Ended", cls: "urgent" }
-    const h = Math.floor(diff / 3600000)
-    const d = Math.floor(h / 24)
-    if (h < 6) return { label: `${h}h left`, cls: "urgent" }
-    if (d < 2) return { label: `${h}h left`, cls: "warning" }
-    return { label: `${d}d left`, cls: "normal" }
-}
-
-function typeBadgeClass(type: string) {
-    const map: Record<string, string> = {
-        FCFS: "badge-fcfs",
-        LEADERBOARD: "badge-leaderboard",
-        LUCKY_DRAW: "badge-luckydraw",
-    }
-    return map[type] ?? "badge-fcfs"
-}
-
-function statusBadgeClass(status: string) {
-    const map: Record<string, string> = {
-        live: "badge-live",
-        completed: "badge-completed",
-        draft: "badge-draft",
-        scheduled: "badge-scheduled",
-        expired: "badge-expired",
-        cancelled: "badge-cancelled",
-    }
-    return map[status] ?? "badge-live"
-}
+type View = "grid" | "list" | "compact"
 
 function isEnded(quest: Quest): boolean {
     if (!quest.expiresAt) return false
@@ -52,7 +26,6 @@ function filterAndSortQuests(quests: Quest[], tab: Tab): Quest[] {
     const live = quests.filter(q => q.status === "live" && !isEnded(q))
     switch (tab) {
         case "featured":
-            // Composite: reward × (1 + questers) — boosts popular + high-value quests
             return [...live]
                 .sort((a, b) => {
                     const sa = a.rewardAmount * (1 + a.questers)
@@ -63,7 +36,6 @@ function filterAndSortQuests(quests: Quest[], tab: Tab): Quest[] {
         case "highest-reward":
             return [...live].sort((a, b) => b.rewardAmount - a.rewardAmount)
         case "ending-soon":
-            // Only quests with a deadline, soonest first
             return [...live]
                 .filter(q => q.expiresAt)
                 .sort((a, b) => {
@@ -72,7 +44,6 @@ function filterAndSortQuests(quests: Quest[], tab: Tab): Quest[] {
                     return ta - tb
                 })
         case "new": {
-            // Prefer quests created within 7 days; fallback to all live if < 3
             const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
             const recent = live.filter(q => new Date(q.createdAt).getTime() >= weekAgo)
             const source = recent.length >= 3 ? recent : live
@@ -81,7 +52,6 @@ function filterAndSortQuests(quests: Quest[], tab: Tab): Quest[] {
             )
         }
         case "upcoming":
-            // Scheduled quests not yet live, sorted by start time
             return quests
                 .filter(q => q.status === "scheduled")
                 .sort((a, b) => {
@@ -97,8 +67,42 @@ function filterAndSortQuests(quests: Quest[], tab: Tab): Quest[] {
 export function QuestList() {
     const { session } = useAuth()
     const [tab, setTab] = useState<Tab>("featured")
-    const [view, setView] = useState<View>("card")
+    const [prevTab, setPrevTab] = useState<Tab>("featured")
+    const [view, setView] = useState<View>("grid")
     const [popupQuest, setPopupQuest] = useState<{ id: string; title: string } | null>(null)
+    const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({})
+    const viewRefs = useRef<Record<string, HTMLButtonElement | null>>({})
+    const [tabIndicatorStyle, setTabIndicatorStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 })
+    const [viewIndicatorStyle, setViewIndicatorStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 })
+
+    const tabIds: Tab[] = ["featured", "highest-reward", "ending-soon", "new", "upcoming"]
+    const slideDir = tabIds.indexOf(tab) >= tabIds.indexOf(prevTab) ? "right" : "left"
+
+    const handleTabChange = (newTab: Tab) => {
+        setPrevTab(tab)
+        setTab(newTab)
+    }
+
+    const handleViewChange = (newView: View) => {
+        setView(newView)
+    }
+
+    const updateTabIndicator = useCallback(() => {
+        const el = tabRefs.current[tab]
+        if (el) {
+            setTabIndicatorStyle({ left: el.offsetLeft, width: el.offsetWidth })
+        }
+    }, [tab])
+
+    const updateViewIndicator = useCallback(() => {
+        const el = viewRefs.current[view]
+        if (el) {
+            setViewIndicatorStyle({ left: el.offsetLeft, width: el.offsetWidth })
+        }
+    }, [view])
+
+    useEffect(() => { updateTabIndicator() }, [updateTabIndicator])
+    useEffect(() => { updateViewIndicator() }, [updateViewIndicator])
 
     const { data: quests = [], isLoading, error } = useQuery({
         queryKey: ["quests"],
@@ -120,6 +124,13 @@ export function QuestList() {
         new: filterAndSortQuests(quests, "new").length,
         upcoming: filterAndSortQuests(quests, "upcoming").length,
     }
+    const tabIconMap: Record<Tab, { line: typeof FlashLine; fill: typeof FlashFill }> = {
+        featured: { line: FlashLine, fill: FlashFill },
+        "highest-reward": { line: TrophyLine, fill: TrophyFill },
+        "ending-soon": { line: ClockLine, fill: ClockFill },
+        new: { line: StarLine, fill: StarFill },
+        upcoming: { line: CalendarLine, fill: CalendarFill },
+    }
     const tabs: { id: Tab; label: string }[] = [
         { id: "featured", label: "Featured" },
         { id: "highest-reward", label: "Highest Reward" },
@@ -127,6 +138,8 @@ export function QuestList() {
         { id: "new", label: "New" },
         { id: "upcoming", label: "Upcoming" },
     ]
+
+    const emptyMessage = tab === "upcoming" ? "No upcoming quests scheduled." : "No active quests found."
 
     return (
         <div className="quest-explore-page">
@@ -138,92 +151,166 @@ export function QuestList() {
                 />
             )}
             {/* Page header */}
-            <div className="page-header">
+            <div className="flex justify-between items-end py-5 pb-3 mb-0">
                 <div>
-                    <h1>Quests</h1>
-                    <div className="page-header-meta">Agent-executable tasks with on-chain rewards</div>
+                    <h1 className="text-2xl font-semibold text-foreground">Quests</h1>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">Agent-executable tasks with on-chain rewards</div>
                 </div>
-                <Link to="/quests/new">
-                    <button className="btn btn-primary">+ Create Quest</button>
-                </Link>
             </div>
 
             {/* Tabs row + view toggle */}
-            <div className="tabs-row">
-                <div className="tabs">
-                    {tabs.map(t => (
-                        <button
-                            key={t.id}
-                            className={`tab${tab === t.id ? " active" : ""}`}
-                            onClick={() => setTab(t.id)}
-                        >
-                            {t.label}
-                            {tabCounts[t.id] > 0 && (
-                                <span className="count">&nbsp;{tabCounts[t.id]}</span>
-                            )}
-                        </button>
-                    ))}
+            <div className="flex items-center gap-3 py-3">
+                <div className="relative flex flex-1 min-w-0 items-center gap-0.5 p-0.5">
+                    {/* Sliding highlight */}
+                    <span
+                        className="absolute top-0.5 bottom-0.5 rounded bg-foreground transition-all duration-200 ease-out z-0"
+                        style={tabIndicatorStyle}
+                    />
+                    {tabs.map(t => {
+                        const isActive = tab === t.id
+                        const Icon = isActive ? tabIconMap[t.id].fill : tabIconMap[t.id].line
+                        return (
+                            <button
+                                key={t.id}
+                                ref={el => { tabRefs.current[t.id] = el }}
+                                className={cn(
+                                    "relative z-10 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded cursor-pointer transition-colors duration-150",
+                                    isActive
+                                        ? "text-background font-semibold"
+                                        : "text-muted-foreground hover:text-foreground"
+                                )}
+                                onClick={() => handleTabChange(t.id)}
+                            >
+                                <Icon size={14} />
+                                {t.label}
+                                {tabCounts[t.id] > 0 && (
+                                    <span className={cn("text-xs font-normal ml-0.5", isActive ? "text-background/60" : "text-muted-foreground")}>&nbsp;{tabCounts[t.id]}</span>
+                                )}
+                            </button>
+                        )
+                    })}
                 </div>
-                <div className="view-toggle">
-                    <button
-                        className={`view-toggle-btn${view === "card" ? " active" : ""}`}
-                        title="Card view"
-                        onClick={() => setView("card")}
-                    >
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                            <rect x="1" y="1" width="6" height="6" rx="1"/>
-                            <rect x="9" y="1" width="6" height="6" rx="1"/>
-                            <rect x="1" y="9" width="6" height="6" rx="1"/>
-                            <rect x="9" y="9" width="6" height="6" rx="1"/>
-                        </svg>
-                    </button>
-                    <button
-                        className={`view-toggle-btn${view === "list" ? " active" : ""}`}
-                        title="List view"
-                        onClick={() => setView("list")}
-                    >
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                            <line x1="1" y1="2.5" x2="15" y2="2.5"/>
-                            <line x1="1" y1="6.5" x2="15" y2="6.5"/>
-                            <line x1="1" y1="10.5" x2="15" y2="10.5"/>
-                            <line x1="1" y1="14.5" x2="15" y2="14.5"/>
-                        </svg>
-                    </button>
+                <TooltipProvider delayDuration={300}>
+                <div className="relative inline-flex border border-border p-0.5 gap-0.5 rounded overflow-hidden ml-auto shrink-0">
+                    {/* Sliding highlight */}
+                    <span
+                        className="absolute top-0.5 bottom-0.5 rounded bg-accent transition-all duration-200 ease-out z-0"
+                        style={{ left: viewIndicatorStyle.left, width: viewIndicatorStyle.width }}
+                    />
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <button
+                                ref={el => { viewRefs.current["grid"] = el }}
+                                className={cn(
+                                    "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
+                                    view === "grid" ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+                                )}
+                                onClick={() => handleViewChange("grid")}
+                            >
+                                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <rect x="1" y="1" width="6" height="6" rx="1"/>
+                                    <rect x="9" y="1" width="6" height="6" rx="1"/>
+                                    <rect x="1" y="9" width="6" height="6" rx="1"/>
+                                    <rect x="9" y="9" width="6" height="6" rx="1"/>
+                                </svg>
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="text-xs">Grid view</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <button
+                                ref={el => { viewRefs.current["list"] = el }}
+                                className={cn(
+                                    "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
+                                    view === "list" ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+                                )}
+                                onClick={() => handleViewChange("list")}
+                            >
+                                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <line x1="1" y1="3" x2="15" y2="3" strokeWidth="2.5"/>
+                                    <line x1="1" y1="8" x2="15" y2="8" strokeWidth="2.5"/>
+                                    <line x1="1" y1="13" x2="15" y2="13" strokeWidth="2.5"/>
+                                </svg>
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="text-xs">List view</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <button
+                                ref={el => { viewRefs.current["compact"] = el }}
+                                className={cn(
+                                    "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
+                                    view === "compact" ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+                                )}
+                                onClick={() => handleViewChange("compact")}
+                            >
+                                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <line x1="1" y1="2" x2="15" y2="2"/>
+                                    <line x1="1" y1="5.5" x2="15" y2="5.5"/>
+                                    <line x1="1" y1="9" x2="15" y2="9"/>
+                                    <line x1="1" y1="12.5" x2="15" y2="12.5"/>
+                                </svg>
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="text-xs">Compact list</TooltipContent>
+                    </Tooltip>
                 </div>
+                </TooltipProvider>
             </div>
 
-            {/* Loading / Error */}
+            {/* Loading */}
             {isLoading && (
-                <div className="quest-list-wrap">
+                <div className="block">
                     {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="quest-item skeleton-item">
-                            <div className="quest-stats">
-                                <div className="skel skel-stat" />
-                                <div className="skel skel-stat-sm" />
+                        <div key={i} className="flex gap-4 py-3.5 border-b border-border items-start pointer-events-none">
+                            <div className="hidden sm:flex flex-col items-end gap-1.5 min-w-[110px] pt-0.5">
+                                <div className="animate-pulse bg-muted rounded w-[50px] h-5 mb-1" />
+                                <div className="animate-pulse bg-muted rounded w-[70px] h-3" />
                             </div>
-                            <div className="quest-body">
-                                <div className="skel skel-title" />
-                                <div className="skel skel-text" />
-                                <div className="skel skel-tags" />
+                            <div className="flex-1 min-w-0">
+                                <div className="animate-pulse bg-muted rounded w-3/5 h-4 mb-2" />
+                                <div className="animate-pulse bg-muted rounded w-[90%] h-3 mb-2.5" />
+                                <div className="animate-pulse bg-muted rounded w-2/5 h-3" />
                             </div>
-                            <div className="quest-time-col">
-                                <div className="skel skel-time" />
+                            <div className="hidden sm:flex flex-col items-end min-w-[100px] pt-0.5 shrink-0">
+                                <div className="animate-pulse bg-muted rounded w-[70px] h-[18px]" />
                             </div>
                         </div>
                     ))}
                 </div>
             )}
-            {error && <div style={{ padding: "32px 0", color: "var(--red)" }}>Error loading quests.</div>}
+            {error && <div className="py-8 text-error">Error loading quests.</div>}
 
-            {/* Card view */}
-            {!isLoading && view === "card" && (
-                <div className="quest-list-wrap">
+            {/* Tab content with slide animation */}
+            <div
+                key={`${tab}-${view}`}
+                className={cn(
+                    "animate-in fade-in-0 duration-200",
+                    slideDir === "right" ? "slide-in-from-right-3" : "slide-in-from-left-3"
+                )}
+            >
+            {/* Grid view */}
+            {!isLoading && view === "grid" && (
+                sorted.length === 0 ? (
+                    <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4 py-4">
+                        {sorted.map(quest => (
+                            <QuestGridCard key={quest.id} quest={quest} />
+                        ))}
+                    </div>
+                )
+            )}
+
+            {/* List view (card rows) */}
+            {!isLoading && view === "list" && (
+                <div className="block">
                     {sorted.length === 0 ? (
-                        <div style={{ padding: "48px 0", textAlign: "center", color: "var(--fg-muted)" }}>
-                            {tab === "upcoming" ? "No upcoming quests scheduled." : "No active quests found."}
-                        </div>
+                        <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>
                     ) : (
-                        <ul className="quest-list">
+                        <ul className="list-none">
                             {sorted.map(quest => (
                                 <QuestCard key={quest.id} quest={quest} />
                             ))}
@@ -232,40 +319,42 @@ export function QuestList() {
                 </div>
             )}
 
-            {/* List (table) view */}
-            {!isLoading && view === "list" && (
-                <div className="quest-table-wrap active">
-                    <table className="quest-table">
+            {/* Compact list (table) view */}
+            {!isLoading && view === "compact" && (
+                <div className="block">
+                    <table className="w-full border-collapse">
                         <thead>
                             <tr>
-                                <th className="col-reward">Reward</th>
-                                <th className="tbl-name">Name</th>
-                                <th className="col-type">Type</th>
-                                <th className="col-questers">Questers</th>
-                                <th className="col-slots">Slots</th>
-                                <th className="col-time">Time Left</th>
+                                <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Reward</th>
+                                <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[240px]">Name</th>
+                                <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
+                                <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Questers</th>
+                                <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Slots</th>
+                                <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Time Left</th>
                             </tr>
                         </thead>
                         <tbody>
                             {sorted.length === 0 ? (
-                                <tr><td colSpan={6} style={{ textAlign: "center", padding: "32px", color: "var(--fg-muted)" }}>No active quests found.</td></tr>
+                                <tr><td colSpan={6} className="px-2 py-2.5 text-xs border-b border-border align-top text-center py-8 text-muted-foreground">{emptyMessage}</td></tr>
                             ) : sorted.map(quest => {
-                                const time = formatTimeLeft(quest.expiresAt)
+                                const time = formatTimeShort(quest.expiresAt)
                                 return (
-                                    <tr key={quest.id}>
-                                        <td className="quest-budget">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</td>
-                                        <td className="tbl-name">
-                                            <div className="tbl-name-title">
-                                                <Link className="quest-title-link" to="/quests/$questId" params={{ questId: quest.id }}>{quest.title}</Link>
+                                    <tr key={quest.id} className="hover:bg-muted">
+                                        <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                            <span className="text-md font-semibold text-success whitespace-nowrap leading-tight">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</span>
+                                        </td>
+                                        <td className="px-2 py-2.5 text-xs border-b border-border align-top min-w-[240px]">
+                                            <div className="text-base font-normal leading-snug mb-0.5">
+                                                <Link className="text-primary no-underline font-normal text-base leading-snug visited:text-primary/80 hover:text-primary/80" to="/quests/$questId" params={{ questId: quest.id }}>{quest.title}</Link>
                                             </div>
-                                            <div className="tbl-name-desc">{quest.description}</div>
-                                            <div className="tbl-name-sponsor">by <strong>{quest.sponsor}</strong></div>
+                                            <div className="text-xs text-muted-foreground leading-snug line-clamp-1 my-0.5">{quest.description}</div>
+                                            <div className="text-xs text-muted-foreground">by <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
                                         </td>
-                                        <td>
-                                            <span className={`badge ${typeBadgeClass(quest.type)}`}>{quest.type}</span>
-                                            <span className={`badge ${statusBadgeClass(quest.status)}`} style={{ marginLeft: "4px" }}>{quest.status}</span>
+                                        <td className="px-2 py-2.5 text-xs border-b border-border align-top">
+                                            <Badge variant={typeBadgeClass(quest.type).replace("badge-", "") as any}>{quest.type}</Badge>
+                                            <Badge variant={statusBadgeClass(quest.status).replace("badge-", "") as any} className="ml-1">{quest.status}</Badge>
                                         </td>
-                                        <td className="tbl-questers-cell">
+                                        <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
                                             {quest.questers > 0 ? (
                                                 <QuestersAvatarStack
                                                     details={(quest.questerDetails ?? []) as QuesterDetail[]}
@@ -273,12 +362,18 @@ export function QuestList() {
                                                     onClick={() => setPopupQuest({ id: quest.id, title: quest.title })}
                                                 />
                                             ) : (
-                                                <span style={{ fontSize: "11px", color: "var(--fg-muted)" }}>—</span>
+                                                <span className="text-xs text-muted-foreground">—</span>
                                             )}
                                         </td>
-                                        <td style={{ fontSize: "12px" }}>{quest.totalSlots - quest.filledSlots} left</td>
-                                        <td>
-                                            <div className={`tbl-time ${time.cls}`}>{time.label}</div>
+                                        <td className="px-2 py-2.5 text-xs border-b border-border align-top">{quest.totalSlots - quest.filledSlots} left</td>
+                                        <td className="px-2 py-2.5 text-xs border-b border-border align-top">
+                                            <div className={cn(
+                                                "font-mono text-xs font-semibold whitespace-nowrap",
+                                                time.cls === "warning" && "text-warning",
+                                                time.cls === "urgent" && "text-error",
+                                                time.cls === "normal" && "text-foreground",
+                                                time.cls === "muted" && "text-muted-foreground font-normal"
+                                            )}>{time.label}</div>
                                         </td>
                                     </tr>
                                 )
@@ -287,6 +382,7 @@ export function QuestList() {
                     </table>
                 </div>
             )}
+            </div>
         </div>
     )
 }

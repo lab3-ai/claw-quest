@@ -4,11 +4,11 @@
 ClawQuest uses a modern, type-safe stack designed for reliability and ease of deployment.
 
 ```ascii
-Telegram User      Web User      Web Admin      Smart Contract
-     |                |              |              |
-     | Webhook        | HTTPS/WSS     | HTTPS/WSS    | JSON-RPC
-     |                |              |              |
-     +----------------+-------+------+-------+------+
+Telegram User      Web User      Web Admin      Smart Contract     Stripe
+     |                |              |              |                 |
+     | Webhook        | HTTPS/WSS     | HTTPS/WSS    | JSON-RPC       | Webhook
+     |                |              |              |                 |
+     +----------------+-------+------+-------+------+--------+-------+
                               |
                     +---------+----------+
                     |                    |
@@ -17,18 +17,19 @@ Telegram User      Web User      Web Admin      Smart Contract
             |  API (Fastify)   |    | Escrow Poller    |
             |  - Auth (JWT)    |    | - Block cursor   |
             |  - Routes        |    | - Event handlers |
-            |  - Admin API     |    | - Reconciliation |
+            |  - Stripe module |    | - Reconciliation |
+            |  - Admin API     |    |                  |
             +--------+---------+    +--------+---------+
                      |                       |
           +----------+----------+            |
-          |                     |            |
-          v                     v            v
-    +---------------------+    +-----------+---------+
-    | Postgres (Supabase) |    | Blockchain (Base) |
-    | - Schema            |    | - Contracts       |
-    | - EscrowCursor      |    | - Events          |
-    | - Quest/Agent data  |    | - Balances        |
-    +---------------------+    +-------------------+
+          |          |          |            |
+          v          v          v            v
+    +----------+ +----------+ +-------------------+
+    | Postgres | | Stripe   | | Blockchain (Base) |
+    | Supabase | | Connect  | | - Contracts       |
+    | - Schema | | - Express| | - Events          |
+    | - Cursor | | - Payouts| | - Balances        |
+    +----------+ +----------+ +-------------------+
 ```
 
 ## 🔄 Data Flows
@@ -75,7 +76,36 @@ Distribution is computed based on quest type and participant rankings:
 - **Dust Handling**: Any rounding remainder (from integer division) is added to first recipient; sum invariant always enforced
 - **Status Guards**: Only live quests can distribute; reject double-pay (idempotent via DB constraints)
 
-### 4. Realtime Flow (Future)
+### 4. Stripe Fiat Payment Flow: Sponsor → Platform → Winners
+- **Architecture**: Stripe Connect with **Separate Charges and Transfers** model
+- **Account type**: Express connected accounts for winners (Stripe handles KYC)
+- **Parallel to crypto**: Same 3 flows (Fund, Distribute, Refund) — `fundingMethod` field routes to correct handler
+
+**Flow 4a — Fund Quest (Fiat)**:
+- Sponsor selects "Pay with Card" on fund page → API creates Stripe Checkout Session
+- Sponsor redirected to Stripe-hosted checkout → pays
+- Stripe fires `checkout.session.completed` webhook → API confirms funding, sets quest live
+
+**Flow 4b — Distribute Rewards (Fiat)**:
+- Creator/admin triggers distribute → API uses same distribution calculator (FCFS/Leaderboard/Lucky Draw)
+- Amounts computed in cents (BigInt), same dust handling as crypto
+- For each winner with a connected Stripe account: `stripe.transfers.create()` to their Express account
+- `payoutTxHash` field reused for Stripe transfer IDs (differentiated by `fundingMethod`)
+
+**Flow 4c — Refund (Fiat)**:
+- Creator/admin triggers refund → API calculates remaining (total - already distributed)
+- Issues partial Stripe refund via `stripe.refunds.create()` against original payment_intent
+- Webhook `charge.refunded` confirms refund completion
+
+**Winner Onboarding**:
+- Winners must connect a Stripe Express account to receive fiat payouts
+- `POST /stripe/connect/onboard` creates account + returns Stripe-hosted onboarding URL
+- `account.updated` webhook fires when onboarding completes → `stripeConnectedOnboarded = true`
+- Winners without connected accounts are skipped during distribution
+
+**Graceful Degradation**: Stripe is optional. If `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` are not set, all Stripe endpoints return 503. Server starts normally.
+
+### 5. Realtime Flow (Future)
 - **Dashboard** can subscribe to quest status updates via WebSocket/SSE
 - **API** broadcasts events when quests fund, distribute, or refund
 

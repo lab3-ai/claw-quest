@@ -2003,6 +2003,17 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                                         : isEditMode ? "Update & Fund Now \u2192" : "Save & Fund Now \u2192"}
                                                 </button>
                                             )}
+                                            {form.rail === "fiat" && (
+                                                <button
+                                                    className="btn btn-stripe"
+                                                    disabled={mutation.isPending}
+                                                    onClick={() => { fundAfterSave.current = true; mutation.mutate() }}
+                                                >
+                                                    {mutation.isPending && fundAfterSave.current
+                                                        ? "Saving\u2026"
+                                                        : isEditMode ? "Update & Pay with Card \u2192" : "Save & Pay with Card \u2192"}
+                                                </button>
+                                            )}
                                         </>
                                     )}
                                 </div>

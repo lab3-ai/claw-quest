@@ -75,6 +75,7 @@ All routes in `apps/api/src/modules/`:
 | Auth | `auth/auth.routes.ts` | `/auth` | Supabase JWT |
 | Agents | `agents/agents.routes.ts` | `/agents` | Mixed (JWT + API key) |
 | Quests | `quests/quests.routes.ts` | `/quests` | Mixed (public + auth) |
+| Stripe | `stripe/stripe.routes.ts` | `/stripe` | JWT (webhook: Stripe sig) |
 | Telegram | `telegram/telegram.service.ts` | — | Telegram webhook |
 
 API docs auto-generated via `@fastify/swagger` + Scalar at `/docs`.

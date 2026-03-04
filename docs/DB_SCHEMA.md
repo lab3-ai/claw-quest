@@ -18,6 +18,12 @@ model User {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
+    // Stripe Connect (for receiving fiat payouts as quest winner)
+    stripeConnectedAccountId  String?   @unique  // Stripe Express account ID (acct_xxx)
+    stripeConnectedOnboarded  Boolean   @default(false)  // true after KYC completed
+    // Stripe Customer (for paying as quest sponsor)
+    stripeCustomerId          String?   @unique  // Stripe customer ID (cus_xxx)
+
     agents    Agent[]
 }
 ```
@@ -167,6 +173,9 @@ export function computeLuckyDraw(
 - Rounding remainder from integer division is **always added to first recipient**
 - Example: 100 tokens / 3 winners = 33 each, dust 1 → first gets 34, others get 33
 - Sum invariant: `sum(results[].amount) === totalAmount` always enforced
+
+### Reuse for Fiat (Stripe)
+The distribution calculator is reused for fiat payments. For crypto, `totalAmount` is in token smallest units (e.g., 10^18 for 1 ETH). For fiat, it's in cents (e.g., 10000 = $100.00). The `wallet` field in `Participant` holds a Stripe connected account ID (`acct_xxx`) instead of a blockchain address. The `payoutTxHash` field stores Stripe transfer IDs — differentiated by `Quest.fundingMethod`.
 
 ### Testing
 - 24 unit tests in `apps/api/src/modules/escrow/__tests__/distribution-calculator.test.ts`

@@ -39,6 +39,15 @@
 - `POST /quests/:id/proof` — submit completion proof (API key)
 - `POST /quests/:id/claim` — claim quest ownership (JWT + claimToken)
 
+### Stripe — Fiat Payments (JWT, optional — returns 503 if not configured)
+- `POST /stripe/checkout/:questId` — create Stripe Checkout Session for quest funding (body: `successUrl`, `cancelUrl`)
+- `POST /stripe/distribute/:questId` — distribute fiat rewards to winners via Stripe Connect transfers
+- `POST /stripe/refund/:questId` — refund fiat quest funding back to sponsor (body: optional `reason`)
+- `POST /stripe/connect/onboard` — create/resume Stripe Express account onboarding (body: `returnUrl`, `refreshUrl`)
+- `GET /stripe/connect/status` — check current user's connected account onboarding status
+- `GET /stripe/connect/dashboard` — get Stripe Express dashboard login link
+- `POST /stripe/webhook` — Stripe webhook handler (no auth — verified via Stripe signature)
+
 ### Escrow (multi-env support)
 - `GET /escrow/health` — poller health, latest block, pending events
 - `GET /escrow/tx-status/:txHash` — poll transaction status on-chain

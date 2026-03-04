@@ -83,15 +83,17 @@ API docs auto-generated via `@fastify/swagger` + Scalar at `/docs`.
 
 - **Router**: TanStack Router (file-based convention in `src/routes/`)
 - **Data fetching**: TanStack Query
-- **Styling**: Plain CSS with design system variables — **not Tailwind** (despite tailwind being in devDeps for shadcn/ui components only)
-- **UI primitives**: shadcn/ui components in `src/components/ui/` (button, card, badge, input, label)
+- **Styling**: Tailwind CSS (utility-first) + CSS variables for design tokens
+- **UI components**: shadcn/ui (Radix UI primitives) in `src/components/ui/`
+- **Icons**: MingCute (`@mingcute/react`) for UI icons, `<PlatformIcon>` for brand SVGs
 - **Auth context**: `src/context/AuthContext.tsx` — provides `useAuth()` → `{ session, user, isAuthenticated, isLoading }`
 
-### CSS conventions
+### Styling conventions
 
-- Design system variables: `--fg`, `--fg-muted`, `--border`, `--border-heavy`, `--link`, `--accent`, `--sidebar-bg`
-- Page-specific CSS goes in `src/styles/pages/[page-name].css`, imported at the top of the page component
-- Shared CSS files in `src/styles/` (27 files covering buttons, badges, forms, modals, tables, etc.)
+- Use Tailwind utilities for all new page styles
+- Design tokens defined as CSS variables in `variables.css` (see `docs/design-system.md`)
+- Legacy plain CSS files in `src/styles/` — being migrated to Tailwind
+- shadcn/ui components use `cn()` utility for class merging
 
 ### Route structure
 
@@ -155,7 +157,8 @@ See `.env.example`. Key vars:
 
 - **Don't use npm or yarn** — pnpm only
 - **Don't introduce microservices** — keep it as a monolith
-- **Don't use Tailwind for new page styles** — use CSS design system variables
+- **Use Tailwind for all new page styles** — Tailwind is the primary styling method (design system v2)
+- **Use MingCute icons** (`@mingcute/react`) for UI icons, not Lucide
 - **Don't shard the database** or add premature optimizations
 - **Don't use ORM magic** — be explicit with Prisma queries, watch for N+1
 - **Don't add new env vars without updating `.env.example`**

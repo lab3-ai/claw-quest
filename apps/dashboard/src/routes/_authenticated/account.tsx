@@ -62,7 +62,9 @@ export function Account() {
     const [walletInput, setWalletInput] = useState("")
     const [walletError, setWalletError] = useState("")
     const [unlinkError, setUnlinkError] = useState("")
+    const [linkError, setLinkError] = useState("")
     const [unlinkPending, setUnlinkPending] = useState("")
+    const [linkPending, setLinkPending] = useState("")
 
     // Profile editing state
     const [editingField, setEditingField] = useState<"displayName" | "username" | null>(null)
@@ -171,18 +173,28 @@ export function Account() {
     const linkedProviders = new Set(identities.map(i => i.provider))
 
     async function handleLinkProvider(supabaseProvider: string) {
-        // Store provider so callback.tsx can detect this is an identity-link flow
-        localStorage.setItem("clawquest_linking_provider", supabaseProvider)
-        await supabase.auth.linkIdentity({
-            provider: supabaseProvider as any,
-            options: {
-                redirectTo: `${window.location.origin}/auth/callback`,
-                // Request extra Discord scopes for role verification (guilds.members.read)
-                ...(supabaseProvider === "discord" && {
-                    scopes: "identify email guilds guilds.members.read",
-                }),
-            },
-        })
+        setLinkError("")
+        setLinkPending(supabaseProvider)
+        try {
+            // Store provider so callback.tsx can detect this is an identity-link flow
+            localStorage.setItem("clawquest_linking_provider", supabaseProvider)
+            const { error } = await supabase.auth.linkIdentity({
+                provider: supabaseProvider as any,
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                    // Request extra Discord scopes for role verification (guilds.members.read)
+                    ...(supabaseProvider === "discord" && {
+                        scopes: "identify email guilds guilds.members.read",
+                    }),
+                },
+            })
+            if (error) throw error
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : "Failed to link provider"
+            setLinkError(msg)
+        } finally {
+            setLinkPending("")
+        }
     }
 
     async function handleUnlinkProvider(providerKey: string) {
@@ -427,17 +439,18 @@ export function Account() {
                                     <button
                                         className="btn btn-sm btn-outline"
                                         style={{ marginLeft: "auto", fontSize: "12px", padding: "4px 10px" }}
+                                        disabled={linkPending === p.supabaseProvider}
                                         onClick={() => handleLinkProvider(p.supabaseProvider!)}
                                     >
-                                        Link
+                                        {linkPending === p.supabaseProvider ? "Linking…" : "Link"}
                                     </button>
                                 )}
                             </div>
                         )
                     })}
 
-                    {unlinkError && (
-                        <div className="account-error" style={{ marginTop: "8px" }}>{unlinkError}</div>
+                    {(unlinkError || linkError) && (
+                        <div className="account-error" style={{ marginTop: "8px" }}>{unlinkError || linkError}</div>
                     )}
                 </div>
             </div>

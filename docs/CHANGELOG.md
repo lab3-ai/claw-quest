@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.12.1 — Auth Redirect Fix + Login Cleanup (2026-03-04)
+## v0.12.1 — Auth Redirect Fix + Login Cleanup + Account Linking (2026-03-04)
 
 ### Bug Fixes
 - [Fix] "Log in to Accept Quest" button now saves quest URL to localStorage before redirecting to login — user returns to quest page after auth (previously landed on `/quests`)
@@ -8,6 +8,14 @@
 - [Fix] Edit link on fund page points to edit page instead of manage
 - [Fix] Add edit link when insufficient balance on fund page
 - [Fix] Quest detail Edit button not visible for creator (`isCreator` missing from response schema)
+- [Fix] Telegram callback race condition — use `supabase.auth.getSession()` instead of `useAuth()` context (sessionStorage cleared before context resolves)
+- [Fix] X callback flash-of-error — same async session fix
+
+### New Features
+- [New] Telegram unlink: `DELETE /auth/social/telegram` clears `telegramId`/`telegramUsername`
+- [New] Telegram unlink button on account page with lockout prevention
+- [New] Profile editing: display name + username inline edit on account page
+- [New] `PATCH /auth/me` endpoint for profile updates
 
 ### Cleanup
 - [Remove] GitHub login button (provider disabled in Supabase)

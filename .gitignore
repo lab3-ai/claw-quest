@@ -133,6 +133,6 @@ vercel.env
 _tmp_*
 
 # Personal logs (not committed)
-docs/WORKFLOW-LOG.md
-docs/DECISIONS-LOG.md
-STATUS.md
+docs/design-system/WORKFLOW-LOG.md
+docs/design-system/DECISIONS-LOG.md
+docs/design-system/STATUS.md

@@ -4,11 +4,11 @@ description: Update the personal STATUS.md file with current git state, phase pr
 allowed-tools: Bash, Read, Write, Edit, Grep, Glob
 ---
 
-Update the personal STATUS.md file at project root.
+Update the personal STATUS.md file at `docs/design-system/STATUS.md`.
 
 Steps:
 1. Run `git status --short` and `git log --oneline -5` to get current state
-2. Read `STATUS.md` to see existing content
+2. Read `docs/design-system/STATUS.md` to see existing content
 3. Check for any new migration reports in `plans/reports/`
 4. Update STATUS.md with:
    - Current branch and latest commits

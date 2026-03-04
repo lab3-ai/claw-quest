@@ -82,7 +82,7 @@ Principles:
 
 | Token | Hex | Use |
 |-------|-----|-----|
-| `--bg` | `#f0f0f0` | Page background (light gray) |
+| `--bg` | `#ffffff` | Page background (white) |
 | `--bg-subtle` | `#e8e8e8` | Sidebar, section bg, card hover |
 | `--bg-muted` | `#dcdcdc` | Disabled bg, skeleton loading |
 | `--fg` | `#111111` | Primary text (near-black) |
@@ -90,6 +90,7 @@ Principles:
 | `--fg-muted` | `#888888` | Placeholder, disabled text |
 | `--border` | `#d0d0d0` | Card borders, dividers |
 | `--border-heavy` | `#aaaaaa` | Active borders, emphasis |
+| `--border-strong` | `#222222` | Strong contrast borders |
 
 ### Dark Surfaces
 
@@ -302,7 +303,7 @@ All buttons: `font-weight: 600`, monospace, tight radius.
 
 ### Cards
 
-- Background: `--bg` (light gray)
+- Background: `--bg` (white)
 - Border: `1px solid var(--border)`
 - Radius: `--radius-lg` (6px)
 - Padding: `--space-4` to `--space-5`
@@ -329,9 +330,27 @@ All buttons: `font-weight: 600`, monospace, tight radius.
 
 - Height: `44px` (compact)
 - Background: `--bg` with bottom border
-- Logo: `claw` (normal) + `quest` (extrabold) — weight contrast, no color
-- Active link: `bg-secondary`, `font-weight: 500`
+- Logo: text `CLAWQUEST`, `text-base font-semibold`
+- Active link: `border-b-2 border-foreground` (underline indicator, not bg fill)
+- Auth buttons (Dashboard, User): `variant="outline"`, same size as primary CTAs
 - Font: `--text-sm` (12-13px) for nav items
+
+### Tabs (Quest Explore)
+
+- Style: pill/chip with sliding indicator (`bg-foreground` behind active tab)
+- Active tab: `text-background font-semibold` (inverted)
+- Inactive tab: `text-muted-foreground`, hover: `text-foreground`
+- Icons: MingCute — Fill variant for active, Line variant for inactive
+- Radius: `--radius-base` on each tab button
+- Animation: `transition-all duration-200 ease-out` on sliding indicator
+
+### View Toggle
+
+- Container: `border border-border p-0.5 rounded` with sliding indicator (`bg-accent`)
+- Active button: `text-accent-foreground`
+- Inactive button: `text-muted-foreground`, hover: `text-foreground`
+- Each button has a Tooltip (shadcn) on hover
+- Radius: `--radius-base` on buttons
 
 ---
 
@@ -383,11 +402,20 @@ All CSS variables mapped in `tailwind.config.js`. Use Tailwind classes in JSX.
 
 | shadcn Token | Maps To | Hex |
 |-------------|---------|-----|
+| `background` | `--bg` | `#ffffff` |
+| `foreground` | `--fg` | `#111111` |
 | `primary` | `--primary` | `#0a0a0a` (black) |
 | `primary-foreground` | `--primary-fg` | `#ffffff` |
 | `secondary` | `--bg-muted` | `#dcdcdc` |
-| `destructive` | `--error` | `#ff4444` |
+| `secondary-foreground` | `--fg` | `#111111` |
 | `muted` | `--bg-muted` / `--fg-muted` | `#dcdcdc` / `#888888` |
+| `destructive` | `--error` | `#ff4444` |
+| `destructive-foreground` | `--accent-fg` | `#ffffff` |
+| `accent` | `--accent` | `#0a0a0a` |
+| `accent-foreground` | `--accent-fg` | `#ffffff` |
+| `card` | `--bg` | `#ffffff` |
+| `popover` | `--bg` | `#ffffff` |
+| `input` | `--border` | `#d0d0d0` |
 | `ring` | `--accent` | `#0a0a0a` |
 
 ### CSS Variable Source

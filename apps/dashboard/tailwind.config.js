@@ -33,7 +33,7 @@ export default {
                 },
                 destructive: {
                     DEFAULT: "var(--error)",
-                    foreground: "#fff",
+                    foreground: "var(--accent-fg)",
                 },
                 input: "var(--border)",
                 ring: "var(--accent)",

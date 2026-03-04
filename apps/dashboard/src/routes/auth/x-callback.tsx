@@ -75,16 +75,16 @@ export function XCallback() {
 
     if (error) {
         return (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", gap: "16px" }}>
-                <div style={{ color: "var(--red)", fontSize: "14px" }}>X Authorization failed: {error}</div>
-                <a href="/account" style={{ color: "var(--link)", fontSize: "13px" }}>Back to Settings</a>
+            <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+                <div className="text-error text-base">X Authorization failed: {error}</div>
+                <a href="/account" className="text-link text-sm">Back to Settings</a>
             </div>
         )
     }
 
     return (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh" }}>
-            <div style={{ color: "var(--text-muted)", fontSize: "14px" }}>Linking X account...</div>
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="text-muted-foreground text-base">Linking X account...</div>
         </div>
     )
 }

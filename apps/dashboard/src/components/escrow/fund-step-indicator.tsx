@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils'
 import type { FundStep } from '@/components/escrow/fund-types'
 
 interface FundStepIndicatorProps {
@@ -10,23 +11,53 @@ export function FundStepIndicator({ step, isNative }: FundStepIndicatorProps) {
     const afterDeposit: FundStep[] = ['confirming', 'success']
 
     return (
-        <div className="fund-steps">
-            <div className={`fund-step ${step === 'connect' ? '' : 'done'}`}>
-                <span className="fund-step-num">1</span>
+        <div className="flex justify-center gap-4 mb-8 max-sm:gap-2 max-sm:flex-wrap">
+            <div className={cn(
+                'flex items-center gap-1.5 text-xs text-muted-foreground opacity-50 transition-all',
+                step !== 'connect' && '!opacity-100 !text-accent'
+            )}>
+                <span className={cn(
+                    'inline-flex items-center justify-center size-[22px] rounded-full border-2 border-current text-xs font-bold',
+                    step !== 'connect' && '!bg-success !border-success !text-primary-foreground'
+                )}>1</span>
                 <span>Connect</span>
             </div>
             {!isNative && (
-                <div className={`fund-step ${step === 'approve' ? 'active' : afterApprove.includes(step) ? 'done' : ''}`}>
-                    <span className="fund-step-num">2</span>
+                <div className={cn(
+                    'flex items-center gap-1.5 text-xs text-muted-foreground opacity-50 transition-all',
+                    step === 'approve' && '!opacity-100 !text-accent !font-semibold',
+                    afterApprove.includes(step) && '!opacity-100 !text-accent'
+                )}>
+                    <span className={cn(
+                        'inline-flex items-center justify-center size-[22px] rounded-full border-2 border-current text-xs font-bold',
+                        step === 'approve' && '!bg-accent !border-accent !text-accent-foreground',
+                        afterApprove.includes(step) && '!bg-success !border-success !text-primary-foreground'
+                    )}>2</span>
                     <span>Approve</span>
                 </div>
             )}
-            <div className={`fund-step ${step === 'deposit' ? 'active' : afterDeposit.includes(step) ? 'done' : ''}`}>
-                <span className="fund-step-num">{isNative ? 2 : 3}</span>
+            <div className={cn(
+                'flex items-center gap-1.5 text-xs text-muted-foreground opacity-50 transition-all',
+                step === 'deposit' && '!opacity-100 !text-accent !font-semibold',
+                afterDeposit.includes(step) && '!opacity-100 !text-accent'
+            )}>
+                <span className={cn(
+                    'inline-flex items-center justify-center size-[22px] rounded-full border-2 border-current text-xs font-bold',
+                    step === 'deposit' && '!bg-accent !border-accent !text-accent-foreground',
+                    afterDeposit.includes(step) && '!bg-success !border-success !text-primary-foreground'
+                )}>{isNative ? 2 : 3}</span>
                 <span>Deposit</span>
             </div>
-            <div className={`fund-step ${step === 'confirming' ? 'active' : step === 'success' ? 'done' : ''}`}>
-                <span className="fund-step-num">{isNative ? 3 : 4}</span>
+            <div className={cn(
+                'flex items-center gap-1.5 text-xs text-muted-foreground opacity-50 transition-all',
+                step === 'confirming' && '!opacity-100 !text-accent !font-semibold',
+                step === 'success' && '!opacity-100 !text-accent'
+            )}>
+                <span className={cn(
+                    'inline-flex items-center justify-center size-[22px] rounded-full border-2 border-current text-xs font-bold',
+                    step === 'confirming' && '!bg-accent !border-accent !text-accent-foreground',
+                    step === 'success' && '!bg-success !border-success !text-primary-foreground'
+                )}>{isNative ? 3 : 4}</span>
                 <span>Confirm</span>
             </div>
         </div>

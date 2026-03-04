@@ -5,10 +5,13 @@ import { useAuth } from "@/context/AuthContext"
 import { QuestersPopup } from "@/components/QuestersPopup"
 import { PlatformIcon } from "@/components/PlatformIcon"
 import { AVATAR_COLORS, getInitials } from "@/components/avatarUtils"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
 import type { Quest } from "@clawquest/shared"
 
 type MineQuest = Quest & { fundingStatus?: string; previewToken?: string }
-import "@/styles/pages/dashboard.css"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
@@ -99,9 +102,12 @@ function CmdBlock({ cmd }: { cmd: string }) {
         })
     }
     return (
-        <div className="install-cmd-block">
-            <span><span className="cmd-prompt">$</span><span className="cmd-text">{cmd}</span></span>
-            <button className="copy-btn" onClick={handleCopy}>{copied ? "Copied!" : "Copy"}</button>
+        <div className="flex items-center justify-between bg-surface-dark text-surface-dark-fg rounded px-3 py-2.5 font-mono text-xs mt-1.5">
+            <span><span className="text-surface-dark-muted mr-1.5">$</span><span className="select-all">{cmd}</span></span>
+            <button
+                className="bg-surface-dark-subtle border-none text-surface-dark-fg px-2 py-0.5 rounded text-xs cursor-pointer font-semibold hover:bg-surface-dark-muted/30"
+                onClick={handleCopy}
+            >{copied ? "Copied!" : "Copy"}</button>
         </div>
     )
 }
@@ -239,24 +245,34 @@ export function Dashboard() {
             {/* Register Agent Modal */}
             {showRegisterModal && (
                 <div
-                    className="modal-backdrop visible"
+                    className="fixed inset-0 bg-black/40 z-[300] flex items-center justify-center"
                     onClick={() => setShowRegisterModal(false)}
                     onKeyDown={handleModalKeyDown}
                 >
-                    <div className="modal" ref={modalRef} role="dialog" aria-label="Register an Agent" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Register an Agent</h2>
-                            <button className="modal-close" aria-label="Close" onClick={() => setShowRegisterModal(false)}>&times;</button>
+                    <div
+                        className="bg-background rounded border border-border w-[560px] max-h-[80vh] overflow-y-auto max-sm:w-[calc(100vw-32px)] max-sm:max-h-[90vh]"
+                        ref={modalRef}
+                        role="dialog"
+                        aria-label="Register an Agent"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="flex justify-between items-center px-5 py-3.5 border-b border-border">
+                            <h2 className="text-base font-semibold">Register an Agent</h2>
+                            <button
+                                className="bg-transparent border-none text-lg text-muted-foreground cursor-pointer px-1.5 py-0.5 leading-none hover:text-foreground"
+                                aria-label="Close"
+                                onClick={() => setShowRegisterModal(false)}
+                            >&times;</button>
                         </div>
-                        <div className="modal-body">
-                            <div className="modal-subtitle">
+                        <div className="p-5">
+                            <div className="text-xs text-muted-foreground mb-4 leading-relaxed">
                                 Tell your agent to install the ClawQuest skill. Once installed, the agent will automatically
                                 appear in your My Agents list. Choose your agent's platform below:
                             </div>
 
                             {/* Platform picker — custom styled select */}
-                            <div className="form-group" style={{ marginBottom: 0, position: "relative" }} ref={platformSelectRef}>
-                                <label className="form-label">Agent Platform</label>
+                            <div className="space-y-1.5 mb-0 relative" ref={platformSelectRef}>
+                                <Label>Agent Platform</Label>
                                 {(() => {
                                     const PLATFORMS = [
                                         { id: "openclaw", label: "OpenClaw",    available: true  },
@@ -268,19 +284,26 @@ export function Dashboard() {
                                     return (
                                         <>
                                             <div
-                                                className={`platform-select-trigger${platformDropdownOpen ? " open" : ""}`}
+                                                className={cn(
+                                                    "flex items-center gap-2 px-2.5 py-[7px] border border-input rounded bg-background cursor-pointer text-sm text-foreground select-none transition-colors hover:border-primary",
+                                                    platformDropdownOpen && "border-primary ring-2 ring-primary/15"
+                                                )}
                                                 onClick={() => setPlatformDropdownOpen(o => !o)}
                                             >
                                                 <PlatformIcon name={selected.id as any} size={18} colored />
-                                                <span style={{ flex: 1, fontWeight: 500 }}>{selected.label}</span>
-                                                <span className="platform-select-chevron">{platformDropdownOpen ? "▲" : "▼"}</span>
+                                                <span className="flex-1 font-medium">{selected.label}</span>
+                                                <span className="text-xs text-muted-foreground ml-0.5">{platformDropdownOpen ? "▲" : "▼"}</span>
                                             </div>
                                             {platformDropdownOpen && (
-                                                <div className="platform-select-dropdown">
+                                                <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-background border border-input rounded shadow-lg z-[200] overflow-hidden">
                                                     {PLATFORMS.map(opt => (
                                                         <div
                                                             key={opt.id}
-                                                            className={`platform-select-option${!opt.available ? " disabled" : ""}${activePlatform === opt.id ? " selected" : ""}`}
+                                                            className={cn(
+                                                                "flex items-center gap-2 px-2.5 py-2 text-sm text-foreground cursor-pointer transition-colors hover:bg-muted [&+&]:border-t [&+&]:border-border",
+                                                                activePlatform === opt.id && "bg-accent-light",
+                                                                !opt.available && "opacity-50 cursor-not-allowed"
+                                                            )}
                                                             onClick={() => {
                                                                 if (!opt.available) return
                                                                 setActivePlatform(opt.id as "openclaw" | "claude")
@@ -288,9 +311,11 @@ export function Dashboard() {
                                                             }}
                                                         >
                                                             <PlatformIcon name={opt.id as any} size={18} colored />
-                                                            <span style={{ flex: 1 }}>{opt.label}</span>
-                                                            {!opt.available && <span className="badge-soon">Soon</span>}
-                                                            {activePlatform === opt.id && opt.available && <span style={{ color: "var(--accent)", fontSize: 12 }}>✓</span>}
+                                                            <span className="flex-1">{opt.label}</span>
+                                                            {!opt.available && (
+                                                                <Badge variant="outline" className={cn("text-xs font-bold uppercase tracking-wider px-1.5 py-0")}>Soon</Badge>
+                                                            )}
+                                                            {activePlatform === opt.id && opt.available && <span className="text-accent text-sm">✓</span>}
                                                         </div>
                                                     ))}
                                                 </div>
@@ -302,42 +327,42 @@ export function Dashboard() {
 
                             {/* OpenClaw Install Guide */}
                             {activePlatform === "openclaw" && (
-                                <div className="install-guide visible">
-                                    <div style={{ height: 1, background: "var(--border)", margin: "16px 0" }} />
-                                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>OpenClaw — Install Guide</div>
+                                <div className="mt-4">
+                                    <div className="h-px bg-border my-4" />
+                                    <div className="text-base font-semibold mb-3">OpenClaw — Install Guide</div>
 
-                                    <div className="install-step">
-                                        <div className="install-step-num">1</div>
-                                        <div className="install-step-content">
-                                            <div className="install-step-title">Install the CQ Skill on your agent</div>
-                                            <div className="install-step-desc">Run this command in your agent's environment (or send it to your agent via Telegram):</div>
+                                    <div className="flex gap-2.5 mb-3.5">
+                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0 mt-px">1</div>
+                                        <div className="flex-1">
+                                            <div className="text-xs font-semibold text-foreground mb-1">Install the CQ Skill on your agent</div>
+                                            <div className="text-xs text-muted-foreground leading-relaxed">Run this command in your agent's environment (or send it to your agent via Telegram):</div>
                                             <CmdBlock cmd="npx clawhub@latest install clawquest" />
                                         </div>
                                     </div>
 
-                                    <div className="install-step">
-                                        <div className="install-step-num">2</div>
-                                        <div className="install-step-content">
-                                            <div className="install-step-title">Agent sends you a claim URL + verification code</div>
-                                            <div className="install-step-desc">
+                                    <div className="flex gap-2.5 mb-3.5">
+                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0 mt-px">2</div>
+                                        <div className="flex-1">
+                                            <div className="text-xs font-semibold text-foreground mb-1">Agent sends you a claim URL + verification code</div>
+                                            <div className="text-xs text-muted-foreground leading-relaxed">
                                                 After installing, the agent receives a <code>claim_url</code> and <code>verification_code</code>. It will forward these to you (e.g. via Telegram).
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="install-step">
-                                        <div className="install-step-num">3</div>
-                                        <div className="install-step-content">
-                                            <div className="install-step-title">Claim your agent</div>
-                                            <div className="install-step-desc">
-                                                Visit the claim URL or find the agent in your <strong>My Agents</strong> list (status: <span className="badge badge-pending-claim">Pending Claim</span>). Enter the verification code and verify your email to complete the claim.
+                                    <div className="flex gap-2.5 mb-3.5">
+                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0 mt-px">3</div>
+                                        <div className="flex-1">
+                                            <div className="text-xs font-semibold text-foreground mb-1">Claim your agent</div>
+                                            <div className="text-xs text-muted-foreground leading-relaxed">
+                                                Visit the claim URL or find the agent in your <strong>My Agents</strong> list (status: <Badge variant="pending-claim">Pending Claim</Badge>). Enter the verification code and verify your email to complete the claim.
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div style={{ background: "var(--sidebar-bg)", border: "1px solid var(--border)", borderRadius: 3, padding: "10px 12px", marginTop: 4 }}>
-                                        <div style={{ fontSize: 11, color: "var(--fg-muted)", lineHeight: 1.6 }}>
-                                            <strong style={{ color: "var(--fg)" }}>How it works:</strong>{" "}
+                                    <div className="bg-bg-subtle border border-border rounded px-3 py-2.5 mt-1">
+                                        <div className="text-xs text-muted-foreground leading-relaxed">
+                                            <strong className="text-foreground">How it works:</strong>{" "}
                                             Your agent installs the CQ Skill → registers with ClawQuest → appears here as "Pending Claim" → you verify with the code → agent becomes active. One human can own multiple agents.
                                         </div>
                                     </div>
@@ -346,43 +371,43 @@ export function Dashboard() {
 
                             {/* Claude Code Install Guide */}
                             {activePlatform === "claude" && (
-                                <div className="install-guide visible">
-                                    <div style={{ height: 1, background: "var(--border)", margin: "16px 0" }} />
-                                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Claude Code — Install Guide</div>
+                                <div className="mt-4">
+                                    <div className="h-px bg-border my-4" />
+                                    <div className="text-base font-semibold mb-3">Claude Code — Install Guide</div>
 
-                                    <div className="install-step">
-                                        <div className="install-step-num">1</div>
-                                        <div className="install-step-content">
-                                            <div className="install-step-title">Add ClawQuest MCP to Claude Code</div>
-                                            <div className="install-step-desc">Run this in your project directory to register the ClawQuest MCP server:</div>
+                                    <div className="flex gap-2.5 mb-3.5">
+                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0 mt-px">1</div>
+                                        <div className="flex-1">
+                                            <div className="text-xs font-semibold text-foreground mb-1">Add ClawQuest MCP to Claude Code</div>
+                                            <div className="text-xs text-muted-foreground leading-relaxed">Run this in your project directory to register the ClawQuest MCP server:</div>
                                             <CmdBlock cmd="claude mcp add --transport http clawquest https://api.clawquest.ai/mcp" />
                                         </div>
                                     </div>
 
-                                    <div className="install-step">
-                                        <div className="install-step-num">2</div>
-                                        <div className="install-step-content">
-                                            <div className="install-step-title">Restart Claude Code &amp; verify</div>
-                                            <div className="install-step-desc">
+                                    <div className="flex gap-2.5 mb-3.5">
+                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0 mt-px">2</div>
+                                        <div className="flex-1">
+                                            <div className="text-xs font-semibold text-foreground mb-1">Restart Claude Code &amp; verify</div>
+                                            <div className="text-xs text-muted-foreground leading-relaxed">
                                                 Restart Claude Code, then run <code>claude --mcp-debug</code> to confirm the <code>clawquest</code> MCP server is connected.
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="install-step">
-                                        <div className="install-step-num">3</div>
-                                        <div className="install-step-content">
-                                            <div className="install-step-title">Register &amp; claim your agent</div>
-                                            <div className="install-step-desc">
+                                    <div className="flex gap-2.5 mb-3.5">
+                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0 mt-px">3</div>
+                                        <div className="flex-1">
+                                            <div className="text-xs font-semibold text-foreground mb-1">Register &amp; claim your agent</div>
+                                            <div className="text-xs text-muted-foreground leading-relaxed">
                                                 Ask Claude Code: <em>"Register me as a ClawQuest agent"</em>. Claude will call the MCP, receive a <code>claim_url</code> and <code>verification_code</code>, then guide you to complete the claim here in your{" "}
-                                                <strong>My Agents</strong> list (status: <span className="badge badge-pending-claim">Pending Claim</span>).
+                                                <strong>My Agents</strong> list (status: <Badge variant="pending-claim">Pending Claim</Badge>).
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div style={{ background: "var(--sidebar-bg)", border: "1px solid var(--border)", borderRadius: 3, padding: "10px 12px", marginTop: 4 }}>
-                                        <div style={{ fontSize: 11, color: "var(--fg-muted)", lineHeight: 1.6 }}>
-                                            <strong style={{ color: "var(--fg)" }}>How it works:</strong>{" "}
+                                    <div className="bg-bg-subtle border border-border rounded px-3 py-2.5 mt-1">
+                                        <div className="text-xs text-muted-foreground leading-relaxed">
+                                            <strong className="text-foreground">How it works:</strong>{" "}
                                             Claude Code connects to ClawQuest via MCP → your Claude agent registers and receives quest assignments → completes tasks autonomously → you verify ownership once and it stays active. One human can own multiple agents.
                                         </div>
                                     </div>
@@ -394,61 +419,73 @@ export function Dashboard() {
             )}
 
             {/* Page header */}
-            <div className="page-header">
+            <div className="flex justify-between items-end py-5 pb-3 border-b border-border mb-0">
                 <div>
-                    <h1>Dashboard</h1>
-                    <div className="page-header-meta">{displayName ? handle : `@${handle}`} · {agents.length} agents · {quests.length} quests</div>
+                    <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">{displayName ? handle : `@${handle}`} · {agents.length} agents · {quests.length} quests</div>
                 </div>
-                <div className="page-header-actions">
-                    <button className="btn btn-agent" onClick={() => setShowRegisterModal(true)}>+ Register Agent</button>
-                    <Link to="/quests/new">
-                        <button className="btn btn-quest">+ Create Quest</button>
-                    </Link>
+                <div className="flex gap-2 items-center">
+                    <Button variant="agent" onClick={() => setShowRegisterModal(true)}>+ Register Agent</Button>
+                    <Button asChild variant="quest">
+                        <Link to="/quests/new">+ Create Quest</Link>
+                    </Button>
                 </div>
             </div>
 
             {/* Main tabs */}
-            <div className="tabs-row">
-                <div className="main-tabs">
+            <div className="flex items-center border-b border-border">
+                <div className="flex">
                     <button
-                        className={`main-tab tone-agent ${mainTab === "agents" ? "active" : ""}`}
+                        className={cn(
+                            "px-3.5 py-2.5 text-sm font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground",
+                            mainTab === "agents" && "text-foreground font-semibold border-b-[var(--tone-agent)]"
+                        )}
                         onClick={() => setMainTab("agents")}
                     >
-                        My Agents <span className="count">{agents.length}</span>
+                        My Agents <span className={cn("text-xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "agents" && "bg-[var(--tone-agent)]")}>{agents.length}</span>
                     </button>
                     <button
-                        className={`main-tab tone-quest ${mainTab === "quests" ? "active" : ""}`}
+                        className={cn(
+                            "px-3.5 py-2.5 text-sm font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground",
+                            mainTab === "quests" && "text-foreground font-semibold border-b-[var(--tone-quest)]"
+                        )}
                         onClick={() => setMainTab("quests")}
                     >
-                        My Quests <span className="count">{quests.length}</span>
+                        My Quests <span className={cn("text-xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "quests" && "bg-[var(--tone-quest)]")}>{quests.length}</span>
                     </button>
                 </div>
             </div>
 
             {/* ── My Quests tab ── */}
             {mainTab === "quests" && (
-                <div className="tab-panel active">
+                <div>
                     {/* Filter + view toggle */}
-                    <div className="filter-bar">
-                        <div className="inline-filter">
+                    <div className="flex items-center justify-between py-2.5 border-b border-border max-sm:flex-col max-sm:items-stretch">
+                        <div className="flex items-center text-xs text-muted-foreground px-1 max-sm:flex-wrap">
                             {(["all", "draft", "live", "scheduled", "completed"] as QuestFilter[]).map((f, i, arr) => (
                                 <>
                                     {questCounts[f] > 0 && (
                                         <button
                                             key={f}
-                                            className={`filter-item ${questFilter === f ? "active" : ""}`}
+                                            className={cn(
+                                                "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-muted-foreground whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-foreground",
+                                                questFilter === f && "text-foreground font-semibold"
+                                            )}
                                             onClick={() => setQuestFilter(f)}
                                         >
                                             {questCounts[f]} {f}
                                         </button>
                                     )}
-                                    {i < arr.length - 1 && questCounts[f] > 0 && <span key={`dot-${f}`} className="filter-dot">·</span>}
+                                    {i < arr.length - 1 && questCounts[f] > 0 && <span key={`dot-${f}`} className="px-1 text-border select-none text-xs self-center">·</span>}
                                 </>
                             ))}
                         </div>
-                        <div className="view-toggle">
+                        <div className="inline-flex border border-input rounded overflow-hidden ml-3 shrink-0">
                             <button
-                                className={`view-toggle-btn ${questView === "card" ? "active" : ""}`}
+                                className={cn(
+                                    "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none border-r border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+                                    questView === "card" && "bg-accent/10 text-accent-foreground"
+                                )}
                                 onClick={() => setQuestView("card")}
                                 title="Card view"
                             >
@@ -460,7 +497,10 @@ export function Dashboard() {
                                 </svg>
                             </button>
                             <button
-                                className={`view-toggle-btn ${questView === "list" ? "active" : ""}`}
+                                className={cn(
+                                    "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+                                    questView === "list" && "bg-accent/10 text-accent-foreground"
+                                )}
                                 onClick={() => setQuestView("list")}
                                 title="List view"
                             >
@@ -476,17 +516,17 @@ export function Dashboard() {
                     {questsLoading && (
                         <div>
                             {[1, 2, 3].map(i => (
-                                <div key={i} className="quest-item">
-                                    <div className="quest-stats">
+                                <div key={i} className="flex gap-4 py-3.5 border-b border-border items-start md:flex-row flex-col md:gap-4 gap-2">
+                                    <div className="flex flex-col items-end gap-2 min-w-[120px] text-right pt-0.5 shrink-0">
                                         <div className="skeleton" style={{ width: 60, height: 32 }} />
                                         <div className="skeleton" style={{ width: 50, height: 14 }} />
                                     </div>
-                                    <div className="quest-body" style={{ flex: 1 }}>
+                                    <div className="flex-1 min-w-0">
                                         <div className="skeleton" style={{ width: "70%", height: 16, marginBottom: 8 }} />
                                         <div className="skeleton" style={{ width: "90%", height: 12, marginBottom: 8 }} />
                                         <div className="skeleton" style={{ width: "40%", height: 12 }} />
                                     </div>
-                                    <div className="quest-time-col">
+                                    <div className="flex flex-col items-end min-w-[90px] text-right pt-0.5 shrink-0 gap-0.5">
                                         <div className="skeleton" style={{ width: 60, height: 14 }} />
                                     </div>
                                 </div>
@@ -495,7 +535,7 @@ export function Dashboard() {
                     )}
 
                     {!questsLoading && filteredQuests.length === 0 && (
-                        <div style={{ padding: "40px", textAlign: "center", color: "var(--fg-muted)" }}>
+                        <div className="p-10 text-center text-muted-foreground">
                             No quests found.{" "}
                             <Link to="/quests/new">Create your first quest →</Link>
                         </div>
@@ -503,7 +543,7 @@ export function Dashboard() {
 
                     {/* Card View */}
                     {questView === "card" && filteredQuests.length > 0 && (
-                        <ul className="quest-list">
+                        <ul className="list-none">
                             {filteredQuests.map(quest => {
                                 const time = formatTimeLeft(quest.expiresAt ?? null)
                                 const slotsLeft = quest.totalSlots - quest.filledSlots
@@ -512,100 +552,125 @@ export function Dashboard() {
                                     ? { to: "/quests/$questId" as const, params: { questId: quest.id }, search: { token: quest.previewToken } }
                                     : { to: "/quests/$questId" as const, params: { questId: quest.id } }
                                 return (
-                                    <li key={quest.id} className={`quest-item${isDraft ? ' quest-item-draft' : ''}`} data-status={quest.status}>
-                                        <div className="quest-stats">
-                                            <div className="quest-stat">
-                                                <span className="quest-stat-val reward">
+                                    <li
+                                        key={quest.id}
+                                        className={cn(
+                                            "flex gap-4 py-3.5 border-b border-border last:border-b-0 items-start transition-colors hover:bg-[var(--sidebar-bg)] md:flex-row flex-col md:gap-4 gap-2",
+                                            isDraft && "border-dashed opacity-85 hover:opacity-100"
+                                        )}
+                                        data-status={quest.status}
+                                    >
+                                        <div className="flex flex-col items-end gap-2 min-w-[120px] text-right pt-0.5 shrink-0 md:flex-col flex-row md:gap-2 gap-3 md:min-w-[120px] min-w-0 md:items-end items-center">
+                                            <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
+                                                <span className="text-md font-bold text-[var(--green)] leading-tight font-mono">
                                                     {quest.rewardAmount.toLocaleString()} {quest.rewardType}
                                                 </span>
-                                                <span className="quest-stat-label">total reward</span>
+                                                <span className="text-xs text-muted-foreground">total reward</span>
                                             </div>
                                             {quest.questers > 0 && quest.questerDetails && (
-                                                <div className="quest-stat">
+                                                <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
                                                     <div
-                                                        className="questers clickable"
+                                                        className="flex items-center gap-0 cursor-pointer group"
                                                         onClick={() => setPopupQuest({ id: quest.id, title: quest.title })}
                                                     >
                                                         {quest.questerDetails.slice(0, 5).map((d, i) => (
                                                             <div
                                                                 key={i}
-                                                                className="q-avatar"
+                                                                className="group/avatar w-5 h-5 -ml-1.5 first:ml-0 rounded-full border-[1.5px] border-background flex items-center justify-center text-xs font-bold text-white shrink-0 relative overflow-visible hover:z-10 hover:-translate-y-px transition-transform"
                                                                 style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
                                                             >
                                                                 {getInitials(d.agentName)}
-                                                                <div className="q-tip">
-                                                                    <span className="tip-label">Human</span> <span className="tip-human">@{d.humanHandle}</span>
+                                                                <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 bg-foreground text-white text-xs px-2 py-1.5 rounded whitespace-nowrap z-[100] pointer-events-none leading-relaxed text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-foreground">
+                                                                    <span className="text-surface-dark-muted text-xs">Human</span> <span className="font-semibold text-white">@{d.humanHandle}</span>
                                                                     <br />
-                                                                    <span className="tip-label">Agent</span> <span className="tip-agent">{d.agentName}</span>
+                                                                    <span className="text-surface-dark-muted text-xs">Agent</span> <span className="font-semibold text-surface-dark-muted font-mono text-xs">{d.agentName}</span>
                                                                 </div>
                                                             </div>
                                                         ))}
-                                                        <span className="q-more">
+                                                        <span className="ml-1 text-xs text-muted-foreground whitespace-nowrap group-hover:text-primary">
                                                             {quest.questers > 5
-                                                                ? <><strong>+{quest.questers - 5}</strong> more</>
-                                                                : <strong>{quest.questers} questers</strong>
+                                                                ? <><strong className="text-foreground font-semibold group-hover:text-primary">+{quest.questers - 5}</strong> more</>
+                                                                : <strong className="text-foreground font-semibold group-hover:text-primary">{quest.questers} questers</strong>
                                                             }
                                                         </span>
                                                     </div>
                                                 </div>
                                             )}
-                                            <div className="quest-stat">
-                                                <span className="quest-stat-val" style={{ color: slotsLeft < 5 ? "var(--red)" : "var(--fg)" }}>
+                                            <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
+                                                <span className={cn("text-md font-bold leading-tight font-mono", slotsLeft < 5 ? "text-error" : "text-foreground")}>
                                                     {slotsLeft}
                                                 </span>
-                                                <span className="quest-stat-label">slots left</span>
+                                                <span className="text-xs text-muted-foreground">slots left</span>
                                             </div>
                                         </div>
 
-                                        <div className="quest-body">
-                                            <div className="quest-card-title">
-                                                <Link {...titleLinkProps}>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-semibold mb-1 leading-snug">
+                                                <Link className="text-primary no-underline hover:underline hover:text-primary/80" {...titleLinkProps}>
                                                     {quest.title}
                                                 </Link>
                                             </div>
-                                            <div className="quest-card-excerpt">{quest.description}</div>
-                                            <div className="quest-card-meta">
-                                                <span className={`badge ${typeBadgeClass(quest.type)}`}>{quest.type}</span>
-                                                <span className={`badge ${statusBadgeClass(quest.status)}`}>
-                                                    <span className={`status-dot ${quest.status === "live" ? "green" : quest.status === "completed" ? "grey" : "yellow"}`} />
+                                            <div className="text-xs text-muted-foreground leading-relaxed mb-2">{quest.description}</div>
+                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                <Badge variant={typeBadgeClass(quest.type).replace("badge-", "") as any}>{quest.type}</Badge>
+                                                <Badge variant={statusBadgeClass(quest.status).replace("badge-", "") as any}>
+                                                    <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle ${quest.status === "live" ? "bg-[var(--green)]" : quest.status === "completed" ? "bg-muted-foreground" : "bg-[var(--yellow)]"}`} />
                                                     {quest.status}
-                                                </span>
+                                                </Badge>
                                                 {quest.tags?.slice(0, 2).map(tag => (
                                                     <span key={tag} className="tag">{tag}</span>
                                                 ))}
-                                                <span style={{ fontSize: 11, color: "var(--fg-muted)" }}>by <strong>{quest.sponsor}</strong></span>
+                                                <span className="text-xs text-muted-foreground">by <strong>{quest.sponsor}</strong></span>
                                             </div>
                                         </div>
 
-                                        <div className="quest-time-col">
+                                        <div className="flex flex-col items-end min-w-[90px] text-right pt-0.5 shrink-0 gap-0.5 md:flex-col flex-row md:gap-0.5 gap-2 md:min-w-[90px] min-w-0 md:items-end items-baseline">
                                             {isDraft ? (() => {
                                                 const comp = getDraftCompletion(quest)
                                                 const errors = getPublishErrors(quest)
                                                 const canPublish = Object.keys(errors).length === 0
                                                 return (
-                                                    <div className="draft-actions">
-                                                        <span className="draft-progress">{comp.done}/{comp.total} complete</span>
-                                                        <Link to="/quests/$questId/edit" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Continue Editing</Link>
-                                                        <button
-                                                            className="btn btn-sm btn-accent"
+                                                    <div className="flex flex-col gap-1.5 items-end">
+                                                        <span className="text-[0.8rem] text-muted-foreground">{comp.done}/{comp.total} complete</span>
+                                                        <Button asChild size="sm">
+                                                            <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>Continue Editing</Link>
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
                                                             disabled={!canPublish}
                                                             title={canPublish ? 'Publish quest' : `Missing: ${Object.values(errors).join(', ')}`}
                                                             onClick={() => handlePublish(quest.id)}
-                                                        >Publish</button>
+                                                        >Publish</Button>
                                                     </div>
                                                 )
                                             })() : quest.status === "scheduled" ? (
-                                                <div className="draft-actions">
-                                                    <span className={`quest-time-val ${time.cls}`}>{time.val}</span>
-                                                    {time.label && <span className="quest-time-lbl">{time.label}</span>}
-                                                    <Link to="/quests/$questId/edit" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Edit</Link>
-                                                    <Link to="/quests/$questId/manage" params={{ questId: quest.id }} className="btn btn-sm btn-secondary">Manage</Link>
+                                                <div className="flex flex-col gap-1.5 items-end">
+                                                    <span className={cn(
+                                                        "text-base font-semibold",
+                                                        time.cls === "warning" && "text-[var(--yellow)]",
+                                                        time.cls === "urgent" && "text-[var(--red)]",
+                                                        time.cls === "muted" && "text-muted-foreground font-normal"
+                                                    )}>{time.val}</span>
+                                                    {time.label && <span className="text-xs text-muted-foreground">{time.label}</span>}
+                                                    <Button asChild size="sm">
+                                                        <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>Edit</Link>
+                                                    </Button>
+                                                    <Button asChild variant="secondary" size="sm">
+                                                        <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
+                                                    </Button>
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <span className={`quest-time-val ${time.cls}`}>{time.val}</span>
-                                                    {time.label && <span className="quest-time-lbl">{time.label}</span>}
-                                                    <Link to="/quests/$questId/manage" params={{ questId: quest.id }} className="btn btn-sm btn-secondary" style={{ marginTop: 4, display: "inline-block" }}>Manage</Link>
+                                                    <span className={cn(
+                                                        "text-base font-semibold",
+                                                        time.cls === "warning" && "text-[var(--yellow)]",
+                                                        time.cls === "urgent" && "text-[var(--red)]",
+                                                        time.cls === "muted" && "text-muted-foreground font-normal"
+                                                    )}>{time.val}</span>
+                                                    {time.label && <span className="text-xs text-muted-foreground">{time.label}</span>}
+                                                    <Button asChild variant="secondary" size="sm" className="mt-1 inline-block">
+                                                        <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
+                                                    </Button>
                                                 </>
                                             )}
                                         </div>
@@ -617,15 +682,15 @@ export function Dashboard() {
 
                     {/* List View */}
                     {questView === "list" && filteredQuests.length > 0 && (
-                        <table className="quest-table">
+                        <table className="w-full border-collapse">
                             <thead>
                                 <tr>
-                                    <th className="col-reward">Reward</th>
-                                    <th className="col-title">Name</th>
-                                    <th className="col-type">Type</th>
-                                    <th className="col-questers">Questers</th>
-                                    <th className="col-time">Time</th>
-                                    <th className="col-status">Status</th>
+                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Reward</th>
+                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[220px]">Name</th>
+                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
+                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Questers</th>
+                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Time</th>
+                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none w-[100px]">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -637,78 +702,93 @@ export function Dashboard() {
                                         ? { to: "/quests/$questId" as const, params: { questId: quest.id }, search: { token: quest.previewToken } }
                                         : { to: "/quests/$questId" as const, params: { questId: quest.id } }
                                     return (
-                                        <tr key={quest.id} data-status={quest.status}>
-                                            <td className="col-reward">
-                                                <span className="quest-budget">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</span>
+                                        <tr key={quest.id} className="hover:bg-muted" data-status={quest.status}>
+                                            <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                <span className="text-md font-semibold text-success whitespace-nowrap leading-tight">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</span>
                                             </td>
-                                            <td className="col-title">
+                                            <td className="px-2 py-2.5 text-xs border-b border-border align-top min-w-[220px]">
                                                 <div>
-                                                    <Link {...titleLinkProps} className="quest-title-link">
+                                                    <Link {...titleLinkProps} className="text-primary no-underline font-normal text-base leading-snug visited:text-primary/80 hover:text-primary/80">
                                                         {quest.title}
                                                     </Link>
                                                 </div>
-                                                <div className="tbl-name-desc">{quest.description?.slice(0, 60)}{(quest.description?.length ?? 0) > 60 ? "…" : ""}</div>
-                                                <div className="tbl-name-sponsor">by <strong>{quest.sponsor}</strong></div>
+                                                <div className="text-xs text-muted-foreground leading-snug line-clamp-1 my-0.5">{quest.description?.slice(0, 60)}{(quest.description?.length ?? 0) > 60 ? "…" : ""}</div>
+                                                <div className="text-xs text-muted-foreground">by <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
                                             </td>
-                                            <td className="col-type tbl-reward-type">
-                                                <span className={`badge ${typeBadgeClass(quest.type)}`}>{quest.type}</span>
-                                                <div className="tbl-slots">{slotsLeft} slots left</div>
+                                            <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                <Badge variant={typeBadgeClass(quest.type).replace("badge-", "") as any}>{quest.type}</Badge>
+                                                <div className="text-xs text-muted-foreground mt-0.5">{slotsLeft} slots left</div>
                                             </td>
-                                            <td className="col-questers tbl-questers-cell">
+                                            <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
                                                 {quest.questers > 0 && quest.questerDetails ? (
                                                     <div
-                                                        className="questers clickable"
-                                                        style={{ cursor: "pointer" }}
+                                                        className="flex items-center gap-0 cursor-pointer group"
                                                         onClick={() => setPopupQuest({ id: quest.id, title: quest.title })}
                                                     >
                                                         {quest.questerDetails.slice(0, 3).map((d, i) => (
                                                             <div
                                                                 key={i}
-                                                                className="q-avatar"
+                                                                className="w-5 h-5 -ml-1.5 first:ml-0 rounded-full border-[1.5px] border-background flex items-center justify-center text-xs font-bold text-white shrink-0 relative overflow-visible hover:z-10 hover:-translate-y-px transition-transform"
                                                                 style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
                                                             >
                                                                 {getInitials(d.agentName)}
                                                             </div>
                                                         ))}
-                                                        <span className="q-more"><strong>{quest.questers}</strong></span>
+                                                        <span className="ml-1 text-xs text-muted-foreground whitespace-nowrap group-hover:text-primary">
+                                                            <strong className="text-foreground font-semibold group-hover:text-primary">{quest.questers}</strong>
+                                                        </span>
                                                     </div>
                                                 ) : (
-                                                    <span style={{ color: "var(--fg-muted)", fontSize: 12 }}>—</span>
+                                                    <span className="text-muted-foreground text-xs">—</span>
                                                 )}
                                             </td>
-                                            <td className="col-time">
+                                            <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
                                                 {isDraft ? (() => {
                                                     const errors = getPublishErrors(quest)
                                                     const canPublish = Object.keys(errors).length === 0
                                                     return (
-                                                        <div className="draft-actions">
-                                                            <Link to="/quests/$questId/edit" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Edit</Link>
-                                                            <button
-                                                                className="btn btn-sm btn-accent"
+                                                        <div className="flex flex-col gap-1.5 items-end">
+                                                            <Button asChild size="sm">
+                                                                <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>Edit</Link>
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
                                                                 disabled={!canPublish}
                                                                 title={canPublish ? 'Publish quest' : `Missing: ${Object.values(errors).join(', ')}`}
                                                                 onClick={() => handlePublish(quest.id)}
-                                                            >Publish</button>
+                                                            >Publish</Button>
                                                         </div>
                                                     )
                                                 })() : quest.status === "scheduled" ? (
-                                                    <div className="draft-actions">
-                                                        <Link to="/quests/$questId/edit" params={{ questId: quest.id }} className="btn btn-sm btn-primary">Edit</Link>
-                                                        <Link to="/quests/$questId/manage" params={{ questId: quest.id }} className="btn btn-sm btn-secondary">Manage</Link>
+                                                    <div className="flex flex-col gap-1.5 items-end">
+                                                        <Button asChild size="sm">
+                                                            <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>Edit</Link>
+                                                        </Button>
+                                                        <Button asChild variant="secondary" size="sm">
+                                                            <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
+                                                        </Button>
                                                     </div>
                                                 ) : (
                                                     <>
-                                                        <div className={`tbl-time ${time.cls}`}>{time.val}</div>
-                                                        {time.label && <div className="tbl-time-label">{time.label}</div>}
-                                                        <Link to="/quests/$questId/manage" params={{ questId: quest.id }} className="btn btn-sm btn-secondary" style={{ marginTop: 4, display: "inline-block" }}>Manage</Link>
+                                                        <div className={cn(
+                                                            "font-mono text-xs font-semibold whitespace-nowrap",
+                                                            time.cls === "urgent" && "text-error",
+                                                            time.cls === "warning" && "text-warning",
+                                                            time.cls === "normal" && "text-foreground",
+                                                            time.cls === "muted" && "text-muted-foreground font-normal"
+                                                        )}>{time.val}</div>
+                                                        {time.label && <div className="font-sans text-xs font-normal text-muted-foreground">{time.label}</div>}
+                                                        <Button asChild variant="secondary" size="sm" className="mt-1 inline-block">
+                                                            <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
+                                                        </Button>
                                                     </>
                                                 )}
                                             </td>
-                                            <td className="col-status">
-                                                <span className={`badge ${statusBadgeClass(quest.status)}`}>
-                                                    <span className={`status-dot ${quest.status === "live" ? "green" : quest.status === "completed" ? "grey" : "yellow"}`} />
+                                            <td className="px-2 py-2.5 text-xs border-b border-border align-top w-[100px]">
+                                                <Badge variant={statusBadgeClass(quest.status).replace("badge-", "") as any}>
+                                                    <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle ${quest.status === "live" ? "bg-[var(--green)]" : quest.status === "completed" ? "bg-muted-foreground" : "bg-[var(--yellow)]"}`} />
                                                     {quest.status}
-                                                </span>
+                                                </Badge>
                                             </td>
                                         </tr>
                                     )
@@ -721,20 +801,26 @@ export function Dashboard() {
 
             {/* ── My Agents tab ── */}
             {mainTab === "agents" && (
-                <div className="tab-panel active">
-                    <div className="filter-bar">
-                        <div className="inline-filter">
+                <div>
+                    <div className="flex items-center justify-between py-2.5 border-b border-border max-sm:flex-col max-sm:items-stretch">
+                        <div className="flex items-center text-xs text-muted-foreground px-1">
                             <button
-                                className={`filter-item ${agentFilter === "all" ? "active" : ""}`}
+                                className={cn(
+                                    "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-muted-foreground whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-foreground",
+                                    agentFilter === "all" && "text-foreground font-semibold"
+                                )}
                                 onClick={() => setAgentFilter("all")}
                             >
                                 {agents.length} agents
                             </button>
                             {claimedAgents.length > 0 && (
                                 <>
-                                    <span className="filter-dot">·</span>
+                                    <span className="px-1 text-border select-none text-xs self-center">·</span>
                                     <button
-                                        className={`filter-item ${agentFilter === "claimed" ? "active" : ""}`}
+                                        className={cn(
+                                            "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-muted-foreground whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-foreground",
+                                            agentFilter === "claimed" && "text-foreground font-semibold"
+                                        )}
                                         onClick={() => setAgentFilter("claimed")}
                                     >
                                         {claimedAgents.length} claimed
@@ -743,9 +829,12 @@ export function Dashboard() {
                             )}
                             {pendingAgents.length > 0 && (
                                 <>
-                                    <span className="filter-dot">·</span>
+                                    <span className="px-1 text-border select-none text-xs self-center">·</span>
                                     <button
-                                        className={`filter-item ${agentFilter === "pending" ? "active" : ""}`}
+                                        className={cn(
+                                            "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-muted-foreground whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-foreground",
+                                            agentFilter === "pending" && "text-foreground font-semibold"
+                                        )}
                                         onClick={() => setAgentFilter("pending")}
                                     >
                                         {pendingAgents.length} pending
@@ -756,22 +845,22 @@ export function Dashboard() {
                     </div>
 
                     {agentsLoading && (
-                        <table className="agent-table">
+                        <table className="w-full border-collapse">
                             <thead>
                                 <tr>
-                                    <th className="col-agent">Agent</th>
-                                    <th className="col-skill-status">Status</th>
-                                    <th className="col-skills">Skills</th>
-                                    <th className="col-quests">Quests</th>
+                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Agent</th>
+                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Status</th>
+                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Skills</th>
+                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[90px] text-center">Quests</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {[1, 2, 3].map(i => (
                                     <tr key={i}>
-                                        <td><div className="skeleton" style={{ width: 120, height: 14 }} /></td>
-                                        <td><div className="skeleton" style={{ width: 70, height: 14 }} /></td>
-                                        <td><div className="skeleton" style={{ width: 140, height: 14 }} /></td>
-                                        <td><div className="skeleton" style={{ width: 30, height: 14, margin: "0 auto" }} /></td>
+                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 120, height: 14 }} /></td>
+                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 70, height: 14 }} /></td>
+                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 140, height: 14 }} /></td>
+                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 30, height: 14, margin: "0 auto" }} /></td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -779,22 +868,22 @@ export function Dashboard() {
                     )}
 
                     {!agentsLoading && filteredAgents.length === 0 && (
-                        <div style={{ padding: "40px", textAlign: "center", color: "var(--fg-muted)" }}>
+                        <div className="p-10 text-center text-muted-foreground">
                             No agents yet.{" "}
                             <Link to="/dashboard">Register your first agent →</Link>
                         </div>
                     )}
 
                     {filteredAgents.length > 0 && (
-                        <table className="agent-table">
+                        <table className="w-full border-collapse">
                             <thead>
                                 <tr>
-                                    <th className="col-expand"></th>
-                                    <th className="col-agent">Agent</th>
-                                    <th className="col-skill-status">Status</th>
-                                    <th className="col-skills">Skills</th>
-                                    <th className="col-quests">Quests</th>
-                                    <th className="col-registered">Registered</th>
+                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[30px] text-center"></th>
+                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Agent</th>
+                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Status</th>
+                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Skills</th>
+                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[90px] text-center">Quests</th>
+                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Registered</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -805,101 +894,107 @@ export function Dashboard() {
                                         <>
                                             <tr
                                                 key={agent.id}
-                                                className="agent-row"
+                                                className="cursor-pointer hover:bg-muted/50"
                                                 data-agent-status={isPending ? "pending" : "claimed"}
                                                 onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}
-                                                style={{ cursor: "pointer" }}
                                             >
-                                                <td className="col-expand">
-                                                    <span className={`expand-icon ${isExpanded ? "open" : ""}`}>▸</span>
+                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[30px] text-center">
+                                                    <span className={cn(
+                                                        "text-xs text-muted-foreground transition-transform duration-150 inline-block",
+                                                        isExpanded && "rotate-90"
+                                                    )}>▸</span>
                                                 </td>
-                                                <td className="col-agent">
-                                                    <div className="agent-name">{agent.name}</div>
-                                                    <div className="agent-id">id: {agent.id.slice(0, 8)}…</div>
+                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle min-w-[180px]">
+                                                    <div className="font-mono text-xs font-semibold text-foreground">{agent.name}</div>
+                                                    <div className="text-xs text-muted-foreground">id: {agent.id.slice(0, 8)}…</div>
                                                 </td>
-                                                <td className="col-skill-status">
+                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
                                                     {isPending ? (
-                                                        <span className="badge badge-pending-claim">Pending Claim</span>
+                                                        <Badge variant="pending-claim">Pending Claim</Badge>
                                                     ) : agent.status === "questing" ? (
-                                                        <span className="agent-skill-connected">
-                                                            <span className="status-dot yellow" /> Questing
+                                                        <span className="text-[var(--yellow)] font-semibold text-xs">
+                                                            <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-[var(--yellow)]" /> Questing
                                                         </span>
                                                     ) : agent.status === "offline" ? (
-                                                        <span className="agent-skill-disconnected">
-                                                            <span className="status-dot red" /> Offline
+                                                        <span className="text-error font-semibold text-xs">
+                                                            <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-[var(--red)]" /> Offline
                                                         </span>
                                                     ) : (
-                                                        <span className="agent-skill-connected">
-                                                            <span className="status-dot green" /> Idle
+                                                        <span className="text-accent font-semibold text-xs">
+                                                            <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-[var(--green)]" /> Idle
                                                         </span>
                                                     )}
                                                 </td>
-                                                <td className="col-skills">
-                                                    <span className="skill-chip">clawquest</span>
+                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle min-w-[180px]">
+                                                    <span className="inline-block text-xs font-semibold px-1.5 py-0.5 rounded bg-[var(--skill-bg)] text-[var(--skill-fg)] font-mono mr-0.5 mb-0.5">clawquest</span>
                                                 </td>
-                                                <td className="col-quests">
+                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[90px] text-center">
                                                     {agent.status === "questing" ? "1 active" : "0"}
                                                 </td>
-                                                <td className="col-registered">
-                                                    <span className="quest-time">—</span>
+                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
+                                                    <span className="text-xs text-muted-foreground">—</span>
                                                 </td>
                                             </tr>
                                             {isExpanded && (
-                                                <tr key={`detail-${agent.id}`} className="agent-detail-row">
-                                                    <td colSpan={6}>
-                                                        <div className="agent-detail">
+                                                <tr key={`detail-${agent.id}`}>
+                                                    <td colSpan={6} className="p-0 bg-muted">
+                                                        <div className="py-3.5 px-4 pl-[26px] border-b border-border">
                                                             {isPending ? (
-                                                                <div className="agent-detail-section">
-                                                                    <div className="agent-detail-title">Claim this Agent</div>
-                                                                    <p style={{ fontSize: 12, color: "var(--fg-muted)", marginBottom: 10 }}>
+                                                                <div className="mb-3.5 last:mb-0">
+                                                                    <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Claim this Agent</div>
+                                                                    <p className="text-sm text-muted-foreground mb-2.5">
                                                                         Run this command in your agent to claim it:
                                                                     </p>
-                                                                    <div className="install-cmd-block">
-                                                                        <span className="cmd-prompt">$</span>
-                                                                        <span className="cmd-text">
+                                                                    <div className="flex items-center justify-between bg-[#1e1e2e] text-[#cdd6f4] rounded px-3 py-2.5 font-mono text-xs mt-1.5">
+                                                                        <span className="text-[#a6adc8] mr-1.5">$</span>
+                                                                        <span className="select-all">
                                                                             npx clawhub@latest claim --code {agent.activationCode}
                                                                         </span>
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                <div className="agent-detail-section">
-                                                                    <div className="agent-detail-title">Quest Participation</div>
+                                                                <div className="mb-3.5 last:mb-0">
+                                                                    <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Quest Participation</div>
                                                                     {(!agent.participations || agent.participations.length === 0) ? (
-                                                                        <p style={{ fontSize: 12, color: "var(--fg-muted)" }}>
+                                                                        <p className="text-sm text-muted-foreground">
                                                                             No quest history yet.{" "}
                                                                             <Link to="/quests">Browse available quests →</Link>
                                                                         </p>
                                                                     ) : (
-                                                                        <table className="detail-quest-table">
+                                                                        <table className="w-full border-collapse">
                                                                             <thead>
                                                                                 <tr>
-                                                                                    <th>Quest</th>
-                                                                                    <th>Progress</th>
-                                                                                    <th>Status</th>
-                                                                                    <th>Payout</th>
+                                                                                    <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Quest</th>
+                                                                                    <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Progress</th>
+                                                                                    <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Status</th>
+                                                                                    <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Payout</th>
                                                                                 </tr>
                                                                             </thead>
                                                                             <tbody>
                                                                                 {agent.participations.map(p => (
                                                                                     <tr key={p.id}>
-                                                                                        <td>
-                                                                                            <Link to="/quests/$questId" params={{ questId: p.quest.id }}>
+                                                                                        <td className="px-2 py-1.5 text-xs border-b border-border/50">
+                                                                                            <Link
+                                                                                                to="/quests/$questId"
+                                                                                                params={{ questId: p.quest.id }}
+                                                                                                className="text-primary no-underline font-medium hover:underline"
+                                                                                            >
                                                                                                 {p.quest.title}
                                                                                             </Link>
                                                                                         </td>
-                                                                                        <td>{p.tasksCompleted}/{p.tasksTotal}</td>
-                                                                                        <td>
+                                                                                        <td className="px-2 py-1.5 text-xs border-b border-border/50">{p.tasksCompleted}/{p.tasksTotal}</td>
+                                                                                        <td className="px-2 py-1.5 text-xs border-b border-border/50">
                                                                                             <span className={`badge ${statusBadgeClass(p.status)}`}>{p.status}</span>
                                                                                         </td>
-                                                                                        <td>
+                                                                                        <td className="px-2 py-1.5 text-xs border-b border-border/50">
                                                                                             {p.payoutStatus === "paid" ? (
-                                                                                                <span className="payout-badge payout-paid">
+                                                                                                <span className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded bg-accent-light text-accent">
                                                                                                     {p.payoutAmount?.toFixed(2)} {p.quest.rewardType}
                                                                                                 </span>
                                                                                             ) : p.payoutStatus === "pending" ? (
-                                                                                                <span className="payout-badge payout-pending">Pending</span>
+                                                                                                <span className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded bg-warning-light text-warning">Pending</span>
                                                                                             ) : (
-                                                                                                <span className="payout-na">—</span>
+                                                                                                <span className="text-muted-foreground">—</span>
                                                                                             )}
                                                                                         </td>
                                                                                     </tr>

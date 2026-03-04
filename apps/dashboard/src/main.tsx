@@ -10,26 +10,6 @@ import '@rainbow-me/rainbowkit/styles.css'
 // Base styles (Tailwind + CSS variables)
 import './index.css'
 
-// ClawQuest design system (imported AFTER index.css so they override Tailwind preflight)
-import './styles/topbar.css'
-import './styles/footer.css'
-import './styles/badges.css'
-import './styles/buttons.css'
-import './styles/tabs.css'
-import './styles/view-toggle.css'
-import './styles/page-header.css'
-import './styles/quest-table.css'
-import './styles/user-dropdown.css'
-import './styles/login-modal.css'
-import './styles/questers-avatars.css'
-import './styles/questers-popup.css'
-import './styles/breadcrumb.css'
-import './styles/filters.css'
-import './styles/pager.css'
-import './styles/actor-sections.css'
-import './styles/forms.css'
-import './styles/status-dots.css'
-
 import { router } from './router'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 

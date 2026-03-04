@@ -3,8 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router"
 import { useAuth } from "@/context/AuthContext"
 import { supabase } from "@/lib/supabase"
 import { startTelegramLogin } from "@/lib/telegram-oidc"
-import "@/styles/login-modal.css"
-import "@/styles/login-page.css"
+import { Button } from "@/components/ui/button"
 
 export function Login() {
     const [email, setEmail] = useState("")
@@ -95,7 +94,7 @@ const handleTwitterLogin = async () => {
     }
 
     return (
-        <div className="login-page">
+        <div className="min-h-screen flex flex-col bg-muted">
             {/* Topbar */}
             <div className="topbar">
                 <Link to="/quests" className="topbar-logo">
@@ -107,24 +106,24 @@ const handleTwitterLogin = async () => {
             </div>
 
             {/* Centered login card */}
-            <div className="login-page-center">
-                <div className="login-modal" style={{ position: "static", width: 380 }}>
-                    <div className="login-modal-logo">
-                        Claw<span>Quest</span>
+            <div className="flex-1 flex items-center justify-center px-4 py-10">
+                <div className="bg-background rounded border border-border w-[380px] p-7 text-center relative">
+                    <div className="text-xl font-bold tracking-tight mb-1 text-foreground">
+                        Claw<span className="text-accent">Quest</span>
                     </div>
-                    <div className="login-modal-subtitle">Sign in to your account</div>
+                    <div className="text-xs text-muted-foreground mb-6">Sign in to your account</div>
 
                     {error && (
-                        <div style={{ background: "var(--red-bg)", color: "var(--red)", padding: "8px 12px", borderRadius: "3px", fontSize: "12px", marginBottom: "16px", textAlign: "left" }}>
+                        <div className="bg-error-light text-error px-3 py-2 rounded text-sm mb-4 text-left">
                             {error}
                         </div>
                     )}
 
                     {/* Google OAuth button */}
-                    <button
+                    <Button
                         type="button"
-                        className="btn btn-outline"
-                        style={{ width: "100%", padding: "10px", fontSize: "13px", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                        variant="outline"
+                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-[10px]"
                         onClick={handleGoogleLogin}
                         disabled={googleLoading}
                     >
@@ -141,13 +140,13 @@ const handleTwitterLogin = async () => {
                                 Continue with Google
                             </>
                         )}
-                    </button>
+                    </Button>
 
                     {/* Telegram OIDC button */}
-                    <button
+                    <Button
                         type="button"
-                        className="btn btn-outline"
-                        style={{ width: "100%", padding: "10px", fontSize: "13px", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                        variant="outline"
+                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-[10px]"
                         onClick={async () => {
                             setTelegramLoading(true)
                             setError("")
@@ -170,13 +169,13 @@ const handleTwitterLogin = async () => {
                                 Continue with Telegram
                             </>
                         )}
-                    </button>
+                    </Button>
 
                     {/* X (Twitter) OAuth button */}
-                    <button
+                    <Button
                         type="button"
-                        className="btn btn-outline"
-                        style={{ width: "100%", padding: "10px", fontSize: "13px", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                        variant="outline"
+                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-[10px]"
                         onClick={handleTwitterLogin}
                         disabled={twitterLoading}
                     >
@@ -190,13 +189,13 @@ const handleTwitterLogin = async () => {
                                 Continue with X (Twitter)
                             </>
                         )}
-                    </button>
+                    </Button>
 
                     {/* Discord OAuth button */}
-                    <button
+                    <Button
                         type="button"
-                        className="btn btn-outline"
-                        style={{ width: "100%", padding: "10px", fontSize: "13px", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                        variant="outline"
+                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-[10px]"
                         onClick={handleDiscordLogin}
                         disabled={discordLoading}
                     >
@@ -210,17 +209,19 @@ const handleTwitterLogin = async () => {
                                 Continue with Discord
                             </>
                         )}
-                    </button>
+                    </Button>
 
-                    <div className="login-modal-divider">
-                        <span style={{ fontSize: "11px", color: "var(--text-muted)", padding: "0 8px", background: "var(--surface)" }}>or sign in with email</span>
+                    <div className="flex items-center gap-3 my-5">
+                        <hr className="flex-1 border-border" />
+                        <span className="text-xs text-muted-foreground">or sign in with email</span>
+                        <hr className="flex-1 border-border" />
                     </div>
 
                     <form onSubmit={handleEmailLogin}>
-                        <div className="login-form-group">
-                            <label className="login-label">Email</label>
+                        <div className="space-y-1.5 mb-3.5 text-left">
+                            <label className="block text-xs font-semibold text-foreground mb-1">Email</label>
                             <input
-                                className="login-input"
+                                className="w-full px-2.5 py-2 text-sm border border-input rounded bg-background text-foreground focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none box-border"
                                 type="email"
                                 placeholder="you@example.com"
                                 required
@@ -228,10 +229,10 @@ const handleTwitterLogin = async () => {
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
-                        <div className="login-form-group">
-                            <label className="login-label">Password</label>
+                        <div className="space-y-1.5 mb-3.5 text-left">
+                            <label className="block text-xs font-semibold text-foreground mb-1">Password</label>
                             <input
-                                className="login-input"
+                                className="w-full px-2.5 py-2 text-sm border border-input rounded bg-background text-foreground focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none box-border"
                                 type="password"
                                 required
                                 value={password}
@@ -239,27 +240,26 @@ const handleTwitterLogin = async () => {
                             />
                         </div>
 
-                        <button
+                        <Button
                             type="submit"
-                            className="btn btn-primary"
-                            style={{ width: "100%", padding: "10px", fontSize: "13px", marginTop: "8px" }}
+                            className="w-full mt-2 text-base py-[10px]"
                             disabled={loading}
                         >
                             {loading ? "Signing in..." : "Sign in"}
-                        </button>
+                        </Button>
                     </form>
 
-                    <div className="login-modal-divider" />
+                    <div className="h-px bg-border my-5" />
 
-                    <div className="login-modal-hint">
+                    <div className="text-xs text-muted-foreground leading-relaxed">
                         Don't have an account?{" "}
-                        <Link to="/register" style={{ color: "var(--link)" }}>Register</Link>
+                        <Link to="/register" className="text-primary hover:underline">Register</Link>
                     </div>
                 </div>
             </div>
 
             {/* Footer */}
-            <div className="footer" style={{ maxWidth: 920, margin: "0 auto", padding: "24px 16px" }}>
+            <div className="footer max-w-[920px] mx-auto px-4 py-6">
                 <span>ClawQuest v0.1 beta</span>
                 <a href="/privacy.html">Privacy</a>
                 <a href="/terms.html">Terms</a>

@@ -1,7 +1,0 @@
-/* View Toggle — ClawQuest shared */
-.view-toggle { display: inline-flex; border: 1px solid var(--border-heavy); border-radius: 3px; overflow: hidden; margin-left: 12px; flex-shrink: 0; }
-.view-toggle-btn { display: flex; align-items: center; justify-content: center; width: 30px; height: 26px; cursor: pointer; border: none; border-right: 1px solid var(--border); background: #fff; color: var(--fg-muted); }
-.view-toggle-btn:last-child { border-right: none; }
-.view-toggle-btn svg { width: 14px; height: 14px; }
-.view-toggle-btn:hover { background: var(--sidebar-bg); color: var(--fg); }
-.view-toggle-btn.active { background: var(--tag-bg); color: var(--tag-fg); }

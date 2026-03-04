@@ -6,11 +6,13 @@ import { PlatformIcon } from "@/components/PlatformIcon"
 import { useSkillSearch, isSkillUrl, fetchSkillFromUrl, type ClawHubSkill } from "@/hooks/useSkillSearch"
 import { useDraftPersistence } from "@/hooks/use-draft-persistence"
 import { useSocialValidation, type ChipStatus } from "@/hooks/use-social-validation"
-import "@/styles/pages/create-quest.css"
-import "@/styles/pages/quest-detail.css"
-import "@/styles/actor-sections.css"
-import "@/styles/forms.css"
-import "@/styles/token-display.css"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { cn } from "@/lib/utils"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
@@ -363,22 +365,25 @@ function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, 
     const displayError = error || externalError
 
     return (
-        <div className="chip-input-wrapper">
+        <div>
             {chips.length > 0 && (
-                <div className="chip-list">
+                <div className="flex flex-wrap gap-1.5 mb-1.5">
                     {chips.map((chip, i) => {
                         const status = chipStatus?.(chip)
-                        const cls = status === "pending" ? " chip-pending"
-                            : status === "invalid" ? " chip-invalid" : ""
                         return (
-                            <span key={i} className={`chip${cls}`}>
+                            <span key={i} className={cn(
+                                "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs border leading-tight",
+                                status === "pending" ? "bg-muted border-border"
+                                    : status === "invalid" ? "bg-error-light border-warning"
+                                    : "bg-accent-light border-accent-border text-foreground"
+                            )}>
                                 {status === "pending"
-                                    ? <span className="chip-spinner" />
+                                    ? <span className="inline-block size-2.5 border-[1.5px] border-border border-t-muted-foreground rounded-full animate-spin" />
                                     : status === "invalid"
-                                        ? <span className="chip-warn">⚠</span>
-                                        : <span className="chip-check">✓</span>}
-                                <span className="chip-text">{formatChip ? formatChip(chip) : chip}</span>
-                                <button className="chip-remove" onClick={() => onRemove(i)}>×</button>
+                                        ? <span className="text-warning text-xs font-bold">⚠</span>
+                                        : <span className="text-success text-xs font-bold">✓</span>}
+                                <span className="font-mono text-xs">{formatChip ? formatChip(chip) : chip}</span>
+                                <button className="bg-transparent border-none text-muted-foreground text-base cursor-pointer px-px leading-none ml-0.5 hover:text-destructive" onClick={() => onRemove(i)}>×</button>
                             </span>
                         )
                     })}
@@ -386,7 +391,7 @@ function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, 
             )}
             {!atMax && (
                 <input
-                    className={`form-input chip-input${displayError ? " form-input-error" : ""}`}
+                    className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 chip-input", displayError && "border-destructive focus-visible:ring-destructive")}
                     type="text"
                     placeholder={chips.length > 0 ? "Add another… ↵" : placeholder}
                     value={input}
@@ -395,9 +400,9 @@ function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, 
                 />
             )}
             {!atMax && !displayError && input.length === 0 && chips.length === 0 && (
-                <div className="form-hint" style={{ marginTop: 2 }}>Press ↵ Enter to confirm</div>
+                <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginTop: 2 }}>Press ↵ Enter to confirm</div>
             )}
-            {displayError && <div className="form-error">{displayError}</div>}
+            {displayError && <div className="text-xs text-destructive mt-0.5 leading-snug">{displayError}</div>}
         </div>
     )
 }
@@ -499,7 +504,7 @@ function DiscordRoleFields({ task, idx, setTaskParam, addChip, removeChip, chipE
 
     return (
         <>
-            <div className="bot-invite-banner">
+            <div className="flex items-center gap-2 px-2.5 py-2 bg-indigo-50 border border-indigo-300 rounded text-xs text-foreground mb-2">
                 <span>🤖</span>
                 <span style={{ flex: 1 }}>
                     {botPresent === true && guildName
@@ -507,15 +512,15 @@ function DiscordRoleFields({ task, idx, setTaskParam, addChip, removeChip, chipE
                         : <>Add the <strong>ClawQuest bot</strong> to your server to enable role verification.</>}
                 </span>
                 {botPresent !== true && (
-                    <button className="btn btn-sm btn-primary" onClick={handleInviteBot}>Invite Bot</button>
+                    <Button size="sm" onClick={handleInviteBot}>Invite Bot</Button>
                 )}
                 {botPresent === false && (
-                    <button className="btn btn-sm btn-ghost" onClick={handleRefresh} style={{ marginLeft: 4 }}>Refresh</button>
+                    <Button variant="ghost" size="sm" className="ml-1" onClick={handleRefresh}>Refresh</Button>
                 )}
             </div>
-            <div className="form-group" style={{ marginBottom: 8 }}>
-                <label className="form-label">Discord Server URL</label>
-                <div className="form-hint">Invite link. Press ↵ to confirm.</div>
+            <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 8 }}>
+                <Label>Discord Server URL</Label>
+                <div className="text-xs text-muted-foreground mb-1 leading-snug">Invite link. Press ↵ to confirm.</div>
                 <ChipInput
                     chips={task.chips}
                     onAdd={val => addChip(idx, val)}
@@ -526,16 +531,16 @@ function DiscordRoleFields({ task, idx, setTaskParam, addChip, removeChip, chipE
                     error={chipError}
                     chipStatus={chipStatus}
                 />
-                {loading && <div className="form-hint" style={{ color: "var(--accent)" }}>Checking server...</div>}
-                {error && <div className="form-error">{error}</div>}
+                {loading && <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ color: "var(--accent)" }}>Checking server...</div>}
+                {error && <div className="text-xs text-destructive mt-0.5 leading-snug">{error}</div>}
             </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label">Required Role</label>
-                <div className="form-hint">
+            <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 0 }}>
+                <Label>Required Role</Label>
+                <div className="text-xs text-muted-foreground mb-1 leading-snug">
                     {botPresent === true ? "Select a role from the server." : "Invite the bot first to load roles."}
                 </div>
                 <select
-                    className={`form-select${fieldError("role") ? " form-input-error" : ""}`}
+                    className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring", fieldError("role") && "border-destructive focus-visible:ring-destructive")}
                     value={task.params.roleId ?? ""}
                     onChange={handleRoleSelect}
                     disabled={roles.length === 0}
@@ -547,7 +552,7 @@ function DiscordRoleFields({ task, idx, setTaskParam, addChip, removeChip, chipE
                         <option key={r.id} value={r.id}>{r.name}</option>
                     ))}
                 </select>
-                {fieldError("role") && <div className="form-error">{fieldError("role")}</div>}
+                {fieldError("role") && <div className="text-xs text-destructive mt-0.5 leading-snug">{fieldError("role")}</div>}
             </div>
         </>
     )
@@ -571,11 +576,11 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
     const fields = actionDef.fields
 
     return (
-        <div className="social-entry-body expanded">
+        <div className="block px-3 py-2.5">
             {(fields === "follow") && (
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">X Usernames</label>
-                    <div className="form-hint">Add accounts the human must follow. Press ↵ to confirm each.</div>
+                <div className="space-y-1.5 mb-0">
+                    <Label>X Usernames</Label>
+                    <div className="text-xs text-muted-foreground mb-1 leading-snug">Add accounts the human must follow. Press ↵ to confirm each.</div>
                     <ChipInput
                         chips={task.chips}
                         onAdd={val => addChip(idx, val.replace(/^@/, ""))}
@@ -589,9 +594,9 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                 </div>
             )}
             {(fields === "post_url") && (
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Post URLs</label>
-                    <div className="form-hint">Add X post URLs. Press ↵ to confirm each.</div>
+                <div className="space-y-1.5 mb-0">
+                    <Label>Post URLs</Label>
+                    <div className="text-xs text-muted-foreground mb-1 leading-snug">Add X post URLs. Press ↵ to confirm each.</div>
                     <ChipInput
                         chips={task.chips}
                         onAdd={val => addChip(idx, val)}
@@ -605,34 +610,36 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
             )}
             {(fields === "post_content") && (
                 <>
-                    <div className="form-group" style={{ marginBottom: 8 }}>
-                        <label className="form-label">Post Template</label>
-                        <div className="form-hint">Provide a template or required content. User can customize around it.</div>
-                        <div className="textarea-wrapper">
-                            <textarea className={`form-textarea${fieldError("content") ? " form-input-error" : ""}`} rows={3}
+                    <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 8 }}>
+                        <Label>Post Template</Label>
+                        <div className="text-xs text-muted-foreground mb-1 leading-snug">Provide a template or required content. User can customize around it.</div>
+                        <div className="relative">
+                            <Textarea
+                                className={cn(fieldError("content") && "border-destructive focus-visible:ring-destructive")}
+                                rows={3}
                                 placeholder="Write the required post content, hashtags, or mentions..."
                                 value={task.params["content"] ?? ""}
                                 onChange={e => setTaskParam(idx, "content", e.target.value)}
                                 maxLength={280}
                             />
-                            <span className="char-count">{(task.params["content"] ?? "").length}/280</span>
+                            <span className="absolute bottom-1.5 right-2 text-xs text-muted-foreground font-mono pointer-events-none">{(task.params["content"] ?? "").length}/280</span>
                         </div>
-                        {fieldError("content") && <div className="form-error">{fieldError("content")}</div>}
+                        {fieldError("content") && <div className="text-xs text-destructive mt-0.5 leading-snug">{fieldError("content")}</div>}
                     </div>
-                    <div className="toggle-row">
+                    <div className="flex items-center justify-between py-1.5 text-xs text-foreground">
                         <span>Require tagging 3 friends</span>
-                        <div
-                            className={`toggle-switch${task.requireTagFriends ? " on" : ""}`}
-                            onClick={() => toggleTagFriends(idx)}
+                        <Switch
+                            checked={task.requireTagFriends ?? false}
+                            onCheckedChange={() => toggleTagFriends(idx)}
                         />
                     </div>
                 </>
             )}
             {(fields === "quote_post") && (
                 <>
-                    <div className="form-group" style={{ marginBottom: 8 }}>
-                        <label className="form-label">Post URL</label>
-                        <div className="form-hint">Link to the X post to quote. Press ↵ to confirm.</div>
+                    <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 8 }}>
+                        <Label>Post URL</Label>
+                        <div className="text-xs text-muted-foreground mb-1 leading-snug">Link to the X post to quote. Press ↵ to confirm.</div>
                         <ChipInput
                             chips={task.chips}
                             onAdd={val => addChip(idx, val)}
@@ -644,32 +651,33 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                             chipStatus={chipStatus}
                         />
                     </div>
-                    <div className="form-group" style={{ marginBottom: 8 }}>
-                        <label className="form-label">Quote Template</label>
-                        <div className="form-hint">Provide required content for the quote (hashtags, links, etc.).</div>
-                        <div className="textarea-wrapper">
-                            <textarea className="form-textarea" rows={2}
+                    <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 8 }}>
+                        <Label>Quote Template</Label>
+                        <div className="text-xs text-muted-foreground mb-1 leading-snug">Provide required content for the quote (hashtags, links, etc.).</div>
+                        <div className="relative">
+                            <Textarea
+                                rows={2}
                                 placeholder="Write the required quote content..."
                                 value={task.params["content"] ?? ""}
                                 onChange={e => setTaskParam(idx, "content", e.target.value)}
                                 maxLength={280}
                             />
-                            <span className="char-count">{(task.params["content"] ?? "").length}/280</span>
+                            <span className="absolute bottom-1.5 right-2 text-xs text-muted-foreground font-mono pointer-events-none">{(task.params["content"] ?? "").length}/280</span>
                         </div>
                     </div>
-                    <div className="toggle-row">
+                    <div className="flex items-center justify-between py-1.5 text-xs text-foreground">
                         <span>Require tagging 3 friends</span>
-                        <div
-                            className={`toggle-switch${task.requireTagFriends ? " on" : ""}`}
-                            onClick={() => toggleTagFriends(idx)}
+                        <Switch
+                            checked={task.requireTagFriends ?? false}
+                            onCheckedChange={() => toggleTagFriends(idx)}
                         />
                     </div>
                 </>
             )}
             {(fields === "discord_join") && (
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Discord Server URL</label>
-                    <div className="form-hint">Invite link to the Discord server. Press ↵ to confirm.</div>
+                <div className="space-y-1.5 mb-0">
+                    <Label>Discord Server URL</Label>
+                    <div className="text-xs text-muted-foreground mb-1 leading-snug">Invite link to the Discord server. Press ↵ to confirm.</div>
                     <ChipInput
                         chips={task.chips}
                         onAdd={val => addChip(idx, val)}
@@ -692,9 +700,9 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                 />
             )}
             {(fields === "telegram_join") && (
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Telegram Group / Channel</label>
-                    <div className="form-hint">Username or invite link. Press ↵ to confirm.</div>
+                <div className="space-y-1.5 mb-0">
+                    <Label>Telegram Group / Channel</Label>
+                    <div className="text-xs text-muted-foreground mb-1 leading-snug">Username or invite link. Press ↵ to confirm.</div>
                     <ChipInput
                         chips={task.chips}
                         onAdd={val => addChip(idx, val)}
@@ -705,7 +713,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                         error={chipError}
                         chipStatus={chipStatus}
                     />
-                    <div className="form-hint" style={{ marginTop: 6, color: "var(--fg-muted)" }}>
+                    <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginTop: 6 }}>
                         ⚠ Add <strong>@ClawQuest_aibot</strong> as admin to your group/channel for auto-verification to work.
                     </div>
                 </div>
@@ -840,8 +848,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
     const truncateDesc = (text: string, id: string) => {
         if (!text || text.length <= 250) return text
-        if (expandedDescs.has(id)) return <>{text} <span className="more-link" onClick={(e) => toggleDesc(id, e)}>less</span></>
-        return <>{text.slice(0, 250).trimEnd()}… <span className="more-link" onClick={(e) => toggleDesc(id, e)}>more</span></>
+        if (expandedDescs.has(id)) return <>{text} <span className="text-primary cursor-pointer text-xs font-medium ml-0.5 hover:underline" onClick={(e) => toggleDesc(id, e)}>less</span></>
+        return <>{text.slice(0, 250).trimEnd()}… <span className="text-primary cursor-pointer text-xs font-medium ml-0.5 hover:underline" onClick={(e) => toggleDesc(id, e)}>more</span></>
     }
 
     const set = (key: keyof FormData, val: string) => setForm(prev => ({ ...prev, [key]: val }))
@@ -895,16 +903,10 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     }
 
     // ── Skills ────────────────────────────────────────────────────────────────
-    const [fadingInSkills, setFadingInSkills] = useState<Set<string>>(new Set())
-
     const addedSkillIds = new Set(requiredSkills.map(s => s.id))
     const addSkill = (s: ClawHubSkill) => {
         if (addedSkillIds.has(s.id)) return
         setRequiredSkills(prev => [...prev, { id: s.id, name: s.name, desc: s.desc, agents: s.agents, version: s.version }])
-        setFadingInSkills(prev => new Set(prev).add(s.id))
-        setTimeout(() => {
-            setFadingInSkills(prev => { const next = new Set(prev); next.delete(s.id); return next })
-        }, 400)
     }
     const removeSkill = (id: string) => setRequiredSkills(prev => prev.filter(s => s.id !== id))
 
@@ -1045,11 +1047,11 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     if (isEditMode && blockedStatus) {
         return (
             <div className="page-container" style={{ maxWidth: 960 }}>
-                <div className="breadcrumb">
+                <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
                     <Link to="/quests/$questId" params={{ questId: editQuestId! }}>Quest</Link>
-                    <span className="sep">&rsaquo;</span>
+                    <span>›</span>
                     <span>Edit</span>
-                </div>
+                </nav>
                 <div style={{
                     marginTop: 40, padding: "24px", textAlign: "center",
                     border: "1px solid var(--border)", borderRadius: 6, background: "var(--sidebar-bg)",
@@ -1063,13 +1065,13 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             : "This quest has ended. No further changes are possible."}
                     </div>
                     <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-                        <Link to="/quests/$questId" params={{ questId: editQuestId! }}>
-                            <button className="btn btn-secondary">View Quest</button>
-                        </Link>
+                        <Button asChild variant="secondary">
+                            <Link to="/quests/$questId" params={{ questId: editQuestId! }}>View Quest</Link>
+                        </Button>
                         {editQuest.status === "live" && (
-                            <Link to="/quests/$questId/manage" params={{ questId: editQuestId! }}>
-                                <button className="btn btn-primary">Manage Quest</button>
-                            </Link>
+                            <Button asChild>
+                                <Link to="/quests/$questId/manage" params={{ questId: editQuestId! }}>Manage Quest</Link>
+                            </Button>
                         )}
                     </div>
                 </div>
@@ -1085,24 +1087,24 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
     return (
         <div className="page-container" style={{ maxWidth: 960 }}>
-            <div className="breadcrumb">
+            <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
                 {isEditMode ? (
                     <>
                         <Link to="/quests/$questId" params={{ questId: editQuestId! }}>Quest</Link>
-                        <span className="sep">&rsaquo;</span>
+                        <span>›</span>
                         <span>{editLabel}</span>
                     </>
                 ) : (
                     <>
                         <Link to="/dashboard">Dashboard</Link>
-                        <span className="sep">&rsaquo;</span>
+                        <span>›</span>
                         <span>Create Quest</span>
                     </>
                 )}
-            </div>
-            <div className="page-header" style={{ marginBottom: 20 }}>
+            </nav>
+            <div className="flex justify-between items-end py-5 pb-3 border-b border-border mb-0" style={{ marginBottom: 20 }}>
                 <div>
-                    <h1>{isEditMode ? editLabel : "Create a Quest"}</h1>
+                    <h1 className="text-2xl font-semibold text-foreground">{isEditMode ? editLabel : "Create a Quest"}</h1>
                     <div className="subtitle">
                         {isEditMode
                             ? isScheduled
@@ -1113,42 +1115,54 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 </div>
             </div>
 
-            <div className="form-layout">
+            <div className="block max-w-[720px]">
               {restoredBanner && (
-                <div className="draft-restored-banner">
+                <div className="bg-info-light border border-info rounded px-4 py-2 flex justify-between items-center mb-4 text-base text-foreground">
                     <span>Draft restored from local backup</span>
-                    <button className="btn btn-sm" onClick={() => setRestoredBanner(false)}>Dismiss</button>
+                    <Button size="sm" onClick={() => setRestoredBanner(false)}>Dismiss</Button>
                 </div>
               )}
-              <div className="accordion-stepper">
+              <div className="relative">
 
                     {/* ══ STEP 1: DETAILS ══ */}
-                    <div className={`accordion-step${tab === "details" ? " active" : ""}${tabDone.details && tab !== "details" ? " done" : ""}`}>
-                        <div className="accordion-step-header" onClick={() => setTab(tab === "details" ? null : "details")}>
-                            <span className="accordion-step-icon">{tabDone.details && tab !== "details" ? "\u2713" : "1"}</span>
-                            <div className="accordion-step-left">
-                                <div className="accordion-step-title-row">
-                                    <span className="accordion-step-title">Quest Details</span>
-                                    {tabDone.details && tab !== "details" && <span className="accordion-step-status completed">Completed</span>}
-                                    {tab === "details" && <span className="accordion-step-status in-progress">In Progress</span>}
-                                    {!tabDone.details && tab !== "details" && <span className="accordion-step-status not-started">Not Started</span>}
+                    {(() => {
+                        const isActive = tab === "details"
+                        const isDone = tabDone.details && !isActive
+                        return (
+                    <div className={cn(
+                        "relative mb-0 border-none rounded-none",
+                        "before:content-[''] before:absolute before:left-[13px] before:top-7 before:bottom-0 before:w-0.5 before:bg-border before:z-0",
+                        isDone && "before:bg-accent-light0"
+                    )}>
+                        <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-[1] group" onClick={() => setTab(tab === "details" ? null : "details")}>
+                            <span className={cn(
+                                "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white border-2 border-background",
+                                isDone ? "bg-accent-light0 shadow-[0_0_0_2px_theme(colors.green.500)]"
+                                    : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
+                                    : "bg-gray-300 shadow-[0_0_0_2px_theme(colors.gray.300)]"
+                            )}>{isDone ? "\u2713" : "1"}</span>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-sm text-foreground group-hover:text-primary">Quest Details</span>
+                                    {isDone && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-accent-light text-accent">Completed</span>}
+                                    {isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-50 text-warning">In Progress</span>}
+                                    {!isDone && !isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-muted text-muted-foreground">Not Started</span>}
                                 </div>
-                                <div className="accordion-step-desc">
+                                <div className="text-xs text-muted-foreground mt-0.5 leading-snug truncate">
                                     {tab !== "details" && stepSummaries.details ? stepSummaries.details : "Title, description, and timing"}
                                 </div>
                             </div>
-                            <div className="accordion-step-right">
-                                <span className="accordion-step-counter">Step 1 of 4</span>
-                                <span className="accordion-step-hint">{tabDone.details && tab !== "details" ? "Modify if required" : tab === "details" ? "" : "Fill the details"}</span>
+                            <div className="flex flex-col items-end gap-0.5 shrink-0 pt-0.5">
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">Step 1 of 4</span>
+                                <span className="text-xs text-primary whitespace-nowrap">{isDone ? "Modify if required" : isActive ? "" : "Fill the details"}</span>
                             </div>
                         </div>
-                        {tab === "details" && (
-                        <div className="accordion-step-body"><div className="accordion-step-body-inner">
-                            <div className="form-section">
-                                <div className="form-group">
-                                    <label className="form-label">Title</label>
-                                    <input
-                                        className="form-input"
+                        {isActive && (
+                        <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
+                            <div className="space-y-4 mb-6">
+                                <div className="space-y-1.5 mb-3.5">
+                                    <Label>Title</Label>
+                                    <Input
                                         type="text"
                                         placeholder="e.g. Register & trade shares on ClawFriend"
                                         value={form.title}
@@ -1156,11 +1170,10 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                         maxLength={80}
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">Description</label>
-                                    <div className="form-hint">Agent-readable. Explain the overall quest goal.</div>
-                                    <textarea
-                                        className="form-textarea"
+                                <div className="space-y-1.5 mb-3.5">
+                                    <Label>Description</Label>
+                                    <div className="text-xs text-muted-foreground mb-1 leading-snug">Agent-readable. Explain the overall quest goal.</div>
+                                    <Textarea
                                         rows={3}
                                         placeholder="Use the ClawFriend skill to register your agent…"
                                         value={form.description}
@@ -1168,51 +1181,66 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                     />
                                 </div>
                             </div>
-                            <div className="form-section">
-                                <div className="form-section-title">Timing</div>
-                                <div className="form-row">
-                                    <div className="form-group">
-                                        <label className="form-label">Start</label>
-                                        <input className="form-input" type="datetime-local" value={form.startAt} onChange={e => set("startAt", e.target.value)} />
+                            <div className="space-y-4 mb-6">
+                                <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Timing</div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className="space-y-1.5 mb-3.5">
+                                        <Label>Start</Label>
+                                        <input className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" type="datetime-local" value={form.startAt} onChange={e => set("startAt", e.target.value)} />
                                     </div>
-                                    <div className="form-group">
-                                        <label className="form-label">End</label>
-                                        <input className="form-input" type="datetime-local" value={form.endAt} onChange={e => set("endAt", e.target.value)} />
+                                    <div className="space-y-1.5 mb-3.5">
+                                        <Label>End</Label>
+                                        <input className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" type="datetime-local" value={form.endAt} onChange={e => set("endAt", e.target.value)} />
                                     </div>
                                 </div>
                             </div>
-                            <div className="tab-nav-row">
+                            <div className="flex justify-between mt-5 pt-4 border-t border-border">
                                 <span />
-                                <button className="btn btn-primary" onClick={() => setTab("tasks")}>Next: Tasks →</button>
+                                <Button onClick={() => setTab("tasks")}>Next: Tasks →</Button>
                             </div>
                         </div></div>
                         )}
                     </div>
+                        )})()}
 
                     {/* ══ STEP 2: TASKS ══ */}
-                    <div className={`accordion-step${tab === "tasks" ? " active" : ""}${tabDone.tasks && tab !== "tasks" ? " done" : ""}${TABS.indexOf(tab as Tab) < TABS.indexOf("tasks") && !tabDone.tasks ? " future" : ""}`}>
-                        <div className="accordion-step-header" onClick={() => setTab(tab === "tasks" ? null : "tasks")}>
-                            <span className="accordion-step-icon">{tabDone.tasks && tab !== "tasks" ? "\u2713" : "2"}</span>
-                            <div className="accordion-step-left">
-                                <div className="accordion-step-title-row">
-                                    <span className="accordion-step-title">Tasks</span>
-                                    {tabDone.tasks && tab !== "tasks" && <span className="accordion-step-status completed">Completed</span>}
-                                    {tab === "tasks" && <span className="accordion-step-status in-progress">In Progress</span>}
-                                    {!tabDone.tasks && tab !== "tasks" && <span className="accordion-step-status not-started">Not Started</span>}
+                    {(() => {
+                        const isActive = tab === "tasks"
+                        const isDone = tabDone.tasks && !isActive
+                        const isFuture = TABS.indexOf(tab as Tab) < TABS.indexOf("tasks") && !tabDone.tasks
+                        return (
+                    <div className={cn(
+                        "relative mb-0 border-none rounded-none",
+                        "before:content-[''] before:absolute before:left-[13px] before:top-0 before:bottom-0 before:w-0.5 before:bg-border before:z-0",
+                        isDone && "before:bg-accent-light0"
+                    )}>
+                        <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-[1] group" onClick={() => setTab(tab === "tasks" ? null : "tasks")}>
+                            <span className={cn(
+                                "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white border-2 border-background",
+                                isDone ? "bg-accent-light0 shadow-[0_0_0_2px_theme(colors.green.500)]"
+                                    : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
+                                    : "bg-gray-300 shadow-[0_0_0_2px_theme(colors.gray.300)]"
+                            )}>{isDone ? "\u2713" : "2"}</span>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-sm text-foreground group-hover:text-primary">Tasks</span>
+                                    {isDone && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-accent-light text-accent">Completed</span>}
+                                    {isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-50 text-warning">In Progress</span>}
+                                    {!isDone && !isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-muted text-muted-foreground">Not Started</span>}
                                 </div>
-                                <div className="accordion-step-desc">
+                                <div className="text-xs text-muted-foreground mt-0.5 leading-snug truncate">
                                     {tab !== "tasks" && stepSummaries.tasks !== "No tasks" ? stepSummaries.tasks : "Human social actions and agent skill requirements"}
                                 </div>
                             </div>
-                            <div className="accordion-step-right">
-                                <span className="accordion-step-counter">Step 2 of 4</span>
-                                <span className="accordion-step-hint">{tabDone.tasks && tab !== "tasks" ? "Modify if required" : tab === "tasks" ? "" : "Add tasks"}</span>
+                            <div className="flex flex-col items-end gap-0.5 shrink-0 pt-0.5">
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">Step 2 of 4</span>
+                                <span className={cn("text-xs whitespace-nowrap", isFuture ? "text-muted-foreground" : "text-primary")}>{isDone ? "Modify if required" : isActive ? "" : "Add tasks"}</span>
                             </div>
                         </div>
-                        {tab === "tasks" && (
-                        <div className="accordion-step-body"><div className="accordion-step-body-inner">
-                            <div className="form-section">
-                                <div className="form-hint" style={{ marginBottom: 14 }}>
+                        {isActive && (
+                        <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
+                            <div className="space-y-4 mb-6">
+                                <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginBottom: 14 }}>
                                     Define what needs to be done. Human tasks are social actions.
                                     Agent tasks require specific skills from{" "}
                                     <a href="https://clawhub.ai/skills" target="_blank" rel="noreferrer" style={{ color: "var(--link)" }}>
@@ -1221,22 +1249,22 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 </div>
 
                                 {/* ── Human Tasks ── */}
-                                <div className="actor-section human">
-                                    <div className="actor-section-title">
+                                <div className="mb-6 pl-3.5 border-l-4 border-l-[var(--human-fg)]">
+                                    <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                         <span>👤</span> Human Tasks
-                                        <span className="actor-badge human">Social</span>
-                                        <span className="hint">Actions performed by the operator</span>
+                                        <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-[var(--human-bg)] text-[var(--human-fg)]">Social</span>
+                                        <span className="font-normal text-xs text-muted-foreground ml-auto">Actions performed by the operator</span>
                                     </div>
 
-                                    <div className="template-picker" style={{ marginBottom: 12 }}>
+                                    <div className="mb-2.5" style={{ marginBottom: 12 }}>
                                         <div style={{ fontSize: 11, fontWeight: 600, color: "var(--fg-muted)", marginBottom: 6 }}>
                                             Select a task template
                                         </div>
-                                        <div className="platform-grid">
+                                        <div className="flex flex-wrap gap-1.5 mb-2.5">
                                             {Object.keys(PLATFORM_ACTIONS).map(p => (
                                                 <button
                                                     key={p}
-                                                    className={`platform-btn ${activePlatform === p ? "active" : ""}`}
+                                                    className={cn("flex items-center gap-1.5 px-3 py-1.5 border border-input rounded bg-background text-foreground text-xs font-medium cursor-pointer transition-colors hover:border-muted-foreground hover:bg-muted", activePlatform === p && "border-accent text-accent bg-accent-light font-semibold")}
                                                     onClick={() => setActivePlatform(activePlatform === p ? null : p)}
                                                 >
                                                     <span className="icon"><PlatformBtnIcon platform={p} /></span> {p}
@@ -1244,16 +1272,16 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                             ))}
                                         </div>
                                         {activePlatform && (
-                                            <div className="action-templates visible">
-                                                <div className="action-template-list">
+                                            <div className="block">
+                                                <div className="border border-border rounded overflow-hidden mb-2.5">
                                                     {PLATFORM_ACTIONS[activePlatform].map(action => (
                                                         <div
                                                             key={action.type}
-                                                            className="action-template-item"
+                                                            className="flex items-center justify-between px-3 py-2 border-b border-border/30 text-xs cursor-pointer transition-colors hover:bg-[var(--human-bg)] last:border-b-0"
                                                             onClick={() => addHumanTask(activePlatform, action)}
                                                         >
-                                                            <span className="template-name">{action.label}</span>
-                                                            <button className="template-add">+ Add</button>
+                                                            <span className="font-medium text-foreground">{action.label}</span>
+                                                            <button className="bg-transparent border border-[var(--human-border)] text-[var(--human-fg)] text-xs font-semibold py-0.5 px-2.5 rounded cursor-pointer hover:bg-[var(--human-bg)]">+ Add</button>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -1271,35 +1299,39 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                                 Added Tasks
                                             </div>
                                             {humanTasks.map((task, i) => (
-                                                <div key={i} className="social-entry" data-platform={task.platform.toLowerCase()}>
+                                                <div key={i} className="border border-border rounded mb-2 last:mb-0" data-platform={task.platform.toLowerCase()}>
                                                     <div
-                                                        className="social-entry-header"
+                                                        className="flex items-center gap-2 px-3 py-2 bg-muted/50 border-b border-border text-xs cursor-pointer select-none"
                                                         onClick={() => setExpandedTask(expandedTask === i ? null : i)}
                                                     >
-                                                        <span className="entry-icon"><PlatformBtnIcon platform={task.platform} /></span>
-                                                        <span className="entry-label">{task.action}</span>
+                                                        <span className="text-sm"><PlatformBtnIcon platform={task.platform} /></span>
+                                                        <span className="font-semibold text-foreground flex-1">{task.action}</span>
                                                         {task.chips.length > 0 && (
-                                                            <span className="entry-chip-count">{task.chips.length}</span>
+                                                            <span className="inline-flex items-center justify-center min-w-4 h-4 rounded-full text-xs font-bold bg-accent-light0 text-white px-1">{task.chips.length}</span>
                                                         )}
-                                                        <span className="entry-platform">{task.platform}</span>
+                                                        <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-[var(--social-bg)] text-[var(--social-fg)] uppercase">{task.platform}</span>
                                                         <button
-                                                            className="entry-remove"
+                                                            className="bg-transparent border-none text-muted-foreground text-xs cursor-pointer px-1.5 py-0.5 rounded hover:text-destructive hover:bg-destructive/10"
                                                             onClick={e => { e.stopPropagation(); removeHumanTask(i) }}
                                                         >✕</button>
                                                     </div>
                                                     {expandedTask !== i && task.chips.length > 0 && (
-                                                        <div className="social-entry-chips-preview">
+                                                        <div className="flex flex-wrap gap-1 px-3 py-1.5 pb-2 text-xs border-t border-dashed border-border">
                                                             {task.chips.slice(0, 4).map((c, ci) => {
                                                                 const st = socialValidation.getStatus(task.platform.toLowerCase(), task.actionType, c)
                                                                 const icon = st === "pending" ? "⋯" : st === "invalid" ? "⚠" : "✓"
-                                                                const cls = st === "invalid" ? " chip-preview-invalid" : st === "pending" ? " chip-preview-pending" : ""
                                                                 return (
-                                                                    <span key={ci} className={`chip-preview${cls}`}>
+                                                                    <span key={ci} className={cn(
+                                                                        "font-mono text-xs px-1.5 py-px rounded whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]",
+                                                                        st === "invalid" ? "text-warning bg-error-light"
+                                                                            : st === "pending" ? "text-muted-foreground bg-muted"
+                                                                            : "text-success bg-accent-light"
+                                                                    )}>
                                                                         {icon} {task.actionType === "follow_account" ? `@${c.replace(/^@/, "")}` : c.length > 35 ? c.slice(0, 35) + "…" : c}
                                                                     </span>
                                                                 )
                                                             })}
-                                                            {task.chips.length > 4 && <span className="chip-preview more">+{task.chips.length - 4} more</span>}
+                                                            {task.chips.length > 4 && <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-px rounded">+{task.chips.length - 4} more</span>}
                                                         </div>
                                                     )}
                                                     {expandedTask === i && (
@@ -1321,14 +1353,14 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 </div>
 
                                 {/* ── Agent Tasks ── */}
-                                <div className="actor-section agent">
-                                    <div className="actor-section-title">
+                                <div className="mb-6 pl-3.5 border-l-4 border-l-[var(--agent-fg)]">
+                                    <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                         <span>🤖</span> Agent Tasks
-                                        <span className="actor-badge agent">Skill</span>
-                                        <span className="hint">Required skills from ClawHub</span>
+                                        <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-[var(--agent-bg)] text-[var(--agent-fg)]">Skill</span>
+                                        <span className="font-normal text-xs text-muted-foreground ml-auto">Required skills from ClawHub</span>
                                     </div>
 
-                                    <div className="info-box">
+                                    <div className="bg-muted/50 border border-border rounded px-3 py-2 text-xs text-muted-foreground leading-relaxed mb-2.5">
                                         Agents must have{" "}
                                         <code style={{ fontFamily: "var(--font-mono)", fontSize: 11, background: "var(--code-bg)", padding: "0 3px", borderRadius: 2 }}>
                                             clawquest
@@ -1344,38 +1376,38 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                             No skills required yet. Search below to add.
                                         </div>
                                     ) : (
-                                        <div className="required-skills-list">
+                                        <div className="mt-2.5">
                                             {requiredSkills.map(skill => {
                                                 const isCustom = skill.id.startsWith("http")
                                                 return (
-                                                    <div key={skill.id} className={`required-skill-item${fadingInSkills.has(skill.id) ? " fading-in" : ""}`} data-agents={skill.agents}>
-                                                        <div className="required-skill-icon">{isCustom ? "🔗" : "🧩"}</div>
-                                                        <div className="required-skill-info">
-                                                            <div className="required-skill-name">
+                                                    <div key={skill.id} className="flex items-center gap-2.5 px-2.5 py-2 border border-[var(--skill-border)] rounded mb-1.5 bg-background overflow-hidden" data-agents={skill.agents}>
+                                                        <div className="size-7 rounded bg-[var(--skill-bg)] flex items-center justify-center text-sm shrink-0">{isCustom ? "🔗" : "🧩"}</div>
+                                                        <div className="flex-1 min-w-0 overflow-hidden">
+                                                            <div className="text-xs font-semibold text-foreground font-mono truncate">
                                                                 {isCustom ? skill.name : `${skill.id}@${skill.version ?? "latest"}`}
                                                             </div>
-                                                            <div className="required-skill-desc">{skill.desc}</div>
+                                                            <div className="text-xs text-muted-foreground leading-tight truncate">{skill.desc}</div>
                                                             {isCustom && (
-                                                                <div className="required-skill-source" title={skill.id}>
+                                                                <div className="text-xs text-primary mt-0.5 truncate font-mono opacity-70" title={skill.id}>
                                                                     {skill.id}
                                                                 </div>
                                                             )}
                                                         </div>
                                                         {isCustom
-                                                            ? <span className="required-skill-eligible custom">custom</span>
-                                                            : <span className="required-skill-eligible">{skill.agents} agents</span>
+                                                            ? <span className="text-xs font-semibold text-muted-foreground bg-muted border border-border px-1.5 py-0.5 rounded whitespace-nowrap self-center">custom</span>
+                                                            : <span className="text-xs font-semibold text-accent bg-accent-light px-1.5 py-0.5 rounded whitespace-nowrap self-center">{skill.agents} agents</span>
                                                         }
-                                                        <button className="required-skill-remove" onClick={() => removeSkill(skill.id)}>✕</button>
+                                                        <button className="bg-transparent border-none text-muted-foreground text-sm cursor-pointer p-0.5 rounded leading-none hover:text-destructive hover:bg-destructive/10" onClick={() => removeSkill(skill.id)}>✕</button>
                                                     </div>
                                                 )
                                             })}
                                         </div>
                                     )}
 
-                                    <div className="skill-search-wrapper" style={{ position: "relative" }}>
-                                        <span className="skill-search-icon">🔍</span>
+                                    <div className="relative mb-2.5">
+                                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-base pointer-events-none">🔍</span>
                                         <input
-                                            className="skill-search-input"
+                                            className="w-full py-2 px-2.5 pl-[30px] text-base border border-[var(--agent-border)] rounded bg-[var(--agent-bg)] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:bg-background focus:ring-[3px] focus:ring-primary/15"
                                             type="text"
                                             placeholder="Search on ClawHub or paste skill URL…"
                                             value={skillSearch}
@@ -1401,8 +1433,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
                                         {/* URL-based skill preview */}
                                         {showSkillResults && isSkillUrl(skillSearch.trim()) && (urlFetching || urlPreview || urlFetchError) && (
-                                            <div className="skill-search-results">
-                                                <div className="skill-search-results-header">
+                                            <div className="border border-border rounded bg-background overflow-hidden overflow-y-auto mb-2.5 max-h-[360px]">
+                                                <div className="px-2.5 py-1.5 text-xs text-muted-foreground bg-muted/50 border-b border-border flex justify-between">
                                                     <span>{urlFetching ? "Fetching skill.md…" : urlPreview ? "Skill found" : "Error"}</span>
                                                     <span style={{ cursor: "pointer" }} onClick={() => setShowSkillResults(false)}>✕ close</span>
                                                 </div>
@@ -1419,21 +1451,21 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                                 {urlPreview && !urlFetching && (() => {
                                                     const isAdded = addedSkillIds.has(urlPreview.id)
                                                     return (
-                                                        <div className={`skill-result-item${isAdded ? " disabled" : ""}`} onClick={() => !isAdded && addSkill(urlPreview)}>
-                                                            <div className="skill-result-info">
-                                                                <div className="skill-result-name">
-                                                                    <span className="custom-skill-badge">URL</span>
+                                                        <div className={cn("flex items-start gap-2.5 px-2.5 py-2 border-b border-border/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-muted/50", isAdded && "opacity-50 cursor-default bg-muted/50")} onClick={() => !isAdded && addSkill(urlPreview)}>
+                                                            <div className="flex-1 min-w-0 overflow-hidden">
+                                                                <div className="text-xs font-semibold text-primary flex items-center gap-1.5 truncate">
+                                                                    <span className="inline-flex items-center justify-center text-xs font-bold uppercase px-1.5 py-px rounded bg-blue-100 text-info mr-1 tracking-wide shrink-0">URL</span>
                                                                     <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{urlPreview.name}</span>
                                                                 </div>
-                                                                <div className="skill-result-desc">{truncateDesc(urlPreview.desc, urlPreview.id)}</div>
-                                                                <div className="skill-result-meta">
+                                                                <div className="text-xs text-muted-foreground leading-snug mt-0.5 break-words">{truncateDesc(urlPreview.desc, urlPreview.id)}</div>
+                                                                <div className="flex gap-2.5 text-xs text-muted-foreground mt-0.5">
                                                                     <span>v{urlPreview.version}</span>
-                                                                    <span className="skill-source-url" title={urlPreview.id}>{urlPreview.ownerHandle}</span>
+                                                                    <span className="font-mono text-xs text-muted-foreground" title={urlPreview.id}>{urlPreview.ownerHandle}</span>
                                                                 </div>
                                                             </div>
                                                             {isAdded
-                                                                ? <span className="skill-result-added">✓ Added</span>
-                                                                : <button className="skill-result-add">+ Add</button>
+                                                                ? <span className="bg-accent-light border border-accent-border text-accent text-xs font-semibold py-1 px-2.5 rounded whitespace-nowrap self-center">✓ Added</span>
+                                                                : <button className="bg-transparent border border-[var(--agent-border)] text-[var(--agent-fg)] text-xs font-semibold py-1 px-2.5 rounded cursor-pointer whitespace-nowrap self-center hover:bg-[var(--agent-bg)]">+ Add</button>
                                                             }
                                                         </div>
                                                     )
@@ -1443,8 +1475,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
                                         {/* ClawHub search results */}
                                         {showSkillResults && !isSkillUrl(skillSearch.trim()) && skillSearch.length >= 2 && (skillSearchResults.length > 0 || skillSearchLoading) && (
-                                            <div className="skill-search-results">
-                                                <div className="skill-search-results-header">
+                                            <div className="border border-border rounded bg-background overflow-hidden overflow-y-auto mb-2.5 max-h-[360px]">
+                                                <div className="px-2.5 py-1.5 text-xs text-muted-foreground bg-muted/50 border-b border-border flex justify-between">
                                                     <span>{skillSearchLoading ? `Searching "${skillSearch}"…` : `${skillSearchResults.length} results for "${skillSearch}"`}</span>
                                                     <span style={{ cursor: "pointer" }} onClick={() => setShowSkillResults(false)}>✕ close</span>
                                                 </div>
@@ -1456,22 +1488,22 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                                 {skillSearchResults.map(s => {
                                                     const isAdded = addedSkillIds.has(s.id)
                                                     return (
-                                                        <div key={s.id} className={`skill-result-item${isAdded ? " disabled" : ""}`} onClick={() => !isAdded && addSkill(s)}>
-                                                            <div className="skill-result-info">
-                                                                <div className="skill-result-name">
-                                                                    <span className="org">{s.id.split("/")[0]} /</span>
+                                                        <div key={s.id} className={cn("flex items-start gap-2.5 px-2.5 py-2 border-b border-border/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-muted/50", isAdded && "opacity-50 cursor-default bg-muted/50")} onClick={() => !isAdded && addSkill(s)}>
+                                                            <div className="flex-1 min-w-0 overflow-hidden">
+                                                                <div className="text-xs font-semibold text-primary flex items-center gap-1.5 truncate">
+                                                                    <span className="text-muted-foreground font-normal shrink-0">{s.id.split("/")[0]} /</span>
                                                                     <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}</span>
                                                                 </div>
-                                                                <div className="skill-result-desc">{truncateDesc(s.desc, s.id)}</div>
-                                                                <div className="skill-result-meta">
+                                                                <div className="text-xs text-muted-foreground leading-snug mt-0.5 break-words">{truncateDesc(s.desc, s.id)}</div>
+                                                                <div className="flex gap-2.5 text-xs text-muted-foreground mt-0.5">
                                                                     <span>↓ {s.downloads}</span>
                                                                     <span>★ {s.stars}</span>
                                                                     <span>v{s.version}</span>
                                                                 </div>
                                                             </div>
                                                             {isAdded
-                                                                ? <span className="skill-result-added">✓ Added</span>
-                                                                : <button className="skill-result-add">+ Add</button>
+                                                                ? <span className="bg-accent-light border border-accent-border text-accent text-xs font-semibold py-1 px-2.5 rounded whitespace-nowrap self-center">✓ Added</span>
+                                                                : <button className="bg-transparent border border-[var(--agent-border)] text-[var(--agent-fg)] text-xs font-semibold py-1 px-2.5 rounded cursor-pointer whitespace-nowrap self-center hover:bg-[var(--agent-bg)]">+ Add</button>
                                                             }
                                                         </div>
                                                     )
@@ -1482,52 +1514,67 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 </div>
                             </div>
 
-                            <div className="tab-nav-row">
-                                <button className="btn btn-secondary" onClick={() => setTab("details")}>← Details</button>
-                                <button className="btn btn-primary" onClick={() => setTab("reward")}>Next: Reward →</button>
+                            <div className="flex justify-between mt-5 pt-4 border-t border-border">
+                                <Button variant="secondary" onClick={() => setTab("details")}>← Details</Button>
+                                <Button onClick={() => setTab("reward")}>Next: Reward →</Button>
                             </div>
                         </div></div>
                         )}
                     </div>
+                        )})()}
 
                     {/* ══ STEP 3: REWARD ══ */}
-                    <div className={`accordion-step${tab === "reward" ? " active" : ""}${tabDone.reward && tab !== "reward" ? " done" : ""}${TABS.indexOf(tab as Tab) < TABS.indexOf("reward") && !tabDone.reward ? " future" : ""}`}>
-                        <div className="accordion-step-header" onClick={() => setTab(tab === "reward" ? null : "reward")}>
-                            <span className="accordion-step-icon">{tabDone.reward && tab !== "reward" ? "\u2713" : "3"}</span>
-                            <div className="accordion-step-left">
-                                <div className="accordion-step-title-row">
-                                    <span className="accordion-step-title">Reward</span>
-                                    {tabDone.reward && tab !== "reward" && <span className="accordion-step-status completed">Completed</span>}
-                                    {tab === "reward" && <span className="accordion-step-status in-progress">In Progress</span>}
-                                    {!tabDone.reward && tab !== "reward" && <span className="accordion-step-status not-started">Not Started</span>}
+                    {(() => {
+                        const isActive = tab === "reward"
+                        const isDone = tabDone.reward && !isActive
+                        const isFuture = TABS.indexOf(tab as Tab) < TABS.indexOf("reward") && !tabDone.reward
+                        return (
+                    <div className={cn(
+                        "relative mb-0 border-none rounded-none",
+                        "before:content-[''] before:absolute before:left-[13px] before:top-0 before:bottom-0 before:w-0.5 before:bg-border before:z-0",
+                        isDone && "before:bg-accent-light0"
+                    )}>
+                        <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-[1] group" onClick={() => setTab(tab === "reward" ? null : "reward")}>
+                            <span className={cn(
+                                "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white border-2 border-background",
+                                isDone ? "bg-accent-light0 shadow-[0_0_0_2px_theme(colors.green.500)]"
+                                    : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
+                                    : "bg-gray-300 shadow-[0_0_0_2px_theme(colors.gray.300)]"
+                            )}>{isDone ? "\u2713" : "3"}</span>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-sm text-foreground group-hover:text-primary">Reward</span>
+                                    {isDone && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-accent-light text-accent">Completed</span>}
+                                    {isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-50 text-warning">In Progress</span>}
+                                    {!isDone && !isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-muted text-muted-foreground">Not Started</span>}
                                 </div>
-                                <div className="accordion-step-desc">
+                                <div className="text-xs text-muted-foreground mt-0.5 leading-snug truncate">
                                     {tab !== "reward" && stepSummaries.reward ? stepSummaries.reward : "Reward method, network, token, and distribution"}
                                 </div>
                             </div>
-                            <div className="accordion-step-right">
-                                <span className="accordion-step-counter">Step 3 of 4</span>
-                                <span className="accordion-step-hint">{tabDone.reward && tab !== "reward" ? "Modify if required" : tab === "reward" ? "" : "Fill the details"}</span>
+                            <div className="flex flex-col items-end gap-0.5 shrink-0 pt-0.5">
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">Step 3 of 4</span>
+                                <span className={cn("text-xs whitespace-nowrap", isFuture ? "text-muted-foreground" : "text-primary")}>{isDone ? "Modify if required" : isActive ? "" : "Fill the details"}</span>
                             </div>
                         </div>
-                        {tab === "reward" && (
-                        <div className="accordion-step-body"><div className="accordion-step-body-inner">
+                        {isActive && (
+                        <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
                             {/* Payment Rail */}
-                            <div className="form-section">
-                                <div className="form-group">
-                                    <label className="form-label">Reward Method</label>
-                                    <div className="rail-toggle">
+                            <div className="space-y-4 mb-6">
+                                <div className="space-y-1.5 mb-3.5">
+                                    <Label>Reward Method</Label>
+                                    <div className="inline-flex border border-border rounded overflow-hidden">
                                         <button
-                                            className={`rail-toggle-btn ${form.rail === "crypto" ? "active" : ""}`}
+                                            className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none border-r border-border bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "crypto" && "bg-[var(--tag-bg)] text-[var(--tag-fg)] font-semibold")}
                                             onClick={() => set("rail", "crypto")}
                                         >
-                                            <span className="rail-icon">⛓</span> Crypto
+                                            <span className="text-base leading-none">⛓</span> Crypto
                                         </button>
                                         <button
-                                            className={`rail-toggle-btn ${form.rail === "fiat" ? "active" : ""}`}
+                                            className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "fiat" && "bg-[var(--tag-bg)] text-[var(--tag-fg)] font-semibold")}
                                             onClick={() => set("rail", "fiat")}
                                         >
-                                            <span className="rail-icon">💳</span> Fiat (USD)
+                                            <span className="text-base leading-none">💳</span> Fiat (USD)
                                         </button>
                                     </div>
                                 </div>
@@ -1535,12 +1582,12 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
                             {/* Network & Token (crypto only) */}
                             {form.rail === "crypto" && (
-                                <div className="form-section">
-                                    <div className="form-section-title">Network & Token</div>
-                                    <div className="network-select-row">
-                                        <div className="form-group">
-                                            <label className="form-label">Network</label>
-                                            <select className="form-select" value={form.network} onChange={e => set("network", e.target.value)}>
+                                <div className="space-y-4 mb-6">
+                                    <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Network &amp; Token</div>
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex-1 space-y-1.5 mb-3.5">
+                                            <Label>Network</Label>
+                                            <select className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={form.network} onChange={e => set("network", e.target.value)}>
                                                 <optgroup label="Primary">
                                                     {NETWORKS_PRIMARY.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
                                                 </optgroup>
@@ -1549,9 +1596,9 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                                 </optgroup>
                                             </select>
                                         </div>
-                                        <div className="form-group">
-                                            <label className="form-label">Token</label>
-                                            <select className="form-select" value={form.token} onChange={e => set("token", e.target.value)}>
+                                        <div className="flex-1 space-y-1.5 mb-3.5">
+                                            <Label>Token</Label>
+                                            <select className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={form.token} onChange={e => set("token", e.target.value)}>
                                                 <optgroup label="Stablecoin">
                                                     <option value="USDC">USDC</option>
                                                     <option value="USDT">USDT</option>
@@ -1562,13 +1609,13 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                             </select>
                                         </div>
                                     </div>
-                                    <div className="token-display" style={{ marginTop: 8 }}>
-                                        <div className="token-icon" style={{ background: tokenIconColor }}>
+                                    <div className="flex items-center gap-2.5 p-2 px-3 border border-border rounded bg-muted" style={{ marginTop: 8 }}>
+                                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: tokenIconColor }}>
                                             {tokenIconChar}
                                         </div>
-                                        <div className="token-info">
-                                            <div className="token-name">{tokenDisplaySymbol} on {form.network}</div>
-                                            <div className="token-contract">{tokenContract}</div>
+                                        <div className="flex-1">
+                                            <div className="text-sm font-semibold text-foreground">{tokenDisplaySymbol} on {form.network}</div>
+                                            <div className="text-xs text-muted-foreground font-mono">{tokenContract}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -1576,17 +1623,17 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
                             {/* Fiat */}
                             {form.rail === "fiat" && (
-                                <div className="form-section">
-                                    <div className="form-section-title">Fiat Payment</div>
-                                    <div className="fiat-info">
-                                        <span className="info-icon">ℹ️</span>
+                                <div className="space-y-4 mb-6">
+                                    <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Fiat Payment</div>
+                                    <div className="flex items-center gap-2 px-3 py-2 bg-info-light border border-info rounded text-xs text-foreground leading-relaxed mt-2">
+                                        <span className="text-sm shrink-0">ℹ️</span>
                                         <span>Sponsor pays via <strong>Stripe</strong> (charged upfront at quest creation). Winners withdraw rewards as crypto.</span>
                                     </div>
-                                    <div className="token-display" style={{ marginTop: 10 }}>
-                                        <div className="token-icon" style={{ background: "#635bff" }}>S</div>
-                                        <div className="token-info">
-                                            <div className="token-name">USD via Stripe</div>
-                                            <div className="token-contract" style={{ fontFamily: "var(--font)" }}>
+                                    <div className="flex items-center gap-2.5 p-2 px-3 border border-border rounded bg-muted" style={{ marginTop: 10 }}>
+                                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: "#635bff" }}>S</div>
+                                        <div className="flex-1">
+                                            <div className="text-sm font-semibold text-foreground">USD via Stripe</div>
+                                            <div className="text-xs text-muted-foreground font-mono" style={{ fontFamily: "var(--font)" }}>
                                                 Credit / debit card · Apple Pay · Google Pay
                                             </div>
                                         </div>
@@ -1595,57 +1642,60 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             )}
 
                             {/* Distribution Method */}
-                            <div className="form-section">
-                                <div className="form-section-title">Distribution Method</div>
-                                <div className="radio-group">
+                            <div className="space-y-4 mb-6">
+                                <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Distribution Method</div>
+                                <div className="flex border border-input rounded overflow-hidden">
                                     {[
                                         { id: "payout-fcfs", val: "FCFS" as QuestType, label: "FCFS" },
                                         { id: "payout-draw", val: "LUCKY_DRAW" as QuestType, label: "Lucky Draw" },
                                         { id: "payout-leaderboard", val: "LEADERBOARD" as QuestType, label: "Leaderboard" },
-                                    ].map(opt => (
-                                        <div key={opt.val} className="radio-option">
-                                            <input
-                                                type="radio"
-                                                id={opt.id}
-                                                name="payout"
-                                                checked={form.type === opt.val}
-                                                onChange={() => {
-                                                    setForm(prev => {
-                                                        let winners = prev.winners
-                                                        if (opt.val === "LEADERBOARD") {
-                                                            const n = parseInt(winners) || 2
-                                                            winners = String(Math.min(100, Math.max(2, n)))
-                                                        }
-                                                        return { ...prev, type: opt.val, winners }
-                                                    })
-                                                }}
-                                            />
-                                            <label htmlFor={opt.id}>{opt.label}</label>
-                                        </div>
+                                    ].map((opt, i, arr) => (
+                                        <button
+                                            key={opt.val}
+                                            type="button"
+                                            className={cn(
+                                                "flex-1 text-center px-3 py-2 text-xs font-semibold cursor-pointer transition-colors",
+                                                i < arr.length - 1 && "border-r border-input",
+                                                form.type === opt.val
+                                                    ? "bg-muted text-foreground"
+                                                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                                            )}
+                                            onClick={() => {
+                                                setForm(prev => {
+                                                    let winners = prev.winners
+                                                    if (opt.val === "LEADERBOARD") {
+                                                        const n = parseInt(winners) || 2
+                                                        winners = String(Math.min(100, Math.max(2, n)))
+                                                    }
+                                                    return { ...prev, type: opt.val, winners }
+                                                })
+                                            }}
+                                        >
+                                            {opt.label}
+                                        </button>
                                     ))}
                                 </div>
 
                                 {/* Shared: Total Reward + Winners — shown for all modes */}
                                 <div style={{ marginTop: 12 }}>
-                                    <div className="form-row">
-                                        <div className="form-group">
-                                            <label className="form-label">Total Reward ({tokenLabel})</label>
-                                            <input
-                                                className="form-input form-input-mono"
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div className="space-y-1.5 mb-3.5">
+                                            <Label>Total Reward ({tokenLabel})</Label>
+                                            <Input
+                                                className="font-mono text-xs"
                                                 type="text"
                                                 value={form.total}
                                                 onChange={e => set("total", e.target.value)}
                                             />
                                         </div>
-                                        <div className="form-group">
-                                            <label className="form-label">
+                                        <div className="space-y-1.5 mb-3.5">
+                                            <Label>
                                                 Number of Winners
                                                 {form.type === "LEADERBOARD" && (
                                                     <span style={{ fontSize: 10, color: "var(--fg-muted)", marginLeft: 4 }}>(min 2, max 100)</span>
                                                 )}
-                                            </label>
-                                            <input
-                                                className="form-input"
+                                            </Label>
+                                            <Input
                                                 type="number"
                                                 min={form.type === "LEADERBOARD" ? 2 : 1}
                                                 max={form.type === "LEADERBOARD" ? 100 : undefined}
@@ -1666,11 +1716,11 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 {/* FCFS fields */}
                                 {form.type === "FCFS" && (
                                     <div className="conditional visible" style={{ marginTop: 4 }}>
-                                        <div className="form-hint" style={{ marginBottom: 8 }}>
+                                        <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginBottom: 8 }}>
                                             First N eligible agents get paid immediately.
                                         </div>
-                                        <div className="form-calc">
-                                            Per winner: <strong>{perWinner} {tokenLabel}</strong>
+                                        <div className="text-xs text-muted-foreground mt-1.5 p-1.5 px-2.5 bg-muted rounded border border-border">
+                                            Per winner: <strong className="text-accent font-mono">{perWinner} {tokenLabel}</strong>
                                         </div>
                                     </div>
                                 )}
@@ -1678,20 +1728,20 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 {/* Lucky Draw fields */}
                                 {form.type === "LUCKY_DRAW" && (
                                     <div className="conditional visible" style={{ marginTop: 4 }}>
-                                        <div className="form-hint" style={{ marginBottom: 8 }}>
+                                        <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginBottom: 8 }}>
                                             All eligible submissions enter a raffle. N winners drawn at end.
                                         </div>
-                                        <div className="form-group">
-                                            <label className="form-label">Draw Time</label>
+                                        <div className="space-y-1.5 mb-3.5">
+                                            <Label>Draw Time</Label>
                                             <input
-                                                className="form-input"
+                                                className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                                 type="datetime-local"
                                                 value={form.drawTime}
                                                 onChange={e => set("drawTime", e.target.value)}
                                             />
                                         </div>
-                                        <div className="form-calc">
-                                            Per winner: <strong>{perWinner} {tokenLabel}</strong>
+                                        <div className="text-xs text-muted-foreground mt-1.5 p-1.5 px-2.5 bg-muted rounded border border-border">
+                                            Per winner: <strong className="text-accent font-mono">{perWinner} {tokenLabel}</strong>
                                         </div>
                                     </div>
                                 )}
@@ -1699,36 +1749,36 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 {/* Leaderboard fields */}
                                 {form.type === "LEADERBOARD" && (
                                     <div className="conditional visible" style={{ marginTop: 4 }}>
-                                        <div className="form-hint" style={{ marginBottom: 8 }}>
+                                        <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginBottom: 8 }}>
                                             All verified submissions ranked by completion time. At quest end, top N get tiered rewards (1st gets more than 2nd, etc.).
                                         </div>
-                                        <div className="form-group">
-                                            <label className="form-label">Payout Structure ({tokenLabel})</label>
-                                            <div className="form-hint">
+                                        <div className="space-y-1.5 mb-3.5">
+                                            <Label>Payout Structure ({tokenLabel})</Label>
+                                            <div className="text-xs text-muted-foreground mb-1 leading-snug">
                                                 Auto-generated from total &amp; winners count. Weighted decay: 1st gets most.
                                             </div>
-                                            <div className="lb-payout-visual">
+                                            <div className="flex flex-wrap gap-1 px-2.5 py-2 border border-border rounded bg-muted/50 font-mono text-xs">
                                                 {/* Show first 5 + ellipsis + last 2 if > 20, else show all */}
                                                 {lbWinnersNum <= 20
                                                     ? lbPayouts.map((amt, i) => (
-                                                        <div key={i} className="lb-payout-item">
-                                                            <span className="pos">#{i + 1}</span>
-                                                            <span className="amt">{amt.toFixed(2)}</span>
+                                                        <div key={i} className={cn("inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-background border border-border rounded", i === 0 && "border-accent")}>
+                                                            <span className="text-muted-foreground text-xs">#{i + 1}</span>
+                                                            <span className={cn("font-semibold", i === 0 ? "text-accent" : "text-foreground")}>{amt.toFixed(2)}</span>
                                                         </div>
                                                     ))
                                                     : (
                                                         <>
                                                             {lbPayouts.slice(0, 5).map((amt, i) => (
-                                                                <div key={i} className="lb-payout-item">
-                                                                    <span className="pos">#{i + 1}</span>
-                                                                    <span className="amt">{amt.toFixed(2)}</span>
+                                                                <div key={i} className={cn("inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-background border border-border rounded", i === 0 && "border-accent")}>
+                                                                    <span className="text-muted-foreground text-xs">#{i + 1}</span>
+                                                                    <span className={cn("font-semibold", i === 0 ? "text-accent" : "text-foreground")}>{amt.toFixed(2)}</span>
                                                                 </div>
                                                             ))}
                                                             <span style={{ color: "var(--fg-muted)", padding: "2px 4px", fontSize: 11 }}>…</span>
                                                             {lbPayouts.slice(-2).map((amt, i) => (
-                                                                <div key={`last-${i}`} className="lb-payout-item">
-                                                                    <span className="pos">#{lbWinnersNum - 1 + i}</span>
-                                                                    <span className="amt">{amt.toFixed(2)}</span>
+                                                                <div key={`last-${i}`} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-background border border-border rounded">
+                                                                    <span className="text-muted-foreground text-xs">#{lbWinnersNum - 1 + i}</span>
+                                                                    <span className="font-semibold text-foreground">{amt.toFixed(2)}</span>
                                                                 </div>
                                                             ))}
                                                         </>
@@ -1736,49 +1786,58 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                                 }
                                             </div>
                                         </div>
-                                        <div className="form-calc">
-                                            <span>1st: <strong>{lbPayouts[0]?.toFixed(2)} {tokenLabel}</strong></span>
-                                            <span style={{ marginLeft: 8 }}>→ Last: <strong>{lbPayouts[lbPayouts.length - 1]?.toFixed(2)} {tokenLabel}</strong></span>
-                                            <span style={{ marginLeft: "auto" }}>Total: <strong>{activeTotal.toFixed(2)} {tokenLabel}</strong></span>
+                                        <div className="text-xs text-muted-foreground mt-1.5 p-1.5 px-2.5 bg-muted rounded border border-border">
+                                            <span>1st: <strong className="text-accent font-mono">{lbPayouts[0]?.toFixed(2)} {tokenLabel}</strong></span>
+                                            <span style={{ marginLeft: 8 }}>→ Last: <strong className="text-accent font-mono">{lbPayouts[lbPayouts.length - 1]?.toFixed(2)} {tokenLabel}</strong></span>
+                                            <span style={{ marginLeft: "auto" }}>Total: <strong className="text-accent font-mono">{activeTotal.toFixed(2)} {tokenLabel}</strong></span>
                                         </div>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="tab-nav-row">
-                                <button className="btn btn-secondary" onClick={() => setTab("tasks")}>← Tasks</button>
-                                <button className="btn btn-primary" onClick={() => setTab("preview")}>Next: Preview →</button>
+                            <div className="flex justify-between mt-5 pt-4 border-t border-border">
+                                <Button variant="secondary" onClick={() => setTab("tasks")}>← Tasks</Button>
+                                <Button onClick={() => setTab("preview")}>Next: Preview →</Button>
                             </div>
                         </div></div>
                         )}
                     </div>
+                        )})()}
 
                     {/* ══ STEP 4: PREVIEW & FUND ══ */}
-                    <div className={`accordion-step${tab === "preview" ? " active" : ""}${TABS.indexOf(tab as Tab) < TABS.indexOf("preview") ? " future" : ""}`}>
-                        <div className="accordion-step-header" onClick={() => setTab(tab === "preview" ? null : "preview")}>
-                            <span className="accordion-step-icon">4</span>
-                            <div className="accordion-step-left">
-                                <div className="accordion-step-title-row">
-                                    <span className="accordion-step-title">Preview & Fund</span>
-                                    {tab === "preview" && <span className="accordion-step-status in-progress">In Progress</span>}
-                                    {tab !== "preview" && <span className="accordion-step-status not-started">Not Started</span>}
+                    {(() => {
+                        const isActive = tab === "preview"
+                        const isFuture = TABS.indexOf(tab as Tab) < TABS.indexOf("preview")
+                        return (
+                    <div className="relative mb-0 border-none rounded-none">
+                        <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-[1] group" onClick={() => setTab(tab === "preview" ? null : "preview")}>
+                            <span className={cn(
+                                "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white border-2 border-background",
+                                isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
+                                    : "bg-gray-300 shadow-[0_0_0_2px_theme(colors.gray.300)]"
+                            )}>4</span>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-sm text-foreground group-hover:text-primary">Preview &amp; Fund</span>
+                                    {isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-50 text-warning">In Progress</span>}
+                                    {!isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-muted text-muted-foreground">Not Started</span>}
                                 </div>
-                                <div className="accordion-step-desc">Review your quest and deposit funds</div>
+                                <div className="text-xs text-muted-foreground mt-0.5 leading-snug truncate">Review your quest and deposit funds</div>
                             </div>
-                            <div className="accordion-step-right">
-                                <span className="accordion-step-counter">Step 4 of 4</span>
-                                <span className="accordion-step-hint">{tab === "preview" ? "" : "Review & fund"}</span>
+                            <div className="flex flex-col items-end gap-0.5 shrink-0 pt-0.5">
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">Step 4 of 4</span>
+                                <span className={cn("text-xs whitespace-nowrap", isFuture ? "text-muted-foreground" : "text-primary")}>{isActive ? "" : "Review & fund"}</span>
                             </div>
                         </div>
-                        {tab === "preview" && (
-                        <div className="accordion-step-body"><div className="accordion-step-body-inner">
+                        {isActive && (
+                        <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
                             {/* Header badges */}
-                            <div className="page-header-meta" style={{ marginBottom: 16 }}>
-                                <span className="badge badge-draft">draft</span>
+                            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap" style={{ marginBottom: 16 }}>
+                                <Badge variant="draft">draft</Badge>
                                 <span>·</span>
-                                <span className={`badge badge-${form.type === "FCFS" ? "fcfs" : form.type === "LEADERBOARD" ? "leaderboard" : "luckydraw"}`}>
+                                <Badge variant={form.type === "FCFS" ? "fcfs" : form.type === "LEADERBOARD" ? "leaderboard" : "luckydraw"}>
                                     {form.type === "LUCKY_DRAW" ? "Lucky Draw" : form.type === "LEADERBOARD" ? "Leaderboard" : "FCFS"}
-                                </span>
+                                </Badge>
                                 <span>·</span>
                                 <span className={`badge ${form.rail === "fiat" ? "badge-fiat" : "badge-crypto"}`}>
                                     {tokenLabel}
@@ -1788,34 +1847,34 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             </div>
 
                             {/* Description */}
-                            <div className="description">
-                                <div className="section-title">About this Quest</div>
-                                <p>{form.description || <span style={{ color: "var(--fg-muted)", fontStyle: "italic" }}>No description provided</span>}</p>
+                            <div className="py-3.5 border-b border-border mb-5 text-sm leading-relaxed text-foreground">
+                                <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3.5">About this Quest</div>
+                                <p>{form.description || <span className="text-muted-foreground italic">No description provided</span>}</p>
                             </div>
 
                             {/* Reward grid */}
-                            <div className="reward-grid">
-                                <div className="reward-item">
-                                    <div className="reward-item-label">total reward</div>
-                                    <div className="reward-item-value green mono">
+                            <div className="grid grid-cols-2 gap-2.5 mb-2.5">
+                                <div className="px-3 py-2.5 border border-border rounded bg-muted">
+                                    <div className="text-xs text-muted-foreground mb-0.5">total reward</div>
+                                    <div className="text-sm font-semibold text-accent font-mono">
                                         {activeTotal > 0 ? activeTotal.toLocaleString() : "—"} {tokenLabel}
                                     </div>
                                 </div>
-                                <div className="reward-item">
-                                    <div className="reward-item-label">total slots</div>
-                                    <div className="reward-item-value">{activeWinners}</div>
+                                <div className="px-3 py-2.5 border border-border rounded bg-muted">
+                                    <div className="text-xs text-muted-foreground mb-0.5">total slots</div>
+                                    <div className="text-sm font-semibold text-foreground">{activeWinners}</div>
                                 </div>
-                                <div className="reward-item">
-                                    <div className="reward-item-label">per winner</div>
-                                    <div className="reward-item-value green mono">
+                                <div className="px-3 py-2.5 border border-border rounded bg-muted">
+                                    <div className="text-xs text-muted-foreground mb-0.5">per winner</div>
+                                    <div className="text-sm font-semibold text-accent font-mono">
                                         {form.type === "LEADERBOARD"
                                             ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
                                             : `${perWinner} ${tokenLabel}`}
                                     </div>
                                 </div>
-                                <div className="reward-item">
-                                    <div className="reward-item-label">duration</div>
-                                    <div className="reward-item-value">
+                                <div className="px-3 py-2.5 border border-border rounded bg-muted">
+                                    <div className="text-xs text-muted-foreground mb-0.5">duration</div>
+                                    <div className="text-sm font-semibold text-foreground">
                                         {durationDays !== null && durationDays > 0 ? `${durationDays} day${durationDays === 1 ? "" : "s"}` : "—"}
                                     </div>
                                 </div>
@@ -1823,26 +1882,26 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
                             {/* Human Tasks */}
                             {humanTasks.length > 0 && (
-                                <div className="actor-section human" style={{ marginTop: 16 }}>
-                                    <div className="actor-section-title">
+                                <div className="mb-6 pl-3.5 border-l-4 border-l-[var(--human-fg)] mt-4">
+                                    <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                         Human Tasks
-                                        <span className="actor-badge human">HUMAN</span>
-                                        <span className="hint">Complete these yourself</span>
+                                        <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-[var(--human-bg)] text-[var(--human-fg)]">HUMAN</span>
+                                        <span className="font-normal text-xs text-muted-foreground ml-auto">Complete these yourself</span>
                                     </div>
                                     {humanTasks.map((task, i) => (
-                                        <div key={i} className="task-card">
-                                            <div className="task-card-row">
-                                                <span className="task-check"></span>
-                                                <span className="task-card-label">
-                                                    <span className="task-num">#{i + 1}</span>
+                                        <div key={i} className="border border-border rounded mb-2.5 overflow-hidden last:mb-0">
+                                            <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
+                                                <span className="w-5 h-5 rounded-full border-2 border-input shrink-0 flex items-center justify-center text-xs"></span>
+                                                <span className="flex-1 font-medium">
+                                                    <span className="text-xs text-muted-foreground font-mono mr-1">#{i + 1}</span>
                                                     {task.action}
                                                     {task.chips.length > 0 && (
-                                                        <span style={{ color: "var(--fg-muted)", fontWeight: 400, marginLeft: 6, fontSize: 11 }}>
+                                                        <span className="text-muted-foreground font-normal ml-1.5 text-xs">
                                                             ({task.chips.length} {task.chips.length === 1 ? "item" : "items"})
                                                         </span>
                                                     )}
                                                 </span>
-                                                <span className="badge badge-social">{task.platform}</span>
+                                                <Badge variant="social">{task.platform}</Badge>
                                             </div>
                                         </div>
                                     ))}
@@ -1851,20 +1910,20 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
                             {/* Agent Tasks */}
                             {requiredSkills.length > 0 && (
-                                <div className="actor-section agent" style={{ marginTop: humanTasks.length > 0 ? 10 : 16 }}>
-                                    <div className="actor-section-title">
+                                <div className={cn("mb-6 pl-3.5 border-l-4 border-l-[var(--agent-fg)]", humanTasks.length > 0 ? "mt-2.5" : "mt-4")}>
+                                    <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                         Agent Tasks
-                                        <span className="actor-badge agent">AGENT</span>
-                                        <span className="hint">Your AI agent handles these</span>
+                                        <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-[var(--agent-bg)] text-[var(--agent-fg)]">AGENT</span>
+                                        <span className="font-normal text-xs text-muted-foreground ml-auto">Your AI agent handles these</span>
                                     </div>
                                     {requiredSkills.map((skill) => (
-                                        <div key={skill.id} className="task-card">
-                                            <div className="task-card-row">
-                                                <span className="task-check"></span>
-                                                <span className="task-card-label">
-                                                    Requires skill: <code style={{ fontSize: 11, background: "var(--code-bg, #f5f5f5)", padding: "1px 4px", borderRadius: 2 }}>{skill.name}</code>
+                                        <div key={skill.id} className="border border-border rounded mb-2.5 overflow-hidden last:mb-0">
+                                            <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
+                                                <span className="w-5 h-5 rounded-full border-2 border-input shrink-0 flex items-center justify-center text-xs"></span>
+                                                <span className="flex-1 font-medium">
+                                                    Requires skill: <code className="font-mono text-xs bg-muted px-1 py-px rounded">{skill.name}</code>
                                                 </span>
-                                                <span className="badge badge-skill">Skill</span>
+                                                <Badge variant="skill">Skill</Badge>
                                             </div>
                                         </div>
                                     ))}
@@ -1873,46 +1932,46 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
                             {/* No tasks fallback */}
                             {humanTasks.length === 0 && requiredSkills.length === 0 && (
-                                <div style={{ padding: "16px 0", color: "var(--fg-muted)", fontSize: 13 }}>
+                                <div className="py-4 text-muted-foreground text-sm">
                                     No tasks defined. Go back to the Tasks step to add human or agent tasks.
                                 </div>
                             )}
 
                             {/* Payment Summary */}
-                            <div className="payment-summary">
-                                <div className="payment-summary-header">Payment Summary</div>
-                                <div className="payment-summary-body">
-                                    <div className="preview-row">
-                                        <span className="label">Payment</span>
-                                        <span className="value">{form.rail === "crypto" ? "Crypto" : "Fiat (Stripe)"}</span>
+                            <div className="border border-border rounded mt-4 overflow-hidden">
+                                <div className="bg-muted/50 px-3.5 py-2.5 font-semibold text-base border-b border-border">Payment Summary</div>
+                                <div className="px-3.5 py-3">
+                                    <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
+                                        <span className="text-muted-foreground">Payment</span>
+                                        <span className="font-semibold text-right">{form.rail === "crypto" ? "Crypto" : "Fiat (Stripe)"}</span>
                                     </div>
                                     {form.rail === "crypto" && (
-                                        <div className="preview-row">
-                                            <span className="label">Network</span>
-                                            <span className="value">{form.network}</span>
+                                        <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
+                                            <span className="text-muted-foreground">Network</span>
+                                            <span className="font-semibold text-right">{form.network}</span>
                                         </div>
                                     )}
-                                    <div className="preview-row">
-                                        <span className="label">Token</span>
-                                        <span className="value">{tokenLabel}</span>
+                                    <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
+                                        <span className="text-muted-foreground">Token</span>
+                                        <span className="font-semibold text-right">{tokenLabel}</span>
                                     </div>
-                                    <div className="preview-row">
-                                        <span className="label">Winners</span>
-                                        <span className="value">
+                                    <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
+                                        <span className="text-muted-foreground">Winners</span>
+                                        <span className="font-semibold text-right">
                                             {form.type === "LEADERBOARD" ? `${lbWinnersNum} spots` : activeWinners}
                                         </span>
                                     </div>
-                                    <div className="preview-row">
-                                        <span className="label">Per winner</span>
-                                        <span className="value green">
+                                    <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
+                                        <span className="text-muted-foreground">Per winner</span>
+                                        <span className="font-semibold text-right text-accent">
                                             {form.type === "LEADERBOARD"
                                                 ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
                                                 : `${perWinner} ${tokenLabel}`}
                                         </span>
                                     </div>
-                                    <div className="preview-total">
+                                    <div className="border-t-2 border-border mt-2 pt-2 flex justify-between text-sm font-bold">
                                         <span>Total Fund</span>
-                                        <span className="value">
+                                        <span className="text-accent">
                                             {activeTotal > 0 ? `${activeTotal.toFixed(2)} ${tokenLabel}` : "\u2014"}
                                         </span>
                                     </div>
@@ -1920,8 +1979,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             </div>
 
                             {/* Pay With */}
-                            <div className="pay-with-section">
-                                <div className="pay-with-title">Pay with</div>
+                            <div className="mt-4">
+                                <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2.5">Pay with</div>
                                 {form.rail === "crypto" ? (
                                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                                         <span style={{ fontSize: 20 }}>{"\uD83D\uDD17"}</span>
@@ -1934,16 +1993,16 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                     </div>
                                 ) : (
                                     <>
-                                        <div className="token-display" style={{ marginBottom: 8 }}>
-                                            <div className="token-icon" style={{ background: "#635bff" }}>S</div>
-                                            <div className="token-info">
-                                                <div className="token-name">Pay via Stripe</div>
-                                                <div className="token-contract" style={{ fontFamily: "var(--font)" }}>
+                                        <div className="flex items-center gap-2.5 p-2 px-3 border border-border rounded bg-muted" style={{ marginBottom: 8 }}>
+                                            <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: "#635bff" }}>S</div>
+                                            <div className="flex-1">
+                                                <div className="text-sm font-semibold text-foreground">Pay via Stripe</div>
+                                                <div className="text-xs text-muted-foreground font-mono" style={{ fontFamily: "var(--font)" }}>
                                                     Card {"\u00b7"} Apple Pay {"\u00b7"} Google Pay
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="fund-coming-soon">Stripe integration coming soon</div>
+                                        <div className="text-xs text-muted-foreground text-center mt-1.5 italic">Stripe integration coming soon</div>
                                     </>
                                 )}
                             </div>
@@ -1955,53 +2014,51 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 </div>
                             )}
 
-                            <div className="tab-nav-row">
-                                <button className="btn btn-secondary" onClick={() => setTab("reward")}>{"\u2190"} Reward</button>
+                            <div className="flex justify-between mt-5 pt-4 border-t border-border">
+                                <Button variant="secondary" onClick={() => setTab("reward")}>{"\u2190"} Reward</Button>
                                 <div style={{ display: "flex", gap: 8 }}>
                                     {isFunded ? (
                                         <>
-                                            <button
-                                                className={`btn ${rewardIncreased ? "btn-secondary" : "btn-primary"}`}
+                                            <Button
+                                                variant={rewardIncreased ? "secondary" : "default"}
                                                 disabled={mutation.isPending}
                                                 onClick={() => { fundAfterSave.current = false; mutation.mutate() }}
                                             >
                                                 {mutation.isPending && !fundAfterSave.current
                                                     ? "Saving\u2026"
                                                     : "Update Quest"}
-                                            </button>
+                                            </Button>
                                             {rewardIncreased && form.rail === "crypto" && (
-                                                <button
-                                                    className="btn btn-primary"
+                                                <Button
                                                     disabled={mutation.isPending}
                                                     onClick={() => { fundAfterSave.current = true; mutation.mutate() }}
                                                 >
                                                     {mutation.isPending && fundAfterSave.current
                                                         ? "Saving\u2026"
                                                         : `Update & Fund Difference (+${topUpAmount.toFixed(2)} ${tokenLabel}) \u2192`}
-                                                </button>
+                                                </Button>
                                             )}
                                         </>
                                     ) : (
                                         <>
-                                            <button
-                                                className={`btn ${form.rail === "crypto" ? "btn-secondary" : "btn-primary"}`}
+                                            <Button
+                                                variant={form.rail === "crypto" ? "secondary" : "default"}
                                                 disabled={mutation.isPending}
                                                 onClick={() => { fundAfterSave.current = false; mutation.mutate() }}
                                             >
                                                 {mutation.isPending && !fundAfterSave.current
                                                     ? "Saving\u2026"
                                                     : isEditMode ? (isScheduled ? "Update Quest" : "Update Draft") : "Save Draft"}
-                                            </button>
+                                            </Button>
                                             {form.rail === "crypto" && (
-                                                <button
-                                                    className="btn btn-primary"
+                                                <Button
                                                     disabled={mutation.isPending}
                                                     onClick={() => { fundAfterSave.current = true; mutation.mutate() }}
                                                 >
                                                     {mutation.isPending && fundAfterSave.current
                                                         ? "Saving\u2026"
                                                         : isEditMode ? "Update & Fund Now \u2192" : "Save & Fund Now \u2192"}
-                                                </button>
+                                                </Button>
                                             )}
                                             {form.rail === "fiat" && (
                                                 <button
@@ -2018,7 +2075,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                     )}
                                 </div>
                             </div>
-                            <div className="payment-note">
+                            <div className="text-xs text-muted-foreground leading-relaxed mt-3">
                                 {isFunded && rewardIncreased
                                     ? `Top-up: +${topUpAmount.toFixed(2)} ${tokenLabel} will be deposited to escrow.`
                                     : isFunded
@@ -2032,8 +2089,9 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                         </div></div>
                         )}
                     </div>
+                        )})()}
 
-              </div>{/* /accordion-stepper */}
+              </div>{/* /accordion */}
             </div>
         </div>
     )

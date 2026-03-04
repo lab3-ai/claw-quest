@@ -64,6 +64,7 @@ Internal docs for team members and AI collaborators live in [`docs/`](./docs/):
 
 | Doc | What's inside |
 |-----|---------------|
+| [`LOCAL_SETUP.md`](./docs/LOCAL_SETUP.md) | **Hướng dẫn cài đặt môi trường phát triển local** |
 | [`PROJECT_STATUS.md`](./docs/PROJECT_STATUS.md) | Current state — completed pages, file map, API, DB schema |
 | [`MEMORY.md`](./docs/MEMORY.md) | Tribal knowledge, conventions, things to avoid |
 | [`COWORK_PROMPTS.md`](./docs/COWORK_PROMPTS.md) | Ready-to-paste prompts for parallel AI sessions |

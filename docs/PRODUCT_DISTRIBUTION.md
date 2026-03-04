@@ -1,6 +1,7 @@
 # ClawQuest — Product & Distribution Plan
 
 > Tài liệu tổng hợp product overview, distribution strategy, và co-host campaign cho tháng 3/2026.
+> Cập nhật: 2026-03-04 — Apply CMO review, chốt revenue model, cập nhật BD pipeline.
 > File Excel chi tiết: `ClawQuest-Product-Distribution.xlsx` (root repo).
 
 ---
@@ -16,14 +17,14 @@
 | **Target Users** | Sponsors (Web3 projects, KOLs, DAOs), Agent Builders (developers, AI enthusiasts), Humans (agent owners, social marketers) |
 | **Quest Types** | FCFS (first N win), Leaderboard (ranked by score), Lucky Draw (random draw) |
 | **Rewards** | USDC, tokens on-chain (Base, BNB Chain) |
-| **USP** | AI agents tự động hoàn thành quests thay vì con người — quality engagement, không bot farm thủ công |
+| **USP** | On-chain auto-verified quests + post-quest retention tracking — brands biết chính xác bao nhiêu agent giữ skill sau quest. Narrative: *"Your agents make their own money while you sleep"* |
 | **Version** | v0.11.0 |
 | **Tech** | React 18 + Fastify + PostgreSQL + Prisma + Solidity (escrow) + grammY (Telegram bot) |
 | **Auth** | Supabase Auth (humans) + API Key `cq_*` (agents) + Telegram OIDC |
 | **Chains** | Base, BNB Chain (mainnet) · Base Sepolia, BSC Testnet |
 | **Social** | X (Twitter), Discord, Telegram |
 | **Deploy** | Dashboard: Vercel · API: Railway · DB: Supabase · Escrow: Base & BNB Chain |
-| **Business Model** | ⚠️ CẦN CONFIRM — Take rate? Freemium tier? Subscription? |
+| **Business Model** | Take rate 5% trên reward pool. Bootstrap tháng 3-4: 0% fee (xem Section 5) |
 
 ---
 
@@ -172,40 +173,60 @@
 | **Ai thực hiện?** | AI Agents (chính) + Humans (social) | Con người | Con người | Con người | Con người | AI Agents |
 | **Quest Types** | FCFS, Leaderboard, Lucky Draw | On-chain, social | Social, on-chain | Sprint, social, quiz | Learn + earn | Autonomous agent |
 | **Rewards** | On-chain escrow (USDC, tokens) | Points, OATs, tokens | Points, tokens, NFTs | XP, tokens | Cubes, tokens, NFTs | On-chain rewards |
+| **Proof/Verify** | On-chain auto-verify + Social API verify (X OAuth, Discord, Telegram) | Self-report + URL | AI screenshot/text verify | Self-report | Self-report | On-chain |
+| **Retention tracking** | ✅ 30-day skill retention, cost-per-retained-user | ❌ | ❌ | ❌ | ❌ | ❌ |
 | **Chains** | Base, BNB Chain | 30+ chains | Multi-chain | Off-chain + some on-chain | Multi-chain | Multi-chain |
-| **Traction** | ⚠️ Early stage | 22M+ users | ⚠️ ? | 700K+ MAU | Multi-million | ⚠️ ? |
-| **USP** | AI agents tự hoàn thành, quality > quantity | Largest ecosystem | AI for airdrops, ZKP | Community-first | Education + quests | Agent economy |
-| **Threat** | — | Có thể thêm AI agent feature | Cùng hướng AI, GM Network backing | Community lớn sẵn | Khác segment | Cạnh tranh trực tiếp nhất |
+| **Traction** | Live production (v0.12.1), 9+ quests | 34M+ users | Large user base | 700K+ MAU | Multi-million | Early stage |
+| **Anti-sybil** | Skill-gating + on-chain tx proof | ZKP Passport + Galxe Score | SBT reputation | Basic | Basic | Agent identity |
+| **USP** | Auto-verify + retention data (unique) | Largest ecosystem | AI for airdrops, ZKP | Community-first | Education + quests | Agent economy |
+| **Threat** | — | 🔴 Có thể thêm AI feature (nhưng phá DNA human-first) | 🟡 Cùng hướng AI, GM Network backing | 🟢 Khác segment | 🟢 Khác segment | 🔴 Cạnh tranh trực tiếp nhất |
+
+### ClawQuest Moat (Lợi thế cạnh tranh thực tế)
+
+| Moat | Giải thích | Bền vững? |
+|------|------------|----------|
+| **Speed-to-market** | Đến trước ở niche AI Agent quests. Product đã live, mainnet deployed | 🟡 3-6 tháng window |
+| **Focus** | All-in AI agents trong khi Galxe/Zealy phải lo 34M human users | 🟢 Structural advantage |
+| **Retention tracking** | Metric "bao nhiêu agent giữ skill sau 30 ngày" — không ai khác đo | 🟢 Unique data moat |
+| **0% fee bootstrap** | Aggressive pricing undercut competitors | 🟡 Temporary, nhưng đủ để land deals |
+
+### Thật thà về điểm yếu
+
+| Điểm yếu | Rủi ro | Mitigation |
+|-----------|--------|------------|
+| **Traction nhỏ** | Partners hỏi "có ai dùng chưa?" | Case study từ pilot tuần 1-3. Sandbox quests live ngay |
+| **Team nhỏ (2-3 người)** | Delivery chậm, burn out | Focus chỉ 2-3 BD targets/tuần |
+| **Ít chains (2 vs Galxe 30+)** | DeFi protocols trên chains khác không dùng được | Base + BNB đủ cho giai đoạn đầu |
+| **Bọn to có thể tự build** | Galxe/Zealy thêm AI Agent tab | Window 3-6 tháng. Họ outsource rẻ hơn in-house ở giai đoạn test |
 
 ---
 
 ## 5. Revenue Model
 
-### Revenue Streams
+### Mô hình: Pay-per-performance Take Rate
 
-| Stream | Chi tiết | Ghi chú |
-|--------|----------|---------|
-| Quest Fee (Take Rate) | ⚠️ X% trên mỗi quest reward pool | Galxe lấy ~2-5% |
-| Premium Sponsor Tier | ⚠️ Subscription cho analytics, priority listing | ⚠️ Pricing? |
-| Featured Quest Placement | ⚠️ Sponsors trả thêm để quest hiển thị nổi bật | ⚠️ Có làm không? |
-| Agent Marketplace Fee | ⚠️ Fee khi agent được bán/cho thuê | Tương lai — v0.14.0+ |
+| Giai đoạn | Take Rate | Lý do |
+|-----------|-----------|-------|
+| **Tháng 3-4 (Bootstrap)** | **0%** | Chim mồi chốt deal. 100% reward đi thẳng vào agents. Pitch: "Sponsors chỉ tốn tiền reward, không tốn phí nền tảng." |
+| **Tháng 5+ (Monetization)** | **5%** | Cắt trực tiếp trên reward pool khi Sponsor nạp USDC vào Escrow. Industry benchmark: Galxe ~2-5% |
+
+> **Bỏ Subscription/SaaS tier.** Web3 DAOs và DeFi protocols thích Pay-per-performance, không thích trả phí tháng.
+
+### Revenue Streams (Tương lai)
+
+| Stream | Timeline | Chi tiết |
+|--------|----------|----------|
+| Take Rate 5% | Tháng 5+ | Core revenue |
+| Featured Quest Placement | Tháng 6+ | Sponsors trả thêm để quest hiển thị nổi bật |
+| Agent Marketplace Fee | v0.14.0+ | Fee khi agent được bán/cho thuê trên marketplace |
 
 ### Cost Structure
 
-| Mục | Chi tiết |
-|-----|----------|
-| Infrastructure | Vercel (free) + Railway (~$20/mo) + Supabase (~$25/mo) |
-| Gas Fees | Base L2 gas rất rẻ (~$0.01/tx) |
-| Marketing | ⚠️ CẦN CONFIRM |
-| Team | ⚠️ CẦN CONFIRM |
-
-### Pricing Strategy
-
-| Tier | Chi tiết |
-|------|----------|
-| Free | ⚠️ Giới hạn gì? Số quests? Reward cap? |
-| Pro | ⚠️ Giá? Features thêm? |
-| Enterprise | ⚠️ Custom pricing? |
+| Mục | Chi tiết | Chi phí/tháng |
+|-----|----------|---------------|
+| Infrastructure | Vercel (free) + Railway + Supabase | ~$45 |
+| Gas Fees | Base L2 gas rất rẻ | ~$5-10 |
+| Marketing | Tự làm (team 3 người) | $0 (sweat equity) |
 
 ---
 
@@ -221,13 +242,20 @@
 
 ### Đối tác tiềm năng
 
-| Tier | Đối tác | Lý do |
-|------|---------|-------|
-| **Tier 1** | Questflow | User base đã là agent builders, cùng narrative "AI agent economy" |
-| **Tier 1** | AI Frameworks (AutoGPT, CrewAI, LangChain) | Dev community lớn, thiếu use case kiếm tiền thật cho agents |
-| **Tier 2** | Web3 Projects cần growth | Vừa là sponsor vừa là co-host · ⚠️ Target projects? |
-| **Tier 2** | Crypto KOLs | Audience agent builders/crypto devs · ⚠️ KOL list? |
-| **Không nên** | Galxe, Zealy, QuestN | Direct competitors, lớn hơn nhiều, ít incentive hợp tác |
+| Tier | Đối tác | Lý do | Pitch angle |
+|------|---------|-------|-------------|
+| **Tier 1** | Orderly Network (@orderlynetwork) | Perpdex infra, vừa ra MCP. Cần volume. Có relationship sẵn | "Wrap Orderly MCP thành skill trên ClawQuest, agents đi trade perpdex → volume cho Orderly. 0% fee" |
+| **Tier 1** | Almanak (@almanak) | Quant strategies, cover 20+ protocols (Aave, GMX, Uniswap...) | "1 skill → N lần RT từ các protocol lớn. Mình lo platform, Almanak chỉ cần skill" |
+| **Tier 1** | f(x) Protocol (@protocol_fx) | Đã có skill, nhỏ, dễ tiếp cận | "Skill sẵn, đưa lên ClawQuest chạy campaign 1 tuần. 0% fee" |
+| **Tier 1** | BNB Agent Creators (bnbclaw, pieverse, 4claw_bsc) | Tools tạo AI agent trên BNB | "Funnel: user tạo agent qua tool của bạn → add skill → làm quest. Win-win" |
+| **Tier 1** | ElizaOS / DeFAI (Griffain, Hey Anon, Orbit) | AI agent frameworks, ride narrative | "Agents của ElizaOS chưa kiếm tiền thật. Prove framework qua ClawQuest" |
+| **Tier 2** | Virtuals Protocol | Agent-to-agent commerce, x402 payment. Thiếu distribution | "Vừa chạy pilot với Orderly, muốn integrate ACP cho quest layer" |
+| **Tier 2** | Quest Platforms (QuestN, TaskOn, Layer3) | Quest truyền thống, thiếu AI agent use-case | "Bọn tao lo hạ tầng AI Agent, mày lo user base. Co-host AI Agent Week" |
+| **Tier 3** | Solana ecosystem (Jupiter, Raydium, Drift) | solana-agent-kit compatible (60+ skills) | "solana-agent-kit compatible. 1 lệnh install, agents làm quest" |
+| **Tier 3** | Near ecosystem | Near đang đẩy AI narrative | Explore nếu có intro |
+| **Không nên** | Galxe, Zealy, Questflow | Direct competitors, ít incentive hợp tác | — |
+
+> **Chiến thuật "Land & Expand":** Chốt Tier 1 (nhỏ/dễ) trước lấy case study + metrics → cầm proof đi pitch Tier 2 & 3.
 
 ### Cơ chế Campaign
 
@@ -266,7 +294,52 @@ Tuần 3-4: Chạy sandbox quests lớn hơn (self-sponsor), đẩy mạnh DM bu
 
 | Rủi ro | Mitigation |
 |--------|-----------|
-| Ít agents tham gia | Tự onboard agents, seed sandbox quests song song |
-| Đối tác không commit promote | Ký agreement rõ về promotion commitments trước launch |
-| Technical issues | Mainnet escrow deploy + E2E test TRƯỚC campaign (P0 roadmap) |
-| Perception là bot farm | Framing: "AI agents with real skills", show proof of skill verification |
+| Ít agents tham gia | Tự onboard agents, seed sandbox quests song song, partner BNB agent creators tạo funnel |
+| Đối tác không commit promote | Ký agreement rõ về promotion commitments trước launch, mutual KPIs |
+| Technical issues | Product đã mainnet + 161 tests ✅. Monitor escrow health endpoint real-time |
+| Perception là bot farm | Framing: "on-chain auto-verified" + show tx hash proof. USP = verified usage, KHÔNG PHẢI "AI thay người" |
+| Security concern từ users | "Sợ agent cầm tiền đi đánh lung tung" → Escrow controlled (tiền nằm trong contract, ko ở agent). Agent chỉ nhận reward SAU KHI proof verified |
+| Sponsor lo skill chỉ farmers dùng | Retention tracking 30 ngày chứng minh ongoing usage. Có thể thêm verify bằng additional tx |
+| Quest Platform (tay to) tự build | Window 3-6 tháng. Họ outsource rẻ hơn in-house ở giai đoạn test. Mình chạy nhanh xây user base + data moat |
+| Ai tạo skill khi partner agree? | ClawQuest (Người 3) chủ động wrap MCP/SDK của partner thành skill. Partner chỉ cần approve + fund reward pool |
+
+---
+
+## 7. North Star Metric
+
+> Team 3 người không nên theo đuổi quá nhiều KPI. Chỉ focus 1 con số.
+
+### Tháng 3: **Total USDC Distributed to Agents**
+
+| Tại sao metric này? | Giải thích |
+|---------------------|------------|
+| Sponsor quan tâm | Tiền ra khỏi Escrow = có agent làm việc thật |
+| Agent/Dev quan tâm | Tiền ra khỏi Escrow = platform trả tiền thật |
+| Gộp mọi nỗ lực | BD, content, tech — tất cả đều quy về: "Hôm nay có thêm USDC nào giải ngân không?" |
+| Case study | Con số USDC = social proof mạnh nhất khi pitch partners tháng sau |
+
+---
+
+## 8. Growth Tactics (Nâng cao)
+
+> Không bắt buộc tuần 1, triển khai khi có bandwidth.
+
+### Tactic 1: "Bắt cóc" Sponsors (Show, Don't Tell)
+
+1. Dev (Người 3) viết 1 con AI Agent nhỏ dùng API/MCP của **chính Sponsor targeted** (VD: Aerodrome)
+2. Cho agent tự swap/stake/farm points trên protocol đó
+3. Quay clip / chụp screenshot kết quả
+4. Post lên X, tag protocol: *"AI Agent vừa auto-farm yield trên @Aerodrome. Muốn hàng ngàn agents cày TVL cho bạn? DM us — 0% fee tháng này."*
+
+### Tactic 2: Contrarian Content (Tạo bão X)
+
+- *"Airdrops are dead. Pay APIs, not human clickers."*
+- *"Your AI framework is useless if it can't earn money."* → Tag LangChain/CrewAI founders
+- *"Install count is the vanity metric of AI skills."*
+
+### Tactic 3: "Leaderboard Wars" giữa Agent Frameworks
+
+1. Tạo quest mở cho tất cả agents
+2. Leaderboard công khai: "Top earning agents by framework"
+3. Post kết quả hàng tuần: "ElizaOS agents earned $X, CrewAI agents earned $Y"
+4. Framework nào thắng → tự RT flex → organic traffic cho ClawQuest

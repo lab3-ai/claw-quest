@@ -25,6 +25,7 @@ interface UserProfile {
     telegramUsername: string | null
     xId: string | null
     xHandle: string | null
+    hasXToken: boolean
     discordId: string | null
     discordHandle: string | null
     createdAt: string
@@ -46,13 +47,22 @@ function formatDate(iso: string) {
     return new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric" }).format(new Date(iso))
 }
 
-const providers = [
+// Providers available for social linking on account page
+const LINK_PROVIDERS = [
     { key: "google", label: "Google", icon: "G", supabaseProvider: "google" },
-    { key: "github", label: "GitHub", icon: "GH", supabaseProvider: "github" },
     { key: "telegram", label: "Telegram", icon: "TG", supabaseProvider: null },
     { key: "twitter", label: "X (Twitter)", icon: "X", supabaseProvider: "twitter" },
     { key: "discord", label: "Discord", icon: "DC", supabaseProvider: "discord" },
 ]
+
+// Map for displaying legacy connected identities not in LINK_PROVIDERS
+const PROVIDER_LABELS: Record<string, { label: string; icon: string }> = {
+    google: { label: "Google", icon: "G" },
+    github: { label: "GitHub", icon: "GH" },
+    telegram: { label: "Telegram", icon: "TG" },
+    twitter: { label: "X (Twitter)", icon: "X" },
+    discord: { label: "Discord", icon: "DC" },
+}
 
 export function Account() {
     const { session, user: supabaseUser } = useAuth()
@@ -61,10 +71,12 @@ export function Account() {
 
     const [walletInput, setWalletInput] = useState("")
     const [walletError, setWalletError] = useState("")
+    const [walletActionPending, setWalletActionPending] = useState("") // wallet id being acted on
     const [unlinkError, setUnlinkError] = useState("")
     const [linkError, setLinkError] = useState("")
     const [unlinkPending, setUnlinkPending] = useState("")
     const [linkPending, setLinkPending] = useState("")
+    const [xAuthPending, setXAuthPending] = useState(false)
 
     // Profile editing state
     const [editingField, setEditingField] = useState<"displayName" | "username" | null>(null)
@@ -95,6 +107,46 @@ export function Account() {
             return res.json()
         },
         enabled: !!token,
+    })
+
+    // Remove wallet mutation
+    const removeWallet = useMutation({
+        mutationFn: async (id: string) => {
+            const res = await fetch(`${API_BASE}/wallets/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error(err.error?.message ?? "Failed to remove wallet")
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["wallets"] })
+            setWalletError("")
+        },
+        onError: (err: Error) => setWalletError(err.message),
+        onSettled: () => setWalletActionPending(""),
+    })
+
+    // Set primary wallet mutation
+    const setPrimaryWallet = useMutation({
+        mutationFn: async (id: string) => {
+            const res = await fetch(`${API_BASE}/wallets/${id}/primary`, {
+                method: "PATCH",
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error(err.error?.message ?? "Failed to set primary wallet")
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["wallets"] })
+            setWalletError("")
+        },
+        onError: (err: Error) => setWalletError(err.message),
+        onSettled: () => setWalletActionPending(""),
     })
 
     // Link wallet mutation
@@ -172,8 +224,13 @@ export function Account() {
     const identities = supabaseUser?.identities ?? []
     const linkedProviders = new Set(identities.map(i => i.provider))
 
+    // Find connected identities not in LINK_PROVIDERS (e.g. GitHub after disabling)
+    const linkProviderKeys = new Set(LINK_PROVIDERS.map(p => p.key))
+    const legacyIdentities = identities.filter(i => !linkProviderKeys.has(i.provider))
+
     async function handleLinkProvider(supabaseProvider: string) {
         setLinkError("")
+        setUnlinkError("")
         setLinkPending(supabaseProvider)
         try {
             // Store provider so callback.tsx can detect this is an identity-link flow
@@ -199,11 +256,12 @@ export function Account() {
 
     async function handleUnlinkProvider(providerKey: string) {
         setUnlinkError("")
+        setLinkError("")
 
-        // Lockout prevention: block if this is the only remaining sign-in method
-        const nonTelegramIdentities = identities.filter(i => i.provider !== "telegram")
+        // Lockout prevention: need at least 1 identity remaining after unlink
+        const totalIdentities = identities.length
         const hasTelegram = !!profile?.telegramId
-        if (!hasTelegram && nonTelegramIdentities.length <= 1) {
+        if (!hasTelegram && totalIdentities <= 1) {
             setUnlinkError("Cannot unlink — this is your only sign-in method.")
             return
         }
@@ -239,6 +297,7 @@ export function Account() {
 
     async function handleUnlinkTelegram() {
         setUnlinkError("")
+        setLinkError("")
 
         // Lockout prevention: block if Telegram is the only sign-in method
         const nonTelegramIdentities = identities.filter(i => i.provider !== "telegram")
@@ -263,6 +322,26 @@ export function Account() {
             setUnlinkError(msg)
         } finally {
             setUnlinkPending("")
+        }
+    }
+
+    async function handleXReadAccess() {
+        setXAuthPending(true)
+        try {
+            const res = await fetch(`${API_BASE}/auth/x/authorize`, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error(err.error?.message ?? "Failed to get X authorize URL")
+            }
+            const { url, state, codeVerifier } = await res.json()
+            localStorage.setItem("x_code_verifier", codeVerifier)
+            localStorage.setItem("x_oauth_state", state)
+            window.location.href = url
+        } catch (err: unknown) {
+            setLinkError(err instanceof Error ? err.message : "Failed to authorize X")
+            setXAuthPending(false)
         }
     }
 
@@ -379,7 +458,7 @@ export function Account() {
             <div className="account-section">
                 <div className="account-section-header">Connected Accounts</div>
                 <div className="account-section-body">
-                    {providers.map(p => {
+                    {LINK_PROVIDERS.map(p => {
                         const identity = identities.find(i => i.provider === p.key)
                         const isLinked = linkedProviders.has(p.key)
                         const isTelegram = p.key === "telegram"
@@ -426,6 +505,17 @@ export function Account() {
                                     <>
                                         <span className="account-provider-status-linked">Connected</span>
                                         {detail && <span className="account-provider-detail">{detail}</span>}
+                                        {/* X read access button: show when X linked but no read token yet */}
+                                        {p.key === "twitter" && profile?.xId && !profile?.hasXToken && (
+                                            <button
+                                                className="btn btn-sm btn-outline"
+                                                style={{ marginLeft: "8px", fontSize: "12px", padding: "4px 10px" }}
+                                                disabled={xAuthPending}
+                                                onClick={handleXReadAccess}
+                                            >
+                                                {xAuthPending ? "Redirecting…" : "Authorize read access"}
+                                            </button>
+                                        )}
                                         <button
                                             className="btn btn-sm btn-outline"
                                             style={{ marginLeft: "8px", fontSize: "12px", padding: "4px 10px" }}
@@ -445,6 +535,28 @@ export function Account() {
                                         {linkPending === p.supabaseProvider ? "Linking…" : "Link"}
                                     </button>
                                 )}
+                            </div>
+                        )
+                    })}
+
+                    {/* Legacy connected identities (providers removed from LINK_PROVIDERS but still in Supabase) */}
+                    {legacyIdentities.map(identity => {
+                        const info = PROVIDER_LABELS[identity.provider] ?? { label: identity.provider, icon: "?" }
+                        const detail = (identity.identity_data?.email as string) || (identity.identity_data?.user_name as string) || ""
+                        return (
+                            <div key={identity.id} className="account-provider" style={{ minWidth: 0, opacity: 0.7 }}>
+                                <span className="account-provider-icon">{info.icon}</span>
+                                <span className="account-provider-name">{info.label}</span>
+                                <span className="account-provider-status-linked">Connected</span>
+                                {detail && <span className="account-provider-detail">{detail}</span>}
+                                <button
+                                    className="btn btn-sm btn-outline"
+                                    style={{ marginLeft: "8px", fontSize: "12px", padding: "4px 10px" }}
+                                    disabled={unlinkPending === identity.provider}
+                                    onClick={() => handleUnlinkProvider(identity.provider)}
+                                >
+                                    {unlinkPending === identity.provider ? "Unlinking…" : "Unlink"}
+                                </button>
                             </div>
                         )
                     })}
@@ -478,6 +590,24 @@ export function Account() {
                                     </span>
                                 )}
                                 {w.isPrimary && <span className="account-wallet-primary">Primary</span>}
+                                {!w.isPrimary && (
+                                    <button
+                                        className="btn btn-sm btn-outline"
+                                        style={{ marginLeft: "auto", fontSize: "11px", padding: "2px 8px" }}
+                                        disabled={walletActionPending === w.id}
+                                        onClick={() => { setWalletActionPending(w.id); setPrimaryWallet.mutate(w.id) }}
+                                    >
+                                        {walletActionPending === w.id ? "…" : "Set primary"}
+                                    </button>
+                                )}
+                                <button
+                                    className="btn btn-sm btn-outline"
+                                    style={{ marginLeft: w.isPrimary ? "auto" : "6px", fontSize: "11px", padding: "2px 8px", color: "var(--red, #e53e3e)" }}
+                                    disabled={walletActionPending === w.id}
+                                    onClick={() => { setWalletActionPending(w.id); removeWallet.mutate(w.id) }}
+                                >
+                                    {walletActionPending === w.id ? "…" : "Remove"}
+                                </button>
                             </div>
                         ))
                     )}

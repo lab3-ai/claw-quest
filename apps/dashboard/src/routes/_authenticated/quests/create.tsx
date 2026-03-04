@@ -13,6 +13,8 @@ import "@/styles/forms.css"
 import "@/styles/token-display.css"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
+const ESCROW_NETWORK_MODE = import.meta.env.VITE_ESCROW_NETWORK_MODE ?? "testnet"
+const IS_TESTNET = ESCROW_NETWORK_MODE === "testnet"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -48,21 +50,29 @@ interface FormData {
 
 // ─── Network / Token data (matching JS template exactly) ─────────────────────
 
-const NETWORKS_PRIMARY = [
+const NETWORKS_MAINNET_PRIMARY = [
     { value: "Base", label: "🔵 Base (8453)" },
     { value: "BNB Smart Chain", label: "🟡 BNB Smart Chain (56)" },
     { value: "Ethereum", label: "✠ Ethereum (1)" },
 ]
-const NETWORKS_OTHER = [
+const NETWORKS_MAINNET_OTHER = [
     { value: "Arbitrum One", label: "🔷 Arbitrum One (42161)" },
     { value: "Optimism", label: "🔴 Optimism (10)" },
     { value: "Polygon", label: "🟣 Polygon (137)" },
     { value: "Avalanche", label: "🔺 Avalanche (43114)" },
     { value: "Solana", label: "◎ Solana" },
 ]
+const NETWORKS_TESTNET = [
+    { value: "Base Sepolia", label: "🔵 Base Sepolia (84532)" },
+    { value: "BSC Testnet", label: "🟡 BSC Testnet (97)" },
+]
+const NETWORKS_PRIMARY = IS_TESTNET ? NETWORKS_TESTNET : NETWORKS_MAINNET_PRIMARY
+const NETWORKS_OTHER = IS_TESTNET ? [] : NETWORKS_MAINNET_OTHER
+const DEFAULT_NETWORK = IS_TESTNET ? "Base Sepolia" : "Base"
 
 const TOKEN_CONTRACTS: Record<string, Record<string, string>> = {
     USDC: {
+        // Mainnet
         "Base": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
         "BNB Smart Chain": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
         "Ethereum": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
@@ -71,8 +81,12 @@ const TOKEN_CONTRACTS: Record<string, Record<string, string>> = {
         "Polygon": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
         "Avalanche": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
         "Solana": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        // Testnet
+        "Base Sepolia": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+        "BSC Testnet": "0x64544969ed7EBf5f083679233325356EbE738930",
     },
     USDT: {
+        // Mainnet
         "Base": "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
         "BNB Smart Chain": "0x55d398326f99059fF775485246999027B3197955",
         "Ethereum": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
@@ -93,6 +107,9 @@ const NATIVE_TOKENS: Record<string, { symbol: string; name: string }> = {
     "Polygon": { symbol: "POL", name: "POL" },
     "Avalanche": { symbol: "AVAX", name: "Avalanche" },
     "Solana": { symbol: "SOL", name: "Solana" },
+    // Testnet
+    "Base Sepolia": { symbol: "ETH", name: "Ether" },
+    "BSC Testnet": { symbol: "tBNB", name: "Test BNB" },
 }
 
 const TOKEN_COLORS: Record<string, string> = {
@@ -723,7 +740,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const [tab, setTab] = useState<Tab | null>("details")
     const [form, setForm] = useState<FormData>({
         title: "", description: "", startAt: "", endAt: "",
-        rail: "crypto", network: "Base", token: "USDC", type: "FCFS",
+        rail: "crypto", network: DEFAULT_NETWORK, token: "USDC", type: "FCFS",
         total: "100.00", winners: "50",
         drawTime: "",
     })
@@ -1541,12 +1558,14 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                         <div className="form-group">
                                             <label className="form-label">Network</label>
                                             <select className="form-select" value={form.network} onChange={e => set("network", e.target.value)}>
-                                                <optgroup label="Primary">
+                                                <optgroup label={IS_TESTNET ? "Testnet" : "Primary"}>
                                                     {NETWORKS_PRIMARY.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
                                                 </optgroup>
-                                                <optgroup label="Other Networks">
-                                                    {NETWORKS_OTHER.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
-                                                </optgroup>
+                                                {NETWORKS_OTHER.length > 0 && (
+                                                    <optgroup label="Other Networks">
+                                                        {NETWORKS_OTHER.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
+                                                    </optgroup>
+                                                )}
                                             </select>
                                         </div>
                                         <div className="form-group">

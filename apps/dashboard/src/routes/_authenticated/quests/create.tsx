@@ -84,7 +84,7 @@ const TOKEN_CONTRACTS: Record<string, Record<string, string>> = {
         "Avalanche": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
         "Solana": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
         // Testnet
-        "Base Sepolia": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+        "Base Sepolia": "0xAA87A3f8E6017F1f02af0f306B765FCfBeCac3E4",
         "BSC Testnet": "0x64544969ed7EBf5f083679233325356EbE738930",
     },
     USDT: {

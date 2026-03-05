@@ -21,7 +21,7 @@ Broadcast log at `contracts/broadcast/Deploy.s.sol/84532/run-latest.json` shows 
 | `0x6fb2c8c3fbe30f40d55529d37f3e82bb46be2f0e` | Implementation |
 
 - Deployed from: `0xd4d29400eac69a5855c48bac968592c22fffe36b`
-- USDC allowlisted: `0x036CbD53842c5426634e7929541eC2318f3dcf7e` (Base Sepolia USDC)
+- USDC allowlisted: `0xAA87A3f8E6017F1f02af0f306B765FCfBeCac3E4` (Base Sepolia USDC)
 - All 3 txs confirmed (status `0x1`)
 - Deployer was set as both admin and operator in `initialize()` args
 
@@ -96,7 +96,7 @@ Wire the deployed proxy address into the API's env vars and confirm the escrow p
 
 **`.env.development` (add/uncomment):**
 ```env
-ESCROW_CONTRACT_84532="0xe1d2b3d041934e2f245d5a366396e4787d3802c1"
+ESCROW_CONTRACT_84532="0xd771ca2fa508a462f07269ec3745d33b4dbc24b0"
 OPERATOR_PRIVATE_KEY="0x<hot-wallet-private-key>"
 ESCROW_CHAIN_ID=84532
 ENABLE_TESTNETS=true
@@ -121,14 +121,14 @@ Validate the full deposit flow works with real testnet funds.
 
 ### Prerequisites
 - Base Sepolia ETH in deployer wallet (faucet: https://www.alchemy.com/faucets/base-sepolia or https://faucet.quicknode.com/base/sepolia)
-- Base Sepolia USDC in sponsor wallet: USDC contract `0x036CbD53842c5426634e7929541eC2318f3dcf7e`
+- Base Sepolia USDC in sponsor wallet: USDC contract `0xAA87A3f8E6017F1f02af0f306B765FCfBeCac3E4`
   - Mint via Circle faucet: https://faucet.circle.com (select Base Sepolia)
 
 ### Test sequence
 1. Get test USDC from Circle faucet into a sponsor wallet
 2. Approve escrow proxy to spend USDC:
    ```bash
-   cast send 0x036CbD53842c5426634e7929541eC2318f3dcf7e \
+   cast send 0xAA87A3f8E6017F1f02af0f306B765FCfBeCac3E4 \
      "approve(address,uint256)" \
      0xe1d2b3d041934e2f245d5a366396e4787d3802c1 \
      1000000 \
@@ -141,7 +141,7 @@ Validate the full deposit flow works with real testnet funds.
    cast send 0xe1d2b3d041934e2f245d5a366396e4787d3802c1 \
      "deposit(bytes32,address,uint128,uint64)" \
      <questId-as-bytes32> \
-     0x036CbD53842c5426634e7929541eC2318f3dcf7e \
+     0xAA87A3f8E6017F1f02af0f306B765FCfBeCac3E4 \
      1000000 \
      <deadline-unix-ts> \
      --private-key $SPONSOR_PRIVATE_KEY \
@@ -164,7 +164,7 @@ cast to-bytes32 0x007d6b1e59a5481d91d955442ca40898
 
 | Var | Value | Where |
 |---|---|---|
-| `ESCROW_CONTRACT_84532` | `0xe1d2b3d041934e2f245d5a366396e4787d3802c1` | API server + local .env |
+| `ESCROW_CONTRACT_84532` | `0xd771ca2fa508a462f07269ec3745d33b4dbc24b0` | API server + local .env |
 | `OPERATOR_PRIVATE_KEY` | `0x<hot-wallet-key>` | API server only (Railway) |
 | `ESCROW_CHAIN_ID` | `84532` | API + local |
 | `BASESCAN_API_KEY` | from basescan.org | contracts/.env or local shell |

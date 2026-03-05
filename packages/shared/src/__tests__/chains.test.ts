@@ -52,7 +52,7 @@ describe('TOKEN_REGISTRY', () => {
     it('Base Sepolia has USDC with correct address', () => {
         const usdc = TOKEN_REGISTRY[84532]?.USDC;
         expect(usdc).toBeDefined();
-        expect(usdc.address).toBe('0x036CbD53842c5426634e7929541eC2318f3dCF7e');
+        expect(usdc.address).toBe('0xAA87A3f8E6017F1f02af0f306B765FCfBeCac3E4');
         expect(usdc.decimals).toBe(6);
         expect(usdc.symbol).toBe('USDC');
     });

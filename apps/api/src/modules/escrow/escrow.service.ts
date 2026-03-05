@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import {
     uuidToBytes32,
+    subQuestIdPreimage,
     toSmallestUnit,
     fromSmallestUnit,
     getTokenInfo,
@@ -10,6 +11,12 @@ import {
     TOKEN_REGISTRY,
     SUPPORTED_CHAINS,
 } from '@clawquest/shared';
+import { keccak256 } from 'viem';
+
+/** Generate a deterministic sub-questId for a sponsor deposit. */
+function generateSubQuestId(questId: string, userId: string): `0x${string}` {
+    return keccak256(subQuestIdPreimage(questId, userId));
+}
 import { escrowConfig, getContractAddress, isChainAllowed } from './escrow.config';
 
 /** Resolve numeric chain ID from quest.network string (e.g. "Base" → 8453) */
@@ -40,14 +47,21 @@ export interface DepositParams {
 
 /**
  * Generate deposit parameters for a quest (frontend constructs tx from these).
+ * @param depositorUserId - The user making the deposit. Owner gets original questId; sponsors get sub-questId.
  */
 export async function getDepositParams(
     prisma: PrismaClient,
     questId: string,
+    depositorUserId?: string,
     chainId?: number,
-): Promise<DepositParams> {
+): Promise<DepositParams & { escrowQuestId: string }> {
     const quest = await prisma.quest.findUnique({ where: { id: questId } });
     if (!quest) throw new Error('Quest not found');
+
+    const isOwner = !depositorUserId || quest.creatorUserId === depositorUserId;
+    const escrowQuestId = isOwner
+        ? uuidToBytes32(questId)
+        : generateSubQuestId(questId, depositorUserId);
 
     let targetChainId = chainId ?? quest.cryptoChainId ?? resolveChainIdFromNetwork(quest.network) ?? escrowConfig.defaultChainId;
     if (!isChainAllowed(targetChainId)) {
@@ -63,24 +77,40 @@ export async function getDepositParams(
     }
 
     const rewardAmountNum = Number(quest.rewardAmount);
+    const totalFunded = Number(quest.totalFunded ?? 0);
 
-    // Top-up mode: if already funded, calculate the difference needed
-    let depositAmount = rewardAmountNum;
-    if (quest.fundingStatus === 'confirmed' && quest.cryptoChainId) {
-        const onChain = await getEscrowStatus(questId, targetChainId);
-        const alreadyDeposited = onChain?.depositedHuman ?? 0;
-        const diff = rewardAmountNum - alreadyDeposited;
-        if (diff <= 0) throw new Error('Quest already fully funded');
-        depositAmount = diff;
-    }
+    // Suggest the remaining needed amount (or full reward if nothing funded yet)
+    let depositAmount = rewardAmountNum - totalFunded;
+    if (depositAmount <= 0) depositAmount = rewardAmountNum; // already fully funded — show full amount as reference
 
-    const questIdBytes32 = uuidToBytes32(questId);
     const amountSmallestUnit = toSmallestUnit(depositAmount, tokenInfo.decimals);
     const expiresAt = quest.expiresAt ? Math.floor(quest.expiresAt.getTime() / 1000) : 0;
 
+    // Create pending QuestDeposit record if depositor is known
+    if (depositorUserId) {
+        const existingDeposit = await prisma.questDeposit.findFirst({
+            where: { questId, userId: depositorUserId, status: 'pending' },
+        });
+        if (!existingDeposit) {
+            await prisma.questDeposit.create({
+                data: {
+                    questId,
+                    escrowQuestId,
+                    userId: depositorUserId,
+                    amount: depositAmount,
+                    tokenAddress: tokenInfo.address,
+                    chainId: targetChainId,
+                    walletAddress: '',
+                    status: 'pending',
+                },
+            });
+        }
+    }
+
     return {
         contractAddress: getContractAddress(targetChainId),
-        questIdBytes32,
+        questIdBytes32: escrowQuestId,
+        escrowQuestId,
         tokenAddress: tokenInfo.address,
         tokenSymbol: tokenInfo.symbol,
         tokenDecimals: tokenInfo.decimals,
@@ -186,6 +216,7 @@ export interface PayoutEntry {
 export async function calculateDistribution(
     prisma: PrismaClient,
     questId: string,
+    overrideTotalFunded?: number,
 ): Promise<PayoutEntry[]> {
     const quest = await prisma.quest.findUnique({ where: { id: questId } });
     if (!quest) throw new Error('Quest not found');
@@ -198,7 +229,8 @@ export async function calculateDistribution(
     const tokenInfo = getTokenInfo(chainId, quest.rewardType.toUpperCase());
     if (!tokenInfo) throw new Error(`Token ${quest.rewardType} not found for chain ${chainId}`);
 
-    const totalAmount = toSmallestUnit(Number(quest.rewardAmount), tokenInfo.decimals);
+    const totalAmountHuman = overrideTotalFunded ?? Number(quest.rewardAmount);
+    const totalAmount = toSmallestUnit(totalAmountHuman, tokenInfo.decimals);
 
     const participations = await prisma.questParticipation.findMany({
         where: {
@@ -273,93 +305,146 @@ async function writeContractWithRetry(
 // ─── Execute On-chain Distribute ─────────────────────────────────────────────
 
 /**
- * Submit on-chain distribute tx. Returns tx hash immediately (fire-and-forget).
- * Poller reconciles DB state when QuestDistributed event is picked up.
+ * Submit on-chain distribute txs. Returns array of tx hashes (one per sub-escrow).
+ * For single-deposit quests, this is backward-compatible (returns 1 hash).
  */
 export async function executeDistribute(
     prisma: PrismaClient,
     questId: string,
     chainId: number,
-): Promise<string> {
-    const payouts = await calculateDistribution(prisma, questId);
+): Promise<string | string[]> {
+    const quest = await prisma.quest.findUnique({ where: { id: questId } });
+    if (!quest) throw new Error('Quest not found');
+
+    const totalFunded = Number(quest.totalFunded ?? quest.rewardAmount);
+    const payouts = await calculateDistribution(prisma, questId, totalFunded);
     if (payouts.length === 0) throw new Error('No eligible participants for distribution');
 
-    const questIdBytes32 = uuidToBytes32(questId);
-    const recipients = payouts.map(p => p.wallet as `0x${string}`);
-    const amounts = payouts.map(p => p.amount);
+    // Get all confirmed deposits
+    const deposits = await prisma.questDeposit.findMany({
+        where: { questId, status: 'confirmed' },
+    });
+
     const walletClient = getOperatorWalletClient(chainId);
     const publicClient = getPublicClient(chainId);
     const contractAddr = getContractAddress(chainId);
+    const txHashes: string[] = [];
 
-    // Simulate first to catch revert errors early
-    await publicClient.simulateContract({
-        address: contractAddr,
-        abi: ESCROW_ABI,
-        functionName: 'distribute',
-        args: [questIdBytes32, recipients, amounts],
-        account: walletClient.account!,
-    });
+    if (deposits.length === 0) {
+        // Legacy path: no QuestDeposit records, use original questIdBytes32
+        const questIdBytes32 = uuidToBytes32(questId);
+        const recipients = payouts.map(p => p.wallet as `0x${string}`);
+        const amounts = payouts.map(p => p.amount);
 
-    const txHash = await writeContractWithRetry(walletClient, {
-        address: contractAddr,
-        abi: ESCROW_ABI,
-        functionName: 'distribute',
-        args: [questIdBytes32, recipients, amounts],
-    });
+        await publicClient.simulateContract({
+            address: contractAddr, abi: ESCROW_ABI,
+            functionName: 'distribute',
+            args: [questIdBytes32, recipients, amounts],
+            account: walletClient.account!,
+        });
+        const txHash = await writeContractWithRetry(walletClient, {
+            address: contractAddr, abi: ESCROW_ABI,
+            functionName: 'distribute',
+            args: [questIdBytes32, recipients, amounts],
+        });
+        txHashes.push(txHash);
+    } else {
+        // Multi-deposit: proportional distribution per sub-escrow
+        // Use BigInt arithmetic to avoid precision loss with 18-decimal tokens
+        const totalPayoutAmount = payouts.reduce((sum, p) => sum + p.amount, 0n);
+
+        for (const deposit of deposits) {
+            const depositAmountBig = toSmallestUnit(Number(deposit.amount), quest.tokenDecimals || 6);
+            const recipients = payouts.map(p => p.wallet as `0x${string}`);
+            // Proportional: (payout.amount * depositAmount) / totalPayoutAmount
+            const amounts = payouts.map(p => (p.amount * depositAmountBig) / totalPayoutAmount);
+
+            await publicClient.simulateContract({
+                address: contractAddr, abi: ESCROW_ABI,
+                functionName: 'distribute',
+                args: [deposit.escrowQuestId as `0x${string}`, recipients, amounts],
+                account: walletClient.account!,
+            });
+            const txHash = await writeContractWithRetry(walletClient, {
+                address: contractAddr, abi: ESCROW_ABI,
+                functionName: 'distribute',
+                args: [deposit.escrowQuestId as `0x${string}`, recipients, amounts],
+            });
+            txHashes.push(txHash);
+            console.log(`[escrow:distribute] deposit ${deposit.id} tx: ${txHash}`);
+        }
+    }
 
     // Mark pending — poller upgrades to 'paid' when QuestDistributed event arrives
-    const questData = await prisma.quest.findUnique({ where: { id: questId } });
-    const decimals = questData?.tokenDecimals || 6;
+    const decimals = quest.tokenDecimals || 6;
     for (const payout of payouts) {
         await prisma.questParticipation.update({
             where: { id: payout.participationId },
-            data: { payoutAmount: fromSmallestUnit(payout.amount, decimals), payoutStatus: 'pending', payoutTxHash: txHash },
+            data: { payoutAmount: fromSmallestUnit(payout.amount, decimals), payoutStatus: 'pending', payoutTxHash: txHashes[0] },
         });
     }
 
-    console.log(`[escrow:distribute] Quest ${questId}: tx submitted ${txHash}`);
-    return txHash;
+    console.log(`[escrow:distribute] Quest ${questId}: ${txHashes.length} tx(s) submitted`);
+    return txHashes.length === 1 ? txHashes[0] : txHashes;
 }
 
 // ─── Execute On-chain Refund ─────────────────────────────────────────────────
 
 /**
- * Submit on-chain refund tx. Returns tx hash immediately (fire-and-forget).
- * Poller reconciles DB state when QuestRefunded event is picked up.
+ * Submit on-chain refund txs. Returns array of tx hashes (one per sub-escrow).
  */
 export async function executeRefund(
     prisma: PrismaClient,
     questId: string,
     chainId: number,
-): Promise<string> {
-    const questIdBytes32 = uuidToBytes32(questId);
+): Promise<string | string[]> {
+    const deposits = await prisma.questDeposit.findMany({
+        where: { questId, status: 'confirmed' },
+    });
+
     const walletClient = getOperatorWalletClient(chainId);
     const publicClient = getPublicClient(chainId);
     const contractAddr = getContractAddress(chainId);
+    const txHashes: string[] = [];
 
-    await publicClient.simulateContract({
-        address: contractAddr,
-        abi: ESCROW_ABI,
-        functionName: 'refund',
-        args: [questIdBytes32],
-        account: walletClient.account!,
-    });
+    if (deposits.length === 0) {
+        // Legacy path: no QuestDeposit records, use original questIdBytes32
+        const questIdBytes32 = uuidToBytes32(questId);
+        await publicClient.simulateContract({
+            address: contractAddr, abi: ESCROW_ABI,
+            functionName: 'refund', args: [questIdBytes32],
+            account: walletClient.account!,
+        });
+        const txHash = await writeContractWithRetry(walletClient, {
+            address: contractAddr, abi: ESCROW_ABI,
+            functionName: 'refund', args: [questIdBytes32],
+        });
+        txHashes.push(txHash);
+    } else {
+        for (const deposit of deposits) {
+            await publicClient.simulateContract({
+                address: contractAddr, abi: ESCROW_ABI,
+                functionName: 'refund',
+                args: [deposit.escrowQuestId as `0x${string}`],
+                account: walletClient.account!,
+            });
+            const txHash = await writeContractWithRetry(walletClient, {
+                address: contractAddr, abi: ESCROW_ABI,
+                functionName: 'refund',
+                args: [deposit.escrowQuestId as `0x${string}`],
+            });
+            txHashes.push(txHash);
+            console.log(`[escrow:refund] deposit ${deposit.id} tx: ${txHash}`);
+        }
+    }
 
-    const txHash = await writeContractWithRetry(walletClient, {
-        address: contractAddr,
-        abi: ESCROW_ABI,
-        functionName: 'refund',
-        args: [questIdBytes32],
-    });
-
-    // Mark pending — poller upgrades to 'completed' when QuestRefunded event arrives
     await prisma.quest.update({
         where: { id: questId },
-        data: { refundStatus: 'pending', refundTxHash: txHash },
+        data: { refundStatus: 'pending', refundTxHash: txHashes[0] },
     });
 
-    console.log(`[escrow:refund] Quest ${questId}: tx submitted ${txHash}`);
-    return txHash;
+    console.log(`[escrow:refund] Quest ${questId}: ${txHashes.length} refund tx(s) submitted`);
+    return txHashes.length === 1 ? txHashes[0] : txHashes;
 }
 
 // Re-export event handlers so existing importers keep working

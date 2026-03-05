@@ -66,6 +66,39 @@ export function generatePreviewToken(): string {
     return 'pv_' + randomBytes(24).toString('hex');
 }
 
+export function generateCollabToken(): string {
+    return 'collab_' + randomBytes(32).toString('hex');
+}
+
+// ─── Sponsor / Collaboration Helpers ────────────────────────────────────────
+
+/** Check if a user is an accepted sponsor on a quest. */
+export async function isQuestSponsor(
+    prisma: PrismaClient,
+    questId: string,
+    userId: string,
+): Promise<boolean> {
+    const collab = await prisma.questCollaborator.findUnique({
+        where: { questId_userId: { questId, userId } },
+        select: { acceptedAt: true },
+    });
+    return collab?.acceptedAt != null;
+}
+
+/** Check if user is the quest owner, an accepted sponsor, or admin. */
+export async function isQuestOwnerOrSponsor(
+    prisma: PrismaClient,
+    questId: string,
+    userId: string,
+    userRole: string,
+): Promise<{ allowed: boolean; isOwner: boolean; quest: any }> {
+    const quest = await prisma.quest.findUnique({ where: { id: questId } });
+    if (!quest) throw new QuestNotFoundError();
+    const isOwner = quest.creatorUserId === userId || userRole === 'admin';
+    const isSponsor = isOwner ? false : await isQuestSponsor(prisma, questId, userId);
+    return { allowed: isOwner || isSponsor, isOwner, quest };
+}
+
 // ─── Quest creation ───────────────────────────────────────────────────────────
 
 export interface CreateQuestInput {
@@ -188,11 +221,13 @@ export async function updateQuest(
     questId: string,
     creatorUserId: string,
     input: UpdateQuestInput,
+    /** When true, skip ownership check (caller already verified via isQuestOwnerOrSponsor). */
+    skipAuthCheck = false,
 ) {
     const quest = await prisma.quest.findUnique({ where: { id: questId } });
     if (!quest) throw new QuestNotFoundError();
     if (quest.status !== 'draft') throw new QuestNotEditableError();
-    if (quest.creatorUserId !== creatorUserId) throw new QuestForbiddenError();
+    if (!skipAuthCheck && quest.creatorUserId !== creatorUserId) throw new QuestForbiddenError();
 
     const data: any = {};
     if (input.title !== undefined) data.title = input.title;
@@ -262,6 +297,8 @@ export function formatQuestResponse(
     quest: any,
     participations?: any[],
     count?: number,
+    /** Accepted collaborators with user relation (for sponsorNames). */
+    collaborators?: any[],
 ) {
     const questers = count ?? 0;
     const names = participations?.map((p: any) => p.agent?.agentname ?? 'anonymous') ?? [];
@@ -282,6 +319,11 @@ export function formatQuestResponse(
     const rewardAmount =
         quest.rewardAmount != null ? Number(quest.rewardAmount) : 0;
 
+    // Collaboration fields
+    const sponsorNames = collaborators?.map((c: any) =>
+        c.user?.displayName ?? c.user?.username ?? 'Sponsor'
+    ) ?? quest.sponsorNames ?? [];
+
     return {
         ...safeQuest,
         rewardAmount,
@@ -297,6 +339,9 @@ export function formatQuestResponse(
         expiresAt: quest.expiresAt ? quest.expiresAt.toISOString() : null,
         createdAt: quest.createdAt.toISOString(),
         updatedAt: quest.updatedAt.toISOString(),
+        totalFunded: quest.totalFunded != null ? Number(quest.totalFunded) : null,
+        collaboratorCount: collaborators?.length ?? quest.collaboratorCount ?? null,
+        sponsorNames,
     };
 }
 

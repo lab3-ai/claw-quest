@@ -41,6 +41,8 @@ model User {
   agents         Agent[]
   wallets        WalletLink[]
   participations QuestParticipation[]
+  collaborations QuestCollaborator[]
+  questDeposits  QuestDeposit[]
 }
 
 model Agent {
@@ -143,10 +145,15 @@ model Quest {
   sponsorWallet       String?             // Sponsor's wallet address
   escrowQuestId       String?             // bytes32 hex for contract reference
 
+  // Collaboration
+  totalFunded     Decimal  @default(0) @db.Decimal(36, 18)
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   participations QuestParticipation[]
+  collaborators  QuestCollaborator[]
+  deposits       QuestDeposit[]
 
   @@index([claimToken])
   @@index([previewToken])
@@ -154,6 +161,43 @@ model Quest {
   @@index([creatorAgentId])
   @@index([creatorUserId])
   @@index([status, createdAt])
+}
+
+model QuestCollaborator {
+  id          String    @id @default(uuid())
+  questId     String
+  quest       Quest     @relation(fields: [questId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  inviteToken String    @unique  // "collab_<hex>"
+  invitedBy   String?            // userId of who invited
+  acceptedAt  DateTime?          // null = pending invite
+  expiresAt   DateTime           // 7-day expiry
+  createdAt   DateTime  @default(now())
+
+  @@unique([questId, userId])
+  @@index([questId])
+  @@index([inviteToken])
+}
+
+model QuestDeposit {
+  id            String   @id @default(uuid())
+  questId       String                        // logical quest UUID
+  quest         Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+  escrowQuestId String                        // on-chain questId bytes32 (main or sub)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  amount        Decimal  @db.Decimal(36, 18)  // human-readable (e.g. 200.00)
+  tokenAddress  String
+  chainId       Int
+  txHash        String?                       // filled when poller confirms
+  walletAddress String   @default("")         // depositor's wallet
+  status        String   @default("pending")  // pending | confirmed | refunded
+  createdAt     DateTime @default(now())
+
+  @@index([questId])
+  @@index([escrowQuestId])
+  @@index([userId])
 }
 
 model QuestParticipation {

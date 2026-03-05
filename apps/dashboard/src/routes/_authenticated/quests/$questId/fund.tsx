@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from '@tanstack/react-router'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useAuth } from '@/context/AuthContext'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount, useChainId, useSwitchChain } from 'wagmi'
 import type { DepositParams } from '@/components/escrow/fund-types'
@@ -363,7 +364,126 @@ export function FundQuest() {
                         )}
                     </>
                 )}
+                {/* Funding Progress Bar */}
+                {quest && (
+                    <FundingProgress quest={quest} session={session} questId={questId} />
+                )}
             </div>
         </div>
+    )
+}
+
+// ─── Funding Progress + Invite Section ──────────────────────────────────────
+
+function FundingProgress({ quest, session, questId }: { quest: any; session: any; questId: string }) {
+    const totalFunded = quest.totalFunded ?? 0
+    const rewardAmount = quest.rewardAmount ?? 0
+    const fundingPct = rewardAmount > 0 ? Math.min(100, (totalFunded / rewardAmount) * 100) : 0
+    const isFullyFunded = totalFunded >= rewardAmount
+    const isOwner = quest.isCreator
+    const token = session?.access_token
+
+    // Fetch collaborators to check if user is a sponsor
+    const { data: collabData } = useQuery({
+        queryKey: ['quest-collaborators', questId],
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/quests/${questId}/collaborators`, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            if (!res.ok) return null
+            return res.json()
+        },
+        enabled: !!token,
+    })
+
+    const isSponsor = collabData?.collaborators?.length > 0
+    const isOwnerOrSponsor = isOwner || isSponsor
+
+    const [inviteOpen, setInviteOpen] = useState(false)
+    const [inviteUrl, setInviteUrl] = useState('')
+
+    const inviteMutation = useMutation({
+        mutationFn: async () => {
+            const res = await fetch(`${API_BASE}/quests/${questId}/invite`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error(err.error?.message || 'Failed to generate invite')
+            }
+            return res.json()
+        },
+        onSuccess: (data: { inviteUrl: string }) => {
+            setInviteUrl(data.inviteUrl)
+            setInviteOpen(true)
+        },
+    })
+
+    const handleCopy = useCallback(() => {
+        navigator.clipboard.writeText(inviteUrl)
+    }, [inviteUrl])
+
+    if (rewardAmount <= 0) return null
+
+    return (
+        <>
+            <div className="mt-6 pt-4 border-t border-border space-y-2">
+                <div className="flex justify-between text-xs text-fg-muted">
+                    <span>Funding progress</span>
+                    <span>{totalFunded} / {rewardAmount} {quest.rewardType}</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                        className="h-full bg-primary transition-all"
+                        style={{ width: `${fundingPct}%` }}
+                    />
+                </div>
+                {!isFullyFunded && (
+                    <p className="text-xs text-fg-muted">
+                        {(rewardAmount - totalFunded).toFixed(2)} {quest.rewardType} still needed to publish
+                    </p>
+                )}
+            </div>
+
+            {isOwnerOrSponsor && (
+                <div className="mt-4 pt-4 border-t border-border">
+                    <button
+                        onClick={() => inviteMutation.mutate()}
+                        disabled={inviteMutation.isPending}
+                        className="text-sm text-fg-muted hover:text-foreground underline cursor-pointer bg-transparent border-none p-0"
+                    >
+                        {inviteMutation.isPending ? 'Generating...' : 'Invite a co-sponsor'}
+                    </button>
+                    {inviteMutation.isError && (
+                        <p className="text-error text-xs mt-1">{(inviteMutation.error as Error).message}</p>
+                    )}
+                </div>
+            )}
+
+            <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Invite a Co-Sponsor</DialogTitle>
+                        <DialogDescription>
+                            Share this link. Expires in 7 days, single use.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex gap-2">
+                        <input
+                            readOnly
+                            value={inviteUrl}
+                            className="flex-1 text-sm bg-muted rounded px-3 py-2 border-none outline-none"
+                        />
+                        <Button size="sm" onClick={handleCopy}>
+                            Copy
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </>
     )
 }

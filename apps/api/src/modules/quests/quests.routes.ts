@@ -9,6 +9,8 @@ import {
     formatQuestResponse,
     isValidTransition,
     isQuestCreatorOrAdmin,
+    isQuestOwnerOrSponsor,
+    generateCollabToken,
     verifyParticipation,
     bulkVerifyParticipations,
     resolveHumanHandle,
@@ -148,6 +150,10 @@ export async function questsRoutes(server: FastifyInstance) {
                         },
                         orderBy: { joinedAt: 'asc' },
                     },
+                    collaborators: {
+                        where: { acceptedAt: { not: null } },
+                        include: { user: { select: { displayName: true, username: true } } },
+                    },
                 },
             });
 
@@ -185,11 +191,11 @@ export async function questsRoutes(server: FastifyInstance) {
                 }
 
                 // Return with preview flags
-                const { _count, participations, ...q } = quest;
+                const { _count, participations, collaborators, ...q } = quest;
                 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
                 const draftUser = (request as any).user;
                 return {
-                    ...formatQuestResponse(q, participations, _count.participations),
+                    ...formatQuestResponse(q, participations, _count.participations, collaborators),
                     isPreview: true,
                     isCreator: !!(draftUser?.id && quest.creatorUserId === draftUser.id),
                     fundingRequired: quest.fundingStatus === 'unfunded',
@@ -199,8 +205,8 @@ export async function questsRoutes(server: FastifyInstance) {
             }
 
             // Public quest (live, completed, etc.)
-            const { _count, participations, ...q } = quest;
-            const response: any = formatQuestResponse(q, participations, _count.participations);
+            const { _count, participations, collaborators, ...q } = quest;
+            const response: any = formatQuestResponse(q, participations, _count.participations, collaborators);
 
             // Include user's participation + isCreator if authenticated
             const authHeader = request.headers.authorization;
@@ -1050,13 +1056,13 @@ export async function questsRoutes(server: FastifyInstance) {
         }
     );
 
-    // ── PATCH /quests/:id — Edit quest (draft only, creator auth) ────────────
+    // ── PATCH /quests/:id — Edit quest (owner or sponsor) ────────────────────
     server.patch(
         '/:id',
         {
             schema: {
                 tags: ['Quests'],
-                summary: 'Edit a draft quest (creator only)',
+                summary: 'Edit a quest (owner or sponsor)',
                 security: [{ bearerAuth: [] }],
                 params: z.object({ id: z.string().uuid() }),
                 body: z.object({
@@ -1085,9 +1091,29 @@ export async function questsRoutes(server: FastifyInstance) {
             const { id } = request.params as any;
             const body = request.body as any;
             const userId = (request as any).user?.id;
+            const userRole = (request as any).user?.role ?? 'user';
 
             try {
-                const updated = await updateQuest(server.prisma, id, userId, body);
+                const { allowed, isOwner, quest } = await isQuestOwnerOrSponsor(
+                    server.prisma, id, userId, userRole,
+                );
+                if (!allowed) return reply.status(403).send({ message: 'Forbidden', code: 'FORBIDDEN' } as any);
+
+                // Lock tasks after quest goes live
+                if (quest.status === 'live' && body.tasks !== undefined) {
+                    return reply.status(400).send({ message: 'Tasks locked after quest goes live', code: 'TASKS_LOCKED' } as any);
+                }
+
+                // Deadline extension: live quest, owner only, no shortening
+                if (quest.status === 'live' && body.expiresAt !== undefined) {
+                    if (!isOwner) return reply.status(403).send({ message: 'Only owner can extend deadline', code: 'FORBIDDEN' } as any);
+                    const newExpiry = new Date(body.expiresAt);
+                    if (quest.expiresAt && newExpiry < quest.expiresAt) {
+                        return reply.status(400).send({ message: 'Cannot shorten deadline', code: 'INVALID_DEADLINE' } as any);
+                    }
+                }
+
+                const updated = await updateQuest(server.prisma, id, userId, body, true);
                 return formatQuestResponse(updated);
             } catch (err: any) {
                 if (err instanceof QuestNotFoundError) return reply.status(404).send({ message: err.message, code: err.code } as any);
@@ -1186,23 +1212,36 @@ export async function questsRoutes(server: FastifyInstance) {
         async (request, reply) => {
             const userId = (request as any).user?.id;
 
-            const quests = await server.prisma.quest.findMany({
-                where: { creatorUserId: userId },
-                orderBy: { createdAt: 'desc' },
-                include: {
-                    _count: { select: { participations: true } },
-                    participations: {
-                        take: 5,
-                        include: {
-                            user: { select: USER_IDENTITY_SELECT },
-                            agent: { select: { agentname: true } },
-                        },
-                        orderBy: { joinedAt: 'asc' },
+            const questInclude = {
+                _count: { select: { participations: true } },
+                participations: {
+                    take: 5,
+                    include: {
+                        user: { select: USER_IDENTITY_SELECT },
+                        agent: { select: { agentname: true } },
                     },
+                    orderBy: { joinedAt: 'asc' as const },
                 },
-            });
+            };
 
-            return quests.map(({ _count, participations, ...q }) => ({
+            const [ownedQuests, sponsoredCollabs] = await Promise.all([
+                server.prisma.quest.findMany({
+                    where: { creatorUserId: userId },
+                    orderBy: { createdAt: 'desc' },
+                    include: questInclude,
+                }),
+                server.prisma.questCollaborator.findMany({
+                    where: { userId, acceptedAt: { not: null } },
+                    include: { quest: { include: questInclude } },
+                }),
+            ]);
+
+            const sponsoredQuests = sponsoredCollabs.map(c => c.quest);
+            const allQuests = [...ownedQuests, ...sponsoredQuests];
+            // Deduplicate by id
+            const unique = Array.from(new Map(allQuests.map(q => [q.id, q])).values());
+
+            return unique.map(({ _count, participations, ...q }: any) => ({
                 ...formatQuestResponse(q, participations, _count.participations),
                 fundingStatus: q.fundingStatus,
                 previewToken: q.previewToken,
@@ -1354,6 +1393,242 @@ export async function questsRoutes(server: FastifyInstance) {
 
             notifyQuestCancelled(server, id).catch(() => {});
             return { message: 'Quest cancelled', questId: id };
+        }
+    );
+
+    // ── POST /quests/:id/invite — Generate co-sponsor invite link ──────────
+    server.post(
+        '/:id/invite',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Generate a co-sponsor invite link',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                response: {
+                    200: z.object({
+                        inviteUrl: z.string(),
+                        token: z.string(),
+                        expiresAt: z.string(),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id } = request.params as any;
+            const userId = (request as any).user?.id;
+            const userRole = (request as any).user?.role ?? 'user';
+
+            const { allowed, quest } = await isQuestOwnerOrSponsor(server.prisma, id, userId, userRole);
+            if (!allowed) return reply.status(403).send({ error: { message: 'Forbidden', code: 'FORBIDDEN' } } as any);
+
+            if (['completed', 'cancelled', 'expired'].includes(quest.status)) {
+                return reply.status(400).send({ error: { message: 'Cannot invite to a closed quest', code: 'QUEST_CLOSED' } } as any);
+            }
+
+            const sponsorCount = await server.prisma.questCollaborator.count({
+                where: { questId: id, acceptedAt: { not: null } },
+            });
+            if (sponsorCount >= 5) {
+                return reply.status(400).send({ error: { message: 'Max 5 sponsors reached', code: 'MAX_SPONSORS' } } as any);
+            }
+
+            const token = generateCollabToken();
+            const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+            // Pending invite: use crypto.randomUUID() as placeholder userId
+            // to avoid @@unique([questId, userId]) conflicts when inviter creates multiple invites.
+            // On accept, this record is deleted and replaced with the invitee's real userId.
+            const { randomUUID } = await import('crypto');
+            await server.prisma.questCollaborator.create({
+                data: {
+                    questId: id,
+                    userId: randomUUID(),  // placeholder — replaced on accept
+                    inviteToken: token,
+                    invitedBy: userId,
+                    expiresAt,
+                },
+            });
+
+            const inviteUrl = `${frontendUrl}/quests/${id}/join?token=${token}`;
+            return { inviteUrl, token, expiresAt: expiresAt.toISOString() };
+        }
+    );
+
+    // ── POST /quests/:id/collaborate — Accept a co-sponsor invite ───────────
+    server.post(
+        '/:id/collaborate',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Accept a co-sponsor invite via token',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                body: z.object({ token: z.string().min(1) }),
+                response: {
+                    200: z.object({ success: z.boolean(), questId: z.string() }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id } = request.params as any;
+            const { token } = request.body as { token: string };
+            const userId = (request as any).user?.id;
+
+            const invite = await server.prisma.questCollaborator.findUnique({
+                where: { inviteToken: token },
+            });
+            if (!invite || invite.questId !== id) {
+                return reply.status(404).send({ error: { message: 'Invalid invite token', code: 'INVALID_TOKEN' } } as any);
+            }
+            if (invite.expiresAt < new Date()) {
+                return reply.status(400).send({ error: { message: 'Invite link expired', code: 'TOKEN_EXPIRED' } } as any);
+            }
+            if (invite.acceptedAt) {
+                return reply.status(400).send({ error: { message: 'Invite already used', code: 'TOKEN_USED' } } as any);
+            }
+
+            const quest = await server.prisma.quest.findUnique({ where: { id } });
+            if (!quest || ['completed', 'cancelled', 'expired'].includes(quest.status)) {
+                return reply.status(400).send({ error: { message: 'Quest is closed', code: 'QUEST_CLOSED' } } as any);
+            }
+            if (quest.creatorUserId === userId) {
+                return reply.status(400).send({ error: { message: 'Owner cannot be a sponsor', code: 'OWNER_CONFLICT' } } as any);
+            }
+
+            // Check not already a sponsor
+            const existing = await server.prisma.questCollaborator.findUnique({
+                where: { questId_userId: { questId: id, userId } },
+            });
+            if (existing?.acceptedAt) {
+                return reply.status(400).send({ error: { message: 'Already a sponsor', code: 'ALREADY_SPONSOR' } } as any);
+            }
+
+            const invitedBy = invite.invitedBy;
+            // Use interactive transaction to avoid TOCTOU race on sponsor count
+            await server.prisma.$transaction(async (tx) => {
+                const sponsorCount = await tx.questCollaborator.count({
+                    where: { questId: id, acceptedAt: { not: null } },
+                });
+                if (sponsorCount >= 5) {
+                    throw new Error('MAX_SPONSORS');
+                }
+                await tx.questCollaborator.delete({ where: { id: invite.id } });
+                await tx.questCollaborator.create({
+                    data: {
+                        questId: id,
+                        userId,
+                        inviteToken: token,
+                        invitedBy,
+                        acceptedAt: new Date(),
+                        expiresAt: invite.expiresAt,
+                    },
+                });
+            }).catch((err: any) => {
+                if (err.message === 'MAX_SPONSORS') {
+                    return reply.status(400).send({ error: { message: 'Max 5 sponsors reached', code: 'MAX_SPONSORS' } } as any);
+                }
+                throw err;
+            });
+
+            return { success: true, questId: id };
+        }
+    );
+
+    // ── GET /quests/:id/collaborators — List sponsors + deposits ────────────
+    server.get(
+        '/:id/collaborators',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'List collaborators and deposits for a quest',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id } = request.params as any;
+            const userId = (request as any).user?.id;
+            const userRole = (request as any).user?.role ?? 'user';
+
+            const { allowed } = await isQuestOwnerOrSponsor(server.prisma, id, userId, userRole);
+            if (!allowed) return reply.status(403).send({ error: { message: 'Forbidden', code: 'FORBIDDEN' } } as any);
+
+            const [collaborators, deposits, quest] = await Promise.all([
+                server.prisma.questCollaborator.findMany({
+                    where: { questId: id, acceptedAt: { not: null } },
+                    include: { user: { select: { displayName: true, username: true, email: true } } },
+                    orderBy: { acceptedAt: 'asc' },
+                }),
+                server.prisma.questDeposit.findMany({
+                    where: { questId: id },
+                    orderBy: { createdAt: 'asc' },
+                }),
+                server.prisma.quest.findUnique({ where: { id }, select: { rewardAmount: true, totalFunded: true } }),
+            ]);
+
+            return {
+                collaborators: collaborators.map(c => ({
+                    id: c.id, questId: c.questId, userId: c.userId,
+                    invitedBy: c.invitedBy, acceptedAt: c.acceptedAt?.toISOString() ?? null,
+                    expiresAt: c.expiresAt.toISOString(), createdAt: c.createdAt.toISOString(),
+                    displayName: c.user.displayName, username: c.user.username,
+                })),
+                deposits: deposits.map(d => ({
+                    id: d.id, questId: d.questId, userId: d.userId,
+                    escrowQuestId: d.escrowQuestId, amount: Number(d.amount),
+                    tokenAddress: d.tokenAddress, chainId: d.chainId,
+                    txHash: d.txHash, walletAddress: d.walletAddress,
+                    status: d.status, createdAt: d.createdAt.toISOString(),
+                })),
+                totalFunded: Number(quest?.totalFunded ?? 0),
+                rewardAmount: Number(quest?.rewardAmount ?? 0),
+            };
+        }
+    );
+
+    // ── DELETE /quests/:id/collaborators/:targetUserId — Remove sponsor ──────
+    server.delete(
+        '/:id/collaborators/:targetUserId',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Remove a sponsor from a quest (owner only)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({
+                    id: z.string().uuid(),
+                    targetUserId: z.string().uuid(),
+                }),
+                response: {
+                    200: z.object({ success: z.boolean() }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id, targetUserId } = request.params as any;
+            const userId = (request as any).user?.id;
+            const userRole = (request as any).user?.role ?? 'user';
+
+            const { allowed, isOwner } = await isQuestOwnerOrSponsor(server.prisma, id, userId, userRole);
+            if (!allowed || !isOwner) {
+                return reply.status(403).send({ error: { message: 'Only owner can remove sponsors', code: 'FORBIDDEN' } } as any);
+            }
+
+            const collab = await server.prisma.questCollaborator.findUnique({
+                where: { questId_userId: { questId: id, userId: targetUserId } },
+            });
+            if (!collab) return reply.status(404).send({ error: { message: 'Sponsor not found', code: 'NOT_FOUND' } } as any);
+
+            await server.prisma.questCollaborator.delete({
+                where: { questId_userId: { questId: id, userId: targetUserId } },
+            });
+
+            return { success: true };
         }
     );
 

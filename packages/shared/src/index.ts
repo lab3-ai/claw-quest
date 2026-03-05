@@ -35,6 +35,7 @@ export const QUEST_STATUS = {
 export const FUNDING_STATUS = {
     UNFUNDED: 'unfunded',
     PENDING: 'pending',
+    PARTIAL: 'partial',
     CONFIRMED: 'confirmed',
     REFUNDED: 'refunded',
 } as const;
@@ -98,6 +99,46 @@ export const QuestSchema = z.object({
     fundingStatus: z.string().nullable().optional(),
     cryptoTxHash: z.string().nullable().optional(),
     cryptoChainId: z.number().nullable().optional(),
+    // Collaboration fields
+    totalFunded: z.number().nullable().optional(),
+    collaboratorCount: z.number().nullable().optional(),
+    sponsorNames: z.array(z.string()).default([]),
+});
+
+// --- Quest Collaboration ---
+export const QuestCollaboratorSchema = z.object({
+    id: z.string().uuid(),
+    questId: z.string().uuid(),
+    userId: z.string().uuid(),
+    invitedBy: z.string().uuid().nullable(),
+    acceptedAt: z.string().datetime().nullable(),
+    expiresAt: z.string().datetime(),
+    createdAt: z.string().datetime(),
+    displayName: z.string().nullable().optional(),
+    username: z.string().nullable().optional(),
+});
+export type QuestCollaborator = z.infer<typeof QuestCollaboratorSchema>;
+
+export const QuestDepositSchema = z.object({
+    id: z.string().uuid(),
+    questId: z.string().uuid(),
+    userId: z.string().uuid(),
+    escrowQuestId: z.string(),
+    amount: z.number(),
+    tokenAddress: z.string(),
+    chainId: z.number(),
+    txHash: z.string().nullable(),
+    walletAddress: z.string(),
+    status: z.enum(['pending', 'confirmed', 'refunded']),
+    createdAt: z.string().datetime(),
+});
+export type QuestDeposit = z.infer<typeof QuestDepositSchema>;
+
+export const CollaboratorsResponseSchema = z.object({
+    collaborators: z.array(QuestCollaboratorSchema),
+    deposits: z.array(QuestDepositSchema),
+    totalFunded: z.number(),
+    rewardAmount: z.number(),
 });
 
 // --- QuestParticipation (Questers list) ---

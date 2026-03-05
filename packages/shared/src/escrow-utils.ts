@@ -35,6 +35,24 @@ export function bytes32ToUuid(bytes32: string): string {
     return `${uuid.slice(0, 8)}-${uuid.slice(8, 12)}-${uuid.slice(12, 16)}-${uuid.slice(16, 20)}-${uuid.slice(20)}`;
 }
 
+// ─── Sub-QuestId for Multi-Sponsor ───────────────────────────────────────────
+//
+// Each sponsor gets a unique on-chain questId derived from the logical questId + userId.
+// Owner uses the original uuidToBytes32(questId). Sponsors use a keccak256 hash.
+// NOTE: viem is not a shared pkg dep, so we defer keccak256 to the API layer.
+// This function produces the concatenated hex for the caller to hash.
+
+/**
+ * Generate the pre-image for a sub-questId (caller must keccak256 the result).
+ * Returns the concatenation of questIdBytes32 + userIdBytes32.
+ */
+export function subQuestIdPreimage(questId: string, userId: string): `0x${string}` {
+    const questIdBytes32 = uuidToBytes32(questId);
+    const userIdBytes32 = uuidToBytes32(userId);
+    // Strip 0x prefix from second, concatenate
+    return `0x${questIdBytes32.slice(2)}${userIdBytes32.slice(2)}` as `0x${string}`;
+}
+
 // ─── Amount Conversion ───────────────────────────────────────────────────────
 //
 // On-chain amounts are in smallest unit (e.g., 1 USDC = 1_000_000, 1 ETH = 1e18).

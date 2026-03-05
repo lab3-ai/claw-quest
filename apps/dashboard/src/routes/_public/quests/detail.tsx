@@ -478,6 +478,12 @@ export function QuestDetail() {
                         <Badge variant={rewardBadgeClass(quest.rewardType).replace("badge-", "") as any}>{quest.rewardType}</Badge>
                         <span>·</span>
                         <span className="inline-flex items-center gap-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-foreground">{quest.sponsor}</strong></span>
+                        {quest.sponsorNames && quest.sponsorNames.length > 0 && (
+                            <>
+                                <span>·</span>
+                                <span className="text-fg-muted">Sponsored by {quest.sponsorNames.join(', ')}</span>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

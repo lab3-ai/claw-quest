@@ -18,6 +18,7 @@ import { EditQuest } from './routes/_authenticated/quests/$questId/edit'
 import { ManageQuest } from './routes/_authenticated/quests/$questId/manage'
 import { Account } from './routes/_authenticated/account'
 import { StripeConnect } from './routes/_authenticated/stripe-connect'
+import { QuestJoin } from './routes/_public/quests/join'
 import { Privacy } from './routes/privacy'
 import { Terms } from './routes/terms'
 
@@ -112,6 +113,22 @@ const questersRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/quests/$questId/questers',
     component: QuestersPage,
+})
+
+const questJoinRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/quests/$questId/join',
+    validateSearch: (search: Record<string, unknown>): { token?: string } => {
+        const result: { token?: string } = {}
+        if (search.token) result.token = search.token as string
+        return result
+    },
+    component: function QuestJoinPage() {
+        const { questId } = questJoinRoute.useParams()
+        const { token } = questJoinRoute.useSearch()
+        if (!token) return <div className="flex items-center justify-center min-h-[60vh]"><p className="text-destructive text-sm">Missing invite token</p></div>
+        return <QuestJoin questId={questId} token={token} />
+    },
 })
 
 // ── Protected routes (auth checked in beforeLoad) ──
@@ -238,6 +255,7 @@ const routeTree = rootRoute.addChildren([
         editQuestRoute,
         manageQuestRoute,
         questersRoute,
+        questJoinRoute,
         dashboardRoute,
         agentListRoute,
         createAgentRoute,

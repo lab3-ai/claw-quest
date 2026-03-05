@@ -86,7 +86,17 @@ export async function escrowRoutes(server: FastifyInstance) {
             }
 
             try {
-                const params = await getDepositParams(server.prisma, questId, chainId);
+                // Pass depositor userId if authenticated (for sub-questId generation)
+                let depositorUserId: string | undefined;
+                try {
+                    const authHeader = request.headers.authorization;
+                    if (authHeader?.startsWith('Bearer ') && !authHeader.startsWith('Bearer cq_')) {
+                        await (server as any).authenticate(request, reply);
+                        depositorUserId = (request as any).user?.id;
+                    }
+                } catch { /* public access — no user */ }
+
+                const params = await getDepositParams(server.prisma, questId, depositorUserId, chainId);
                 return params;
             } catch (err: any) {
                 if (err.message === 'Quest not found') {

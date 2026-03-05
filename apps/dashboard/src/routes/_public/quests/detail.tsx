@@ -155,6 +155,7 @@ interface QuestWithParticipation extends Quest {
     fundingStatus?: string
     creatorUserId?: string
     isCreator?: boolean
+    isSponsor?: boolean
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -803,11 +804,13 @@ export function QuestDetail() {
                         <div className="p-3 border-b border-border">
                             {(() => {
                                 const isCreator = isAuthenticated && !!quest.isCreator
+                                const isSponsor = isAuthenticated && !!quest.isSponsor
+                                const isOwnerOrSponsor = isCreator || isSponsor
                                 const isFunded = quest.fundingStatus === "confirmed"
                                 const isEnded = quest.status === "completed" || quest.status === "expired" || quest.status === "cancelled"
 
-                                // Draft + creator
-                                if (quest.status === "draft" && isCreator) {
+                                // Draft + owner/sponsor
+                                if (quest.status === "draft" && isOwnerOrSponsor) {
                                     return (
                                         <>
                                             <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>
@@ -826,8 +829,8 @@ export function QuestDetail() {
                                     )
                                 }
 
-                                // Scheduled + creator
-                                if (quest.status === "scheduled" && isCreator) {
+                                // Scheduled + owner/sponsor
+                                if (quest.status === "scheduled" && isOwnerOrSponsor) {
                                     return (
                                         <>
                                             <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>
@@ -840,8 +843,8 @@ export function QuestDetail() {
                                     )
                                 }
 
-                                // Live + creator
-                                if (isLive && isCreator) {
+                                // Live + owner/sponsor
+                                if (isLive && isOwnerOrSponsor) {
                                     return (
                                         <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>
                                             <Button variant="secondary" className="w-full">Manage Quest</Button>
@@ -854,8 +857,8 @@ export function QuestDetail() {
                                     return <Button variant="secondary" className="w-full" disabled>Quest Ended</Button>
                                 }
 
-                                // Draft + not creator
-                                if (quest.status === "draft" && isAuthenticated && !isCreator) {
+                                // Draft + not owner/sponsor
+                                if (quest.status === "draft" && isAuthenticated && !isOwnerOrSponsor) {
                                     return null
                                 }
                                 if (quest.status === "draft" && !isAuthenticated) {

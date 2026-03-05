@@ -114,6 +114,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     200: QuestSchema.extend({
                         isPreview: z.boolean().optional(),
                         isCreator: z.boolean().optional(),
+                        isSponsor: z.boolean().optional(),
                         fundingRequired: z.boolean().optional(),
                         previewToken: z.string().optional(),
                         fundUrl: z.string().optional(),
@@ -216,6 +217,12 @@ export async function questsRoutes(server: FastifyInstance) {
                     const user = (request as any).user;
                     if (user?.id) {
                         response.isCreator = quest.creatorUserId === user.id;
+                        // Check if user is a co-sponsor (accepted collaborator)
+                        const sponsorRecord = await server.prisma.questCollaborator.findFirst({
+                            where: { questId: id, userId: user.id, acceptedAt: { not: null } },
+                            select: { id: true },
+                        });
+                        response.isSponsor = !!sponsorRecord;
                         const myParticipation = await server.prisma.questParticipation.findUnique({
                             where: { questId_userId: { questId: id, userId: user.id } },
                         });

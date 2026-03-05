@@ -406,7 +406,6 @@ function FundingProgress({ quest, session, questId }: { quest: any; session: any
             const res = await fetch(`${API_BASE}/quests/${questId}/invite`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
             })

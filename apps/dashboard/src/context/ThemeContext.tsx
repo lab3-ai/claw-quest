@@ -47,6 +47,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Listen for system preference changes
     useEffect(() => {
         const mql = window.matchMedia('(prefers-color-scheme: dark)')
+        // Sync current state on mount
+        setSystemPref(mql.matches ? 'dark' : 'light')
         const handler = (e: MediaQueryListEvent) => setSystemPref(e.matches ? 'dark' : 'light')
         mql.addEventListener('change', handler)
         return () => mql.removeEventListener('change', handler)
@@ -56,8 +58,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const root = document.documentElement
         root.setAttribute('data-theme', theme)
-        root.classList.toggle('dark', resolvedMode === 'dark')
-    }, [theme, resolvedMode])
+        // For system mode, read media query directly to avoid stale state
+        const isDark = colorMode === 'dark' ||
+            (colorMode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        root.classList.toggle('dark', isDark)
+        console.log('[theme]', { theme, colorMode, isDark, mediaQuery: window.matchMedia('(prefers-color-scheme: dark)').matches })
+    }, [theme, colorMode, resolvedMode])
 
     const setTheme = useCallback((t: ThemeId) => {
         setThemeState(t)
@@ -67,6 +73,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const setColorMode = useCallback((m: ColorMode) => {
         setColorModeState(m)
         localStorage.setItem(STORAGE_KEY_MODE, m)
+        // Re-check system preference when switching to system mode
+        if (m === 'system') {
+            setSystemPref(getSystemPreference())
+        }
     }, [])
 
     return (

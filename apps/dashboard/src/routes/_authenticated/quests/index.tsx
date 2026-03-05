@@ -163,7 +163,7 @@ export function QuestList() {
                 <div className="relative flex flex-1 min-w-0 items-center gap-0.5 p-0.5">
                     {/* Sliding highlight */}
                     <span
-                        className="absolute top-0.5 bottom-0.5 rounded bg-foreground transition-all duration-200 ease-out z-0"
+                        className="absolute top-0.5 bottom-0.5 rounded bg-primary transition-all duration-200 ease-out z-0"
                         style={tabIndicatorStyle}
                     />
                     {tabs.map(t => {
@@ -176,8 +176,8 @@ export function QuestList() {
                                 className={cn(
                                     "relative z-10 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded cursor-pointer transition-colors duration-150",
                                     isActive
-                                        ? "text-background font-semibold"
-                                        : "text-muted-foreground hover:text-foreground"
+                                        ? "text-primary-foreground font-semibold"
+                                        : "text-foreground"
                                 )}
                                 onClick={() => handleTabChange(t.id)}
                             >
@@ -187,8 +187,8 @@ export function QuestList() {
                                     <span className={cn(
                                         "inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full leading-none",
                                         isActive
-                                            ? "bg-background/20 text-background"
-                                            : "bg-muted text-muted-foreground"
+                                            ? "bg-primary-foreground/20 text-primary-foreground"
+                                            : "bg-muted text-foreground"
                                     )}>{tabCounts[t.id]}</span>
                                 )}
                             </button>
@@ -350,7 +350,7 @@ export function QuestList() {
                                         </td>
                                         <td className="px-2 py-2.5 text-xs border-b border-border align-top min-w-[240px]">
                                             <div className="text-base font-normal leading-snug mb-0.5">
-                                                <Link className="text-primary no-underline font-normal text-base leading-snug visited:text-primary/80 hover:text-primary/80" to="/quests/$questId" params={{ questId: quest.id }}>{quest.title}</Link>
+                                                <Link className="text-foreground no-underline font-semibold text-base leading-snug hover:text-primary" to="/quests/$questId" params={{ questId: quest.id }}>{quest.title}</Link>
                                             </div>
                                             <div className="text-xs text-muted-foreground leading-snug line-clamp-1 my-0.5">{quest.description}</div>
                                             <div className="text-xs text-muted-foreground">by <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>

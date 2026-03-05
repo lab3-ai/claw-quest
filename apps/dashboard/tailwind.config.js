@@ -127,6 +127,7 @@ export default {
                 lg: "var(--radius-lg)",
                 xl: "var(--radius-xl)",
                 full: "var(--radius-full)",
+                button: "var(--radius-button)",
             },
             boxShadow: {
                 xs: "var(--shadow-xs)",

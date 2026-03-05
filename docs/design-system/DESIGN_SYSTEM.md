@@ -1,6 +1,6 @@
 # ClawQuest Design System v3 — Terminal Edition
 
-> Monospace-first · Monochromatic · Flat & high-contrast
+> Monospace-first · Brand color `#FF574B` · Flat & high-contrast
 > Reference for all UI/UX implementation across the dashboard.
 > Source of truth: `apps/dashboard/src/index.css` `:root` block
 
@@ -103,32 +103,32 @@ For code blocks, dark cards, and inverted sections:
 | `--surface-dark-fg` | `#ffffff` | Text on dark surfaces |
 | `--surface-dark-muted` | `#999999` | Muted text on dark surfaces |
 
-### Brand / Accent — neutral-950 (monochrome)
+### Brand / Accent — `#FF574B` (Coral Red)
 
-> **Temporary:** Accent uses neutral-950 as placeholder. Will be replaced with final brand color later.
+> **Brand color** used consistently across all themes. Each theme adapts light/dark variants while keeping the same hue.
 
-| Token | Hex | Use |
-|-------|-----|-----|
-| `--accent` | `#0a0a0a` | Accent/highlight color |
-| `--accent-hover` | `#262626` | Accent hover state |
-| `--accent-light` | `#f5f5f5` | Accent tinted background |
-| `--accent-border` | `#a3a3a3` | Accent borders |
-| `--accent-fg` | `#ffffff` | Text on accent background |
+| Token | Light | Dark | Use |
+|-------|-------|------|-----|
+| `--accent` | `#FF574B` | `#FF6B61` | Accent/highlight color |
+| `--accent-hover` | `#E64A3F` | `#FF574B` | Accent hover state |
+| `--accent-light` | `#FFF0EF` | `#3D1512` | Accent tinted background |
+| `--accent-border` | `#FF574B` | `#FF574B` | Accent borders |
+| `--accent-fg` | `#ffffff` | `#000000` | Text on accent background |
 
-### Primary (Buttons) — solid black
+### Primary (Buttons) — brand color
 
-| Token | Hex | Use |
-|-------|-----|-----|
-| `--primary` | `#0a0a0a` | Button background |
-| `--primary-hover` | `#262626` | Button hover state |
-| `--primary-fg` | `#ffffff` | Button text |
+| Token | Light | Dark | Use |
+|-------|-------|------|-----|
+| `--primary` | `#FF574B` | `#FF6B61` | Button background |
+| `--primary-hover` | `#E64A3F` | `#FF574B` | Button hover state |
+| `--primary-fg` | `#ffffff` | `#000000` | Button text |
 
 ### Links
 
-| Token | Hex | Use |
-|-------|-----|-----|
-| `--link` | `#111111` | Inline link text |
-| `--link-visited` | `#333333` | Visited link text |
+| Token | Light | Dark | Use |
+|-------|-------|------|-----|
+| `--link` | `#FF574B` | `#FF6B61` | Inline link text |
+| `--link-visited` | `#E64A3F` | `#FF8A82` | Visited link text |
 
 ### Semantic
 
@@ -153,7 +153,7 @@ All actor colors use grayscale to match the monochromatic theme:
 | Actor | FG | BG | Border | Use |
 |-------|----|----|--------|-----|
 | Human | `#555555` | `#f0f0f0` | `#cccccc` | Human tasks, social tasks |
-| Agent | `#0a0a0a` | `#f5f5f5` | `#a3a3a3` | Agent tasks, AI agents |
+| Agent | `#FF574B` | `#FFF0EF` | `#FF574B` | Agent tasks, AI agents |
 | Skill | `#555555` | `#f0f0f0` | `#cccccc` | Skills, tags |
 | Social | `#555555` | `#f0f0f0` | — | Social task text/bg |
 
@@ -166,16 +166,16 @@ All actor colors use grayscale to match the monochromatic theme:
 | Discord | `--discord` | `#5865f2` |
 | X/Twitter | `--x-twitter` | `#111111` |
 
-### Tone Colors — monochrome
+### Tone Colors — brand
 
-| Token | Hex | Use |
-|-------|-----|-----|
-| `--tone-quest` | `#0a0a0a` | Quest-themed foreground |
-| `--tone-quest-dark` | `#262626` | Quest-themed hover |
-| `--tone-quest-bg` | `#f5f5f5` | Quest-themed background |
-| `--tone-agent` | `#0a0a0a` | Agent-themed foreground |
-| `--tone-agent-dark` | `#262626` | Agent-themed hover |
-| `--tone-agent-bg` | `#f5f5f5` | Agent-themed background |
+| Token | Light | Dark | Use |
+|-------|-------|------|-----|
+| `--tone-quest` | `#FF574B` | `#FF6B61` | Quest-themed foreground |
+| `--tone-quest-dark` | `#E64A3F` | `#FF574B` | Quest-themed hover |
+| `--tone-quest-bg` | `#FFF0EF` | `#3D1512` | Quest-themed background |
+| `--tone-agent` | `#FF574B` | `#FF6B61` | Agent-themed foreground |
+| `--tone-agent-dark` | `#E64A3F` | `#FF574B` | Agent-themed hover |
+| `--tone-agent-bg` | `#FFF0EF` | `#3D1512` | Agent-themed background |
 
 ### Legacy Color Aliases
 
@@ -404,24 +404,63 @@ All CSS variables mapped in `tailwind.config.js`. Use Tailwind classes in JSX.
 |-------------|---------|-----|
 | `background` | `--bg` | `#ffffff` |
 | `foreground` | `--fg` | `#111111` |
-| `primary` | `--primary` | `#0a0a0a` (black) |
+| `primary` | `--primary` | `#FF574B` (brand) |
 | `primary-foreground` | `--primary-fg` | `#ffffff` |
 | `secondary` | `--bg-muted` | `#dcdcdc` |
 | `secondary-foreground` | `--fg` | `#111111` |
 | `muted` | `--bg-muted` / `--fg-muted` | `#dcdcdc` / `#888888` |
 | `destructive` | `--error` | `#ff4444` |
 | `destructive-foreground` | `--accent-fg` | `#ffffff` |
-| `accent` | `--accent` | `#0a0a0a` |
+| `accent` | `--accent` | `#FF574B` |
 | `accent-foreground` | `--accent-fg` | `#ffffff` |
 | `card` | `--bg` | `#ffffff` |
 | `popover` | `--bg` | `#ffffff` |
 | `input` | `--border` | `#d0d0d0` |
-| `ring` | `--accent` | `#0a0a0a` |
+| `ring` | `--accent` | `#FF574B` |
 
 ### CSS Variable Source
 
 All tokens defined in `apps/dashboard/src/index.css` `:root` block.
 Tailwind mapping in `apps/dashboard/tailwind.config.js`.
+
+---
+
+## Multi-Theme System
+
+5 themes x 2 modes (light/dark) = 10 variants. All themes share the brand color `#FF574B`.
+
+| Theme | Font | Style | Radius | Shadows |
+|-------|------|-------|--------|---------|
+| **Terminal** (default) | Geist Mono | Flat, monospace, high-contrast | 0–8px | None (light), subtle + brand glow (dark) |
+| **Glass** | Inter | Frosted blur, translucent, rounded | 8–20px | Soft layered (light), deeper translucent (dark) |
+| **Brutalist** | Space Grotesk | Heavy borders, hard offset shadows | 0px all | Black offset (light), white offset (dark) |
+| **Minimal** | Inter | Clean, airy, subtle | 4–12px | Very subtle (light), slightly stronger (dark) |
+| **Bauhaus** | DM Sans | Geometric, warm palette, bold | 0px + 50px xl | None (both modes) |
+
+### Theme Architecture
+
+- CSS variables + `[data-theme="x"]` selector on `<html>`
+- Dark mode via `.dark` class on `<html>`
+- Theme definitions: `src/styles/themes.css`
+- Base tokens (Terminal light): `src/index.css` `:root`
+- Context: `src/context/ThemeContext.tsx` (localStorage + system preference)
+- Switcher UI: `src/components/theme-switcher.tsx`
+- FOUC prevention: inline `<script>` in `index.html`
+
+### What themes customize
+
+- Fonts (`--font`, `--font-heading`)
+- Border radius (`--radius-*`)
+- Shadows (`--shadow-*`)
+- Core colors (bg, fg, border palettes)
+- Dark mode colors and shadow overrides
+
+### What stays constant across themes
+
+- Brand color: `#FF574B` (accent, primary, link, tone-quest, tone-agent)
+- Semantic colors: success, error, warning, info
+- Typography scale, spacing, z-index, animation tokens
+- Platform colors (Stripe, Telegram, Discord, X)
 
 ---
 

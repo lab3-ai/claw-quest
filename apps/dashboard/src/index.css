@@ -26,21 +26,21 @@
     --surface-dark-fg: #ffffff;
     --surface-dark-muted: #999999;
 
-    /* ── Brand / Accent — neutral-950 (monochrome) ── */
-    --accent: #0a0a0a;
-    --accent-hover: #262626;
-    --accent-light: #f5f5f5;
-    --accent-border: #a3a3a3;
+    /* ── Brand / Accent — #FF574B (coral red) ── */
+    --accent: #FF574B;
+    --accent-hover: #E64A3F;
+    --accent-light: #FFF0EF;
+    --accent-border: #FF574B;
     --accent-fg: #ffffff;
 
-    /* ── Primary (buttons) — solid black ── */
-    --primary: #0a0a0a;
-    --primary-hover: #262626;
+    /* ── Primary (buttons) — brand color ── */
+    --primary: #FF574B;
+    --primary-hover: #E64A3F;
     --primary-fg: #ffffff;
 
     /* ── Links ── */
-    --link: #111111;
-    --link-visited: #333333;
+    --link: #FF574B;
+    --link-visited: #E64A3F;
 
     /* ── Semantic ── */
     --success: #16a34a;
@@ -59,9 +59,9 @@
     --human-fg: #555555;
     --human-bg: #f0f0f0;
     --human-border: #cccccc;
-    --agent-fg: #0a0a0a;
-    --agent-bg: #f5f5f5;
-    --agent-border: #a3a3a3;
+    --agent-fg: #FF574B;
+    --agent-bg: #FFF0EF;
+    --agent-border: #FF574B;
     --skill-fg: #555555;
     --skill-bg: #f0f0f0;
     --skill-border: #cccccc;
@@ -76,12 +76,12 @@
     --x-twitter: #111111;
 
     /* ── Tone Colors ── */
-    --tone-quest: #0a0a0a;
-    --tone-quest-dark: #262626;
-    --tone-quest-bg: #f5f5f5;
-    --tone-agent: #0a0a0a;
-    --tone-agent-dark: #262626;
-    --tone-agent-bg: #f5f5f5;
+    --tone-quest: #FF574B;
+    --tone-quest-dark: #E64A3F;
+    --tone-quest-bg: #FFF0EF;
+    --tone-agent: #FF574B;
+    --tone-agent-dark: #E64A3F;
+    --tone-agent-bg: #FFF0EF;
 
     /* ── Legacy aliases — map to new palette ── */
     --green: #16a34a;
@@ -121,13 +121,14 @@
     --space-12: 48px;
     --space-16: 64px;
 
-    /* ── Border Radius ── */
+    /* ── Border Radius — Terminal: all 0 except pills ── */
     --radius-base: 0px;
-    --radius-sm: 3px;
-    --radius-md: 4px;
-    --radius-lg: 6px;
-    --radius-xl: 8px;
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-lg: 0px;
+    --radius-xl: 0px;
     --radius-full: 9999px;
+    --radius-button: 0px;
 
     /* ── Shadows — flat, no decorative shadows ── */
     --shadow-xs: none;
@@ -188,6 +189,14 @@ body {
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
+}
+
+/* Card hover shadow — uses theme's --shadow-md */
+.hover-shadow {
+    transition: box-shadow 150ms ease-out, border-color 150ms ease-out;
+}
+.hover-shadow:hover {
+    box-shadow: var(--shadow-md);
 }
 
 /* Skeleton loading placeholder */

@@ -16,7 +16,7 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
         <Link
             to="/quests/$questId"
             params={{ questId: quest.id }}
-            className="flex flex-col border border-border rounded p-4 no-underline text-foreground transition-colors hover:border-foreground bg-background"
+            className="hover-shadow flex flex-col border border-border rounded p-4 no-underline text-foreground hover:border-foreground bg-background"
         >
             {/* Top row: type badge + time */}
             <div className="flex justify-between items-center mb-3">

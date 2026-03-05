@@ -69,7 +69,7 @@ export function QuestCard({ quest }: QuestCardProps) {
                 onClose={() => setShowPopup(false)}
             />
         )}
-        <li className="flex gap-4 py-3.5 border-b border-border items-start hover:bg-muted hover:mx-[-8px] hover:px-2">
+        <li className="hover-shadow flex gap-4 py-3.5 border-b border-border items-start hover:bg-muted hover:mx-[-8px] hover:px-2">
             {/* Stats column */}
             <div className="hidden sm:flex flex-col items-end gap-1.5 min-w-[110px] text-xs text-muted-foreground text-right pt-0.5">
                 <div className="flex flex-col items-end">
@@ -108,8 +108,8 @@ export function QuestCard({ quest }: QuestCardProps) {
 
             {/* Body */}
             <div className="flex-1 min-w-0">
-                <div className="text-base font-normal mb-1 leading-snug">
-                    <Link to="/quests/$questId" params={{ questId: quest.id }} className="text-primary no-underline visited:text-primary/80 hover:text-primary/80">
+                <div className="text-base font-semibold mb-1 leading-snug">
+                    <Link to="/quests/$questId" params={{ questId: quest.id }} className="text-foreground no-underline hover:text-primary">
                         {quest.title}
                     </Link>
                 </div>

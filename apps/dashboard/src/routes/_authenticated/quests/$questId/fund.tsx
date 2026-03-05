@@ -11,7 +11,8 @@ import { FundApprove, FundDeposit, FundConfirming } from '@/components/escrow/fu
 import { FundSuccess } from '@/components/escrow/fund-success'
 import { useTokenBalance, useTokenAllowance } from '@/hooks/use-token-balance'
 import { useFundQuest } from '@/hooks/use-fund-quest'
-import '@/styles/pages/fund-quest.css'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
@@ -49,13 +50,17 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
     // Already funded
     if (quest?.fundingStatus === 'confirmed' || quest?.status === 'live' || quest?.status === 'scheduled') {
         return (
-            <div className="fund-stripe-success">
-                <div className="fund-stripe-icon">✓</div>
-                <h3>Quest Funded</h3>
-                <p>This quest has been funded via Stripe and is now {quest.status}.</p>
-                <Link to="/quests/$questId" params={{ questId }} className="btn btn-primary">
-                    View Quest
-                </Link>
+            <div className="text-center py-8">
+                <div className="w-12 h-12 rounded-full bg-success text-white inline-flex items-center justify-center text-2xl font-bold mb-4">
+                    ✓
+                </div>
+                <h3 className="text-base font-semibold text-foreground m-0 mb-2">Quest Funded</h3>
+                <p className="text-sm text-fg-muted m-0 mb-4">
+                    This quest has been funded via Stripe and is now {quest.status}.
+                </p>
+                <Button asChild>
+                    <Link to="/quests/$questId" params={{ questId }}>View Quest</Link>
+                </Button>
             </div>
         )
     }
@@ -63,45 +68,59 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
     // Pending (waiting for webhook)
     if (quest?.fundingStatus === 'pending') {
         return (
-            <div className="fund-stripe-pending">
-                <div className="fund-stripe-spinner" />
-                <h3>Payment Processing</h3>
-                <p>Your payment is being confirmed. This page will update automatically.</p>
+            <div className="text-center py-8">
+                <div
+                    className="w-8 h-8 rounded-full border-[3px] border-border border-t-[#635bff] animate-spin mx-auto mb-4"
+                    style={{ borderTopColor: '#635bff' }}
+                />
+                <h3 className="text-base font-semibold text-foreground m-0 mb-2">Payment Processing</h3>
+                <p className="text-sm text-fg-muted m-0 mb-4">
+                    Your payment is being confirmed. This page will update automatically.
+                </p>
             </div>
         )
     }
 
     return (
-        <div className="fund-stripe-flow">
-            <div className="fund-stripe-info">
-                <div className="fund-stripe-badge">
-                    <span className="stripe-logo">S</span>
+        <div className="py-2">
+            <div className="mb-5">
+                <div className="inline-flex items-center gap-1 px-[0.6rem] py-[0.3rem] rounded-md bg-[#f3f0ff] text-[#635bff] text-xs font-semibold mb-2">
+                    <span className="w-5 h-5 rounded-md bg-[#635bff] text-white inline-flex items-center justify-center font-bold text-[11px]">
+                        S
+                    </span>
                     <span>Stripe Checkout</span>
                 </div>
-                <p>You'll be redirected to Stripe's secure checkout page to complete payment with credit card, debit card, Apple Pay, or Google Pay.</p>
+                <p className="text-xs text-fg-muted leading-relaxed m-0">
+                    You'll be redirected to Stripe's secure checkout page to complete payment with credit card, debit card, Apple Pay, or Google Pay.
+                </p>
             </div>
 
-            <div className="fund-stripe-summary">
-                <div className="fund-summary-row">
+            <div className="bg-bg-subtle border border-border rounded-md px-5 py-4 mb-5">
+                <div className="flex justify-between items-center py-2 text-xs text-fg-muted">
                     <span>Amount</span>
-                    <span className="fund-amount">${quest?.rewardAmount?.toLocaleString()} USD</span>
+                    <span className="font-bold text-sm text-foreground">${quest?.rewardAmount?.toLocaleString()} USD</span>
                 </div>
-                <div className="fund-summary-row">
+                <div className="flex justify-between items-center py-2 text-xs text-fg-muted border-t border-border">
                     <span>Quest</span>
                     <span>{quest?.title}</span>
                 </div>
-                <div className="fund-summary-row">
+                <div className="flex justify-between items-center py-2 text-xs text-fg-muted border-t border-border">
                     <span>Distribution</span>
                     <span>{quest?.type} · {quest?.totalSlots} winners</span>
                 </div>
             </div>
 
             {checkoutMutation.isError && (
-                <p className="fund-error-msg">{(checkoutMutation.error as Error).message}</p>
+                <p className="text-error text-xs break-words mb-3">
+                    {(checkoutMutation.error as Error).message}
+                </p>
             )}
 
             <button
-                className="btn btn-stripe"
+                className={cn(
+                    'w-full inline-flex items-center justify-center gap-1 py-[0.55rem] px-5 text-sm font-semibold border-none rounded-md text-white cursor-pointer transition-colors',
+                    'bg-[#635bff] hover:bg-[#4b45c7] disabled:opacity-60 disabled:cursor-not-allowed'
+                )}
                 disabled={checkoutMutation.isPending}
                 onClick={() => checkoutMutation.mutate()}
             >
@@ -220,30 +239,42 @@ export function FundQuest() {
 
     // ── Render ──────────────────────────────────────────────────────────────
     return (
-        <div className="fund-quest-page">
-            <nav className="breadcrumb">
-                <Link to="/quests">Quests</Link>
-                <span className="breadcrumb-sep">/</span>
-                <Link to="/quests/$questId" params={{ questId }}>{quest?.title || 'Quest'}</Link>
-                <span className="breadcrumb-sep">/</span>
-                <span>Fund</span>
+        <div className="max-w-[560px] mx-auto py-8 px-4">
+            <nav className="flex items-center gap-1 text-xs text-fg-muted mb-4">
+                <Link to="/quests" className="hover:text-foreground transition-colors">Quests</Link>
+                <span className="text-fg-muted">/</span>
+                <Link to="/quests/$questId" params={{ questId }} className="hover:text-foreground transition-colors">
+                    {quest?.title || 'Quest'}
+                </Link>
+                <span className="text-fg-muted">/</span>
+                <span className="text-foreground">Fund</span>
             </nav>
 
-            <div className="fund-card">
-                <h2 className="fund-title">Fund Quest</h2>
-                {quest && <p className="fund-quest-name">{quest.title}</p>}
+            <div className="bg-background border border-border rounded-lg p-8">
+                <h2 className="text-xl font-bold text-foreground m-0 mb-1">Fund Quest</h2>
+                {quest && <p className="text-fg-muted text-xs m-0 mb-6">{quest.title}</p>}
 
                 {/* Payment method toggle */}
                 {canToggle && (
-                    <div className="fund-method-toggle">
+                    <div className="flex mb-6 border border-border rounded-md overflow-hidden">
                         <button
-                            className={`fund-method-btn ${method === 'crypto' ? 'active' : ''}`}
+                            className={cn(
+                                'flex-1 py-[0.6rem] px-4 text-sm font-semibold border-none cursor-pointer flex items-center justify-center gap-1 transition-all border-r border-border',
+                                method === 'crypto'
+                                    ? 'bg-background text-foreground shadow-[inset_0_-2px_0_var(--accent)]'
+                                    : 'bg-bg-subtle text-fg-muted hover:bg-background'
+                            )}
                             onClick={() => setMethod('crypto')}
                         >
                             <span>⛓</span> Crypto
                         </button>
                         <button
-                            className={`fund-method-btn ${method === 'stripe' ? 'active' : ''}`}
+                            className={cn(
+                                'flex-1 py-[0.6rem] px-4 text-sm font-semibold border-none cursor-pointer flex items-center justify-center gap-1 transition-all',
+                                method === 'stripe'
+                                    ? 'bg-background text-foreground shadow-[inset_0_-2px_0_var(--accent)]'
+                                    : 'bg-bg-subtle text-fg-muted hover:bg-background'
+                            )}
                             onClick={() => setMethod('stripe')}
                         >
                             <span>💳</span> Card (Stripe)
@@ -260,13 +291,17 @@ export function FundQuest() {
                 {method === 'crypto' && (
                     <>
                         {paramsLoading && (
-                            <div className="fund-loading">Loading deposit parameters...</div>
+                            <div className="text-center text-fg-muted py-12">Loading deposit parameters...</div>
                         )}
 
                         {paramsError && !params && (
                             <>
-                                <p className="fund-error-msg">{(paramsError as Error)?.message || 'Quest not found or already funded'}</p>
-                                <Link to="/dashboard" className="btn btn-secondary">Back to Dashboard</Link>
+                                <p className="text-error text-xs break-words mb-3">
+                                    {(paramsError as Error)?.message || 'Quest not found or already funded'}
+                                </p>
+                                <Button asChild variant="outline">
+                                    <Link to="/dashboard">Back to Dashboard</Link>
+                                </Button>
                             </>
                         )}
 
@@ -275,20 +310,22 @@ export function FundQuest() {
                                 <FundSummary params={params} />
                                 <FundStepIndicator step={step} isNative={params.isNative} />
 
-                                <div className="fund-action">
+                                <div className="text-center min-h-[120px]">
                                     {step === 'connect' && (
-                                        <div className="fund-connect-area">
-                                            <p>Connect your wallet to fund this quest</p>
+                                        <div className="flex flex-col items-center gap-4">
+                                            <p className="text-fg-muted m-0 mb-4 text-xs">Connect your wallet to fund this quest</p>
                                             <ConnectButton />
                                         </div>
                                     )}
 
                                     {isConnected && currentChainId !== params.chainId && step !== 'connect' && step !== 'success' && step !== 'error' && (
-                                        <div className="fund-wrong-chain">
-                                            <p>Please switch to <strong>{params.chainName}</strong></p>
-                                            <button className="btn btn-primary" onClick={() => switchChain({ chainId: params.chainId })}>
+                                        <div className="p-4 bg-warning-light border border-warning rounded-md">
+                                            <p className="text-warning text-xs m-0 mb-4">
+                                                Please switch to <strong>{params.chainName}</strong>
+                                            </p>
+                                            <Button onClick={() => switchChain({ chainId: params.chainId })}>
                                                 Switch Network
-                                            </button>
+                                            </Button>
                                         </div>
                                     )}
 
@@ -308,17 +345,17 @@ export function FundQuest() {
                                     {step === 'success' && <FundSuccess questId={questId} chainId={params.chainId} txHash={depositTxHash || quest?.cryptoTxHash} />}
 
                                     {step === 'error' && (
-                                        <div className="fund-error">
-                                            <p className="fund-error-msg">{errorMsg}</p>
-                                            <button className="btn btn-secondary" onClick={() => handleRetry(isConnected, params.isNative)}>
+                                        <div className="flex flex-col items-center gap-4">
+                                            <p className="text-error text-xs break-words">{errorMsg}</p>
+                                            <Button variant="outline" onClick={() => handleRetry(isConnected, params.isNative)}>
                                                 Try Again
-                                            </button>
+                                            </Button>
                                         </div>
                                     )}
                                 </div>
 
                                 {isConnected && step !== 'connect' && (
-                                    <div className="fund-wallet-info">
+                                    <div className="mt-6 pt-4 border-t border-border flex justify-center">
                                         <ConnectButton accountStatus="address" chainStatus="icon" showBalance={false} />
                                     </div>
                                 )}

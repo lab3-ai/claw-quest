@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useParams, Link } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/context/AuthContext'
-import '@/styles/pages/quest-manage.css'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
@@ -43,6 +44,21 @@ interface EscrowStatus {
     remainingHuman: number
 }
 
+// ─── Status badge helper ───────────────────────────────────────────────────────
+
+function statusBadgeClass(status: string): string {
+    return cn(
+        'text-[11px] font-medium rounded-sm px-[7px] py-[2px]',
+        {
+            submitted: 'text-warning bg-amber-100',
+            verified: 'text-success bg-green-100',
+            completed: 'text-success bg-green-100',
+            rejected: 'text-error bg-red-100',
+            in_progress: 'text-info bg-blue-100',
+        }[status] ?? 'text-muted-foreground bg-muted'
+    )
+}
+
 // ─── Participant Row ──────────────────────────────────────────────────────────
 
 function ParticipantRow({
@@ -58,35 +74,37 @@ function ParticipantRow({
     const [reason, setReason] = useState('')
 
     return (
-        <tr>
-            <td>{p.agentName}</td>
-            <td>
-                <span className={`status-${p.status}`}>{p.status}</span>
+        <tr className="group hover:[&>td]:bg-bg-subtle">
+            <td className="px-4 py-[0.65rem] border-b border-border text-foreground align-top text-xs">{p.agentName}</td>
+            <td className="px-4 py-[0.65rem] border-b border-border text-foreground align-top text-xs">
+                <span className={statusBadgeClass(p.status)}>{p.status}</span>
             </td>
-            <td>{p.tasksCompleted}/{p.tasksTotal}</td>
-            <td>
+            <td className="px-4 py-[0.65rem] border-b border-border text-foreground align-top text-xs">{p.tasksCompleted}/{p.tasksTotal}</td>
+            <td className="px-4 py-[0.65rem] border-b border-border text-foreground align-top text-xs">
                 {p.proof ? (
-                    <details className="proof-details">
-                        <summary>View proof</summary>
-                        <pre>{JSON.stringify(p.proof, null, 2)}</pre>
+                    <details className="text-[11px] text-muted-foreground max-w-[200px]">
+                        <summary className="cursor-pointer text-[var(--link,#0074cc)] text-[11px]">View proof</summary>
+                        <pre className="mt-1 text-[10px] bg-bg-subtle border border-border rounded-sm p-[6px] overflow-auto max-h-[120px] whitespace-pre-wrap break-all">
+                            {JSON.stringify(p.proof, null, 2)}
+                        </pre>
                     </details>
                 ) : (
-                    <span style={{ color: 'var(--fg-muted)' }}>—</span>
+                    <span className="text-muted-foreground">—</span>
                 )}
             </td>
-            <td>
+            <td className="px-4 py-[0.65rem] border-b border-border text-foreground align-top text-xs">
                 {p.status === 'submitted' && (
-                    <div className="btn-action-row">
-                        <div style={{ display: 'flex', gap: 4 }}>
+                    <div className="flex flex-col gap-1 items-start">
+                        <div className="flex gap-1">
                             <button
-                                className="btn-approve"
+                                className="bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed text-white border-none rounded-sm px-[10px] py-[3px] text-[11px] font-semibold cursor-pointer"
                                 disabled={isPending}
                                 onClick={() => onVerify(p.id, 'approve')}
                             >
                                 Approve
                             </button>
                             <button
-                                className="btn-reject"
+                                className="bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white border-none rounded-sm px-[10px] py-[3px] text-[11px] font-semibold cursor-pointer"
                                 disabled={isPending}
                                 onClick={() => setShowReject(v => !v)}
                             >
@@ -96,13 +114,13 @@ function ParticipantRow({
                         {showReject && (
                             <>
                                 <input
-                                    className="reject-input"
+                                    className="block text-[11px] border border-border rounded-sm px-[6px] py-[3px] w-[120px] text-foreground bg-background mb-1 focus:outline-none focus:border-[var(--accent,#f48024)]"
                                     placeholder="Reason (optional)"
                                     value={reason}
                                     onChange={e => setReason(e.target.value)}
                                 />
                                 <button
-                                    className="btn-reject"
+                                    className="bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white border-none rounded-sm px-[10px] py-[3px] text-[11px] font-semibold cursor-pointer"
                                     disabled={isPending}
                                     onClick={() => {
                                         onVerify(p.id, 'reject', reason)
@@ -209,10 +227,14 @@ export function ManageQuest() {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['quest-manage', questId] }),
     })
 
-    if (isLoading) return <div className="manage-page" style={{ color: 'var(--fg-muted)', padding: '3rem 0', textAlign: 'center' }}>Loading...</div>
+    if (isLoading) return (
+        <div className="max-w-[960px] mx-auto px-4 py-6 text-muted-foreground text-center py-12">
+            Loading...
+        </div>
+    )
     if (error || !data) return (
-        <div className="manage-page">
-            <p style={{ color: 'var(--red, #c02d2d)' }}>{(error as Error)?.message || 'Failed to load'}</p>
+        <div className="max-w-[960px] mx-auto px-4 py-6">
+            <p className="text-error">{(error as Error)?.message || 'Failed to load'}</p>
             <Link to="/dashboard">Back to Dashboard</Link>
         </div>
     )
@@ -223,41 +245,47 @@ export function ManageQuest() {
     const isCreator = quest.creatorUserId === user?.id
 
     return (
-        <div className="manage-page">
+        <div className="max-w-[960px] mx-auto px-4 py-6">
             {/* Breadcrumb */}
-            <nav className="breadcrumb">
-                <Link to="/quests">Quests</Link>
-                <span className="breadcrumb-sep">/</span>
-                <Link to="/quests/$questId" params={{ questId }}>{quest.title}</Link>
-                <span className="breadcrumb-sep">/</span>
-                <span>Manage</span>
+            <nav className="flex items-center gap-1 text-xs text-muted-foreground mb-4">
+                <Link to="/quests" className="hover:text-foreground">Quests</Link>
+                <span className="text-muted-foreground">/</span>
+                <Link to="/quests/$questId" params={{ questId }} className="hover:text-foreground">{quest.title}</Link>
+                <span className="text-muted-foreground">/</span>
+                <span className="text-foreground">Manage</span>
             </nav>
 
-            <div className="manage-grid">
+            <div className="grid grid-cols-[1fr_280px] gap-6 items-start max-md:grid-cols-1">
                 {/* Main column */}
                 <div>
                     {/* Participants */}
-                    <div className="manage-participants">
-                        <h3>Participants</h3>
+                    <div className="bg-background border border-border rounded-lg overflow-hidden mb-4">
+                        <h3 className="text-[13px] font-bold text-muted-foreground uppercase tracking-[0.05em] m-0 px-5 py-4 border-b border-border">
+                            Participants
+                        </h3>
                         {/* Status counts */}
                         {Object.keys(statusCounts).length > 0 && (
-                            <div className="manage-status-counts">
+                            <div className="flex flex-wrap gap-[6px] px-5 py-3 bg-bg-subtle border-t border-border">
                                 {Object.entries(statusCounts).map(([s, n]) => (
-                                    <span key={s} className={`status-count-badge status-${s}`}>{s}: {n}</span>
+                                    <span key={s} className={cn('text-[11px] font-medium rounded-sm px-2 py-[2px]', statusBadgeClass(s))}>
+                                        {s}: {n}
+                                    </span>
                                 ))}
                             </div>
                         )}
                         {participations.length === 0 ? (
-                            <div className="manage-empty">No participants yet.</div>
+                            <div className="px-5 py-8 text-center text-muted-foreground text-[13px]">
+                                No participants yet.
+                            </div>
                         ) : (
-                            <table>
+                            <table className="w-full border-collapse text-xs">
                                 <thead>
                                     <tr>
-                                        <th>Agent</th>
-                                        <th>Status</th>
-                                        <th>Tasks</th>
-                                        <th>Proof</th>
-                                        <th>Actions</th>
+                                        <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Agent</th>
+                                        <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Status</th>
+                                        <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Tasks</th>
+                                        <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Proof</th>
+                                        <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -276,19 +304,20 @@ export function ManageQuest() {
 
                     {/* Mutation errors */}
                     {verifyMutation.isError && (
-                        <p style={{ color: 'var(--red, #c02d2d)', fontSize: 12 }}>{(verifyMutation.error as Error).message}</p>
+                        <p className="text-error text-xs">{(verifyMutation.error as Error).message}</p>
                     )}
                     {(distributeMutation.isError || refundMutation.isError) && (
-                        <p style={{ color: 'var(--red, #c02d2d)', fontSize: 12 }}>
+                        <p className="text-error text-xs">
                             {((distributeMutation.error || refundMutation.error) as Error)?.message}
                         </p>
                     )}
 
                     {/* Actions */}
                     {isCreator && (
-                        <div className="manage-actions">
-                            <button
-                                className="btn btn-primary"
+                        <div className="flex flex-wrap gap-2 mb-4">
+                            <Button
+                                variant="default"
+                                size="sm"
                                 disabled={!isFunded || !hasVerified || distributeMutation.isPending}
                                 onClick={() => {
                                     if (window.confirm('Distribute payout to all verified participants?')) {
@@ -297,9 +326,10 @@ export function ManageQuest() {
                                 }}
                             >
                                 {distributeMutation.isPending ? 'Distributing...' : 'Distribute Payout'}
-                            </button>
-                            <button
-                                className="btn btn-secondary"
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 disabled={!isFunded || refundMutation.isPending}
                                 onClick={() => {
                                     if (window.confirm('Refund the escrow balance back to your wallet?')) {
@@ -308,7 +338,7 @@ export function ManageQuest() {
                                 }}
                             >
                                 {refundMutation.isPending ? 'Refunding...' : 'Refund'}
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>
@@ -316,66 +346,70 @@ export function ManageQuest() {
                 {/* Sidebar */}
                 <div>
                     {/* Quest overview */}
-                    <div className="manage-overview">
-                        <h3>Quest Info</h3>
-                        <div className="manage-overview-title">{quest.title}</div>
-                        <div className="manage-overview-meta">
-                            <span className={`badge badge-${quest.status}`}>{quest.status}</span>
-                            <span className="badge">{quest.type}</span>
+                    <div className="bg-background border border-border rounded-lg p-5 mb-4">
+                        <h3 className="text-[13px] font-bold text-muted-foreground uppercase tracking-[0.05em] m-0 mb-3">
+                            Quest Info
+                        </h3>
+                        <div className="text-[1.1rem] font-bold text-foreground mb-2">{quest.title}</div>
+                        <div className="flex flex-wrap gap-[6px] items-center mb-3">
+                            <span className={statusBadgeClass(quest.status)}>{quest.status}</span>
+                            <span className="text-[11px] font-medium rounded-sm px-[7px] py-[2px] bg-muted text-muted-foreground">{quest.type}</span>
                         </div>
-                        <div className="manage-stat-row">
+                        <div className="flex justify-between items-center text-xs text-muted-foreground py-[0.35rem] border-t border-border">
                             <span>Reward</span>
-                            <span className="manage-stat-val">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</span>
+                            <span className="font-semibold text-foreground">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</span>
                         </div>
-                        <div className="manage-stat-row">
+                        <div className="flex justify-between items-center text-xs text-muted-foreground py-[0.35rem] border-t border-border">
                             <span>Slots</span>
-                            <span className="manage-stat-val">{quest.filledSlots} / {quest.totalSlots}</span>
+                            <span className="font-semibold text-foreground">{quest.filledSlots} / {quest.totalSlots}</span>
                         </div>
-                        <div className="manage-stat-row">
+                        <div className="flex justify-between items-center text-xs text-muted-foreground py-[0.35rem] border-t border-border">
                             <span>Funding</span>
-                            <span className="manage-stat-val">{quest.fundingStatus}</span>
+                            <span className="font-semibold text-foreground">{quest.fundingStatus}</span>
                         </div>
                     </div>
 
                     {/* Escrow / Payment status */}
-                    <div className="manage-escrow">
-                        <h3>{isFiatFunded ? 'Stripe Payment' : 'Escrow'}</h3>
+                    <div className="bg-background border border-border rounded-lg p-5 mb-4">
+                        <h3 className="text-[13px] font-bold text-muted-foreground uppercase tracking-[0.05em] m-0 mb-3">
+                            {isFiatFunded ? 'Stripe Payment' : 'Escrow'}
+                        </h3>
                         {isFiatFunded ? (
-                            <div className="manage-escrow-grid">
-                                <div className="manage-escrow-item">
-                                    <div className="manage-escrow-label">Funded</div>
-                                    <div className="manage-escrow-val">${quest.rewardAmount.toLocaleString()} USD</div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
+                                    <div className="text-[10px] text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Funded</div>
+                                    <div className="text-[13px] font-semibold text-foreground">${quest.rewardAmount.toLocaleString()} USD</div>
                                 </div>
-                                <div className="manage-escrow-item">
-                                    <div className="manage-escrow-label">Method</div>
-                                    <div className="manage-escrow-val" style={{ color: 'var(--stripe-fg, #635bff)' }}>Stripe</div>
+                                <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
+                                    <div className="text-[10px] text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Method</div>
+                                    <div className="text-[13px] font-semibold text-[var(--stripe-fg,#635bff)]">Stripe</div>
                                 </div>
-                                <div className="manage-escrow-item">
-                                    <div className="manage-escrow-label">Status</div>
-                                    <div className="manage-escrow-val">{quest.fundingStatus}</div>
+                                <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
+                                    <div className="text-[10px] text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Status</div>
+                                    <div className="text-[13px] font-semibold text-foreground">{quest.fundingStatus}</div>
                                 </div>
                             </div>
                         ) : escrow ? (
-                            <div className="manage-escrow-grid">
-                                <div className="manage-escrow-item">
-                                    <div className="manage-escrow-label">Deposited</div>
-                                    <div className="manage-escrow-val">{escrow.depositedHuman} {data.quest.rewardType}</div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
+                                    <div className="text-[10px] text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Deposited</div>
+                                    <div className="text-[13px] font-semibold text-foreground">{escrow.depositedHuman} {data.quest.rewardType}</div>
                                 </div>
-                                <div className="manage-escrow-item">
-                                    <div className="manage-escrow-label">Distributed</div>
-                                    <div className="manage-escrow-val">{escrow.distributedHuman} {data.quest.rewardType}</div>
+                                <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
+                                    <div className="text-[10px] text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Distributed</div>
+                                    <div className="text-[13px] font-semibold text-foreground">{escrow.distributedHuman} {data.quest.rewardType}</div>
                                 </div>
-                                <div className="manage-escrow-item">
-                                    <div className="manage-escrow-label">Refunded</div>
-                                    <div className="manage-escrow-val">{escrow.refundedHuman} {data.quest.rewardType}</div>
+                                <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
+                                    <div className="text-[10px] text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Refunded</div>
+                                    <div className="text-[13px] font-semibold text-foreground">{escrow.refundedHuman} {data.quest.rewardType}</div>
                                 </div>
-                                <div className="manage-escrow-item">
-                                    <div className="manage-escrow-label">Remaining</div>
-                                    <div className="manage-escrow-val">{escrow.remainingHuman} {data.quest.rewardType}</div>
+                                <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
+                                    <div className="text-[10px] text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Remaining</div>
+                                    <div className="text-[13px] font-semibold text-foreground">{escrow.remainingHuman} {data.quest.rewardType}</div>
                                 </div>
                             </div>
                         ) : (
-                            <p className="manage-escrow-empty">No on-chain data available.</p>
+                            <p className="text-xs text-muted-foreground italic">No on-chain data available.</p>
                         )}
                     </div>
                 </div>

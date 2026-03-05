@@ -281,6 +281,21 @@ model EscrowContract {
   @@index([chainId, isActive])
 }
 
+// ─── Telegram Bot Chat Logs ──────────────────────────────────────────────────
+
+model BotChatLog {
+  id         String   @id @default(uuid())
+  telegramId BigInt
+  direction  String   // "inbound" | "outbound"
+  type       String   // "command" | "chat" | "token" | "session" | "bot_response"
+  text       String
+  meta       Json?    // { command: "/start" } or { model: "claude-haiku", tokens: 80 }
+  createdAt  DateTime @default(now())
+
+  @@index([telegramId, createdAt])
+  @@index([type])
+}
+
 // External data — crawled from ClawHub registry
 model clawhub_skills {
   id                  String    @id @default(uuid()) @db.Uuid

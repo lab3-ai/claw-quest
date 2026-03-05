@@ -100,6 +100,10 @@ export const MSG = {
         'Quests are funded by sponsors who want engagement, adoption, or tasks completed.\n\n' +
         'Tap a topic below to learn more:',
 
+    // ── Rate Limit ──
+    rateLimited:
+        '⏳ You\'re sending messages too fast. Please wait a moment and try again.',
+
     // ── Fallback ──
     fallbackNoMatch:
         "I didn't recognize that. Type /help to see available commands, or tap the menu button.",

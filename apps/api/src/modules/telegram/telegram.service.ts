@@ -2,6 +2,7 @@ import { Bot } from 'grammy';
 import { FastifyInstance } from 'fastify';
 import { BotContext } from './types';
 import { errorMiddleware } from './middleware/error.middleware';
+import { chatLogMiddleware } from './middleware/chat-log.middleware';
 import { startHandler } from './handlers/start.handler';
 import { helpHandler } from './handlers/help.handler';
 import { aboutHandler } from './handlers/about.handler';
@@ -12,18 +13,31 @@ import { questsHandler } from './handlers/quests.handler';
 import { acceptHandler } from './handlers/accept.handler';
 import { doneHandler } from './handlers/done.handler';
 import { fallbackHandler } from './handlers/fallback.handler';
+import { initClaudeChat } from './services/claude-chat.service';
 
 export class TelegramService {
     public bot: Bot<BotContext>;
 
     constructor(private server: FastifyInstance, token: string) {
         this.bot = new Bot<BotContext>(token);
+
+        // Init Claude chat (graceful — logs warning if no API key)
+        const claudeReady = initClaudeChat();
+        if (claudeReady) {
+            server.log.info('Claude AI chat enabled for Telegram bot');
+        } else {
+            server.log.warn('ANTHROPIC_API_KEY not set — AI chat disabled, using FAQ fallback');
+        }
+
         this.registerHandlers();
     }
 
     private registerHandlers() {
         // Error boundary
         this.bot.catch(errorMiddleware(this.server));
+
+        // Global middleware — logs ALL inbound messages before handlers
+        this.bot.use(chatLogMiddleware(this.server));
 
         // Command handlers (order matters — specific before generic)
         this.bot.use(startHandler(this.server));

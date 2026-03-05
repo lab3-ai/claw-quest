@@ -6,6 +6,9 @@ import { FAQ } from '../content/knowledge';
 import { claimAgentKeyboard, claimQuestKeyboard } from '../keyboards/menus';
 import { handleRegisterInput } from './register.handler';
 import { registerSessions } from '../telegram.session';
+import { isRateLimited } from '../services/rate-limiter';
+import { isClaudeChatAvailable, chatWithClaude } from '../services/claude-chat.service';
+import { logMessage, getRecentMessages } from '../services/chat-log.service';
 
 export function fallbackHandler(server: FastifyInstance): Composer<BotContext> {
     const composer = new Composer<BotContext>();
@@ -56,7 +59,32 @@ export function fallbackHandler(server: FastifyInstance): Composer<BotContext> {
         );
 
         if (match) {
+            await logMessage(server, tgId!, 'outbound', 'bot_response', match.answer, { source: 'faq' });
             return ctx.reply(match.answer);
+        }
+
+        // ── AI Chat (Claude Haiku) ──
+        if (tgId && isClaudeChatAvailable()) {
+            if (isRateLimited(tgId)) {
+                return ctx.reply(MSG.rateLimited);
+            }
+
+            try {
+                await ctx.replyWithChatAction('typing');
+                const recent = await getRecentMessages(server, tgId);
+                const result = await chatWithClaude(text, recent);
+
+                if (result?.reply) {
+                    await logMessage(server, tgId, 'outbound', 'bot_response', result.reply, {
+                        source: 'claude',
+                        model: 'claude-haiku-4-5-20251001',
+                        tokens: result.tokensUsed,
+                    });
+                    return ctx.reply(result.reply);
+                }
+            } catch (err) {
+                server.log.error({ err }, 'Claude chat error in fallback');
+            }
         }
 
         return ctx.reply(MSG.fallbackNoMatch);

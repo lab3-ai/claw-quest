@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { QuestTaskSchema } from '@clawquest/shared';
+import { QuestTaskSchema, FUNDING_STATUS } from '@clawquest/shared';
 import { validateAllTasks } from './quests.service';
 
 export interface PublishValidationError {
@@ -16,6 +16,8 @@ export function validatePublishRequirements(quest: any): PublishValidationError 
     const rewardAmountNum = Number(quest.rewardAmount ?? 0);
     if (!(rewardAmountNum > 0)) fields.rewardAmount = 'Reward amount must be > 0';
     if (!quest.totalSlots || quest.totalSlots <= 0) fields.totalSlots = 'Total slots must be > 0';
+
+    if (quest.fundingStatus !== FUNDING_STATUS.CONFIRMED) fields.funding = 'Funding required';
 
     // Tasks — safe-parse from JSON to prevent crash on malformed data
     const parsed = z.array(QuestTaskSchema).safeParse(quest.tasks ?? []);

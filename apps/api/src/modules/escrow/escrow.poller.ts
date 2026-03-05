@@ -108,6 +108,7 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
         });
 
         if (rawLogs.length === 0) {
+            server.log.info(`[escrow:poller] Saving cursor for chain ${chainId} to block ${toBlock}`);
             await saveCursor(server, chainId, toBlock);
             if (chainHealth) {
                 chainHealth.lastPollAt = new Date();
@@ -183,6 +184,7 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
  * Uses Promise.allSettled so one chain failing doesn't block others.
  */
 async function pollAllChains(server: FastifyInstance, chainIds: number[]): Promise<void> {
+    server.log.info(`[escrow:poller] Tick — polling chains [${chainIds.join(', ')}]`);
     await Promise.allSettled(
         chainIds.map(chainId => pollChain(server, chainId))
     );

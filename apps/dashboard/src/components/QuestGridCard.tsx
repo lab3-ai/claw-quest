@@ -39,7 +39,7 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
             {quest.tags && quest.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1 mb-3">
                     {quest.tags.slice(0, 3).map(tag => (
-                        <span key={tag} className="bg-accent/10 text-accent px-1.5 py-0.5 rounded text-xs no-underline whitespace-nowrap hover:bg-accent/20">{tag}</span>
+                        <span key={tag} className="bg-accent-light text-accent px-1.5 py-0.5 rounded text-xs no-underline whitespace-nowrap hover:bg-accent-light/80">{tag}</span>
                     ))}
                     {quest.tags.length > 3 && (
                         <span className="bg-transparent text-muted-foreground px-1 py-0.5 text-xs">+{quest.tags.length - 3}</span>

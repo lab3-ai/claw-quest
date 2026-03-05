@@ -9,6 +9,7 @@ import { QuestersPopup } from "@/components/QuestersPopup"
 import { formatTimeShort, typeBadgeClass, statusBadgeClass } from "@/components/quest-utils"
 
 import { cn } from "@/lib/utils"
+import { useTheme } from "@/context/ThemeContext"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Badge } from "@/components/ui/badge"
 import { FlashFill, FlashLine, TrophyFill, TrophyLine, ClockFill, ClockLine, StarFill, StarLine, CalendarFill, CalendarLine } from "@mingcute/react"
@@ -66,9 +67,16 @@ function filterAndSortQuests(quests: Quest[], tab: Tab): Quest[] {
 
 export function QuestList() {
     const { session } = useAuth()
-    const [tab, setTab] = useState<Tab>("featured")
-    const [prevTab, setPrevTab] = useState<Tab>("featured")
-    const [view, setView] = useState<View>("grid")
+    const { theme, colorMode } = useTheme()
+    const [tab, setTab] = useState<Tab>(() => {
+        const stored = sessionStorage.getItem("cq-quest-tab")
+        return (stored && ["featured", "highest-reward", "ending-soon", "new", "upcoming"].includes(stored) ? stored : "featured") as Tab
+    })
+    const [prevTab, setPrevTab] = useState<Tab>(tab)
+    const [view, setView] = useState<View>(() => {
+        const stored = sessionStorage.getItem("cq-quest-view")
+        return (stored && ["grid", "list", "compact"].includes(stored) ? stored : "grid") as View
+    })
     const [popupQuest, setPopupQuest] = useState<{ id: string; title: string } | null>(null)
     const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({})
     const viewRefs = useRef<Record<string, HTMLButtonElement | null>>({})
@@ -81,10 +89,12 @@ export function QuestList() {
     const handleTabChange = (newTab: Tab) => {
         setPrevTab(tab)
         setTab(newTab)
+        sessionStorage.setItem("cq-quest-tab", newTab)
     }
 
     const handleViewChange = (newView: View) => {
         setView(newView)
+        sessionStorage.setItem("cq-quest-view", newView)
     }
 
     const updateTabIndicator = useCallback(() => {
@@ -103,6 +113,15 @@ export function QuestList() {
 
     useEffect(() => { updateTabIndicator() }, [updateTabIndicator])
     useEffect(() => { updateViewIndicator() }, [updateViewIndicator])
+
+    // Recalculate indicators on theme/mode change (fonts may differ)
+    useEffect(() => {
+        const id = requestAnimationFrame(() => {
+            updateTabIndicator()
+            updateViewIndicator()
+        })
+        return () => cancelAnimationFrame(id)
+    }, [theme, colorMode, updateTabIndicator, updateViewIndicator])
 
     const { data: quests = [], isLoading, error } = useQuery({
         queryKey: ["quests"],
@@ -163,7 +182,7 @@ export function QuestList() {
                 <div className="relative flex flex-1 min-w-0 items-center gap-0.5 p-0.5">
                     {/* Sliding highlight */}
                     <span
-                        className="absolute top-0.5 bottom-0.5 rounded bg-primary transition-all duration-200 ease-out z-0"
+                        className="absolute top-0.5 bottom-0.5 rounded-button bg-primary transition-all duration-200 ease-out z-0"
                         style={tabIndicatorStyle}
                     />
                     {tabs.map(t => {
@@ -174,7 +193,7 @@ export function QuestList() {
                                 key={t.id}
                                 ref={el => { tabRefs.current[t.id] = el }}
                                 className={cn(
-                                    "relative z-10 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded cursor-pointer transition-colors duration-150",
+                                    "relative z-10 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-button cursor-pointer transition-colors duration-150",
                                     isActive
                                         ? "text-primary-foreground font-semibold"
                                         : "text-foreground"
@@ -187,7 +206,7 @@ export function QuestList() {
                                     <span className={cn(
                                         "inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full leading-none",
                                         isActive
-                                            ? "bg-primary-foreground/20 text-primary-foreground"
+                                            ? "bg-primary/20 text-primary-foreground"
                                             : "bg-muted text-foreground"
                                     )}>{tabCounts[t.id]}</span>
                                 )}
@@ -196,10 +215,10 @@ export function QuestList() {
                     })}
                 </div>
                 <TooltipProvider delayDuration={300}>
-                <div className="relative inline-flex border border-border p-0.5 gap-0.5 rounded overflow-hidden ml-auto shrink-0">
+                <div className="relative inline-flex border border-border p-0.5 gap-0.5 rounded-button overflow-hidden ml-auto shrink-0">
                     {/* Sliding highlight */}
                     <span
-                        className="absolute top-0.5 bottom-0.5 rounded bg-accent transition-all duration-200 ease-out z-0"
+                        className="absolute top-0.5 bottom-0.5 rounded-button bg-accent transition-all duration-200 ease-out z-0"
                         style={{ left: viewIndicatorStyle.left, width: viewIndicatorStyle.width }}
                     />
                     <Tooltip>
@@ -315,11 +334,11 @@ export function QuestList() {
                     {sorted.length === 0 ? (
                         <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>
                     ) : (
-                        <ul className="list-none">
+                        <div>
                             {sorted.map(quest => (
                                 <QuestCard key={quest.id} quest={quest} />
                             ))}
-                        </ul>
+                        </div>
                     )}
                 </div>
             )}

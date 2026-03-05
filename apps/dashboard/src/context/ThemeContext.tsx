@@ -62,7 +62,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const isDark = colorMode === 'dark' ||
             (colorMode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
         root.classList.toggle('dark', isDark)
-        console.log('[theme]', { theme, colorMode, isDark, mediaQuery: window.matchMedia('(prefers-color-scheme: dark)').matches })
     }, [theme, colorMode, resolvedMode])
 
     const setTheme = useCallback((t: ThemeId) => {

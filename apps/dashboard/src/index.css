@@ -11,12 +11,12 @@
 [data-theme="terminal"] {
     /* ── Core Colors ── */
     --bg: #ffffff;
-    --bg-subtle: #e8e8e8;
+    --bg-subtle: #e5e5e5;
     --bg-muted: #dcdcdc;
     --fg: #111111;
     --fg-secondary: #555555;
     --fg-muted: #888888;
-    --border: #d0d0d0;
+    --border: #e5e5e5;
     --border-heavy: #aaaaaa;
     --border-strong: #222222;
 
@@ -191,12 +191,14 @@ body {
     }
 }
 
-/* Card hover shadow — uses theme's --shadow-md */
+/* Card hover — shadow + lift */
 .hover-shadow {
-    transition: box-shadow 150ms ease-out, border-color 150ms ease-out;
+    transition: box-shadow 150ms ease-out, border-color 150ms ease-out, transform 150ms ease-out;
 }
+
 .hover-shadow:hover {
     box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
 }
 
 /* Skeleton loading placeholder */

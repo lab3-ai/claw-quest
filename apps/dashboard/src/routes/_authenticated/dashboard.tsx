@@ -484,7 +484,7 @@ export function Dashboard() {
                             <button
                                 className={cn(
                                     "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none border-r border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
-                                    questView === "card" && "bg-accent/10 text-accent-foreground"
+                                    questView === "card" && "bg-accent-light text-accent-foreground"
                                 )}
                                 onClick={() => setQuestView("card")}
                                 title="Card view"
@@ -499,7 +499,7 @@ export function Dashboard() {
                             <button
                                 className={cn(
                                     "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
-                                    questView === "list" && "bg-accent/10 text-accent-foreground"
+                                    questView === "list" && "bg-accent-light text-accent-foreground"
                                 )}
                                 onClick={() => setQuestView("list")}
                                 title="List view"

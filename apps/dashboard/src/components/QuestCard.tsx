@@ -19,7 +19,7 @@ export interface QuesterDetail {
 interface QuestersAvatarStackProps {
     details: QuesterDetail[]
     total: number
-    onClick?: () => void
+    onClick?: (e: React.MouseEvent) => void
 }
 
 export function QuestersAvatarStack({ details, total, onClick }: QuestersAvatarStackProps) {
@@ -69,7 +69,11 @@ export function QuestCard({ quest }: QuestCardProps) {
                 onClose={() => setShowPopup(false)}
             />
         )}
-        <li className="hover-shadow flex gap-4 py-3.5 border-b border-border items-start hover:bg-muted hover:mx-[-8px] hover:px-2">
+        <Link
+            to="/quests/$questId"
+            params={{ questId: quest.id }}
+            className="flex gap-4 py-3.5 border-b border-border items-start px-2 -mx-2 rounded no-underline text-foreground transition-colors hover:bg-bg-subtle"
+        >
             {/* Stats column */}
             <div className="hidden sm:flex flex-col items-end gap-1.5 min-w-[110px] text-xs text-muted-foreground text-right pt-0.5">
                 <div className="flex flex-col items-end">
@@ -83,7 +87,7 @@ export function QuestCard({ quest }: QuestCardProps) {
                         <QuestersAvatarStack
                             details={quest.questerDetails ?? []}
                             total={quest.questers}
-                            onClick={() => setShowPopup(true)}
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowPopup(true) }}
                         />
                     </div>
                 )}
@@ -108,15 +112,11 @@ export function QuestCard({ quest }: QuestCardProps) {
 
             {/* Body */}
             <div className="flex-1 min-w-0">
-                <div className="text-base font-semibold mb-1 leading-snug">
-                    <Link to="/quests/$questId" params={{ questId: quest.id }} className="text-foreground no-underline hover:text-primary">
-                        {quest.title}
-                    </Link>
-                </div>
+                <div className="text-base font-semibold mb-1 leading-snug">{quest.title}</div>
                 <div className="text-xs text-muted-foreground mb-2 leading-relaxed line-clamp-2">{quest.description}</div>
                 <div className="flex flex-wrap gap-1.5 items-center text-xs">
                     {quest.tags && quest.tags.map(tag => (
-                        <span key={tag} className="bg-accent/10 text-accent px-1.5 py-0.5 rounded text-xs no-underline whitespace-nowrap hover:bg-accent/20">{tag}</span>
+                        <span key={tag} className="bg-accent-light text-accent px-1.5 py-0.5 rounded text-xs no-underline whitespace-nowrap">{tag}</span>
                     ))}
                     <span className={`badge ${typeBadgeClass(quest.type)}`}>{quest.type}</span>
                     <span className="ml-auto text-muted-foreground text-xs">by <strong className="text-foreground font-semibold">{quest.sponsor}</strong></span>
@@ -132,7 +132,7 @@ export function QuestCard({ quest }: QuestCardProps) {
                 )}>{time.label}</span>
                 {time.sublabel && <span className="text-xs text-muted-foreground mt-0.5">{time.sublabel}</span>}
             </div>
-        </li>
+        </Link>
         </>
     )
 }

@@ -279,8 +279,12 @@ export function formatQuestResponse(
         ...safeQuest
     } = quest;
 
+    const rewardAmount =
+        quest.rewardAmount != null ? Number(quest.rewardAmount) : 0;
+
     return {
         ...safeQuest,
+        rewardAmount,
         tags: quest.tags ?? [],
         requiredSkills: quest.requiredSkills ?? [],
         tasks: quest.tasks ?? [],

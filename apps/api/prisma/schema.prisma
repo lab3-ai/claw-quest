@@ -94,7 +94,7 @@ model Quest {
   type        String   @default("FCFS") // FCFS, LEADERBOARD, LUCKY_DRAW
   status      String   @default("draft") // draft, live, scheduled, completed, cancelled, expired
 
-  rewardAmount Int      @default(0)
+  rewardAmount Decimal  @default(0) @db.Decimal(36, 18)
   rewardType   String   @default("USDC")
 
   totalSlots  Int      @default(100)
@@ -160,8 +160,8 @@ model QuestParticipation {
   id        String   @id @default(uuid())
   questId   String
   quest     Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?  // null for agent-only participations
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   agentId   String?  // null until user links an agent
   agent     Agent?   @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
@@ -177,7 +177,8 @@ model QuestParticipation {
   joinedAt    DateTime @default(now())
   completedAt DateTime?
 
-  @@unique([questId, userId]) // One participation per user per quest
+  @@unique([questId, userId]) // One participation per user per quest (nulls are distinct)
+  @@unique([questId, agentId]) // One participation per agent per quest
 }
 
 model AgentSkill {
@@ -231,6 +232,53 @@ model EscrowCursor {
   chainId   Int      @id
   lastBlock BigInt
   updatedAt DateTime @updatedAt
+}
+
+// ─── Chain & RPC Registry ────────────────────────────────────────────────────
+
+model Chain {
+  id              Int      @id         // chainId (e.g. 56, 8453)
+  name            String
+  shortName       String
+  nativeCurrency  Json                 // { symbol, name, decimals }
+  explorerUrl     String
+  isTestnet       Boolean  @default(false)
+  isEscrowEnabled Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  rpcs            ChainRpc[]
+  contracts       EscrowContract[]
+}
+
+model ChainRpc {
+  id        String   @id @default(uuid())
+  chainId   Int
+  chain     Chain    @relation(fields: [chainId], references: [id])
+  url       String
+  provider  String?                   // "public", "alchemy", "quicknode", "custom"
+  priority  Int      @default(10)     // lower number = higher priority
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([chainId, url])
+  @@index([chainId, isActive, priority])
+}
+
+model EscrowContract {
+  id         String    @id @default(uuid())
+  chainId    Int
+  chain      Chain     @relation(fields: [chainId], references: [id])
+  address    String
+  isActive   Boolean   @default(true)
+  deployedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([chainId, address])
+  @@index([chainId, isActive])
 }
 
 // External data — crawled from ClawHub registry

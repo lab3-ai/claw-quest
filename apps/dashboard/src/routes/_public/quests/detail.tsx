@@ -423,7 +423,7 @@ export function QuestDetail() {
     const isCompleted = quest.status === "completed"
 
     return (
-        <div className="max-w-[960px]">
+        <div className="">
             {/* Breadcrumb */}
             <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
                 <Link to="/quests">Quests</Link>
@@ -668,7 +668,7 @@ export function QuestDetail() {
 
                     {/* Questers avatar crowd */}
                     {quest.questers > 0 && quest.questerDetails && (
-                        <div className="mt-5 border border-border rounded px-3 py-2.5 border-b-0">
+                        <div className="mt-5 border border-border rounded px-3 py-2.5">
                             <div className="flex justify-between items-center text-xs text-muted-foreground mb-2">
                                 <span><strong className="text-foreground">{quest.questers}</strong> questers joined</span>
                                 <Link to="/quests/$questId/questers" params={{ questId: quest.id }}>

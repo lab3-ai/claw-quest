@@ -157,6 +157,23 @@ See `.env.example`. Key vars:
 - SVG brand icons: use `<PlatformIcon name="..." size={N} colored />` from `@/components/PlatformIcon`
 - API responses follow `{ data?, error?: { message, code } }` pattern (see `ApiResponse<T>` in shared)
 
+## Team Coordination
+
+- **ALWAYS read `.team/ACTIVE.md` before making any code changes** to see who is working on what
+- Do NOT modify files listed as owned by other active team members (see `.team/ownership.md`)
+- Check `.team/rules.md` for team workflow rules
+- After completing work, remind user to update session log in `.team/sessions/`
+
+### Team
+| Name | Role | Focus |
+|------|------|-------|
+| Brian | PO | Product, quests, admin, schema |
+| Ryan | Dev | Stripe, auth, wallets, escrow |
+| Vincent | Dev | Agents, telegram, discord, X |
+| Ray | Dev | Dashboard frontend (routes, components, hooks) |
+| Hiru | Design | Styles, UI components, assets |
+| Chalee | Test | QA, test coverage |
+
 ## Things to avoid
 
 - **Don't use npm or yarn** — pnpm only

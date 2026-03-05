@@ -1,0 +1,72 @@
+export const NETWORKS_PRIMARY = [
+    { value: "Base", label: "🔵 Base (8453)" },
+    { value: "BNB Smart Chain", label: "🟡 BNB Smart Chain (56)" },
+    { value: "Ethereum", label: "✠ Ethereum (1)" },
+]
+
+export const NETWORKS_OTHER = [
+    { value: "Arbitrum One", label: "🔷 Arbitrum One (42161)" },
+    { value: "Optimism", label: "🔴 Optimism (10)" },
+    { value: "Polygon", label: "🟣 Polygon (137)" },
+    { value: "Avalanche", label: "🔺 Avalanche (43114)" },
+    { value: "Solana", label: "◎ Solana" },
+]
+
+export const TOKEN_CONTRACTS: Record<string, Record<string, string>> = {
+    USDC: {
+        "Base": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "BNB Smart Chain": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+        "Ethereum": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "Arbitrum One": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+        "Optimism": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
+        "Polygon": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+        "Avalanche": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+        "Solana": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    },
+    USDT: {
+        "Base": "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
+        "BNB Smart Chain": "0x55d398326f99059fF775485246999027B3197955",
+        "Ethereum": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+        "Arbitrum One": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+        "Optimism": "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
+        "Polygon": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+        "Avalanche": "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
+        "Solana": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+    },
+}
+
+export const NATIVE_TOKENS: Record<string, { symbol: string; name: string }> = {
+    "Base": { symbol: "ETH", name: "Ether" },
+    "BNB Smart Chain": { symbol: "BNB", name: "BNB" },
+    "Ethereum": { symbol: "ETH", name: "Ether" },
+    "Arbitrum One": { symbol: "ETH", name: "Ether" },
+    "Optimism": { symbol: "ETH", name: "Ether" },
+    "Polygon": { symbol: "POL", name: "POL" },
+    "Avalanche": { symbol: "AVAX", name: "Avalanche" },
+    "Solana": { symbol: "SOL", name: "Solana" },
+}
+
+export const TOKEN_COLORS: Record<string, string> = {
+    USDC: "#2775ca",
+    USDT: "#26a17b",
+    NATIVE: "#627eea",
+}
+
+export function getTokenSymbol(rail: "crypto" | "fiat", token: string, network: string): string {
+    if (rail === "fiat") return "USD"
+    if (token === "NATIVE") return (NATIVE_TOKENS[network] ?? { symbol: "?" }).symbol
+    return token
+}
+
+export function calcLbPayouts(total: number, n: number): number[] {
+    if (n < 2) return [Math.round(total * 100) / 100]
+    const clampedN = Math.min(Math.max(n, 2), 100)
+    const weights: number[] = []
+    for (let i = 0; i < clampedN; i++) weights.push(clampedN - i)
+    const weightSum = weights.reduce((a, b) => a + b, 0)
+    const payouts = weights.map(w => Math.round((w / weightSum) * total * 100) / 100)
+    const payoutSum = payouts.reduce((a, b) => a + b, 0)
+    const diff = Math.round((total - payoutSum) * 100) / 100
+    if (payouts.length > 0) payouts[0] = Math.round((payouts[0] + diff) * 100) / 100
+    return payouts
+}

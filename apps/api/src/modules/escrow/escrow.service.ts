@@ -62,12 +62,14 @@ export async function getDepositParams(
         throw new Error(`Token ${rewardType} not available on chain ${targetChainId}`);
     }
 
+    const rewardAmountNum = Number(quest.rewardAmount);
+
     // Top-up mode: if already funded, calculate the difference needed
-    let depositAmount = quest.rewardAmount;
+    let depositAmount = rewardAmountNum;
     if (quest.fundingStatus === 'confirmed' && quest.cryptoChainId) {
         const onChain = await getEscrowStatus(questId, targetChainId);
         const alreadyDeposited = onChain?.depositedHuman ?? 0;
-        const diff = quest.rewardAmount - alreadyDeposited;
+        const diff = rewardAmountNum - alreadyDeposited;
         if (diff <= 0) throw new Error('Quest already fully funded');
         depositAmount = diff;
     }
@@ -196,7 +198,7 @@ export async function calculateDistribution(
     const tokenInfo = getTokenInfo(chainId, quest.rewardType.toUpperCase());
     if (!tokenInfo) throw new Error(`Token ${quest.rewardType} not found for chain ${chainId}`);
 
-    const totalAmount = toSmallestUnit(quest.rewardAmount, tokenInfo.decimals);
+    const totalAmount = toSmallestUnit(Number(quest.rewardAmount), tokenInfo.decimals);
 
     const participations = await prisma.questParticipation.findMany({
         where: {

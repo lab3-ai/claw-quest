@@ -48,5 +48,5 @@ EXPOSE 3000
 
 WORKDIR /app/apps/api
 
-# Apply pending migrations on startup, then start server
-CMD ["node", "dist/app.js"]
+# Run migrations then start server
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && exec node dist/app.js"]

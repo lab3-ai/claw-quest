@@ -1,12 +1,13 @@
 import { Link } from '@tanstack/react-router'
 import type { DepositParams } from '@/components/escrow/fund-types'
 import { TxLink } from '@/components/escrow/tx-link'
+import { Button } from '@/components/ui/button'
 
 function InsufficientBalanceWarning({ tokenSymbol, questId }: { tokenSymbol: string; questId: string }) {
     return (
-        <div className="fund-insufficient-warning">
+        <div className="text-xs text-destructive bg-destructive/10 border border-destructive rounded p-2 px-3 mb-3">
             Insufficient {tokenSymbol} balance to fund this quest.
-            <Link to="/quests/$questId/edit" params={{ questId }} className="fund-edit-link">
+            <Link to="/quests/$questId/edit" params={{ questId }} className="block mt-1.5 text-primary font-medium underline">
                 Edit reward amount
             </Link>
         </div>
@@ -37,7 +38,7 @@ export function FundApprove({
     return (
         <div>
             {walletBalance !== undefined && (
-                <p className="fund-balance-info">
+                <p className="text-xs text-muted-foreground mb-2">
                     Balance: {walletBalance} {params.tokenSymbol}
                 </p>
             )}
@@ -45,15 +46,15 @@ export function FundApprove({
                 <InsufficientBalanceWarning tokenSymbol={params.tokenSymbol} questId={questId} />
             )}
             <p>Approve {params.tokenSymbol} spending</p>
-            <button
-                className="btn btn-primary fund-btn"
+            <Button
+                className="w-full"
                 onClick={onApprove}
                 disabled={approveLoading || hasInsufficientBalance}
             >
                 {approveLoading ? 'Approving...' : `Approve ${params.amount} ${params.tokenSymbol}`}
-            </button>
+            </Button>
             {approveTxHash && !approveConfirmed && (
-                <p className="fund-tx-status">Waiting for confirmation...</p>
+                <p className="text-xs text-muted-foreground mt-3">Waiting for confirmation...</p>
             )}
         </div>
     )
@@ -83,7 +84,7 @@ export function FundDeposit({
     return (
         <div>
             {walletBalance !== undefined && (
-                <p className="fund-balance-info">
+                <p className="text-xs text-muted-foreground mb-2">
                     Balance: {walletBalance} {params.tokenSymbol}
                 </p>
             )}
@@ -91,15 +92,15 @@ export function FundDeposit({
                 <InsufficientBalanceWarning tokenSymbol={params.tokenSymbol} questId={questId} />
             )}
             <p>Deposit {params.amount} {params.tokenSymbol} to escrow</p>
-            <button
-                className="btn btn-primary fund-btn"
+            <Button
+                className="w-full"
                 onClick={onDeposit}
                 disabled={depositLoading || hasInsufficientBalance}
             >
                 {depositLoading ? 'Depositing...' : `Deposit ${params.amount} ${params.tokenSymbol}`}
-            </button>
+            </Button>
             {depositTxHash && !depositConfirmed && (
-                <p className="fund-tx-status">Waiting for confirmation...</p>
+                <p className="text-xs text-muted-foreground mt-3">Waiting for confirmation...</p>
             )}
         </div>
     )
@@ -112,8 +113,8 @@ interface FundConfirmingProps {
 
 export function FundConfirming({ chainId, depositTxHash }: FundConfirmingProps) {
     return (
-        <div className="fund-confirming">
-            <div className="fund-spinner" />
+        <div className="flex flex-col items-center gap-3">
+            <div className="size-8 border-[3px] border-border border-t-accent rounded-full animate-spin" />
             <p>Deposit confirmed on-chain! Waiting for backend to detect...</p>
             {depositTxHash && <TxLink chainId={chainId} txHash={depositTxHash} />}
         </div>

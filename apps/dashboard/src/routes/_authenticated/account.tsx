@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { startTelegramLogin } from "@/lib/telegram-oidc"
 import { supabase } from "@/lib/supabase"
-import "@/styles/pages/account.css"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
@@ -25,6 +26,7 @@ interface UserProfile {
     telegramUsername: string | null
     xId: string | null
     xHandle: string | null
+    hasXToken: boolean
     discordId: string | null
     discordHandle: string | null
     createdAt: string
@@ -70,10 +72,12 @@ export function Account() {
 
     const [walletInput, setWalletInput] = useState("")
     const [walletError, setWalletError] = useState("")
+    const [walletActionPending, setWalletActionPending] = useState("") // wallet id being acted on
     const [unlinkError, setUnlinkError] = useState("")
     const [linkError, setLinkError] = useState("")
     const [unlinkPending, setUnlinkPending] = useState("")
     const [linkPending, setLinkPending] = useState("")
+    const [xAuthPending, setXAuthPending] = useState(false)
 
     // Profile editing state
     const [editingField, setEditingField] = useState<"displayName" | "username" | null>(null)
@@ -104,6 +108,46 @@ export function Account() {
             return res.json()
         },
         enabled: !!token,
+    })
+
+    // Remove wallet mutation
+    const removeWallet = useMutation({
+        mutationFn: async (id: string) => {
+            const res = await fetch(`${API_BASE}/wallets/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error(err.error?.message ?? "Failed to remove wallet")
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["wallets"] })
+            setWalletError("")
+        },
+        onError: (err: Error) => setWalletError(err.message),
+        onSettled: () => setWalletActionPending(""),
+    })
+
+    // Set primary wallet mutation
+    const setPrimaryWallet = useMutation({
+        mutationFn: async (id: string) => {
+            const res = await fetch(`${API_BASE}/wallets/${id}/primary`, {
+                method: "PATCH",
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error(err.error?.message ?? "Failed to set primary wallet")
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["wallets"] })
+            setWalletError("")
+        },
+        onError: (err: Error) => setWalletError(err.message),
+        onSettled: () => setWalletActionPending(""),
     })
 
     // Link wallet mutation
@@ -282,6 +326,26 @@ export function Account() {
         }
     }
 
+    async function handleXReadAccess() {
+        setXAuthPending(true)
+        try {
+            const res = await fetch(`${API_BASE}/auth/x/authorize`, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error(err.error?.message ?? "Failed to get X authorize URL")
+            }
+            const { url, state, codeVerifier } = await res.json()
+            localStorage.setItem("x_code_verifier", codeVerifier)
+            localStorage.setItem("x_oauth_state", state)
+            window.location.href = url
+        } catch (err: unknown) {
+            setLinkError(err instanceof Error ? err.message : "Failed to authorize X")
+            setXAuthPending(false)
+        }
+    }
+
     function handleLinkWallet(e: React.FormEvent) {
         e.preventDefault()
         setWalletError("")
@@ -294,95 +358,95 @@ export function Account() {
     }
 
     return (
-        <div className="account-page">
-            <h1>Account</h1>
+        <div className="max-w-3xl mx-auto">
+            <h1 className="text-2xl font-semibold mb-6">Account</h1>
 
             {/* Profile */}
-            <div className="account-section">
-                <div className="account-section-header">Profile</div>
-                <div className="account-section-body">
+            <div className="border border-border rounded mb-5 bg-background">
+                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-muted text-foreground">Profile</div>
+                <div className="p-4">
                     {profileLoading ? (
                         <>
-                            <div className="account-row"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
-                            <div className="account-row"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
-                            <div className="account-row"><span className="skeleton" style={{ width: "60%", height: 16 }} /></div>
+                            <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5"><span className="skeleton" style={{ width: "60%", height: 16 }} /></div>
                         </>
                     ) : profileError ? (
-                        <div className="account-error">
+                        <div className="text-xs text-destructive py-3 flex items-center gap-2">
                             Failed to load profile.{" "}
-                            <button className="btn btn-sm btn-secondary" onClick={() => queryClient.invalidateQueries({ queryKey: ["auth", "me"] })}>Retry</button>
+                            <Button variant="secondary" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ["auth", "me"] })}>Retry</Button>
                         </div>
                     ) : (
                         <>
-                            <div className="account-row">
-                                <span className="account-label">Display Name</span>
-                                <span className="account-value">
+                            <div className="flex items-baseline py-1.5 text-sm">
+                                <span className="w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Display Name</span>
+                                <span className="text-foreground">
                                     {editingField === "displayName" ? (
-                                        <span style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                                        <span className="flex gap-1.5 items-center">
                                             <input
                                                 type="text"
                                                 value={editValue}
                                                 onChange={e => setEditValue(e.target.value)}
                                                 maxLength={50}
                                                 placeholder="Your display name"
-                                                style={{ fontSize: "13px", padding: "3px 8px", width: "180px" }}
+                                                className="text-base px-2 py-0.5 w-[180px] border border-input rounded bg-background text-foreground outline-none focus:border-accent"
                                                 autoFocus
                                                 onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); if (e.key === "Escape") setEditingField(null) }}
                                             />
-                                            <button className="btn btn-sm" onClick={handleSaveEdit} disabled={updateProfile.isPending}>
+                                            <Button size="sm" onClick={handleSaveEdit} disabled={updateProfile.isPending}>
                                                 {updateProfile.isPending ? "…" : "Save"}
-                                            </button>
-                                            <button className="btn btn-sm btn-secondary" onClick={() => setEditingField(null)}>Cancel</button>
+                                            </Button>
+                                            <Button variant="secondary" size="sm" onClick={() => setEditingField(null)}>Cancel</Button>
                                         </span>
                                     ) : (
-                                        <span style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                                            {profile?.displayName || <span style={{ color: "var(--fg-muted)", fontStyle: "italic" }}>Not set</span>}
-                                            <button className="btn btn-sm btn-outline" style={{ fontSize: "11px", padding: "2px 8px" }} onClick={() => startEdit("displayName")}>Edit</button>
+                                        <span className="flex gap-2 items-center">
+                                            {profile?.displayName || <span className="text-muted-foreground italic">Not set</span>}
+                                            <Button variant="outline" size="sm" className="text-xs px-2 py-0.5" onClick={() => startEdit("displayName")}>Edit</Button>
                                         </span>
                                     )}
                                 </span>
                             </div>
-                            <div className="account-row">
-                                <span className="account-label">Username</span>
-                                <span className="account-value">
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5">
+                                <span className="w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Username</span>
+                                <span className="text-foreground">
                                     {editingField === "username" ? (
-                                        <span style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+                                        <span className="flex gap-1.5 items-center flex-wrap">
                                             <input
                                                 type="text"
                                                 value={editValue}
                                                 onChange={e => setEditValue(e.target.value.toLowerCase())}
                                                 maxLength={20}
                                                 placeholder="username"
-                                                style={{ fontSize: "13px", padding: "3px 8px", width: "180px" }}
+                                                className="text-base px-2 py-0.5 w-[180px] border border-input rounded bg-background text-foreground outline-none focus:border-accent"
                                                 autoFocus
                                                 onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); if (e.key === "Escape") setEditingField(null) }}
                                             />
-                                            <button className="btn btn-sm" onClick={handleSaveEdit} disabled={updateProfile.isPending}>
+                                            <Button size="sm" onClick={handleSaveEdit} disabled={updateProfile.isPending}>
                                                 {updateProfile.isPending ? "…" : "Save"}
-                                            </button>
-                                            <button className="btn btn-sm btn-secondary" onClick={() => setEditingField(null)}>Cancel</button>
-                                            <span style={{ fontSize: "11px", color: "var(--fg-muted)", width: "100%" }}>3-20 chars, lowercase letters, numbers, hyphens</span>
+                                            </Button>
+                                            <Button variant="secondary" size="sm" onClick={() => setEditingField(null)}>Cancel</Button>
+                                            <span className="text-xs text-muted-foreground w-full">3-20 chars, lowercase letters, numbers, hyphens</span>
                                         </span>
                                     ) : (
-                                        <span style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                                            {profile?.username ? `@${profile.username}` : <span style={{ color: "var(--fg-muted)", fontStyle: "italic" }}>Not set</span>}
-                                            <button className="btn btn-sm btn-outline" style={{ fontSize: "11px", padding: "2px 8px" }} onClick={() => startEdit("username")}>Edit</button>
+                                        <span className="flex gap-2 items-center">
+                                            {profile?.username ? `@${profile.username}` : <span className="text-muted-foreground italic">Not set</span>}
+                                            <Button variant="outline" size="sm" className="text-xs px-2 py-0.5" onClick={() => startEdit("username")}>Edit</Button>
                                         </span>
                                     )}
                                 </span>
                             </div>
-                            {editError && <div className="account-error" style={{ marginTop: "4px" }}>{editError}</div>}
-                            <div className="account-row">
-                                <span className="account-label">Email</span>
-                                <span className="account-value">
+                            {editError && <div className="text-xs text-destructive py-3 flex items-center gap-2 mt-1">{editError}</div>}
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5">
+                                <span className="w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Email</span>
+                                <span className="text-foreground">
                                     {profile?.email?.match(/^tg_\d+@tg\.clawquest\.ai$/)
-                                        ? <span style={{ color: "var(--fg-muted)", fontStyle: "italic" }}>No email linked</span>
+                                        ? <span className="text-muted-foreground italic">No email linked</span>
                                         : (profile?.email ?? supabaseUser?.email ?? "—")}
                                 </span>
                             </div>
-                            <div className="account-row">
-                                <span className="account-label">Member since</span>
-                                <span className="account-value">
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5">
+                                <span className="w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Member since</span>
+                                <span className="text-foreground">
                                     {profile?.createdAt ? formatDate(profile.createdAt) : "—"}
                                 </span>
                             </div>
@@ -392,10 +456,10 @@ export function Account() {
             </div>
 
             {/* Connected Accounts */}
-            <div className="account-section">
-                <div className="account-section-header">Connected Accounts</div>
-                <div className="account-section-body">
-                    {LINK_PROVIDERS.map(p => {
+            <div className="border border-border rounded mb-5 bg-background">
+                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-muted text-foreground">Connected Accounts</div>
+                <div className="p-4">
+                    {LINK_PROVIDERS.map((p, idx) => {
                         const identity = identities.find(i => i.provider === p.key)
                         const isLinked = linkedProviders.has(p.key)
                         const isTelegram = p.key === "telegram"
@@ -409,57 +473,73 @@ export function Account() {
                         else if (identity?.identity_data?.user_name) detail = identity.identity_data.user_name as string
 
                         return (
-                            <div key={p.key} className="account-provider" style={{ minWidth: 0 }}>
-                                <span className="account-provider-icon">{p.icon}</span>
-                                <span className="account-provider-name">{p.label}</span>
+                            <div key={p.key} className={`flex items-center gap-2.5 py-2 text-sm min-w-0${idx > 0 ? " border-t border-border" : ""}`}>
+                                <span className="w-5 text-center text-sm shrink-0">{p.icon}</span>
+                                <span className="font-semibold min-w-[90px]">{p.label}</span>
 
                                 {isTelegram ? (
                                     telegramLinked ? (
                                         <>
-                                            <span className="account-provider-status-linked">Connected</span>
-                                            <span className="account-provider-detail">
+                                            <span className="text-success text-xs font-semibold">Connected</span>
+                                            <span className="text-muted-foreground text-xs">
                                                 {profile?.telegramUsername ? `@${profile.telegramUsername}` : ""}
                                             </span>
-                                            <button
-                                                className="btn btn-sm btn-outline"
-                                                style={{ marginLeft: "8px", fontSize: "12px", padding: "4px 10px" }}
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="ml-2 text-[12px] px-[10px] py-1"
                                                 disabled={unlinkPending === "telegram"}
                                                 onClick={() => handleUnlinkTelegram()}
                                             >
                                                 {unlinkPending === "telegram" ? "Unlinking…" : "Unlink"}
-                                            </button>
+                                            </Button>
                                         </>
                                     ) : (
-                                        <button
-                                            className="btn btn-sm btn-outline"
-                                            style={{ marginLeft: "auto", fontSize: "12px", padding: "4px 10px" }}
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="ml-auto text-[12px] px-[10px] py-1"
                                             onClick={() => startTelegramLogin("link")}
                                         >
                                             Link
-                                        </button>
+                                        </Button>
                                     )
                                 ) : isLinked ? (
                                     <>
-                                        <span className="account-provider-status-linked">Connected</span>
-                                        {detail && <span className="account-provider-detail">{detail}</span>}
-                                        <button
-                                            className="btn btn-sm btn-outline"
-                                            style={{ marginLeft: "8px", fontSize: "12px", padding: "4px 10px" }}
+                                        <span className="text-success text-xs font-semibold">Connected</span>
+                                        {detail && <span className="text-muted-foreground text-xs">{detail}</span>}
+                                        {/* X read access button: show when X linked but no read token yet */}
+                                        {p.key === "twitter" && profile?.xId && !profile?.hasXToken && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="ml-2 text-[12px] px-[10px] py-1"
+                                                disabled={xAuthPending}
+                                                onClick={handleXReadAccess}
+                                            >
+                                                {xAuthPending ? "Redirecting…" : "Authorize read access"}
+                                            </Button>
+                                        )}
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="ml-2 text-[12px] px-[10px] py-1"
                                             disabled={unlinkPending === p.key}
                                             onClick={() => handleUnlinkProvider(p.key)}
                                         >
                                             {unlinkPending === p.key ? "Unlinking…" : "Unlink"}
-                                        </button>
+                                        </Button>
                                     </>
                                 ) : (
-                                    <button
-                                        className="btn btn-sm btn-outline"
-                                        style={{ marginLeft: "auto", fontSize: "12px", padding: "4px 10px" }}
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="ml-auto text-[12px] px-[10px] py-1"
                                         disabled={linkPending === p.supabaseProvider}
                                         onClick={() => handleLinkProvider(p.supabaseProvider!)}
                                     >
                                         {linkPending === p.supabaseProvider ? "Linking…" : "Link"}
-                                    </button>
+                                    </Button>
                                 )}
                             </div>
                         )
@@ -470,71 +550,93 @@ export function Account() {
                         const info = PROVIDER_LABELS[identity.provider] ?? { label: identity.provider, icon: "?" }
                         const detail = (identity.identity_data?.email as string) || (identity.identity_data?.user_name as string) || ""
                         return (
-                            <div key={identity.id} className="account-provider" style={{ minWidth: 0, opacity: 0.7 }}>
-                                <span className="account-provider-icon">{info.icon}</span>
-                                <span className="account-provider-name">{info.label}</span>
-                                <span className="account-provider-status-linked">Connected</span>
-                                {detail && <span className="account-provider-detail">{detail}</span>}
-                                <button
-                                    className="btn btn-sm btn-outline"
-                                    style={{ marginLeft: "8px", fontSize: "12px", padding: "4px 10px" }}
+                            <div key={identity.id} className="flex items-center gap-2.5 py-2 text-sm min-w-0 opacity-70 border-t border-border">
+                                <span className="w-5 text-center text-sm shrink-0">{info.icon}</span>
+                                <span className="font-semibold min-w-[90px]">{info.label}</span>
+                                <span className="text-success text-xs font-semibold">Connected</span>
+                                {detail && <span className="text-muted-foreground text-xs">{detail}</span>}
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="ml-2 text-[12px] px-[10px] py-1"
                                     disabled={unlinkPending === identity.provider}
                                     onClick={() => handleUnlinkProvider(identity.provider)}
                                 >
                                     {unlinkPending === identity.provider ? "Unlinking…" : "Unlink"}
-                                </button>
+                                </Button>
                             </div>
                         )
                     })}
 
                     {(unlinkError || linkError) && (
-                        <div className="account-error" style={{ marginTop: "8px" }}>{unlinkError || linkError}</div>
+                        <div className="text-xs text-destructive py-3 flex items-center gap-2 mt-2">{unlinkError || linkError}</div>
                     )}
                 </div>
             </div>
 
             {/* Wallets */}
-            <div className="account-section">
-                <div className="account-section-header">Wallets</div>
-                <div className="account-section-body">
+            <div className="border border-border rounded mb-5 bg-background">
+                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-muted text-foreground">Wallets</div>
+                <div className="p-4">
                     {walletsLoading ? (
-                        <div className="account-row"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
+                        <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
                     ) : walletsError ? (
-                        <div className="account-error">
+                        <div className="text-xs text-destructive py-3 flex items-center gap-2">
                             Failed to load wallets.{" "}
-                            <button className="btn btn-sm btn-secondary" onClick={() => queryClient.invalidateQueries({ queryKey: ["wallets"] })}>Retry</button>
+                            <Button variant="secondary" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ["wallets"] })}>Retry</Button>
                         </div>
                     ) : wallets.length === 0 ? (
-                        <div className="account-wallet-empty">No wallets linked yet.</div>
+                        <div className="text-xs text-muted-foreground py-2">No wallets linked yet.</div>
                     ) : (
-                        wallets.map(w => (
-                            <div key={w.id} className="account-wallet">
-                                <span className="account-wallet-address">{shortenAddress(w.address)}</span>
+                        wallets.map((w, idx) => (
+                            <div key={w.id} className={`flex items-center gap-2.5 py-2 text-sm${idx > 0 ? " border-t border-border" : ""}`}>
+                                <span className="font-mono text-xs text-foreground">{shortenAddress(w.address)}</span>
                                 {w.chainId && (
-                                    <span className="account-wallet-chain">
+                                    <span className="text-xs text-muted-foreground">
                                         {CHAIN_NAMES[w.chainId] ?? `Chain ${w.chainId}`}
                                     </span>
                                 )}
-                                {w.isPrimary && <span className="account-wallet-primary">Primary</span>}
+                                {w.isPrimary && <span className="text-xs font-semibold text-accent">Primary</span>}
+                                {!w.isPrimary && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="ml-auto text-xs px-2 py-0.5"
+                                        disabled={walletActionPending === w.id}
+                                        onClick={() => { setWalletActionPending(w.id); setPrimaryWallet.mutate(w.id) }}
+                                    >
+                                        {walletActionPending === w.id ? "…" : "Set primary"}
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={`${w.isPrimary ? "ml-auto" : "ml-1.5"} text-xs px-2 py-0.5 text-destructive`}
+                                    disabled={walletActionPending === w.id}
+                                    onClick={() => { setWalletActionPending(w.id); removeWallet.mutate(w.id) }}
+                                >
+                                    {walletActionPending === w.id ? "…" : "Remove"}
+                                </Button>
                             </div>
                         ))
                     )}
-                    <form className="account-wallet-form" onSubmit={handleLinkWallet}>
+                    <form className="flex gap-2 items-center mt-3 pt-3 border-t border-border" onSubmit={handleLinkWallet}>
                         <label htmlFor="wallet-address" className="sr-only">Wallet address</label>
-                        <input
+                        <Input
                             id="wallet-address"
                             name="wallet-address"
                             type="text"
                             placeholder="0x..."
                             autoComplete="off"
+                            className="flex-1 font-mono text-xs"
                             value={walletInput}
                             onChange={e => setWalletInput(e.target.value)}
                         />
-                        <button type="submit" className="btn btn-sm" disabled={linkWallet.isPending}>
+                        <Button type="submit" size="sm" disabled={linkWallet.isPending}>
                             {linkWallet.isPending ? "Linking\u2026" : "+ Link wallet"}
-                        </button>
+                        </Button>
                     </form>
-                    {walletError && <div className="account-wallet-error">{walletError}</div>}
+                    {walletError && <div className="text-xs text-destructive mt-1.5">{walletError}</div>}
                 </div>
             </div>
         </div>

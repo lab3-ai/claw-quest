@@ -1,5 +1,5 @@
 # ClawQuest — Project Status
-> Last updated: 2026-03-03. Single source of truth for AI sessions (Cowork, Claude Code, etc.)
+> Last updated: 2026-03-04. Single source of truth for AI sessions (Cowork, Claude Code, etc.)
 
 ---
 
@@ -12,6 +12,7 @@
 | Backend | Fastify + Prisma + PostgreSQL |
 | Auth | Supabase Auth (humans) + Agent API Keys `cq_*` (agents) |
 | Telegram Bot | grammY (polling in dev) |
+| Fiat Payments | Stripe Connect (Express accounts, Separate Charges & Transfers) |
 | Shared types | `packages/shared` — Zod schemas + TS types |
 | Deployment | Dashboard → Vercel, API → Railway |
 
@@ -39,7 +40,8 @@ clawquest/
 │   │   │       ├── quest-detail.css
 │   │   │       ├── create-quest.css
 │   │   │       ├── questers.css
-│   │   │       └── dashboard.css
+│   │   │       ├── dashboard.css
+│   │   │       └── stripe-connect.css
 │   │   └── routes/
 │   │       ├── login.tsx
 │   │       ├── register.tsx
@@ -59,6 +61,12 @@ clawquest/
 │           ├── auth/auth.routes.ts
 │           ├── agents/agents.routes.ts
 │           ├── quests/quests.routes.ts
+│           ├── stripe/
+│           │   ├── stripe.config.ts          ← Stripe client singleton + env config
+│           │   ├── stripe.service.ts         ← Fund checkout, distribute, refund logic
+│           │   ├── stripe-connect.service.ts ← Express account onboarding + status
+│           │   ├── stripe.webhook.ts         ← Webhook handler (checkout, refund, account)
+│           │   └── stripe.routes.ts          ← 7 Stripe endpoints
 │           └── telegram/telegram.service.ts  ← grammY bot, /start activation flow
 ├── packages/shared/src/index.ts             ← Zod schemas + TS types
 ├── apps/api/prisma/schema.prisma            ← DB schema
@@ -102,6 +110,12 @@ clawquest/
 - Connected Accounts section: Email, Telegram, Discord (coming soon), X (coming soon)
 - Telegram link/unlink flow
 
+### `/stripe-connect` → Stripe Connect Onboarding (`stripe-connect.tsx`)
+- Onboarding status: inactive / pending / active
+- "Connect Stripe Account" button → Stripe-hosted onboarding
+- Dashboard link for fully onboarded accounts
+- Required for winners to receive fiat payouts
+
 ### `/quests/new` → Create Quest (`quests/create.tsx`)
 - **4-step accordion stepper**: Details → Tasks → Reward → Preview & Fund
 - **Step 1 – Details**: title, description, start/end datetime
@@ -127,7 +141,8 @@ clawquest/
 ## 🗄 Database Schema (Prisma)
 
 ```
-User        id, supabaseId(unique), email, username?(unique), password?(legacy), role(user|admin), timestamps
+User        id, supabaseId(unique), email, username?(unique), password?(legacy), role(user|admin),
+            stripeConnectedAccountId?(unique), stripeConnectedOnboarded(bool), stripeCustomerId?(unique), timestamps
 Agent       id, ownerId→User, agentname, status(idle/questing/offline),
             activationCode?(unique), agentApiKey?(unique, cq_*)
 AgentSkill  id, agentId→Agent, name, version?, source(clawhub/mcp/manual),
@@ -187,6 +202,15 @@ POST /quests/:id/accept      → accept quest (human JWT or agent API key)
 POST /quests/:id/proof       → submit completion proof (agent API key)
 POST /quests/:id/claim       → claim quest ownership (JWT + claimToken)
 
+── Stripe (Fiat Payments) ─────────────────────────────────
+POST /stripe/checkout/:questId    → Create Stripe Checkout Session to fund quest (JWT)
+POST /stripe/distribute/:questId  → Distribute fiat rewards to winners (JWT)
+POST /stripe/refund/:questId      → Refund fiat quest funding to sponsor (JWT)
+POST /stripe/connect/onboard      → Start/resume Stripe Express onboarding (JWT)
+GET  /stripe/connect/status       → Check connected account onboarding status (JWT)
+GET  /stripe/connect/dashboard    → Get Stripe Express dashboard login link (JWT)
+POST /stripe/webhook              → Stripe webhook handler (no auth, Stripe sig verified)
+
 ── Escrow Module ───────────────────────────────────────────
 Distribution calculator: computeFcfs, computeLeaderboard, computeLuckyDraw
 Status guards: reject non-live quests, prevent double-pay
@@ -230,9 +254,15 @@ The `ESCROW_NETWORK_MODE` env var (and frontend counterpart `VITE_ESCROW_NETWORK
 - `ESCROW_POLL_INTERVAL` — ms between poller iterations (default: 15000)
 - `ESCROW_CONFIRMATION_BLOCKS` — blocks to wait for re-org safety (default: 5)
 
+**Stripe (optional — server starts without it)**
+- `STRIPE_SECRET_KEY` — Stripe secret key (sk_test_... or sk_live_...)
+- `STRIPE_WEBHOOK_SECRET` — Stripe webhook endpoint secret (whsec_...)
+- `STRIPE_PLATFORM_FEE_PERCENT` — Platform fee on distributions (default: 0)
+
 **Frontend (`apps/dashboard`)**
 - `VITE_ESCROW_NETWORK_MODE` — testnet \| mainnet (must match backend)
 - `VITE_WALLETCONNECT_PROJECT_ID` — for wagmi chain configuration
+- `VITE_STRIPE_PUBLISHABLE_KEY` — Stripe publishable key (pk_test_... or pk_live_...)
 
 ### Supported Chains
 - **Base** (8453, mainnet) — default mainnet chain
@@ -242,7 +272,21 @@ The `ESCROW_NETWORK_MODE` env var (and frontend counterpart `VITE_ESCROW_NETWORK
 
 ---
 
-## ✅ Recently Completed (v0.10.0 – v0.12.0)
+## ✅ Recently Completed (v0.10.0 – v0.13.0)
+
+### v0.13.0 — Stripe Connect Fiat Payments
+- [x] Stripe module: config, service, connect service, webhook handler, routes
+- [x] 3 fiat payment flows mirroring crypto: Fund Quest (Checkout), Distribute (Transfers), Refund
+- [x] Stripe Connect Express accounts for winners to receive fiat payouts
+- [x] Webhook handler: checkout.session.completed, charge.refunded, account.updated
+- [x] Reuses existing distribution calculator (FCFS/Leaderboard/Lucky Draw) for fiat (cents)
+- [x] Fund page: Crypto/Card payment method toggle
+- [x] Create Quest: "Save & Pay with Card" button for fiat rail
+- [x] Manage Quest: distribute/refund routes by fundingMethod (stripe vs crypto)
+- [x] Stripe Connect onboarding page (/stripe-connect)
+- [x] 3 new User model fields: stripeConnectedAccountId, stripeConnectedOnboarded, stripeCustomerId
+- [x] @fastify/raw-body plugin for webhook signature verification
+- [x] Graceful degradation: Stripe optional, server starts without config (returns 503)
 
 ### v0.12.0 — Real Social Task Verification
 - [x] X OAuth token storage (xAccessToken, xRefreshToken, xTokenExpiry on User model)

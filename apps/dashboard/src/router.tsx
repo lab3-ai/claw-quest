@@ -17,6 +17,7 @@ import { FundQuest } from './routes/_authenticated/quests/$questId/fund'
 import { EditQuest } from './routes/_authenticated/quests/$questId/edit'
 import { ManageQuest } from './routes/_authenticated/quests/$questId/manage'
 import { Account } from './routes/_authenticated/account'
+import { StripeConnect } from './routes/_authenticated/stripe-connect'
 import { Privacy } from './routes/privacy'
 import { Terms } from './routes/terms'
 
@@ -210,6 +211,15 @@ const accountRoute = createRoute({
     component: Account,
 })
 
+const stripeConnectRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/stripe-connect',
+    beforeLoad: ({ context }) => {
+        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
+    },
+    component: StripeConnect,
+})
+
 const routeTree = rootRoute.addChildren([
     loginRoute,
     registerRoute,
@@ -234,6 +244,7 @@ const routeTree = rootRoute.addChildren([
         createQuestRoute,
         verifyRoute,
         accountRoute,
+        stripeConnectRoute,
     ]),
 ])
 

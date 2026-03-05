@@ -131,3 +131,8 @@ dist
 .pnpm-store/
 vercel.env
 _tmp_*
+
+# Personal logs (not committed)
+docs/design-system/WORKFLOW-LOG.md
+docs/design-system/DECISIONS-LOG.md
+docs/design-system/STATUS.md

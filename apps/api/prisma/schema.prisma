@@ -28,6 +28,13 @@ model User {
   discordAccessToken  String?                 // Discord OAuth access token (guilds.members.read)
   discordRefreshToken String?                 // Discord OAuth refresh token
   discordTokenExpiry  DateTime?               // When the access token expires
+
+  // Stripe Connect — for receiving fiat payouts as winner
+  stripeConnectedAccountId  String?   @unique  // Stripe Express account ID (acct_xxx)
+  stripeConnectedOnboarded  Boolean   @default(false)
+  // Stripe Customer — for paying as sponsor
+  stripeCustomerId          String?   @unique  // Stripe customer ID (cus_xxx)
+
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 

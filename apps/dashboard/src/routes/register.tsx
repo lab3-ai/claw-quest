@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { supabase } from "@/lib/supabase"
 import { startTelegramLogin } from "@/lib/telegram-oidc"
+import { Button } from "@/components/ui/button"
 
 export function Register() {
     const [email, setEmail] = useState("")
@@ -31,7 +32,7 @@ export function Register() {
     }
 
     return (
-        <div className="login-page">
+        <div className="min-h-screen flex flex-col bg-muted">
             <div className="topbar">
                 <Link to="/quests" className="topbar-logo">
                     Claw<span>Quest</span>
@@ -41,29 +42,29 @@ export function Register() {
                 </div>
             </div>
 
-            <div className="login-page-center">
-                <div className="login-modal" style={{ position: "static", width: 380 }}>
-                    <div className="login-modal-logo">
-                        Claw<span>Quest</span>
+            <div className="flex-1 flex items-center justify-center px-4 py-10">
+                <div className="bg-background rounded border border-border w-[380px] p-7 text-center relative">
+                    <div className="text-xl font-bold tracking-tight mb-1 text-foreground">
+                        Claw<span className="text-accent">Quest</span>
                     </div>
-                    <div className="login-modal-subtitle">Create your account</div>
+                    <div className="text-xs text-muted-foreground mb-6">Create your account</div>
 
                     {error && (
-                        <div style={{ background: "var(--red-bg)", color: "var(--red)", padding: "8px 12px", borderRadius: "3px", fontSize: "12px", marginBottom: "16px", textAlign: "left" }}>
+                        <div className="bg-error-light text-error px-3 py-2 rounded text-sm mb-4 text-left">
                             {error}
                         </div>
                     )}
                     {success && (
-                        <div style={{ background: "var(--green-bg)", color: "var(--green)", padding: "8px 12px", borderRadius: "3px", fontSize: "12px", marginBottom: "16px", textAlign: "left" }}>
+                        <div className="bg-success-light text-success px-3 py-2 rounded text-sm mb-4 text-left">
                             {success}
                         </div>
                     )}
 
                     {/* Telegram OIDC button */}
-                    <button
+                    <Button
                         type="button"
-                        className="btn btn-outline"
-                        style={{ width: "100%", padding: "10px", fontSize: "13px", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                        variant="outline"
+                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-[10px]"
                         onClick={async () => {
                             setTelegramLoading(true)
                             setError("")
@@ -86,17 +87,19 @@ export function Register() {
                                 Continue with Telegram
                             </>
                         )}
-                    </button>
+                    </Button>
 
-                    <div className="login-modal-divider">
-                        <span style={{ fontSize: "11px", color: "var(--text-muted)", padding: "0 8px", background: "var(--surface)" }}>or register with email</span>
+                    <div className="flex items-center gap-3 my-5">
+                        <hr className="flex-1 border-border" />
+                        <span className="text-xs text-muted-foreground">or register with email</span>
+                        <hr className="flex-1 border-border" />
                     </div>
 
                     <form onSubmit={handleSubmit}>
-                        <div className="login-form-group">
-                            <label className="login-label">Email</label>
+                        <div className="space-y-1.5 mb-3.5 text-left">
+                            <label className="block text-xs font-semibold text-foreground mb-1">Email</label>
                             <input
-                                className="login-input"
+                                className="w-full px-2.5 py-2 text-sm border border-input rounded bg-background text-foreground focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none box-border"
                                 type="email"
                                 placeholder="you@example.com"
                                 required
@@ -104,10 +107,10 @@ export function Register() {
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
-                        <div className="login-form-group">
-                            <label className="login-label">Password</label>
+                        <div className="space-y-1.5 mb-3.5 text-left">
+                            <label className="block text-xs font-semibold text-foreground mb-1">Password</label>
                             <input
-                                className="login-input"
+                                className="w-full px-2.5 py-2 text-sm border border-input rounded bg-background text-foreground focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none box-border"
                                 type="password"
                                 minLength={8}
                                 required
@@ -116,26 +119,25 @@ export function Register() {
                             />
                         </div>
 
-                        <button
+                        <Button
                             type="submit"
-                            className="btn btn-primary"
-                            style={{ width: "100%", padding: "10px", fontSize: "13px", marginTop: "8px" }}
+                            className="w-full mt-2 text-base py-[10px]"
                             disabled={loading}
                         >
                             {loading ? "Creating account..." : "Create account"}
-                        </button>
+                        </Button>
                     </form>
 
-                    <div className="login-modal-divider" />
+                    <div className="h-px bg-border my-5" />
 
-                    <div className="login-modal-hint">
+                    <div className="text-xs text-muted-foreground leading-relaxed">
                         Already have an account?{" "}
-                        <Link to="/login" style={{ color: "var(--link)" }}>Sign in</Link>
+                        <Link to="/login" className="text-primary hover:underline">Sign in</Link>
                     </div>
                 </div>
             </div>
 
-            <div className="footer" style={{ maxWidth: 920, margin: "0 auto", padding: "24px 16px" }}>
+            <div className="footer max-w-[920px] mx-auto px-4 py-6">
                 <span>ClawQuest v0.1 beta</span>
                 <a href="/privacy.html">Privacy</a>
                 <a href="/terms.html">Terms</a>

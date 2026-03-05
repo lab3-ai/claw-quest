@@ -28,6 +28,7 @@ interface ManageData {
         totalSlots: number
         filledSlots: number
         fundingStatus: string
+        fundingMethod: string | null
         cryptoChainId: number | null
         creatorUserId: string
     }
@@ -167,9 +168,15 @@ export function ManageQuest() {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['quest-manage', questId] }),
     })
 
+    // Route distribute/refund to correct endpoint based on funding method
+    const isFiatFunded = data?.quest?.fundingMethod === 'stripe'
+
     const distributeMutation = useMutation({
         mutationFn: async () => {
-            const res = await fetch(`${API_BASE}/escrow/distribute/${questId}`, {
+            const endpoint = isFiatFunded
+                ? `${API_BASE}/stripe/distribute/${questId}`
+                : `${API_BASE}/escrow/distribute/${questId}`
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
                 body: JSON.stringify({}),
@@ -185,7 +192,10 @@ export function ManageQuest() {
 
     const refundMutation = useMutation({
         mutationFn: async () => {
-            const res = await fetch(`${API_BASE}/escrow/refund/${questId}`, {
+            const endpoint = isFiatFunded
+                ? `${API_BASE}/stripe/refund/${questId}`
+                : `${API_BASE}/escrow/refund/${questId}`
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
                 body: JSON.stringify({}),
@@ -327,10 +337,25 @@ export function ManageQuest() {
                         </div>
                     </div>
 
-                    {/* Escrow status */}
+                    {/* Escrow / Payment status */}
                     <div className="manage-escrow">
-                        <h3>Escrow</h3>
-                        {escrow ? (
+                        <h3>{isFiatFunded ? 'Stripe Payment' : 'Escrow'}</h3>
+                        {isFiatFunded ? (
+                            <div className="manage-escrow-grid">
+                                <div className="manage-escrow-item">
+                                    <div className="manage-escrow-label">Funded</div>
+                                    <div className="manage-escrow-val">${quest.rewardAmount.toLocaleString()} USD</div>
+                                </div>
+                                <div className="manage-escrow-item">
+                                    <div className="manage-escrow-label">Method</div>
+                                    <div className="manage-escrow-val" style={{ color: 'var(--stripe-fg, #635bff)' }}>Stripe</div>
+                                </div>
+                                <div className="manage-escrow-item">
+                                    <div className="manage-escrow-label">Status</div>
+                                    <div className="manage-escrow-val">{quest.fundingStatus}</div>
+                                </div>
+                            </div>
+                        ) : escrow ? (
                             <div className="manage-escrow-grid">
                                 <div className="manage-escrow-item">
                                     <div className="manage-escrow-label">Deposited</div>

@@ -23,7 +23,16 @@
 - **Decision**: Webhook for Production, Polling for Local Dev.
 - **Reason**: Webhooks are more efficient (push vs pull) but require a public URL (SSL). Polling is easier locally without `ngrok`.
 
-## ADR-005: Auth Strategy
+## ADR-005: Fiat Payment Provider — Stripe Connect
+- **Context**: Need fiat payments alongside existing crypto escrow. 3 flows required: fund quest, distribute to winners, refund to sponsor.
+- **Decision**: Stripe Connect with **Express** connected accounts and **Separate Charges and Transfers** model.
+- **Alternatives considered**:
+  - **Polar.sh**: Can collect payments but cannot distribute to third-party users (winners). Only supports payouts to account owner. Covers 1/3 required flows.
+  - **Basic Stripe (no Connect)**: Can collect + refund but cannot transfer to winners. Would require manual payouts. Covers 2/3 required flows.
+  - **Stripe Connect with Destination Charges**: Less control over multi-party splits and timing. Not ideal for FCFS/Leaderboard/Lucky Draw distribution patterns.
+- **Consequences**: Full control over fund → hold → distribute → refund lifecycle. Winners must complete Stripe Express KYC onboarding to receive payouts. Platform fee configurable via `STRIPE_PLATFORM_FEE_PERCENT`. Express accounts mean Stripe handles all compliance/KYC.
+
+## ADR-006: Auth Strategy
 - **Context**: Need to authenticate web users and link them to Telegram users.
 - **Decision**: Custom JWT auth on API.
 - **Reason**: Maximizes portability. We are not locked into Supabase Auth or Clerk.

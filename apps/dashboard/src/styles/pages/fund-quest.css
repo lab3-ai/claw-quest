@@ -330,3 +330,170 @@ a.fund-tx-link:hover {
         font-size: 12px;
     }
 }
+
+/* ─── Payment Method Toggle ──────────────────────────────────────────────── */
+
+.fund-method-toggle {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border, #d6d9dc);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.fund-method-btn {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    background: var(--sidebar-bg, #fafafb);
+    color: var(--fg-muted, #6a737c);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    transition: all 0.15s;
+}
+
+.fund-method-btn:first-child {
+    border-right: 1px solid var(--border, #d6d9dc);
+}
+
+.fund-method-btn.active {
+    background: var(--bg, #fff);
+    color: var(--fg, #232629);
+    box-shadow: inset 0 -2px 0 var(--accent, #f48024);
+}
+
+.fund-method-btn:hover:not(.active) {
+    background: var(--bg, #fff);
+}
+
+/* ─── Stripe Fund Flow ───────────────────────────────────────────────────── */
+
+.fund-stripe-flow {
+    padding: 0.5rem 0;
+}
+
+.fund-stripe-info {
+    margin-bottom: 1.25rem;
+}
+
+.fund-stripe-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    background: var(--stripe-bg, #f3f0ff);
+    color: var(--stripe-fg, #635bff);
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.stripe-logo {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background: var(--stripe-fg, #635bff);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 11px;
+}
+
+.fund-stripe-info p {
+    font-size: 12px;
+    color: var(--fg-muted, #6a737c);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.fund-stripe-summary {
+    background: var(--sidebar-bg, #fafafb);
+    border: 1px solid var(--border, #d6d9dc);
+    border-radius: 4px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.fund-stripe-success,
+.fund-stripe-pending {
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.fund-stripe-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--green, #48a868);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.fund-stripe-success h3,
+.fund-stripe-pending h3 {
+    font-size: 1rem;
+    margin: 0 0 0.5rem;
+    color: var(--fg, #232629);
+}
+
+.fund-stripe-success p,
+.fund-stripe-pending p {
+    font-size: 13px;
+    color: var(--fg-muted, #6a737c);
+    margin: 0 0 1rem;
+}
+
+.fund-stripe-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border, #d6d9dc);
+    border-top-color: var(--stripe-fg, #635bff);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ─── Stripe Button ──────────────────────────────────────────────────────── */
+
+.btn-stripe {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.55rem 1.25rem;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    background: var(--stripe-fg, #635bff);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-stripe:hover:not(:disabled) {
+    background: #4b45c7;
+}
+
+.btn-stripe:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

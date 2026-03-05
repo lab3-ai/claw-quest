@@ -6,8 +6,9 @@ import { useAuth } from "@/context/AuthContext"
 import { AVATAR_COLORS, getInitials } from "@/components/avatarUtils"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { useAccount } from "wagmi"
-import "@/styles/pages/quest-detail.css"
-import "@/styles/actor-sections.css"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 const REDIRECT_KEY = "clawquest_redirect_after_login"
@@ -77,9 +78,9 @@ function platformLabel(platform: string) {
 
 
 function TaskCheck({ status }: { status: string }) {
-    if (status === "done") return <span className="task-check done">✓</span>
-    if (status === "verifying") return <span className="task-check verifying">↻</span>
-    return <span className="task-check"></span>
+    if (status === "done") return <span className="w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center text-xs bg-success border-success text-primary-foreground">✓</span>
+    if (status === "verifying") return <span className="w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center text-xs bg-warning-light border-warning">↻</span>
+    return <span className="w-5 h-5 rounded-full border-2 border-input shrink-0 flex items-center justify-center text-xs"></span>
 }
 
 /** Check if user has the required linked account for a task platform */
@@ -124,14 +125,13 @@ function getTaskBtnLabel(actionType: string, opened: boolean): string {
 function TaskActionBtn({ status, disabled, onClick, label }: {
     status: string; disabled?: boolean; onClick?: () => void; label: string
 }) {
-    if (status === "done") return <button className="task-action-btn done-btn" disabled>Done ✓</button>
-    if (status === "verifying") return <button className="task-action-btn running" disabled>Checking…</button>
-    if (status === "failed") return <button className="task-action-btn do-it" onClick={onClick} style={{ borderColor: "var(--red)" }}>Retry →</button>
+    if (status === "done") return <Button size="sm" variant="outline" disabled className="bg-accent-light text-accent border-green-600 cursor-default">Done ✓</Button>
+    if (status === "verifying") return <Button size="sm" variant="outline" disabled className="bg-[var(--agent-bg)] text-[var(--agent-fg)] border-[var(--agent-border)] cursor-default">Checking…</Button>
+    if (status === "failed") return <Button size="sm" onClick={onClick} className="border-error">Retry →</Button>
     if (disabled) return (
-        <button className="task-action-btn do-it" disabled title="Accept quest first"
-            style={{ opacity: 0.4, cursor: "not-allowed" }}>{label} →</button>
+        <Button size="sm" disabled title="Accept quest first" className="opacity-40 cursor-not-allowed">{label} →</Button>
     )
-    return <button className="task-action-btn do-it" onClick={onClick}>{label} →</button>
+    return <Button size="sm" onClick={onClick}>{label} →</Button>
 }
 
 // ─── Extended types ──────────────────────────────────────────────────────────
@@ -402,7 +402,7 @@ export function QuestDetail() {
 
     if (isLoading) {
         return (
-            <div style={{ padding: "40px", textAlign: "center", color: "var(--fg-muted)" }}>
+            <div className="p-10 text-center text-muted-foreground">
                 Loading quest…
             </div>
         )
@@ -410,7 +410,7 @@ export function QuestDetail() {
 
     if (error || !quest) {
         return (
-            <div style={{ padding: "40px", textAlign: "center", color: "var(--red)" }}>
+            <div className="p-10 text-center text-error">
                 Quest not found.
             </div>
         )
@@ -423,95 +423,95 @@ export function QuestDetail() {
     const isCompleted = quest.status === "completed"
 
     return (
-        <div style={{ maxWidth: 960 }}>
+        <div className="max-w-[960px]">
             {/* Breadcrumb */}
-            <div className="breadcrumb">
+            <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
                 <Link to="/quests">Quests</Link>
-                <span className="sep">›</span>
+                <span>›</span>
                 <span>{quest.title}</span>
-            </div>
+            </nav>
 
             {/* Claim banner — shown when claim token is in URL */}
             {claim && claimStatus === "idle" && (
-                <div className="claim-banner">
-                    <div className="claim-banner-text">
-                        <strong>🤖 This quest was created by an AI agent.</strong>
-                        <span>Claim it to manage, edit, and fund it.</span>
+                <div className="flex items-center justify-between gap-3 px-4 py-3 rounded mb-4 border border-accent bg-accent-light max-sm:flex-col max-sm:items-stretch max-sm:text-center">
+                    <div className="flex flex-col gap-0.5 text-sm">
+                        <strong className="text-foreground">🤖 This quest was created by an AI agent.</strong>
+                        <span className="text-xs text-muted-foreground">Claim it to manage, edit, and fund it.</span>
                     </div>
-                    <button className="btn btn-primary btn-sm" onClick={handleClaimClick}>
+                    <Button size="sm" onClick={handleClaimClick}>
                         {isAuthenticated ? "Claim Quest" : "Log in to Claim"}
-                    </button>
+                    </Button>
                 </div>
             )}
             {claim && claimStatus === "claiming" && (
-                <div className="claim-banner claiming">
+                <div className="flex justify-center text-muted-foreground text-sm px-4 py-3 rounded mb-4 border border-border bg-muted">
                     <span>Claiming quest…</span>
                 </div>
             )}
             {claimStatus === "success" && (
-                <div className="claim-banner success">
-                    <div className="claim-banner-text">
-                        <strong>✓ Quest claimed!</strong>
-                        <span>You can now edit and fund this quest.</span>
+                <div className="flex items-center justify-between gap-3 px-4 py-3 rounded mb-4 border border-green-600 bg-accent-light max-sm:flex-col max-sm:items-stretch max-sm:text-center">
+                    <div className="flex flex-col gap-0.5 text-sm">
+                        <strong className="text-accent">✓ Quest claimed!</strong>
+                        <span className="text-xs text-muted-foreground">You can now edit and fund this quest.</span>
                     </div>
-                    <Link to="/dashboard" className="btn btn-primary btn-sm">
-                        Go to Dashboard →
-                    </Link>
+                    <Button asChild size="sm">
+                        <Link to="/dashboard">Go to Dashboard →</Link>
+                    </Button>
                 </div>
             )}
             {claimStatus === "error" && (
-                <div className="claim-banner error">
+                <div className="flex items-center px-4 py-3 rounded mb-4 border border-error bg-error-light text-error text-sm">
                     <span>{claimError}</span>
                 </div>
             )}
 
             {/* Page header */}
-            <div className="page-header" style={{ marginBottom: 20 }}>
+            <div className="flex justify-between items-end py-5 pb-3 border-b border-border mb-5">
                 <div>
-                    <h1>{quest.title}</h1>
-                    <div className="page-header-meta">
-                        <span className={`badge ${statusBadgeClass(quest.status)}`}>{quest.status}</span>
+                    <h1 className="text-2xl font-semibold text-foreground">{quest.title}</h1>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
+                        <Badge variant={statusBadgeClass(quest.status).replace("badge-", "") as any}>{quest.status}</Badge>
                         <span>·</span>
-                        <span className={`badge ${typeBadgeClass(quest.type)}`}>{quest.type}</span>
+                        <Badge variant={typeBadgeClass(quest.type).replace("badge-", "") as any}>{quest.type}</Badge>
                         <span>·</span>
-                        <span className={`badge ${rewardBadgeClass(quest.rewardType)}`}>{quest.rewardType}</span>
+                        <Badge variant={rewardBadgeClass(quest.rewardType).replace("badge-", "") as any}>{quest.rewardType}</Badge>
                         <span>·</span>
-                        <span>by <strong>{quest.sponsor}</strong></span>
+                        <span>by <strong className="text-foreground">{quest.sponsor}</strong></span>
                     </div>
                 </div>
             </div>
 
             {/* 2-column grid */}
-            <div className="detail-grid">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-8 items-start">
                 {/* ── Left: main content ── */}
-                <div className="detail-main">
+                <div>
                     {/* Description */}
-                    <div className="description">
-                        <div className="section-title">About this Quest</div>
+                    <div className="py-3.5 border-b border-border mb-5 text-sm leading-relaxed text-foreground">
+                        <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3.5">About this Quest</div>
                         <p>{quest.description}</p>
                     </div>
 
                     {/* Reward grid */}
-                    <div className="reward-grid">
-                        <div className="reward-item">
-                            <div className="reward-item-label">total reward</div>
-                            <div className="reward-item-value green mono">
+                    <div className="grid grid-cols-2 gap-2.5 mb-2.5">
+                        <div className="px-3 py-2.5 border border-border rounded bg-muted">
+                            <div className="text-xs text-muted-foreground mb-0.5">total reward</div>
+                            <div className="text-sm font-semibold text-accent font-mono">
                                 {quest.rewardAmount.toLocaleString()} {quest.rewardType}
                             </div>
                         </div>
-                        <div className="reward-item">
-                            <div className="reward-item-label">total slots</div>
-                            <div className="reward-item-value">{quest.totalSlots}</div>
+                        <div className="px-3 py-2.5 border border-border rounded bg-muted">
+                            <div className="text-xs text-muted-foreground mb-0.5">total slots</div>
+                            <div className="text-sm font-semibold text-foreground">{quest.totalSlots}</div>
                         </div>
-                        <div className="reward-item">
-                            <div className="reward-item-label">slots left</div>
-                            <div className="reward-item-value" style={{ color: slotsLeft < 5 ? "var(--red)" : "var(--fg)" }}>
+                        <div className="px-3 py-2.5 border border-border rounded bg-muted">
+                            <div className="text-xs text-muted-foreground mb-0.5">slots left</div>
+                            <div className={cn("text-sm font-semibold", slotsLeft < 5 ? "text-error" : "text-foreground")}>
                                 {slotsLeft}
                             </div>
                         </div>
-                        <div className="reward-item">
-                            <div className="reward-item-label">questers</div>
-                            <div className="reward-item-value">
+                        <div className="px-3 py-2.5 border border-border rounded bg-muted">
+                            <div className="text-xs text-muted-foreground mb-0.5">questers</div>
+                            <div className="text-sm font-semibold text-foreground">
                                 <Link to="/quests/$questId/questers" params={{ questId: quest.id }}>
                                     {quest.questers} →
                                 </Link>
@@ -521,7 +521,7 @@ export function QuestDetail() {
 
                     {/* Tags */}
                     {quest.tags && quest.tags.length > 0 && (
-                        <div style={{ marginBottom: 20, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <div className="mb-5 flex gap-1.5 flex-wrap">
                             {quest.tags.map(tag => (
                                 <span key={tag} className="tag">{tag}</span>
                             ))}
@@ -530,11 +530,11 @@ export function QuestDetail() {
 
                     {/* Human Tasks (from quest.tasks) */}
                     {quest.tasks && quest.tasks.length > 0 && (
-                        <div className="actor-section human">
-                            <div className="actor-section-title">
+                        <div className="mb-6 pl-3.5 border-l-4 border-l-[var(--human-fg)]">
+                            <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                 Human Tasks
-                                <span className="actor-badge human">HUMAN</span>
-                                <span className="hint">Complete these yourself</span>
+                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-[var(--human-bg)] text-[var(--human-fg)]">HUMAN</span>
+                                <span className="font-normal text-xs text-muted-foreground ml-auto">Complete these yourself</span>
                             </div>
                             {quest.tasks.map((task: any, idx: number) => {
                                 const hasAccepted = !!quest.myParticipation
@@ -547,11 +547,11 @@ export function QuestDetail() {
                                 const actionUrl = getTaskActionUrl(task)
 
                                 return (
-                                    <div key={idx} className="task-card">
-                                        <div className="task-card-row">
+                                    <div key={idx} className="border border-border rounded mb-2.5 overflow-hidden last:mb-0">
+                                        <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
                                             <TaskCheck status={taskStatus} />
-                                            <span className="task-card-label">{task.label}</span>
-                                            <span className="badge badge-social">{platformLabel(task.platform)}</span>
+                                            <span className="flex-1 font-medium">{task.label}</span>
+                                            <Badge variant="social">{platformLabel(task.platform)}</Badge>
                                             <TaskActionBtn
                                                 status={taskStatus}
                                                 disabled={!hasAccepted}
@@ -580,10 +580,10 @@ export function QuestDetail() {
                                         </div>
                                         {/* Proof URL input for post/quote_post */}
                                         {(task.actionType === "post" || task.actionType === "quote_post") && hasAccepted && !isVerified && (
-                                            <div className="proof-url-row">
+                                            <div className="pt-1 pl-6">
                                                 <input
                                                     type="url"
-                                                    className="proof-url-input"
+                                                    className="w-full px-2 py-1.5 text-xs border border-border rounded bg-background text-foreground focus:border-accent focus:outline-none"
                                                     placeholder="Paste your tweet URL here..."
                                                     value={proofUrls[idx] || ""}
                                                     onChange={(e) => setProofUrls(prev => ({ ...prev, [idx]: e.target.value }))}
@@ -596,10 +596,10 @@ export function QuestDetail() {
                                             if (!warning) return null
                                             const needsXGrant = task.platform === "x" && meProfile?.xId && !meProfile?.hasXToken
                                             return (
-                                                <div style={{ fontSize: 11, color: "var(--fg-muted)", marginTop: 4, paddingLeft: 24 }}>
+                                                <div className="text-xs text-muted-foreground mt-1 pl-6">
                                                     ⚠ {warning}
                                                     {needsXGrant ? (
-                                                        <> — <button style={{ background: "none", border: "none", color: "var(--link)", cursor: "pointer", padding: 0, fontSize: 11, textDecoration: "underline" }}
+                                                        <> — <button className="bg-transparent border-none text-primary cursor-pointer p-0 text-xs underline"
                                                             onClick={async () => {
                                                                 try {
                                                                     const res = await fetch(`${API_BASE}/auth/x/authorize`, {
@@ -614,19 +614,19 @@ export function QuestDetail() {
                                                                 } catch { /* noop */ }
                                                             }}>Grant X access</button></>
                                                     ) : (
-                                                        <> — <Link to="/account" style={{ color: "var(--link)" }}>Go to Settings</Link></>
+                                                        <> — <Link to="/account" className="text-primary">Go to Settings</Link></>
                                                     )}
                                                 </div>
                                             )
                                         })()}
                                         {hasFailed && (
-                                            <div style={{ fontSize: 11, color: "var(--red)", marginTop: 4, paddingLeft: 24 }}>
+                                            <div className="text-xs text-error mt-1 pl-6">
                                                 {taskErrors[idx]}
                                                 {taskErrors[idx]?.includes("re-link") && (
-                                                    <> — <Link to="/account" style={{ color: "var(--link)" }}>Go to Settings</Link></>
+                                                    <> — <Link to="/account" className="text-primary">Go to Settings</Link></>
                                                 )}
                                                 {taskErrors[idx]?.includes("Link your") && (
-                                                    <> — <Link to="/account" style={{ color: "var(--link)" }}>Go to Settings</Link></>
+                                                    <> — <Link to="/account" className="text-primary">Go to Settings</Link></>
                                                 )}
                                             </div>
                                         )}
@@ -638,20 +638,20 @@ export function QuestDetail() {
 
                     {/* Agent Tasks (from quest.requiredSkills) */}
                     {quest.requiredSkills && quest.requiredSkills.length > 0 && (
-                        <div className="actor-section agent">
-                            <div className="actor-section-title">
+                        <div className="mb-6 pl-3.5 border-l-4 border-l-[var(--agent-fg)]">
+                            <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                 Agent Tasks
-                                <span className="actor-badge agent">AGENT</span>
-                                <span className="hint">Your AI agent handles these</span>
+                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-[var(--agent-bg)] text-[var(--agent-fg)]">AGENT</span>
+                                <span className="font-normal text-xs text-muted-foreground ml-auto">Your AI agent handles these</span>
                             </div>
                             {quest.requiredSkills.map((skill: string, idx: number) => (
-                                <div key={idx} className="task-card">
-                                    <div className="task-card-row">
+                                <div key={idx} className="border border-border rounded mb-2.5 overflow-hidden last:mb-0">
+                                    <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
                                         <TaskCheck status="pending" />
-                                        <span className="task-card-label">
-                                            Requires skill: <code style={{ fontSize: 11, background: "var(--code-bg, #f5f5f5)", padding: "1px 4px", borderRadius: 2 }}>{skill}</code>
+                                        <span className="flex-1 font-medium">
+                                            Requires skill: <code className="font-mono text-xs bg-muted px-1 py-px rounded">{skill}</code>
                                         </span>
-                                        <span className="badge badge-skill">Skill</span>
+                                        <Badge variant="skill">Skill</Badge>
                                         <TaskActionBtn status="pending" disabled label="Agent" />
                                     </div>
                                 </div>
@@ -661,38 +661,44 @@ export function QuestDetail() {
 
                     {/* No tasks fallback */}
                     {(!quest.tasks || quest.tasks.length === 0) && (!quest.requiredSkills || quest.requiredSkills.length === 0) && (
-                        <div style={{ padding: "16px 0", color: "var(--fg-muted)", fontSize: 13 }}>
+                        <div className="py-4 text-muted-foreground text-sm">
                             No specific tasks defined for this quest yet.
                         </div>
                     )}
 
                     {/* Questers avatar crowd */}
                     {quest.questers > 0 && quest.questerDetails && (
-                        <div className="social-proof" style={{ marginTop: 20, border: "1px solid var(--border)", borderRadius: 3 }}>
-                            <div className="social-proof-header">
-                                <span><strong>{quest.questers}</strong> questers joined</span>
+                        <div className="mt-5 border border-border rounded px-3 py-2.5 border-b-0">
+                            <div className="flex justify-between items-center text-xs text-muted-foreground mb-2">
+                                <span><strong className="text-foreground">{quest.questers}</strong> questers joined</span>
                                 <Link to="/quests/$questId/questers" params={{ questId: quest.id }}>
                                     view all →
                                 </Link>
                             </div>
-                            <div className="avatar-crowd">
+                            <div className="flex items-center pl-1">
                                 {quest.questerDetails.slice(0, 8).map((d, i) => (
-                                    <div key={i} className="avatar-item" style={{ zIndex: 8 - i }}>
+                                    <div
+                                        key={i}
+                                        className="relative w-7 h-7 -ml-2 first:ml-0 rounded-full border-2 border-background cursor-pointer overflow-visible shrink-0 hover:-translate-y-0.5 transition-transform group/avatar"
+                                        style={{ zIndex: 8 - i }}
+                                    >
                                         <div
-                                            className="avatar-fallback"
+                                            className="w-full h-full rounded-full flex items-center justify-center text-xs font-bold text-white"
                                             style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
                                         >
                                             {getInitials(d.agentName)}
                                         </div>
-                                        <div className="avatar-tip">
-                                            <span className="tip-label">Human</span> <span className="tip-human">@{d.humanHandle}</span>
+                                        <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 bg-foreground text-white text-xs px-2.5 py-2 rounded whitespace-nowrap z-[100] pointer-events-none leading-relaxed min-w-[120px] text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-[5px] after:border-transparent after:border-t-foreground">
+                                            <span className="text-surface-dark-muted text-xs">Human</span> <span className="font-semibold text-white">@{d.humanHandle}</span>
                                             <br />
-                                            <span className="tip-label">Agent</span> <span className="tip-agent">{d.agentName}</span>
+                                            <span className="text-surface-dark-muted text-xs">Agent</span> <span className="font-semibold text-[var(--agent-border)] font-mono text-xs">{d.agentName}</span>
                                         </div>
                                     </div>
                                 ))}
                                 {quest.questers > 8 && (
-                                    <div className="avatar-more">+{quest.questers - 8}</div>
+                                    <div className="w-7 h-7 -ml-2 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground cursor-pointer shrink-0 hover:bg-accent/10 hover:text-accent-foreground">
+                                        +{quest.questers - 8}
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -700,9 +706,9 @@ export function QuestDetail() {
 
                     {/* Completed: results table */}
                     {isCompleted && (
-                        <div className="results-section">
-                            <div className="section-title">Results</div>
-                            <p style={{ color: "var(--fg-muted)", fontSize: 13 }}>
+                        <div className="mt-6 pt-5 border-t-2 border-border">
+                            <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3.5">Results</div>
+                            <p className="text-muted-foreground text-sm">
                                 This quest has ended.{" "}
                                 <Link to="/quests/$questId/questers" params={{ questId: quest.id }}>
                                     View all questers and payouts →
@@ -713,74 +719,74 @@ export function QuestDetail() {
                 </div>
 
                 {/* ── Right: sidebar ── */}
-                <div className="detail-sidebar">
-                    <div className="sidebar-box">
+                <div>
+                    <div className="border border-border rounded mb-3.5 sticky top-[55px]">
                         {/* Reward hero */}
-                        <div className="reward-hero">
-                            <div className="reward-hero-amount">{quest.rewardAmount.toLocaleString()}</div>
-                            <div className="reward-hero-sub">
-                                <span className={`badge ${rewardBadgeClass(quest.rewardType)}`}>{quest.rewardType}</span>
-                                <span className={`badge ${typeBadgeClass(quest.type)}`}>{quest.type}</span>
+                        <div className="px-3 py-4 text-center border-b border-border">
+                            <div className="text-[28px] font-bold font-mono text-accent leading-tight">{quest.rewardAmount.toLocaleString()}</div>
+                            <div className="flex justify-center gap-2 mt-2 text-xs">
+                                <Badge variant={rewardBadgeClass(quest.rewardType).replace("badge-", "") as any}>{quest.rewardType}</Badge>
+                                <Badge variant={typeBadgeClass(quest.type).replace("badge-", "") as any}>{quest.type}</Badge>
                             </div>
-                            <div className="reward-hero-label">total reward pool</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">total reward pool</div>
                         </div>
 
                         {/* Countdown */}
                         {isLive && quest.expiresAt && (
-                            <div className="countdown-bar">
-                                <div className="countdown-label">Time remaining</div>
-                                <div className="countdown-digits">
-                                    <div className="cd-unit">
-                                        <span className={`cd-num ${liveCountdown.d === 0 && liveCountdown.h < 6 ? "urgent" : ""}`}>{String(liveCountdown.d).padStart(2, "0")}</span>
-                                        <span className="cd-label">d</span>
+                            <div className="px-3 py-2.5 border-b border-border text-center">
+                                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Time remaining</div>
+                                <div className="flex justify-center gap-1 font-mono">
+                                    <div className="flex flex-col items-center min-w-[40px]">
+                                        <span className={cn("text-xl font-bold leading-tight", liveCountdown.d === 0 && liveCountdown.h < 6 ? "text-error" : "text-foreground")}>{String(liveCountdown.d).padStart(2, "0")}</span>
+                                        <span className="text-xs text-muted-foreground uppercase tracking-wide">d</span>
                                     </div>
-                                    <span className="cd-sep">:</span>
-                                    <div className="cd-unit">
-                                        <span className={`cd-num ${liveCountdown.d === 0 && liveCountdown.h < 6 ? "urgent" : ""}`}>{String(liveCountdown.h).padStart(2, "0")}</span>
-                                        <span className="cd-label">h</span>
+                                    <span className="text-lg text-input pt-0.5">:</span>
+                                    <div className="flex flex-col items-center min-w-[40px]">
+                                        <span className={cn("text-xl font-bold leading-tight", liveCountdown.d === 0 && liveCountdown.h < 6 ? "text-error" : "text-foreground")}>{String(liveCountdown.h).padStart(2, "0")}</span>
+                                        <span className="text-xs text-muted-foreground uppercase tracking-wide">h</span>
                                     </div>
-                                    <span className="cd-sep">:</span>
-                                    <div className="cd-unit">
-                                        <span className="cd-num">{String(liveCountdown.m).padStart(2, "0")}</span>
-                                        <span className="cd-label">m</span>
+                                    <span className="text-lg text-input pt-0.5">:</span>
+                                    <div className="flex flex-col items-center min-w-[40px]">
+                                        <span className="text-xl font-bold text-foreground leading-tight">{String(liveCountdown.m).padStart(2, "0")}</span>
+                                        <span className="text-xs text-muted-foreground uppercase tracking-wide">m</span>
                                     </div>
-                                    <span className="cd-sep">:</span>
-                                    <div className="cd-unit">
-                                        <span className="cd-num">{String(liveCountdown.s).padStart(2, "0")}</span>
-                                        <span className="cd-label">s</span>
+                                    <span className="text-lg text-input pt-0.5">:</span>
+                                    <div className="flex flex-col items-center min-w-[40px]">
+                                        <span className="text-xl font-bold text-foreground leading-tight">{String(liveCountdown.s).padStart(2, "0")}</span>
+                                        <span className="text-xs text-muted-foreground uppercase tracking-wide">s</span>
                                     </div>
                                 </div>
                             </div>
                         )}
                         {isCompleted && (
-                            <div className="countdown-bar" style={{ textAlign: "center" }}>
-                                <span className={`badge ${statusBadgeClass("completed")}`} style={{ fontSize: 13, padding: "4px 10px" }}>
+                            <div className="px-3 py-2.5 border-b border-border text-center">
+                                <Badge variant="completed" className="text-base px-[10px] py-1">
                                     Quest Completed
-                                </span>
+                                </Badge>
                             </div>
                         )}
 
                         {/* Spots bar */}
-                        <div className="spots-bar">
-                            <div className="spots-header">
+                        <div className="px-3 py-2.5 border-b border-border">
+                            <div className="flex justify-between text-xs mb-1">
                                 {isLuckyDraw ? (
                                     <>
-                                        <span className="spots-label">{quest.filledSlots} entered</span>
-                                        <span className="spots-value">{quest.totalSlots} winners drawn</span>
+                                        <span className="text-muted-foreground font-semibold">{quest.filledSlots} entered</span>
+                                        <span className="font-mono font-bold">{quest.totalSlots} winners drawn</span>
                                     </>
                                 ) : (
                                     <>
-                                        <span className="spots-label">{quest.filledSlots} / {quest.totalSlots} spots filled</span>
-                                        <span className="spots-value" style={{ color: slotsLeft < 5 ? "var(--red)" : "var(--fg)" }}>
+                                        <span className="text-muted-foreground font-semibold">{quest.filledSlots} / {quest.totalSlots} spots filled</span>
+                                        <span className={cn("font-mono font-bold", slotsLeft < 5 ? "text-error" : "text-foreground")}>
                                             {slotsLeft} left
                                         </span>
                                     </>
                                 )}
                             </div>
                             {!isLuckyDraw && (
-                                <div className="spots-track">
+                                <div className="h-1.5 bg-muted rounded overflow-hidden">
                                     <div
-                                        className={`spots-fill ${slotsLeft < 5 ? "hot" : "normal"}`}
+                                        className={cn("h-full rounded transition-[width] duration-300", slotsLeft < 5 ? "bg-red-600" : "bg-accent")}
                                         style={{ width: `${spotsPercent}%` }}
                                     />
                                 </div>
@@ -788,7 +794,7 @@ export function QuestDetail() {
                         </div>
 
                         {/* CTA */}
-                        <div className="cta-section">
+                        <div className="p-3 border-b border-border">
                             {(() => {
                                 const isCreator = isAuthenticated && !!quest.isCreator
                                 const isFunded = quest.fundingStatus === "confirmed"
@@ -799,20 +805,15 @@ export function QuestDetail() {
                                     return (
                                         <>
                                             <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>
-                                                <button className="cta-btn primary" style={{ marginBottom: 8 }}>Edit Draft</button>
+                                                <Button className="w-full mb-2">Edit Draft</Button>
                                             </Link>
                                             {isFunded ? (
-                                                <div style={{
-                                                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                                                    padding: "8px 12px", borderRadius: 3,
-                                                    background: "var(--green-bg, #ecfdf5)", border: "1px solid var(--green, #10b981)",
-                                                    fontSize: 13, fontWeight: 600, color: "var(--green, #10b981)",
-                                                }}>
+                                                <div className="flex items-center justify-center gap-1.5 px-3 py-2 rounded bg-accent-light border border-green-600 text-sm font-semibold text-accent">
                                                     Funded
                                                 </div>
                                             ) : (
                                                 <Link to="/quests/$questId/fund" params={{ questId: quest.id }}>
-                                                    <button className="cta-btn green">Fund Quest</button>
+                                                    <Button className="w-full bg-success hover:bg-success/90 border-success">Fund Quest</Button>
                                                 </Link>
                                             )}
                                         </>
@@ -824,10 +825,10 @@ export function QuestDetail() {
                                     return (
                                         <>
                                             <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>
-                                                <button className="cta-btn primary" style={{ marginBottom: 8 }}>Edit Quest</button>
+                                                <Button className="w-full mb-2">Edit Quest</Button>
                                             </Link>
                                             <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>
-                                                <button className="cta-btn secondary">Manage Quest</button>
+                                                <Button variant="secondary" className="w-full">Manage Quest</Button>
                                             </Link>
                                         </>
                                     )
@@ -837,14 +838,14 @@ export function QuestDetail() {
                                 if (isLive && isCreator) {
                                     return (
                                         <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>
-                                            <button className="cta-btn secondary">Manage Quest</button>
+                                            <Button variant="secondary" className="w-full">Manage Quest</Button>
                                         </Link>
                                     )
                                 }
 
                                 // Ended states (completed/expired/cancelled)
                                 if (isEnded) {
-                                    return <button className="cta-btn disabled" disabled>Quest Ended</button>
+                                    return <Button variant="secondary" className="w-full" disabled>Quest Ended</Button>
                                 }
 
                                 // Draft + not creator
@@ -854,7 +855,7 @@ export function QuestDetail() {
                                 if (quest.status === "draft" && !isAuthenticated) {
                                     return (
                                         <Link to="/login">
-                                            <button className="cta-btn primary">Log in to Edit</button>
+                                            <Button className="w-full">Log in to Edit</Button>
                                         </Link>
                                     )
                                 }
@@ -864,11 +865,11 @@ export function QuestDetail() {
                                     // Already accepted — show status
                                     if (quest.myParticipation) {
                                         return (
-                                            <div style={{ textAlign: "center", padding: "8px 0" }}>
-                                                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--green)", marginBottom: 4 }}>
+                                            <div className="text-center py-2">
+                                                <div className="text-sm font-semibold text-accent mb-1">
                                                     Quest Accepted
                                                 </div>
-                                                <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>
+                                                <div className="text-xs text-muted-foreground">
                                                     Status: {quest.myParticipation.status}
                                                 </div>
                                             </div>
@@ -876,19 +877,16 @@ export function QuestDetail() {
                                     }
                                     return (
                                         <>
-                                            <button
-                                                className={`cta-btn ${!acceptMutation.isPending && slotsLeft > 0 ? "primary" : "disabled"}`}
+                                            <Button
+                                                className="w-full"
+                                                variant={!acceptMutation.isPending && slotsLeft > 0 ? "default" : "secondary"}
                                                 disabled={acceptMutation.isPending || slotsLeft <= 0}
                                                 onClick={() => acceptMutation.mutate()}
                                             >
                                                 {acceptMutation.isPending ? "Accepting..." : slotsLeft <= 0 ? "Quest Full" : "Accept Quest"}
-                                            </button>
+                                            </Button>
                                             {acceptMsg && (
-                                                <div style={{
-                                                    marginTop: 8,
-                                                    fontSize: 12,
-                                                    color: acceptMsg.includes("accepted") ? "var(--green)" : "var(--red)"
-                                                }}>
+                                                <div className={cn("mt-2 text-xs", acceptMsg.includes("accepted") ? "text-accent" : "text-error")}>
                                                     {acceptMsg}
                                                 </div>
                                             )}
@@ -899,21 +897,21 @@ export function QuestDetail() {
                                 // Live + not authenticated
                                 if (isLive && !isAuthenticated) {
                                     return (
-                                        <button
-                                            className="cta-btn primary"
+                                        <Button
+                                            className="w-full"
                                             onClick={() => {
                                                 localStorage.setItem(REDIRECT_KEY, window.location.pathname + window.location.search)
                                                 navigate({ to: "/login" })
                                             }}
                                         >
                                             Log in to Accept Quest
-                                        </button>
+                                        </Button>
                                     )
                                 }
 
                                 // Scheduled + non-creator
                                 if (quest.status === "scheduled") {
-                                    return <button className="cta-btn disabled" disabled>Coming Soon</button>
+                                    return <Button variant="secondary" className="w-full" disabled>Coming Soon</Button>
                                 }
 
                                 return null
@@ -923,22 +921,18 @@ export function QuestDetail() {
                         {/* ── Claim Reward Section ── */}
                         {isAuthenticated && quest.fundingMethod === "crypto" && quest.myParticipation &&
                             (quest.myParticipation.status === "completed" || quest.myParticipation.status === "submitted") && (
-                                <div className="claim-reward-section" style={{
-                                    marginTop: 16,
-                                    padding: "16px 0 0",
-                                    borderTop: "1px solid var(--border)",
-                                }}>
+                                <div className="mt-4 px-3 pt-4 border-t border-border">
                                     {quest.myParticipation.payoutWallet ? (
                                         // Already claimed
-                                        <div style={{ textAlign: "center" }}>
+                                        <div className="text-center">
                                             {quest.myParticipation.payoutStatus === "paid" ? (
                                                 <>
-                                                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--green)", marginBottom: 4 }}>
+                                                    <div className="text-sm font-semibold text-accent mb-1">
                                                         Reward Paid
                                                     </div>
-                                                    <div style={{ fontSize: 11, color: "var(--fg-muted)", wordBreak: "break-all" }}>
+                                                    <div className="text-xs text-muted-foreground break-all">
                                                         {quest.myParticipation.payoutAmount} {quest.rewardType} sent to{" "}
-                                                        <code style={{ fontSize: 10, background: "var(--code-bg, #f5f5f5)", padding: "1px 4px", borderRadius: 2 }}>
+                                                        <code className="font-mono text-xs bg-muted px-1 py-px rounded">
                                                             {quest.myParticipation.payoutWallet.slice(0, 6)}...{quest.myParticipation.payoutWallet.slice(-4)}
                                                         </code>
                                                     </div>
@@ -947,7 +941,7 @@ export function QuestDetail() {
                                                             href={`https://sepolia.basescan.org/tx/${quest.myParticipation.payoutTxHash}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            style={{ fontSize: 11, color: "var(--accent)" }}
+                                                            className="text-xs text-accent"
                                                         >
                                                             View transaction
                                                         </a>
@@ -955,12 +949,12 @@ export function QuestDetail() {
                                                 </>
                                             ) : (
                                                 <>
-                                                    <div style={{ fontSize: 13, fontWeight: 600, color: "var(--fg)", marginBottom: 4 }}>
+                                                    <div className="text-sm font-semibold text-foreground mb-1">
                                                         Wallet Submitted
                                                     </div>
-                                                    <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>
+                                                    <div className="text-xs text-muted-foreground">
                                                         Payout incoming to{" "}
-                                                        <code style={{ fontSize: 10, background: "var(--code-bg, #f5f5f5)", padding: "1px 4px", borderRadius: 2 }}>
+                                                        <code className="font-mono text-xs bg-muted px-1 py-px rounded">
                                                             {quest.myParticipation.payoutWallet.slice(0, 6)}...{quest.myParticipation.payoutWallet.slice(-4)}
                                                         </code>
                                                     </div>
@@ -970,13 +964,13 @@ export function QuestDetail() {
                                     ) : (
                                         // Need to connect wallet and claim
                                         <div>
-                                            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, textAlign: "center" }}>
+                                            <div className="text-sm font-semibold text-center mb-2">
                                                 Claim Your Reward
                                             </div>
-                                            <div style={{ fontSize: 11, color: "var(--fg-muted)", marginBottom: 12, textAlign: "center" }}>
+                                            <div className="text-xs text-muted-foreground text-center mb-3">
                                                 Connect your wallet to receive {quest.rewardType} reward
                                             </div>
-                                            <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+                                            <div className="flex justify-center mb-2.5">
                                                 <ConnectButton
                                                     showBalance={false}
                                                     chainStatus="icon"
@@ -984,22 +978,22 @@ export function QuestDetail() {
                                                 />
                                             </div>
                                             {isWalletConnected && connectedWallet && (
-                                                <button
-                                                    className={`cta-btn ${claimRewardMutation.isPending ? "disabled" : "primary"}`}
+                                                <Button
+                                                    className="w-full mt-1"
+                                                    variant={claimRewardMutation.isPending ? "secondary" : "default"}
                                                     disabled={claimRewardMutation.isPending}
                                                     onClick={() => claimRewardMutation.mutate(connectedWallet)}
-                                                    style={{ width: "100%", marginTop: 4 }}
                                                 >
                                                     {claimRewardMutation.isPending ? "Submitting..." : "Claim Reward"}
-                                                </button>
+                                                </Button>
                                             )}
                                             {claimRewardMutation.isSuccess && (
-                                                <div style={{ marginTop: 8, fontSize: 12, color: "var(--green)", textAlign: "center" }}>
+                                                <div className="mt-2 text-xs text-accent text-center">
                                                     Wallet submitted! Payout incoming.
                                                 </div>
                                             )}
                                             {claimRewardMutation.isError && (
-                                                <div style={{ marginTop: 8, fontSize: 12, color: "var(--red)", textAlign: "center" }}>
+                                                <div className="mt-2 text-xs text-error text-center">
                                                     {(claimRewardMutation.error as Error).message}
                                                 </div>
                                             )}

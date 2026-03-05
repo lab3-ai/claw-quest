@@ -2,84 +2,211 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Variables — ClawQuest shared */
+/* ──────────────────────────────────────────────
+   ClawQuest Design System v3 — Terminal Edition
+   Monospace-first · Terminal green accent · Flat & high-contrast
+   Source of truth: docs/design-system/DESIGN_SYSTEM.md
+   ────────────────────────────────────────────── */
 :root {
+    /* ── Core Colors ── */
     --bg: #ffffff;
-    --fg: #232629;
-    --fg-muted: #6a737c;
-    --border: #d6d9dc;
-    --border-heavy: #babfc4;
-    --accent: #f48024;
-    --link: #0074cc;
-    --link-visited: #0055aa;
-    --green: #48a868;
-    --green-bg: #edf8f1;
-    --red: #c02d2d;
-    --red-bg: #fdf2f2;
-    --yellow: #e8a317;
-    --yellow-bg: #fdf7e8;
-    --tag-bg: #e1ecf4;
-    --tag-fg: #39739d;
-    --code-bg: #f6f6f6;
-    --sidebar-bg: #fafafb;
+    --bg-subtle: #e8e8e8;
+    --bg-muted: #dcdcdc;
+    --fg: #111111;
+    --fg-secondary: #555555;
+    --fg-muted: #888888;
+    --border: #d0d0d0;
+    --border-heavy: #aaaaaa;
+    --border-strong: #222222;
 
-    --human-fg: #be185d;
-    --human-bg: #fce7f3;
-    --human-border: #f9a8d4;
-    --agent-fg: #2563eb;
-    --agent-bg: #eff6ff;
-    --agent-border: #bfdbfe;
-    --skill-fg: #059669;
-    --skill-bg: #d1fae5;
-    --skill-border: #6ee7b7;
-    --social-fg: #be185d;
-    --social-bg: #fce7f3;
+    /* ── Dark surfaces (code blocks, dark cards) ── */
+    --surface-dark: #1a1a1a;
+    --surface-dark-subtle: #2a2a2a;
+    --surface-dark-fg: #ffffff;
+    --surface-dark-muted: #999999;
 
+    /* ── Brand / Accent — neutral-950 (monochrome) ── */
+    --accent: #0a0a0a;
+    --accent-hover: #262626;
+    --accent-light: #f5f5f5;
+    --accent-border: #a3a3a3;
+    --accent-fg: #ffffff;
+
+    /* ── Primary (buttons) — solid black ── */
+    --primary: #0a0a0a;
+    --primary-hover: #262626;
+    --primary-fg: #ffffff;
+
+    /* ── Links ── */
+    --link: #111111;
+    --link-visited: #333333;
+
+    /* ── Semantic ── */
+    --success: #16a34a;
+    --success-light: #f0fdf4;
+    --success-border: #86efac;
+    --error: #ff4444;
+    --error-light: #fff0f0;
+    --error-border: #ff8888;
+    --warning: #ffaa00;
+    --warning-light: #fff8e6;
+    --warning-border: #ffcc66;
+    --info: #4488ff;
+    --info-light: #e6f0ff;
+
+    /* ── Actor Colors — monochrome ── */
+    --human-fg: #555555;
+    --human-bg: #f0f0f0;
+    --human-border: #cccccc;
+    --agent-fg: #0a0a0a;
+    --agent-bg: #f5f5f5;
+    --agent-border: #a3a3a3;
+    --skill-fg: #555555;
+    --skill-bg: #f0f0f0;
+    --skill-border: #cccccc;
+    --social-fg: #555555;
+    --social-bg: #f0f0f0;
+
+    /* ── Platform Colors ── */
     --stripe-fg: #635bff;
     --stripe-bg: #f3f0ff;
+    --telegram: #229ed9;
+    --discord: #5865f2;
+    --x-twitter: #111111;
 
-    --tone-quest: #f48024;
-    --tone-quest-dark: #d4711e;
-    --tone-quest-bg: #fff7f0;
-    --tone-agent: #2563eb;
-    --tone-agent-dark: #1d4ed8;
-    --tone-agent-bg: #eff6ff;
+    /* ── Tone Colors ── */
+    --tone-quest: #0a0a0a;
+    --tone-quest-dark: #262626;
+    --tone-quest-bg: #f5f5f5;
+    --tone-agent: #0a0a0a;
+    --tone-agent-dark: #262626;
+    --tone-agent-bg: #f5f5f5;
 
-    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Liberation Sans", sans-serif;
-    --font-mono: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "Liberation Mono", Menlo, Monaco, Consolas, monospace;
+    /* ── Legacy aliases — map to new palette ── */
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    --red: #ff4444;
+    --red-bg: #fff0f0;
+    --yellow: #ffaa00;
+    --yellow-bg: #fff8e6;
+    --tag-bg: #dcdcdc;
+    --tag-fg: #555555;
+    --code-bg: #1a1a1a;
+    --sidebar-bg: #e8e8e8;
 
-    /* Radius */
+    /* ── Typography — monospace-first ── */
+    --font: "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    --font-heading: "Geist Mono", ui-monospace, "Cascadia Mono", monospace;
+    --font-mono: "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+
+    --text-xs: 12px;
+    --text-sm: 14px;
+    --text-base: 16px;
+    --text-md: 16px;
+    --text-lg: 18px;
+    --text-xl: 20px;
+    --text-2xl: 24px;
+    --text-3xl: 28px;
+
+    /* ── Spacing (4px grid) ── */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+
+    /* ── Border Radius ── */
+    --radius-base: 0px;
     --radius-sm: 3px;
-    --radius-md: 6px;
-    --radius-lg: 12px;
+    --radius-md: 4px;
+    --radius-lg: 6px;
+    --radius-xl: 8px;
+    --radius-full: 9999px;
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-    --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+    /* ── Shadows — flat, no decorative shadows ── */
+    --shadow-xs: none;
+    --shadow-sm: none;
+    --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-accent: none;
 
-    /* Transitions */
-    --transition-fast: 150ms ease;
-    --transition-normal: 200ms ease;
+    /* ── Animation ── */
+    --duration-fast: 80ms;
+    --duration-base: 150ms;
+    --duration-slow: 250ms;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+    --transition-fast: var(--duration-fast) var(--ease-out);
+    --transition-normal: var(--duration-base) var(--ease-out);
 
-    /* Spacing scale */
-    --space-xs: 4px;
-    --space-sm: 8px;
-    --space-md: 16px;
-    --space-lg: 24px;
-    --space-xl: 32px;
+    /* ── Z-Index ── */
+    --z-base: 0;
+    --z-dropdown: 10;
+    --z-sticky: 20;
+    --z-overlay: 30;
+    --z-modal: 40;
+    --z-toast: 50;
 }
 
 body {
     font-family: var(--font);
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: var(--text-base);
+    line-height: 1.6;
     color: var(--fg);
     background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .page-container {
-    max-width: 920px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 20px 16px;
+    padding: 20px 24px;
+}
+
+/* Global focus ring */
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Respect motion preferences */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Skeleton loading placeholder */
+.skeleton {
+    background: linear-gradient(90deg, var(--bg-subtle) 25%, var(--border) 50%, var(--bg-subtle) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+    border-radius: var(--radius-sm);
+    color: transparent !important;
+}
+
+.skeleton * {
+    visibility: hidden;
+}
+
+@keyframes skeleton-pulse {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
 }

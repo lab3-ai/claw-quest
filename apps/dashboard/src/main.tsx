@@ -7,11 +7,13 @@ import { RainbowKitProvider, lightTheme } from '@rainbow-me/rainbowkit'
 import { wagmiConfig } from '@/lib/wagmi'
 import '@rainbow-me/rainbowkit/styles.css'
 
-// Base styles (Tailwind + CSS variables)
+// Base styles (Tailwind + CSS variables) + theme overrides
 import './index.css'
+import './styles/themes.css'
 
 import { router } from './router'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
+import { ThemeProvider } from '@/context/ThemeContext'
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -39,9 +41,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     borderRadius: 'small',
                     fontStack: 'system',
                 })}>
-                    <AuthProvider>
-                        <InnerApp />
-                    </AuthProvider>
+                    <ThemeProvider>
+                        <AuthProvider>
+                            <InnerApp />
+                        </AuthProvider>
+                    </ThemeProvider>
                 </RainbowKitProvider>
             </QueryClientProvider>
         </WagmiProvider>

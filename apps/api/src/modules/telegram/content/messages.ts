@@ -8,6 +8,14 @@ export const MSG = {
         'I help you manage AI agents and quests on ClawQuest.\n\n' +
         'Use the buttons below or type /help to see all commands.',
 
+    welcomeBack: (name: string) =>
+        `Welcome back, ${name}! \ud83e\udd9e\n\nWhat would you like to do?`,
+
+    welcomeUnlinked:
+        'Welcome to ClawQuest! \ud83e\udd9e\n\n' +
+        'Link your account to get the full experience \u2014 browse quests, track status, and create quests.\n\n' +
+        'Or just ask me anything about ClawQuest!',
+
     // ── Verify deeplink (agent) ──
     invalidLink: '\u274c Invalid or expired link. Ask your agent to register again.',
     agentAlreadyClaimed: (name: string) =>
@@ -47,12 +55,10 @@ export const MSG = {
     // ── Help ──
     help:
         'Available Commands:\n\n' +
-        '/register \u2014 Register your agent via email + activation code\n' +
         '/quests   \u2014 Browse available quests\n' +
-        '/accept   \u2014 Accept a quest: /accept <number>\n' +
-        '/done     \u2014 Submit quest proof: /done <url>\n' +
-        '/verify   \u2014 Claim an agent or quest via verification link\n' +
         '/status   \u2014 See your linked agents and quests\n' +
+        '/register \u2014 Register your agent via activation code\n' +
+        '/verify   \u2014 Claim an agent or quest via verification link\n' +
         '/about    \u2014 Learn about ClawQuest\n' +
         '/help     \u2014 Show this message\n\n' +
         'Dashboard: https://clawquest.ai',
@@ -65,24 +71,7 @@ export const MSG = {
     // ── Quests list ──
     noLiveQuests: 'No quests are currently available. Check back soon!\n\nDashboard: https://clawquest.ai',
     questListHeader: 'Available Quests:\n\n',
-    questListFooter: '\nUse /accept <number> to join a quest.\nUse /status to see your active quest.',
-
-    // ── Accept ──
-    acceptNoAgent: '\u274c No linked agent found. Use /register to link your agent first.',
-    acceptNoQuest: '\u274c Quest not found or is no longer available.',
-    acceptAlreadyJoined: '\u26a0\ufe0f Your agent has already joined that quest.',
-    acceptQuestFull: '\u274c That quest is full. Try another quest with /quests.',
-    acceptSuccess: (title: string, participationId: string) =>
-        `\u2705 Joined quest: "${title}"\n\nParticipation ID: \`${participationId}\`\n\nComplete the quest tasks and submit proof with:\n/done <proof-url>`,
-    acceptInvalidArg: '\u274c Invalid argument. Use /accept <number> (from /quests list) or /accept <quest-uuid>.',
-
-    // ── Done ──
-    doneNoAgent: '\u274c No linked agent found. Use /register to link your agent first.',
-    doneNoActiveQuest: '\u274c No active quest found. Use /quests to browse and /accept to join one.',
-    doneProofPrompt: 'Please provide a proof URL:\n\n/done https://x.com/your-post',
-    doneSuccess: (title: string) =>
-        `\u2705 Proof submitted for "${title}"!\n\nStatus: Awaiting verification.\n\nUse /status to track your submission.`,
-    doneInvalidProof: '\u274c Please include a valid URL with your submission:\n/done https://x.com/your-post',
+    questListFooter: '\nUse /status to see your active quests.\nDashboard: https://clawquest.ai',
 
     // ── Verify interactive ──
     verifyPrompt: 'What would you like to verify?',

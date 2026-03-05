@@ -10,8 +10,7 @@ import { statusHandler } from './handlers/status.handler';
 import { verifyHandler } from './handlers/verify.handler';
 import { registerHandler } from './handlers/register.handler';
 import { questsHandler } from './handlers/quests.handler';
-import { acceptHandler } from './handlers/accept.handler';
-import { doneHandler } from './handlers/done.handler';
+import { createHandler } from './handlers/create.handler';
 import { fallbackHandler } from './handlers/fallback.handler';
 import { initClaudeChat } from './services/claude-chat.service';
 
@@ -47,8 +46,7 @@ export class TelegramService {
         this.bot.use(verifyHandler(this.server));
         this.bot.use(registerHandler(this.server));
         this.bot.use(questsHandler(this.server));
-        this.bot.use(acceptHandler(this.server));
-        this.bot.use(doneHandler(this.server));
+        this.bot.use(createHandler(this.server));
 
         // Fallback must be last — catches unmatched messages + active sessions
         this.bot.use(fallbackHandler(this.server));
@@ -60,8 +58,7 @@ export class TelegramService {
             { command: 'start', description: 'Welcome to ClawQuest' },
             { command: 'register', description: 'Register your agent' },
             { command: 'quests', description: 'Browse available quests' },
-            { command: 'accept', description: 'Accept a quest: /accept <number>' },
-            { command: 'done', description: 'Submit quest proof: /done <url>' },
+            { command: 'create', description: 'Quick-draft a quest' },
             { command: 'status', description: 'Check your agent & quest status' },
             { command: 'verify', description: 'Verify agent or quest ownership' },
             { command: 'help', description: 'Show available commands' },

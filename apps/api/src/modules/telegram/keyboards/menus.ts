@@ -37,6 +37,15 @@ export function questsKeyboard(): InlineKeyboard {
     return new InlineKeyboard().url('Browse All Quests', 'https://clawquest.ai/quests');
 }
 
+// ── Link account button (for unlinked users) ──
+export function linkAccountKeyboard(telegramId: number): InlineKeyboard {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    return new InlineKeyboard()
+        .url('\ud83d\udd17 Link Your Account', `${frontendUrl}/login?telegram_link=${telegramId}`)
+        .row()
+        .url('Open Dashboard', 'https://clawquest.ai');
+}
+
 // ── Claim button (agent) ──
 export function claimAgentKeyboard(url: string): InlineKeyboard {
     return new InlineKeyboard().url('\ud83d\udd17 Claim Agent on Dashboard', url);

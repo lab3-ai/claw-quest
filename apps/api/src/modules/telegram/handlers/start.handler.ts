@@ -2,7 +2,8 @@ import { Composer } from 'grammy';
 import { FastifyInstance } from 'fastify';
 import { BotContext } from '../types';
 import { MSG } from '../content/messages';
-import { welcomeKeyboard, claimAgentKeyboard, claimQuestKeyboard } from '../keyboards/menus';
+import { linkAccountKeyboard, claimAgentKeyboard, claimQuestKeyboard } from '../keyboards/menus';
+import { mainReplyKeyboard } from '../keyboards/reply-keyboard';
 
 export function startHandler(server: FastifyInstance): Composer<BotContext> {
     const composer = new Composer<BotContext>();
@@ -11,7 +12,7 @@ export function startHandler(server: FastifyInstance): Composer<BotContext> {
         const payload = ctx.match;
 
         if (!payload) {
-            return ctx.reply(MSG.welcome, { reply_markup: welcomeKeyboard() });
+            return handleBareStart(server, ctx);
         }
 
         // Token prefix is the routing key — no wrapper needed
@@ -34,6 +35,45 @@ export function startHandler(server: FastifyInstance): Composer<BotContext> {
     });
 
     return composer;
+}
+
+async function handleBareStart(server: FastifyInstance, ctx: BotContext) {
+    const tgId = ctx.from?.id;
+    if (!tgId) {
+        return ctx.reply(MSG.welcome, { reply_markup: mainReplyKeyboard() });
+    }
+
+    try {
+        // Check if user has a linked account via telegramId on User model
+        const user = await server.prisma.user.findFirst({
+            where: { telegramId: String(tgId) },
+            select: { displayName: true, email: true },
+        });
+
+        if (user) {
+            const name = user.displayName || user.email || 'there';
+            return ctx.reply(MSG.welcomeBack(name), { reply_markup: mainReplyKeyboard() });
+        }
+
+        // Also check TelegramLink (agent ownership)
+        const link = await server.prisma.telegramLink.findFirst({
+            where: { telegramId: BigInt(tgId) },
+            select: { firstName: true },
+        });
+
+        if (link) {
+            const name = link.firstName || 'there';
+            return ctx.reply(MSG.welcomeBack(name), { reply_markup: mainReplyKeyboard() });
+        }
+    } catch (err) {
+        server.log.error({ err }, 'Error checking linked account on /start');
+    }
+
+    // Not linked — send reply keyboard first, then inline link button
+    await ctx.reply(MSG.welcomeUnlinked, { reply_markup: mainReplyKeyboard() });
+    return ctx.reply('\ud83d\udc47 Link your account to get started:', {
+        reply_markup: linkAccountKeyboard(tgId),
+    });
 }
 
 async function handleVerifyDeeplink(server: FastifyInstance, ctx: BotContext, token: string) {

@@ -9,6 +9,12 @@ import {
     handleQuestRefunded,
     handleEmergencyWithdrawal,
 } from './escrow-event-handlers';
+import {
+    notifyQuestFunded,
+    notifyQuestDistributed,
+    notifyQuestRefunded,
+} from '../telegram/services/bot-notification.service';
+import { bytes32ToUuid } from '@clawquest/shared';
 
 // ─── Escrow Event Poller ─────────────────────────────────────────────────────
 // Polls ALL active chains for escrow events and updates the database.
@@ -137,21 +143,25 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
                     case 'QuestFunded': {
                         const { questId, sponsor, token, amount, expiresAt } = event.args as any;
                         await handleQuestFunded(server.prisma, questId, sponsor, token, BigInt(amount), BigInt(expiresAt), txHash, chainId);
+                        notifyQuestFunded(server, bytes32ToUuid(questId)).catch(() => {});
                         break;
                     }
                     case 'QuestDistributed': {
                         const { questId, recipients, amounts, totalPayout } = event.args as any;
                         await handleQuestDistributed(server.prisma, questId, recipients, amounts.map(BigInt), BigInt(totalPayout), txHash, chainId);
+                        notifyQuestDistributed(server, bytes32ToUuid(questId)).catch(() => {});
                         break;
                     }
                     case 'QuestRefunded': {
                         const { questId, sponsor, amount } = event.args as any;
                         await handleQuestRefunded(server.prisma, questId, sponsor, BigInt(amount), txHash, chainId);
+                        notifyQuestRefunded(server, bytes32ToUuid(questId)).catch(() => {});
                         break;
                     }
                     case 'EmergencyWithdrawal': {
                         const { questId, sponsor, amount } = event.args as any;
                         await handleEmergencyWithdrawal(server.prisma, questId, sponsor, BigInt(amount), txHash, chainId);
+                        notifyQuestRefunded(server, bytes32ToUuid(questId)).catch(() => {});
                         break;
                     }
                     default:

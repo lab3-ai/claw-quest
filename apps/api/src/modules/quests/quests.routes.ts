@@ -21,6 +21,7 @@ import {
 import { validatePublishRequirements } from './quests.publish-validator';
 import { validateSocialTarget } from './social-validator';
 import { verifySocialAction, VerificationContext } from './social-action-verifier';
+import { notifyQuestCancelled, notifyProofVerified } from '../telegram/services/bot-notification.service';
 
 const CreateQuestSchema = QuestSchema.omit({
     id: true,
@@ -1351,6 +1352,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 }
             }
 
+            notifyQuestCancelled(server, id).catch(() => {});
             return { message: 'Quest cancelled', questId: id };
         }
     );
@@ -1394,6 +1396,7 @@ export async function questsRoutes(server: FastifyInstance) {
 
             try {
                 const participation = await verifyParticipation(server.prisma, questId, pid, action, reason);
+                notifyProofVerified(server, pid, action === 'approve' ? 'approved' : 'rejected').catch(() => {});
                 return {
                     message: `Proof ${action === 'approve' ? 'approved' : 'rejected'}`,
                     participation: { id: participation.id, status: participation.status },

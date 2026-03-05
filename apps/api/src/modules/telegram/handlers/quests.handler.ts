@@ -4,10 +4,6 @@ import { BotContext } from '../types';
 import { MSG } from '../content/messages';
 import { questsKeyboard } from '../keyboards/menus';
 
-// Per-user cache: telegramId → ordered list of quest IDs
-// Rebuilt on each /quests call. Enables numeric /accept shorthand.
-export const questListCache = new Map<number, string[]>();
-
 export function questsHandler(server: FastifyInstance): Composer<BotContext> {
     const composer = new Composer<BotContext>();
 
@@ -43,11 +39,6 @@ export async function handleQuests(server: FastifyInstance, ctx: BotContext) {
 
         if (quests.length === 0) {
             return ctx.reply(MSG.noLiveQuests);
-        }
-
-        // Update per-user cache so /accept <n> works
-        if (tgId) {
-            questListCache.set(tgId, quests.map((q) => q.id));
         }
 
         let message = MSG.questListHeader;

@@ -3,12 +3,16 @@ import { FastifyInstance } from 'fastify';
 import { BotContext } from '../types';
 import { MSG } from '../content/messages';
 import { FAQ } from '../content/knowledge';
-import { claimAgentKeyboard, claimQuestKeyboard } from '../keyboards/menus';
+import { claimAgentKeyboard, claimQuestKeyboard, aboutTopicsKeyboard } from '../keyboards/menus';
 import { handleRegisterInput } from './register.handler';
-import { registerSessions } from '../telegram.session';
+import { handleCreateInput } from './create.handler';
+import { registerSessions, createSessions } from '../telegram.session';
 import { isRateLimited } from '../services/rate-limiter';
-import { isClaudeChatAvailable, chatWithClaude } from '../services/claude-chat.service';
+import { isClaudeChatAvailable, chatWithClaude, streamChatWithClaude } from '../services/claude-chat.service';
 import { logMessage, getRecentMessages } from '../services/chat-log.service';
+import { MENU_LABELS } from '../keyboards/reply-keyboard';
+import { handleQuests } from './quests.handler';
+import { handleStatus } from './status.handler';
 
 export function fallbackHandler(server: FastifyInstance): Composer<BotContext> {
     const composer = new Composer<BotContext>();
@@ -30,12 +34,17 @@ export function fallbackHandler(server: FastifyInstance): Composer<BotContext> {
 
         // ── Delegate to register flow if session active ──
         if (tgId && registerSessions.has(tgId)) {
-            // Allow /cancel text to clear session
             if (text.toLowerCase() === '/cancel' || text.toLowerCase() === 'cancel') {
                 registerSessions.delete(tgId);
                 return ctx.reply(MSG.registerCancelled);
             }
             const handled = await handleRegisterInput(server, ctx, text);
+            if (handled) return;
+        }
+
+        // ── Delegate to create quest flow if session active ──
+        if (tgId && createSessions.has(tgId)) {
+            const handled = await handleCreateInput(server, ctx, text);
             if (handled) return;
         }
 
@@ -50,6 +59,30 @@ export function fallbackHandler(server: FastifyInstance): Composer<BotContext> {
         if (text.startsWith('verify_')) {
             const rawToken = text.slice(7); // strip "verify_" prefix → raw hex
             return handlePastedAgentToken(server, ctx, rawToken);
+        }
+
+        // ── Reply keyboard button routing ──
+        if (text === MENU_LABELS.browseQuests) {
+            return handleQuests(server, ctx);
+        }
+        if (text === MENU_LABELS.myStatus) {
+            return handleStatus(server, ctx);
+        }
+        if (text === MENU_LABELS.about) {
+            return ctx.reply(MSG.aboutIntro, { reply_markup: aboutTopicsKeyboard() });
+        }
+        if (text === MENU_LABELS.createQuest) {
+            const user = await server.prisma.user.findFirst({
+                where: { telegramId: String(tgId) },
+                select: { id: true },
+            });
+            if (!user) {
+                return ctx.reply(
+                    'You need a linked ClawQuest account to create quests.\n\nUse /start to link your account first.',
+                );
+            }
+            createSessions.set(tgId!, { step: 'title' });
+            return ctx.reply('Let\'s create a quest draft!\n\nStep 1/3 — Enter a title for your quest:');
         }
 
         // ── FAQ keyword matching ──
@@ -70,15 +103,21 @@ export function fallbackHandler(server: FastifyInstance): Composer<BotContext> {
             }
 
             try {
-                await ctx.replyWithChatAction('typing');
                 const recent = await getRecentMessages(server, tgId);
-                const result = await chatWithClaude(text, recent);
+
+                // Try streaming first (sendMessageDraft), fall back to non-streaming
+                let result = await streamChatWithClaude(tgId, ctx.api, text, recent);
+                if (!result) {
+                    await ctx.replyWithChatAction('typing');
+                    result = await chatWithClaude(text, recent);
+                }
 
                 if (result?.reply) {
                     await logMessage(server, tgId, 'outbound', 'bot_response', result.reply, {
                         source: 'claude',
                         model: 'claude-haiku-4-5-20251001',
                         tokens: result.tokensUsed,
+                        streamed: true,
                     });
                     return ctx.reply(result.reply);
                 }

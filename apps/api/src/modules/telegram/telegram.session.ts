@@ -10,3 +10,16 @@ export interface RegisterSession {
 
 // Map<telegramId, RegisterSession>
 export const registerSessions = new Map<number, RegisterSession>();
+
+// ── Create Quest Session ──
+
+export type CreateStep = 'title' | 'type' | 'reward';
+
+export interface CreateSession {
+    step: CreateStep;
+    title?: string;
+    type?: string;
+}
+
+// Map<telegramId, CreateSession>
+export const createSessions = new Map<number, CreateSession>();

@@ -18,7 +18,7 @@ export function statusHandler(server: FastifyInstance): Composer<BotContext> {
     return composer;
 }
 
-async function handleStatus(server: FastifyInstance, ctx: BotContext) {
+export async function handleStatus(server: FastifyInstance, ctx: BotContext) {
     try {
         const telegramId = BigInt(ctx.from?.id || 0);
 
@@ -73,7 +73,7 @@ async function handleStatus(server: FastifyInstance, ctx: BotContext) {
                     message += `\n   Submission: ${p.status}`;
 
                     if (p.status === 'in_progress') {
-                        message += '\n   \u2192 Use /done <url> to submit proof';
+                        message += '\n   \u2192 In progress';
                     } else if (p.status === 'submitted') {
                         message += '\n   \u23f3 Awaiting verification';
                     }

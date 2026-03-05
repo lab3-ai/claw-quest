@@ -171,15 +171,24 @@ export async function questsRoutes(server: FastifyInstance) {
                     hasAccess = true;
                 }
 
-                // Check if authenticated creator (optional — don't fail if no auth)
+                // Check if authenticated creator or partner
                 if (!hasAccess) {
                     const authHeader = request.headers.authorization;
                     if (authHeader?.startsWith('Bearer ') && !authHeader.startsWith('Bearer cq_')) {
                         try {
                             await (server as any).authenticate(request, reply);
                             const user = (request as any).user;
-                            if (user?.id && quest.creatorUserId === user.id) {
-                                hasAccess = true;
+                            if (user?.id) {
+                                if (quest.creatorUserId === user.id) {
+                                    hasAccess = true;
+                                } else {
+                                    // Check if user is an accepted partner
+                                    const partnerRecord = await server.prisma.questCollaborator.findFirst({
+                                        where: { questId: id, userId: user.id, acceptedAt: { not: null } },
+                                        select: { id: true },
+                                    });
+                                    if (partnerRecord) hasAccess = true;
+                                }
                             }
                         } catch {
                             // Not authenticated — that's fine, just check token
@@ -195,10 +204,12 @@ export async function questsRoutes(server: FastifyInstance) {
                 const { _count, participations, collaborators, ...q } = quest;
                 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
                 const draftUser = (request as any).user;
+                const isCreator = !!(draftUser?.id && quest.creatorUserId === draftUser.id);
                 return {
                     ...formatQuestResponse(q, participations, _count.participations, collaborators),
                     isPreview: true,
-                    isCreator: !!(draftUser?.id && quest.creatorUserId === draftUser.id),
+                    isCreator,
+                    isSponsor: !isCreator && hasAccess && !!draftUser?.id,
                     fundingRequired: quest.fundingStatus === 'unfunded',
                     previewToken: quest.previewToken,
                     fundUrl: `${frontendUrl}/quests/${quest.id}/fund`,

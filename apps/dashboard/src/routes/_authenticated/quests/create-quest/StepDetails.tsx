@@ -86,11 +86,11 @@ export function StepDetails({
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="space-y-1.5 mb-3.5">
                                 <Label>Start</Label>
-                                <input className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" type="datetime-local" value={form.startAt} onChange={e => onFieldChange("startAt", e.target.value)} />
+                                <input className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" type="datetime-local" value={form.startAt} onChange={e => onFieldChange("startAt", e.target.value)} />
                             </div>
                             <div className="space-y-1.5 mb-3.5">
                                 <Label>End</Label>
-                                <input className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" type="datetime-local" value={form.endAt} onChange={e => onFieldChange("endAt", e.target.value)} />
+                                <input className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" type="datetime-local" value={form.endAt} onChange={e => onFieldChange("endAt", e.target.value)} />
                             </div>
                         </div>
                     </div>

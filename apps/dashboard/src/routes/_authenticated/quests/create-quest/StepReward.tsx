@@ -115,7 +115,7 @@ export function StepReward({
                             <div className="flex items-start gap-3">
                                 <div className="flex-1 space-y-1.5 mb-3.5">
                                     <Label>Network</Label>
-                                    <select className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={form.network} onChange={e => onFieldChange("network", e.target.value)}>
+                                    <select className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={form.network} onChange={e => onFieldChange("network", e.target.value)}>
                                         <optgroup label="Primary">
                                             {NETWORKS_PRIMARY.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
                                         </optgroup>
@@ -126,7 +126,7 @@ export function StepReward({
                                 </div>
                                 <div className="flex-1 space-y-1.5 mb-3.5">
                                     <Label>Token</Label>
-                                    <select className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={form.token} onChange={e => onFieldChange("token", e.target.value)}>
+                                    <select className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={form.token} onChange={e => onFieldChange("token", e.target.value)}>
                                         <optgroup label="Stablecoin">
                                             <option value="USDC">USDC</option>
                                             <option value="USDT">USDT</option>
@@ -158,10 +158,10 @@ export function StepReward({
                                 <span>Sponsor pays via <strong>Stripe</strong> (charged upfront at quest creation). Winners withdraw rewards as crypto.</span>
                             </div>
                             <div className="flex items-center gap-2.5 p-2 px-3 border border-border rounded bg-muted" style={{ marginTop: 10 }}>
-                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: "#635bff" }}>S</div>
+                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 bg-[var(--stripe-fg)]">S</div>
                                 <div className="flex-1">
                                     <div className="text-sm font-semibold text-foreground">USD via Stripe</div>
-                                    <div className="text-xs text-muted-foreground font-mono" style={{ fontFamily: "var(--font)" }}>
+                                    <div className="text-xs text-muted-foreground font-mono">
                                         Credit / debit card · Apple Pay · Google Pay
                                     </div>
                                 </div>

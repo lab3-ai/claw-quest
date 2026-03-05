@@ -258,11 +258,11 @@ export function StepPreview({
                     <div className="mt-4">
                         <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2.5">Pay with</div>
                         {form.rail === "crypto" ? (
-                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                                <span style={{ fontSize: 20 }}>{"\uD83D\uDD17"}</span>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xl">{"\uD83D\uDD17"}</span>
                                 <div>
-                                    <div style={{ fontSize: 12, fontWeight: 600 }}>Smart Contract Escrow</div>
-                                    <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>
+                                    <div className="text-xs font-semibold">Smart Contract Escrow</div>
+                                    <div className="text-xs text-muted-foreground">
                                         {form.network} {"\u00b7"} {tokenLabel}
                                     </div>
                                 </div>
@@ -270,10 +270,10 @@ export function StepPreview({
                         ) : (
                             <>
                                 <div className="flex items-center gap-2.5 p-2 px-3 border border-border rounded bg-muted" style={{ marginBottom: 8 }}>
-                                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: "#635bff" }}>S</div>
+                                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 bg-[var(--stripe-fg)]">S</div>
                                     <div className="flex-1">
                                         <div className="text-sm font-semibold text-foreground">Pay via Stripe</div>
-                                        <div className="text-xs text-muted-foreground font-mono" style={{ fontFamily: "var(--font)" }}>
+                                        <div className="text-xs text-muted-foreground font-mono">
                                             Card {"\u00b7"} Apple Pay {"\u00b7"} Google Pay
                                         </div>
                                     </div>
@@ -285,14 +285,14 @@ export function StepPreview({
 
                     {/* Mutation error */}
                     {mutation.isError && (
-                        <div style={{ marginTop: 16, padding: "10px 12px", background: "var(--red-bg)", border: "1px solid var(--red)", borderRadius: 3, fontSize: 12, color: "var(--red)" }}>
+                        <div className="mt-4 px-3 py-2.5 bg-error-light border border-error rounded-sm text-xs text-error">
                             {mutation.error?.message}
                         </div>
                     )}
 
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <Button variant="secondary" onClick={onPrevious}>{"\u2190"} Reward</Button>
-                        <div style={{ display: "flex", gap: 8 }}>
+                        <div className="flex gap-2">
                             {isFunded ? (
                                 <>
                                     <Button
@@ -335,15 +335,15 @@ export function StepPreview({
                                         </Button>
                                     )}
                                     {form.rail === "fiat" && (
-                                        <button
-                                            className="btn btn-stripe"
+                                        <Button
+                                            className="bg-[var(--stripe-fg)] hover:bg-[var(--stripe-fg)]/90 text-white"
                                             disabled={mutation.isPending}
                                             onClick={onSaveAndFund}
                                         >
                                             {mutation.isPending
                                                 ? "Saving…"
                                                 : isEditMode ? "Update & Pay with Card →" : "Save & Pay with Card →"}
-                                        </button>
+                                        </Button>
                                     )}
                                 </>
                             )}

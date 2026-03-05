@@ -106,8 +106,8 @@
    THEME: Glass — frosted glass, blur, translucent
    ═══════════════════════════════════════════════ */
 [data-theme="glass"] {
-    --font: "Google Sans Flex", "Inter", -apple-system, system-ui, sans-serif;
-    --font-heading: "Google Sans Flex", "Inter", -apple-system, system-ui, sans-serif;
+    --font: -apple-system, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, system-ui, sans-serif;
+    --font-heading: -apple-system, "SF Pro Display", "Helvetica Neue", Helvetica, system-ui, sans-serif;
     --font-mono: "JetBrains Mono", ui-monospace, monospace;
     --radius-base: 12px;
     --radius-sm: 8px;
@@ -256,6 +256,31 @@
     --tag-fg: #94a3b8;
     --code-bg: rgba(2, 6, 23, 0.9);
     --sidebar-bg: rgba(15, 23, 42, 0.8);
+}
+
+/* Glass effects — frosted backdrop on overlays & sticky header */
+[data-theme="glass"] header.sticky {
+    background: rgba(248, 250, 252, 0.7) !important;
+    backdrop-filter: blur(12px) saturate(1.5);
+    -webkit-backdrop-filter: blur(12px) saturate(1.5);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+[data-theme="glass"].dark header.sticky {
+    background: rgba(15, 23, 42, 0.7) !important;
+    border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+}
+/* Dropdown, tooltip, popover — frosted glass */
+[data-theme="glass"] .bg-popover {
+    background: rgba(248, 250, 252, 0.75) !important;
+    backdrop-filter: blur(16px) saturate(1.6);
+    -webkit-backdrop-filter: blur(16px) saturate(1.6);
+    border-color: rgba(148, 163, 184, 0.25);
+}
+[data-theme="glass"].dark .bg-popover {
+    background: rgba(15, 23, 42, 0.75) !important;
+    backdrop-filter: blur(16px) saturate(1.6);
+    -webkit-backdrop-filter: blur(16px) saturate(1.6);
+    border-color: rgba(71, 85, 105, 0.35);
 }
 
 /* ═══════════════════════════════════════════════

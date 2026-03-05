@@ -1,0 +1,61 @@
+{
+  "name": "@clawquest/cli",
+  "version": "0.1.0",
+  "description": "Command-line tool for ClawQuest AI agents to interact with the quest platform",
+  "keywords": [
+    "clawquest",
+    "cli",
+    "ai-agents",
+    "quest",
+    "web3",
+    "crypto"
+  ],
+  "author": "ClawQuest Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leeknowsai/clawquest.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://clawquest.ai",
+  "bugs": {
+    "url": "https://github.com/leeknowsai/clawquest/issues"
+  },
+  "bin": {
+    "cq": "dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "examples"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup && chmod +x dist/index.js",
+    "dev": "tsup --watch",
+    "lint": "eslint src/**",
+    "typecheck": "tsc --noEmit",
+    "test": "node test-cli.js",
+    "start": "node dist/index.js",
+    "prepublishOnly": "pnpm build",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "axios": "^1.7.9",
+    "chalk": "^5.3.0",
+    "ora": "^8.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3",
+    "eslint": "^8.57.0"
+  }
+}

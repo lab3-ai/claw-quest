@@ -184,7 +184,12 @@ export function QuestList() {
                                 <Icon size={14} />
                                 {t.label}
                                 {tabCounts[t.id] > 0 && (
-                                    <span className={cn("text-xs font-normal ml-0.5", isActive ? "text-background/60" : "text-muted-foreground")}>&nbsp;{tabCounts[t.id]}</span>
+                                    <span className={cn(
+                                        "inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full leading-none",
+                                        isActive
+                                            ? "bg-background/20 text-background"
+                                            : "bg-muted text-muted-foreground"
+                                    )}>{tabCounts[t.id]}</span>
                                 )}
                             </button>
                         )

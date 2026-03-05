@@ -24,7 +24,7 @@ export async function createFundCheckout(
     if (quest.fundingStatus === 'confirmed') throw new Error('Quest already funded');
 
     // Stripe uses smallest currency unit (cents for USD)
-    const amountCents = quest.rewardAmount * 100;
+    const amountCents = Number(quest.rewardAmount) * 100;
 
     const session = await stripe.checkout.sessions.create({
         mode: 'payment',
@@ -116,7 +116,7 @@ export async function distributeFiat(
     }));
 
     // Calculate distribution in cents
-    const totalCents = BigInt(quest.rewardAmount * 100);
+    const totalCents = BigInt(Math.round(Number(quest.rewardAmount) * 100));
 
     let results;
     switch (quest.type) {
@@ -203,7 +203,7 @@ export async function refundFiat(
     });
 
     const totalPaidDollars = paidOut._sum.payoutAmount || 0;
-    const refundDollars = quest.rewardAmount - totalPaidDollars;
+    const refundDollars = Number(quest.rewardAmount) - totalPaidDollars;
 
     if (refundDollars <= 0) {
         throw new Error('All funds have been distributed — nothing to refund');

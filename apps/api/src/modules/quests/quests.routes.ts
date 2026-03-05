@@ -308,7 +308,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 questId: quest.id,
                 questTitle: quest.title,
                 questType: quest.type as any,
-                questRewardAmount: quest.rewardAmount,
+                questRewardAmount: Number(quest.rewardAmount),
                 questRewardType: quest.rewardType,
                 totalQuesters: doneCount + inProgressCount,
                 doneQuesters: doneCount,

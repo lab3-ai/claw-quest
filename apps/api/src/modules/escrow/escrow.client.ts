@@ -2,6 +2,7 @@ import {
     createPublicClient,
     createWalletClient,
     http,
+    fallback,
     defineChain,
     type PublicClient,
     type WalletClient,
@@ -11,6 +12,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { base, baseSepolia, mainnet, bsc, bscTestnet, arbitrum, polygon } from 'viem/chains';
 import { getChainById } from '@clawquest/shared';
 import { escrowConfig, getRpcUrl } from './escrow.config';
+import { rpcManager } from './rpc-manager.service';
 
 // ─── Chain Mapping ───────────────────────────────────────────────────────────
 
@@ -49,10 +51,32 @@ function getViemChain(chainId: number): Chain {
     throw new Error(`Unsupported chainId: ${chainId} (not in viem or SUPPORTED_CHAINS)`);
 }
 
+// ─── Transport Builder ───────────────────────────────────────────────────────
+
+/** Build a viem transport for a chain using DB-sourced RPCs with fallback. */
+function buildTransport(chainId: number) {
+    const urls = rpcManager.getRpcUrls(chainId);
+    if (urls.length === 0) {
+        // Last resort: fall back to env/shared config
+        return http(getRpcUrl(chainId));
+    }
+    if (urls.length === 1) {
+        return http(urls[0]);
+    }
+    // Multiple RPCs: use viem fallback transport — tries each URL in order on failure
+    return fallback(urls.map(url => http(url)));
+}
+
 // ─── Client Caches ───────────────────────────────────────────────────────────
 
 const publicClients = new Map<number, PublicClient>();
 const walletClients = new Map<number, WalletClient>();
+
+/** Clear cached clients (call after rpcManager reloads at runtime). */
+export function invalidateClientCache(): void {
+    publicClients.clear();
+    walletClients.clear();
+}
 
 // ─── Public Client (read-only) ──────────────────────────────────────────────
 
@@ -60,10 +84,9 @@ export function getPublicClient(chainId: number): PublicClient {
     let client = publicClients.get(chainId);
     if (!client) {
         const chain = getViemChain(chainId);
-        const rpcUrl = getRpcUrl(chainId);
         client = createPublicClient({
             chain,
-            transport: http(rpcUrl),
+            transport: buildTransport(chainId),
         }) as PublicClient;
         publicClients.set(chainId, client);
     }
@@ -79,12 +102,11 @@ export function getOperatorWalletClient(chainId: number): WalletClient {
             throw new Error('OPERATOR_PRIVATE_KEY not configured');
         }
         const chain = getViemChain(chainId);
-        const rpcUrl = getRpcUrl(chainId);
         const account = privateKeyToAccount(escrowConfig.operatorKey);
         client = createWalletClient({
             account,
             chain,
-            transport: http(rpcUrl),
+            transport: buildTransport(chainId),
         });
         walletClients.set(chainId, client);
     }

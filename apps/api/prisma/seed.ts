@@ -381,6 +381,110 @@ async function main() {
     const totalP = await prisma.questParticipation.count();
     const totalA = await prisma.agent.count();
     console.log(`   ${totalA} agents · ${total} quests · ${totalP} participations`);
+
+    // ── 5. Chain & RPC Registry ──────────────────────────────────────────────
+    console.log('\n⛓️  Seeding chain & RPC registry...');
+
+    type ChainSeed = {
+        id: number;
+        name: string;
+        shortName: string;
+        nativeCurrency: { symbol: string; name: string; decimals: number };
+        explorerUrl: string;
+        isTestnet: boolean;
+        isEscrowEnabled: boolean;
+        rpcs: { url: string; provider: string; priority: number }[];
+        contracts: string[]; // from env
+    };
+
+    const chainSeeds: ChainSeed[] = [
+        {
+            id: 8453,
+            name: 'Base',
+            shortName: 'base',
+            nativeCurrency: { symbol: 'ETH', name: 'Ether', decimals: 18 },
+            explorerUrl: 'https://basescan.org',
+            isTestnet: false,
+            isEscrowEnabled: true,
+            rpcs: [
+                ...(process.env.RPC_URL_8453 ? [{ url: process.env.RPC_URL_8453, provider: 'custom', priority: 1 }] : []),
+                ...(process.env.RPC_URL_BASE ? [{ url: process.env.RPC_URL_BASE, provider: 'custom', priority: 2 }] : []),
+                { url: 'https://mainnet.base.org', provider: 'public', priority: 20 },
+                { url: 'https://base.llamarpc.com', provider: 'public', priority: 30 },
+            ],
+            contracts: [
+                process.env.ESCROW_CONTRACT_8453,
+                process.env.ESCROW_CONTRACT,
+            ].filter(Boolean) as string[],
+        },
+        {
+            id: 84532,
+            name: 'Base Sepolia',
+            shortName: 'base-sepolia',
+            nativeCurrency: { symbol: 'ETH', name: 'Ether', decimals: 18 },
+            explorerUrl: 'https://sepolia.basescan.org',
+            isTestnet: true,
+            isEscrowEnabled: true,
+            rpcs: [
+                ...(process.env.RPC_URL_84532 ? [{ url: process.env.RPC_URL_84532, provider: 'custom', priority: 1 }] : []),
+                ...(process.env.RPC_URL_BASE_SEPOLIA ? [{ url: process.env.RPC_URL_BASE_SEPOLIA, provider: 'custom', priority: 2 }] : []),
+                { url: 'https://sepolia.base.org', provider: 'public', priority: 20 },
+            ],
+            contracts: [
+                process.env.ESCROW_CONTRACT_84532,
+                process.env.ESCROW_CONTRACT,
+            ].filter(Boolean) as string[],
+        },
+        {
+            id: 56,
+            name: 'BNB Smart Chain',
+            shortName: 'bnb',
+            nativeCurrency: { symbol: 'BNB', name: 'BNB', decimals: 18 },
+            explorerUrl: 'https://bscscan.com',
+            isTestnet: false,
+            isEscrowEnabled: true,
+            rpcs: [
+                ...(process.env.RPC_URL_56 ? [{ url: process.env.RPC_URL_56, provider: 'custom', priority: 1 }] : []),
+                ...(process.env.RPC_URL_BNB ? [{ url: process.env.RPC_URL_BNB, provider: 'custom', priority: 2 }] : []),
+                { url: 'https://bsc-dataseed.binance.org', provider: 'public', priority: 20 },
+                { url: 'https://bsc-dataseed1.binance.org', provider: 'public', priority: 30 },
+                { url: 'https://bsc-dataseed2.binance.org', provider: 'public', priority: 40 },
+            ],
+            contracts: [
+                process.env.ESCROW_CONTRACT_56,
+                process.env.ESCROW_CONTRACT,
+            ].filter(Boolean) as string[],
+        },
+    ];
+
+    for (const { rpcs, contracts, ...chainData } of chainSeeds) {
+        await prisma.chain.upsert({
+            where: { id: chainData.id },
+            update: chainData,
+            create: chainData,
+        });
+
+        // Deduplicate RPCs by URL before upserting
+        const uniqueRpcs = rpcs.filter((rpc, idx, arr) => arr.findIndex(r => r.url === rpc.url) === idx);
+        for (const rpc of uniqueRpcs) {
+            await prisma.chainRpc.upsert({
+                where: { chainId_url: { chainId: chainData.id, url: rpc.url } },
+                update: { priority: rpc.priority, provider: rpc.provider },
+                create: { chainId: chainData.id, ...rpc },
+            });
+        }
+
+        // Seed active contract addresses from env
+        for (const address of contracts) {
+            await prisma.escrowContract.upsert({
+                where: { chainId_address: { chainId: chainData.id, address } },
+                update: { isActive: true },
+                create: { chainId: chainData.id, address, isActive: true },
+            });
+        }
+
+        console.log(`  ⛓️  ${chainData.name} (${chainData.id}) — ${uniqueRpcs.length} RPCs, ${contracts.length} contracts`);
+    }
 }
 
 main()

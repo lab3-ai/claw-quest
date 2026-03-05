@@ -17,6 +17,12 @@ export function Login() {
     const { isAuthenticated } = useAuth()
     const navigate = useNavigate()
 
+    // Persist ?redirect= param so post-auth callback can pick it up
+    const redirectParam = new URLSearchParams(window.location.search).get("redirect")
+    if (redirectParam) {
+        localStorage.setItem("clawquest_redirect_after_login", redirectParam)
+    }
+
     // If already authenticated, redirect to saved URL or quests
     if (isAuthenticated) {
         const savedRedirect = localStorage.getItem("clawquest_redirect_after_login")

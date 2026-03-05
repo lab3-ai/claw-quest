@@ -69,7 +69,7 @@ export async function listQuests(prisma: PrismaClient, params: AdminQuestListPar
         title: q.title,
         status: q.status,
         type: q.type,
-        rewardAmount: q.rewardAmount,
+        rewardAmount: Number(q.rewardAmount),
         rewardType: q.rewardType,
         totalSlots: q.totalSlots,
         filledSlots: q.filledSlots,
@@ -102,6 +102,7 @@ export async function getQuestDetail(prisma: PrismaClient, questId: string) {
 
     return {
         ...quest,
+        rewardAmount: Number(quest.rewardAmount),
         createdAt: quest.createdAt.toISOString(),
         expiresAt: quest.expiresAt?.toISOString() ?? null,
         startAt: quest.startAt?.toISOString() ?? null,
@@ -374,7 +375,7 @@ export async function listUserQuests(prisma: PrismaClient, userId: string, param
         id: q.id,
         title: q.title,
         status: q.status,
-        rewardAmount: q.rewardAmount,
+        rewardAmount: Number(q.rewardAmount),
         rewardType: q.rewardType,
         createdAt: q.createdAt.toISOString(),
     }));
@@ -463,7 +464,7 @@ export async function getEscrowOverview(prisma: PrismaClient) {
     const lockedValue: Record<string, number> = {};
     for (const q of fundedQuests) {
         const token = q.rewardType;
-        lockedValue[token] = (lockedValue[token] || 0) + q.rewardAmount;
+        lockedValue[token] = (lockedValue[token] || 0) + Number(q.rewardAmount);
     }
 
     return {
@@ -508,6 +509,7 @@ export async function listEscrowQuests(prisma: PrismaClient, params: PaginationP
 
     const data = quests.map((q) => ({
         ...q,
+        rewardAmount: Number(q.rewardAmount),
         fundedAt: q.fundedAt?.toISOString() ?? null,
         refundedAt: q.refundedAt?.toISOString() ?? null,
     }));
@@ -594,7 +596,7 @@ export async function getAnalyticsOverview(prisma: PrismaClient) {
             inProgress: inProgressParticipations,
         },
         escrow: {
-            totalFunded: totalFunded._sum.rewardAmount ?? 0,
+            totalFunded: Number(totalFunded._sum.rewardAmount ?? 0),
             totalDistributed: totalPaid._sum.payoutAmount ?? 0,
         },
     };

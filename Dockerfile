@@ -44,9 +44,13 @@ COPY --from=builder /app/apps/api/node_modules/ apps/api/node_modules/
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/skill.md ./
 
+# Copy entrypoint script
+COPY apps/api/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 EXPOSE 3000
 
 WORKDIR /app/apps/api
 
-# Apply pending migrations on startup, then start server
-CMD ["node", "dist/app.js"]
+# Run migrations then start server
+ENTRYPOINT ["/docker-entrypoint.sh"]

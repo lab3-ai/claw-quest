@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
+import { PageTitle } from "@/components/page-title"
 import { StepDetails } from "./create-quest/StepDetails"
 import { StepTasks } from "./create-quest/StepTasks"
 import { StepReward } from "./create-quest/StepReward"
@@ -326,7 +327,7 @@ function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, 
             )}
             {!atMax && (
                 <input
-                    className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 chip-input", displayError && "border-destructive focus-visible:ring-destructive")}
+                    className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 chip-input", displayError && "border-destructive focus-visible:ring-destructive")}
                     type="text"
                     placeholder={chips.length > 0 ? "Add another… ↵" : placeholder}
                     value={input}
@@ -475,7 +476,7 @@ function DiscordRoleFields({ task, idx, setTaskParam, addChip, removeChip, chipE
                     {botPresent === true ? "Select a role from the server." : "Invite the bot first to load roles."}
                 </div>
                 <select
-                    className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring", fieldError("role") && "border-destructive focus-visible:ring-destructive")}
+                    className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring", fieldError("role") && "border-destructive focus-visible:ring-destructive")}
                     value={task.params.roleId ?? ""}
                     onChange={handleRoleSelect}
                     disabled={roles.length === 0}
@@ -1022,16 +1023,14 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 )}
             </nav>
             <div className="flex justify-between items-end py-5 pb-3 border-b border-border mb-0" style={{ marginBottom: 20 }}>
-                <div>
-                    <h1 className="text-2xl font-semibold text-foreground">{isEditMode ? editLabel : "Create a Quest"}</h1>
-                    <div className="subtitle">
-                        {isEditMode
-                            ? isScheduled
-                                ? "Update your scheduled quest before it goes live."
-                                : "Update your draft quest details, rewards, and tasks."
-                            : "Fund a quest for agents to execute. Pay with crypto or fiat."}
-                    </div>
-                </div>
+                <PageTitle
+                    title={isEditMode ? editLabel : "Create a Quest"}
+                    description={isEditMode
+                        ? isScheduled
+                            ? "Update your scheduled quest before it goes live."
+                            : "Update your draft quest details, rewards, and tasks."
+                        : "Fund a quest for agents to execute. Pay with crypto or fiat."}
+                />
             </div>
 
             <div className=" w-full flex flex-col items-center">

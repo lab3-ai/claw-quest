@@ -4,11 +4,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { QuestersPopup } from "@/components/QuestersPopup"
 import { PlatformIcon } from "@/components/PlatformIcon"
-import { AVATAR_COLORS, getInitials } from "@/components/avatarUtils"
+import { getDiceBearUrl } from "@/components/avatarUtils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
+import { PageTitle } from "@/components/page-title"
 import type { Quest } from "@clawquest/shared"
 
 type MineQuest = Quest & { fundingStatus?: string; previewToken?: string }
@@ -245,7 +246,7 @@ export function Dashboard() {
             {/* Register Agent Modal */}
             {showRegisterModal && (
                 <div
-                    className="fixed inset-0 bg-black/40 z-[300] flex items-center justify-center"
+                    className="fixed inset-0 bg-black/40 z-300 flex items-center justify-center"
                     onClick={() => setShowRegisterModal(false)}
                     onKeyDown={handleModalKeyDown}
                 >
@@ -295,7 +296,7 @@ export function Dashboard() {
                                                 <span className="text-xs text-muted-foreground ml-0.5">{platformDropdownOpen ? "▲" : "▼"}</span>
                                             </div>
                                             {platformDropdownOpen && (
-                                                <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-background border border-input rounded shadow-lg z-[200] overflow-hidden">
+                                                <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-background border border-input rounded shadow-lg z-200 overflow-hidden">
                                                     {PLATFORMS.map(opt => (
                                                         <div
                                                             key={opt.id}
@@ -420,10 +421,7 @@ export function Dashboard() {
 
             {/* Page header */}
             <div className="flex justify-between items-end py-5 pb-3 border-b border-border mb-0">
-                <div>
-                    <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">{displayName ? handle : `@${handle}`} · {agents.length} agents · {quests.length} quests</div>
-                </div>
+                <PageTitle title="Dashboard" description={<>{displayName ? handle : `@${handle}`} · {agents.length} agents · {quests.length} quests</>} />
                 <div className="flex gap-2 items-center">
                     <Button variant="agent" onClick={() => setShowRegisterModal(true)}>+ Register Agent</Button>
                     <Button asChild variant="quest">
@@ -438,20 +436,20 @@ export function Dashboard() {
                     <button
                         className={cn(
                             "px-3.5 py-2.5 text-sm font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground",
-                            mainTab === "agents" && "text-foreground font-semibold border-b-[var(--tone-agent)]"
+                            mainTab === "agents" && "text-foreground font-semibold border-b-(--tone-agent)"
                         )}
                         onClick={() => setMainTab("agents")}
                     >
-                        My Agents <span className={cn("text-xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "agents" && "bg-[var(--tone-agent)]")}>{agents.length}</span>
+                        My Agents <span className={cn("text-xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "agents" && "bg-(--tone-agent)")}>{agents.length}</span>
                     </button>
                     <button
                         className={cn(
                             "px-3.5 py-2.5 text-sm font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground",
-                            mainTab === "quests" && "text-foreground font-semibold border-b-[var(--tone-quest)]"
+                            mainTab === "quests" && "text-foreground font-semibold border-b-(--tone-quest)"
                         )}
                         onClick={() => setMainTab("quests")}
                     >
-                        My Quests <span className={cn("text-xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "quests" && "bg-[var(--tone-quest)]")}>{quests.length}</span>
+                        My Quests <span className={cn("text-xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "quests" && "bg-(--tone-quest)")}>{quests.length}</span>
                     </button>
                 </div>
             </div>
@@ -555,14 +553,14 @@ export function Dashboard() {
                                     <li
                                         key={quest.id}
                                         className={cn(
-                                            "flex gap-4 py-3.5 border-b border-border last:border-b-0 items-start transition-colors hover:bg-[var(--sidebar-bg)] md:flex-row flex-col md:gap-4 gap-2",
+                                            "flex gap-4 py-3.5 border-b border-border last:border-b-0 items-start transition-colors hover:bg-(--sidebar-bg) md:flex-row flex-col md:gap-4 gap-2",
                                             isDraft && "border-dashed opacity-85 hover:opacity-100"
                                         )}
                                         data-status={quest.status}
                                     >
                                         <div className="flex flex-col items-end gap-2 min-w-[120px] text-right pt-0.5 shrink-0 md:flex-col flex-row md:gap-2 gap-3 md:min-w-[120px] min-w-0 md:items-end items-center">
                                             <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
-                                                <span className="text-md font-bold text-[var(--green)] leading-tight font-mono">
+                                                <span className="text-md font-bold text-(--green) leading-tight font-mono">
                                                     {quest.rewardAmount.toLocaleString()} {quest.rewardType}
                                                 </span>
                                                 <span className="text-xs text-muted-foreground">total reward</span>
@@ -576,11 +574,10 @@ export function Dashboard() {
                                                         {quest.questerDetails.slice(0, 5).map((d, i) => (
                                                             <div
                                                                 key={i}
-                                                                className="group/avatar w-5 h-5 -ml-1.5 first:ml-0 rounded-full border-[1.5px] border-background flex items-center justify-center text-xs font-bold text-white shrink-0 relative overflow-visible hover:z-10 hover:-translate-y-px transition-transform"
-                                                                style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
+                                                                className="group/avatar w-5 h-5 -ml-1.5 first:ml-0 rounded-full border-[1.5px] border-background shrink-0 relative overflow-visible hover:z-10 hover:-translate-y-px transition-transform"
                                                             >
-                                                                {getInitials(d.agentName)}
-                                                                <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 bg-foreground text-white text-xs px-2 py-1.5 rounded whitespace-nowrap z-[100] pointer-events-none leading-relaxed text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-foreground">
+                                                                <img src={getDiceBearUrl(d.agentName, 40)} alt={d.humanHandle} className="w-full h-full rounded-full" />
+                                                                <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 bg-foreground text-white text-xs px-2 py-1.5 rounded whitespace-nowrap z-100 pointer-events-none leading-relaxed text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-foreground">
                                                                     <span className="text-surface-dark-muted text-xs">Human</span> <span className="font-semibold text-white">@{d.humanHandle}</span>
                                                                     <br />
                                                                     <span className="text-surface-dark-muted text-xs">Agent</span> <span className="font-semibold text-surface-dark-muted font-mono text-xs">{d.agentName}</span>
@@ -614,7 +611,7 @@ export function Dashboard() {
                                             <div className="flex items-center gap-1.5 flex-wrap">
                                                 <Badge variant={typeBadgeClass(quest.type).replace("badge-", "") as any}>{quest.type}</Badge>
                                                 <Badge variant={statusBadgeClass(quest.status).replace("badge-", "") as any}>
-                                                    <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle ${quest.status === "live" ? "bg-[var(--green)]" : quest.status === "completed" ? "bg-muted-foreground" : "bg-[var(--yellow)]"}`} />
+                                                    <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle ${quest.status === "live" ? "bg-(--green)" : quest.status === "completed" ? "bg-muted-foreground" : "bg-(--yellow)"}`} />
                                                     {quest.status}
                                                 </Badge>
                                                 {quest.tags?.slice(0, 2).map(tag => (
@@ -647,8 +644,8 @@ export function Dashboard() {
                                                 <div className="flex flex-col gap-1.5 items-end">
                                                     <span className={cn(
                                                         "text-base font-semibold",
-                                                        time.cls === "warning" && "text-[var(--yellow)]",
-                                                        time.cls === "urgent" && "text-[var(--red)]",
+                                                        time.cls === "warning" && "text-(--yellow)",
+                                                        time.cls === "urgent" && "text-(--red)",
                                                         time.cls === "muted" && "text-muted-foreground font-normal"
                                                     )}>{time.val}</span>
                                                     {time.label && <span className="text-xs text-muted-foreground">{time.label}</span>}
@@ -663,8 +660,8 @@ export function Dashboard() {
                                                 <>
                                                     <span className={cn(
                                                         "text-base font-semibold",
-                                                        time.cls === "warning" && "text-[var(--yellow)]",
-                                                        time.cls === "urgent" && "text-[var(--red)]",
+                                                        time.cls === "warning" && "text-(--yellow)",
+                                                        time.cls === "urgent" && "text-(--red)",
                                                         time.cls === "muted" && "text-muted-foreground font-normal"
                                                     )}>{time.val}</span>
                                                     {time.label && <span className="text-xs text-muted-foreground">{time.label}</span>}
@@ -726,13 +723,12 @@ export function Dashboard() {
                                                         onClick={() => setPopupQuest({ id: quest.id, title: quest.title })}
                                                     >
                                                         {quest.questerDetails.slice(0, 3).map((d, i) => (
-                                                            <div
+                                                            <img
                                                                 key={i}
-                                                                className="w-5 h-5 -ml-1.5 first:ml-0 rounded-full border-[1.5px] border-background flex items-center justify-center text-xs font-bold text-white shrink-0 relative overflow-visible hover:z-10 hover:-translate-y-px transition-transform"
-                                                                style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
-                                                            >
-                                                                {getInitials(d.agentName)}
-                                                            </div>
+                                                                src={getDiceBearUrl(d.agentName, 40)}
+                                                                alt={d.humanHandle}
+                                                                className="w-5 h-5 -ml-1.5 first:ml-0 rounded-full border-[1.5px] border-background shrink-0"
+                                                            />
                                                         ))}
                                                         <span className="ml-1 text-xs text-muted-foreground whitespace-nowrap group-hover:text-primary">
                                                             <strong className="text-foreground font-semibold group-hover:text-primary">{quest.questers}</strong>
@@ -786,7 +782,7 @@ export function Dashboard() {
                                             </td>
                                             <td className="px-2 py-2.5 text-xs border-b border-border align-top w-[100px]">
                                                 <Badge variant={statusBadgeClass(quest.status).replace("badge-", "") as any}>
-                                                    <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle ${quest.status === "live" ? "bg-[var(--green)]" : quest.status === "completed" ? "bg-muted-foreground" : "bg-[var(--yellow)]"}`} />
+                                                    <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle ${quest.status === "live" ? "bg-(--green)" : quest.status === "completed" ? "bg-muted-foreground" : "bg-(--yellow)"}`} />
                                                     {quest.status}
                                                 </Badge>
                                             </td>
@@ -912,21 +908,21 @@ export function Dashboard() {
                                                     {isPending ? (
                                                         <Badge variant="pending-claim">Pending Claim</Badge>
                                                     ) : agent.status === "questing" ? (
-                                                        <span className="text-[var(--yellow)] font-semibold text-xs">
-                                                            <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-[var(--yellow)]" /> Questing
+                                                        <span className="text-(--yellow) font-semibold text-xs">
+                                                            <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-(--yellow)" /> Questing
                                                         </span>
                                                     ) : agent.status === "offline" ? (
                                                         <span className="text-error font-semibold text-xs">
-                                                            <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-[var(--red)]" /> Offline
+                                                            <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-(--red)" /> Offline
                                                         </span>
                                                     ) : (
                                                         <span className="text-accent font-semibold text-xs">
-                                                            <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-[var(--green)]" /> Idle
+                                                            <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-(--green)" /> Idle
                                                         </span>
                                                     )}
                                                 </td>
                                                 <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle min-w-[180px]">
-                                                    <span className="inline-block text-xs font-semibold px-1.5 py-0.5 rounded bg-[var(--skill-bg)] text-[var(--skill-fg)] font-mono mr-0.5 mb-0.5">clawquest</span>
+                                                    <span className="inline-block text-xs font-semibold px-1.5 py-0.5 rounded bg-(--skill-bg) text-(--skill-fg) font-mono mr-0.5 mb-0.5">clawquest</span>
                                                 </td>
                                                 <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[90px] text-center">
                                                     {agent.status === "questing" ? "1 active" : "0"}

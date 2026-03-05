@@ -77,7 +77,7 @@ export function StripeConnect() {
             <div className="bg-background border border-border rounded-lg p-8">
                 {/* Header */}
                 <div className="flex gap-4 items-start mb-6">
-                    <div className="w-10 h-10 rounded-lg bg-[var(--stripe-fg)] text-white flex items-center justify-center font-bold text-lg shrink-0">S</div>
+                    <div className="w-10 h-10 rounded-lg bg-(--stripe-fg) text-white flex items-center justify-center font-bold text-lg shrink-0">S</div>
                     <div>
                         <h2 className="text-xl font-bold text-foreground">Stripe Payout Account</h2>
                         <p className="text-sm text-muted-foreground mt-1">
@@ -112,7 +112,7 @@ export function StripeConnect() {
                 <div className="flex gap-2 mb-6">
                     {!status?.isOnboarded && (
                         <Button
-                            className="bg-[var(--stripe-fg)] hover:bg-[var(--stripe-fg)]/90 text-white"
+                            className="bg-(--stripe-fg) hover:bg-(--stripe-fg)/90 text-white"
                             disabled={onboardMutation.isPending}
                             onClick={() => onboardMutation.mutate()}
                         >

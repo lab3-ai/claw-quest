@@ -1,10 +1,20 @@
 import { useState } from "react"
 import { Link } from "@tanstack/react-router"
 import type { Quest } from "@clawquest/shared"
-import { AVATAR_COLORS, getInitials } from "./avatarUtils"
+import { getDiceBearUrl } from "./avatarUtils"
+import { SponsorLogo } from "./sponsor-logo"
 import { QuestersPopup } from "./QuestersPopup"
-import { formatTimeLeft, typeBadgeClass } from "./quest-utils"
+import { Badge } from "./ui/badge"
+import { RunLine, TrophyLine, RandomLine } from "@mingcute/react"
+import { formatTimeLeft, typeColorClass } from "./quest-utils"
+import { TokenIcon } from "./token-icon"
 import { cn } from "@/lib/utils"
+
+const TYPE_ICON: Record<string, React.ElementType> = {
+    FCFS: RunLine,
+    LEADERBOARD: TrophyLine,
+    LUCKY_DRAW: RandomLine,
+}
 
 interface QuestCardProps {
     quest: Quest
@@ -36,11 +46,14 @@ export function QuestersAvatarStack({ details, total, onClick }: QuestersAvatarS
             {displayed.map((d, i) => (
                 <div
                     key={d.agentName + i}
-                    className="group/avatar w-5 h-5 -ml-1.5 first:ml-0 rounded-full border-[1.5px] border-background flex items-center justify-center text-xs font-bold text-white shrink-0 relative overflow-visible hover:z-10 hover:-translate-y-px transition-transform"
-                    style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
+                    className="group/avatar w-5 h-5 -ml-1.5 first:ml-0 rounded-full border-[1.5px] border-background shrink-0 relative overflow-visible hover:z-10 hover:-translate-y-px transition-transform"
                 >
-                    {getInitials(d.agentName)}
-                    <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 bg-foreground text-white text-xs px-2 py-1.5 rounded whitespace-nowrap z-[100] pointer-events-none leading-relaxed text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-foreground">
+                    <img
+                        src={getDiceBearUrl(d.agentName, 40)}
+                        alt={d.humanHandle}
+                        className="w-full h-full rounded-full object-cover"
+                    />
+                    <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 bg-foreground text-white text-xs px-2 py-1.5 rounded whitespace-nowrap z-100 pointer-events-none leading-relaxed text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-foreground">
                         <span className="text-surface-dark-muted text-xs">Human</span> <span className="font-semibold text-white">@{d.humanHandle}</span>
                         <br />
                         <span className="text-surface-dark-muted text-xs">Agent</span> <span className="font-semibold text-surface-dark-muted font-mono text-xs">{d.agentName}</span>
@@ -72,16 +85,14 @@ export function QuestCard({ quest }: QuestCardProps) {
         <Link
             to="/quests/$questId"
             params={{ questId: quest.id }}
-            className="flex gap-4 py-3.5 border-b border-border items-start px-2 -mx-2 rounded no-underline text-foreground transition-colors hover:bg-bg-subtle"
+            className="flex gap-6 py-4 border-b border-border items-start px-2 -mx-2 rounded-none no-underline text-foreground transition-colors hover:bg-bg-subtle"
         >
             {/* Stats column */}
-            <div className="hidden sm:flex flex-col items-end gap-1.5 min-w-[110px] text-xs text-muted-foreground text-right pt-0.5">
-                <div className="flex flex-col items-end">
-                    <span className="text-md font-semibold text-success leading-tight">
-                        {quest.rewardAmount.toLocaleString()} {quest.rewardType}
-                    </span>
-                    <span className="text-xs text-muted-foreground">total reward</span>
-                </div>
+            <div className="hidden sm:flex flex-col items-end gap-1.5 w-[140px] shrink-0 text-xs text-muted-foreground text-right pt-0.5">
+                <span className="inline-flex items-center gap-1 text-sm font-semibold text-success">
+                    <TokenIcon token={quest.rewardType} size={16} />
+                    {quest.rewardAmount.toLocaleString()} {quest.rewardType}
+                </span>
                 {quest.questers > 0 && (
                     <div className="flex flex-col items-end">
                         <QuestersAvatarStack
@@ -94,13 +105,13 @@ export function QuestCard({ quest }: QuestCardProps) {
                 <div className="flex flex-col items-end">
                     {isLuckyDraw ? (
                         <>
-                            <span className="text-md font-semibold text-foreground leading-tight">{quest.filledSlots}</span>
+                            <span className="text-sm font-semibold text-foreground leading-tight">{quest.filledSlots}</span>
                             <span className="text-xs text-muted-foreground">entered</span>
                         </>
                     ) : (
                         <>
                             <span
-                                className={cn("text-md font-semibold leading-tight", slotsLeft < 5 ? "text-error" : "text-foreground")}
+                                className={cn("text-sm font-semibold leading-tight", slotsLeft < 5 ? "text-error" : "text-foreground")}
                             >
                                 {slotsLeft}
                             </span>
@@ -112,15 +123,25 @@ export function QuestCard({ quest }: QuestCardProps) {
 
             {/* Body */}
             <div className="flex-1 min-w-0">
-                <div className="text-base font-semibold mb-1 leading-snug">{quest.title}</div>
-                <div className="text-xs text-muted-foreground mb-2 leading-relaxed line-clamp-2">{quest.description}</div>
-                <div className="flex flex-wrap gap-1.5 items-center text-xs">
-                    {quest.tags && quest.tags.map(tag => (
-                        <span key={tag} className="bg-accent-light text-accent px-1.5 py-0.5 rounded text-xs no-underline whitespace-nowrap">{tag}</span>
-                    ))}
-                    <span className={`badge ${typeBadgeClass(quest.type)}`}>{quest.type}</span>
-                    <span className="ml-auto text-muted-foreground text-xs">by <strong className="text-foreground font-semibold">{quest.sponsor}</strong></span>
+                <div className="flex items-center gap-2 mb-1 text-xs">
+                    <span className={cn("inline-flex items-center gap-1 font-bold uppercase", typeColorClass(quest.type))}>
+                        {TYPE_ICON[quest.type] && (() => { const Icon = TYPE_ICON[quest.type]; return <Icon size={14} /> })()}
+                        {quest.type}
+                    </span>
+                    <span className="w-1 h-1 rounded-full bg-border-heavy inline-block"></span>
+                    <span className="text-muted-foreground inline-flex items-center gap-1">
+                        by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-foreground font-semibold">{quest.sponsor}</strong>
+                    </span>
                 </div>
+                <div className="text-base font-semibold mb-1 leading-snug">{quest.title}</div>
+                <div className="text-sm text-muted-foreground mb-2 leading-relaxed line-clamp-2">{quest.description}</div>
+                {quest.tags && quest.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 items-center text-xs">
+                        {quest.tags.map(tag => (
+                            <span key={tag} className="border border-border text-fg-secondary px-2 py-0.5 rounded text-xs no-underline whitespace-nowrap">{tag}</span>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Time column */}

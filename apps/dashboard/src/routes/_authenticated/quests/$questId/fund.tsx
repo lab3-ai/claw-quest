@@ -111,7 +111,7 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
             </div>
 
             {checkoutMutation.isError && (
-                <p className="text-error text-xs break-words mb-3">
+                <p className="text-error text-xs wrap-break-word mb-3">
                     {(checkoutMutation.error as Error).message}
                 </p>
             )}
@@ -296,7 +296,7 @@ export function FundQuest() {
 
                         {paramsError && !params && (
                             <>
-                                <p className="text-error text-xs break-words mb-3">
+                                <p className="text-error text-xs wrap-break-word mb-3">
                                     {(paramsError as Error)?.message || 'Quest not found or already funded'}
                                 </p>
                                 <Button asChild variant="outline">
@@ -346,7 +346,7 @@ export function FundQuest() {
 
                                     {step === 'error' && (
                                         <div className="flex flex-col items-center gap-4">
-                                            <p className="text-error text-xs break-words">{errorMsg}</p>
+                                            <p className="text-error text-xs wrap-break-word">{errorMsg}</p>
                                             <Button variant="outline" onClick={() => handleRetry(isConnected, params.isNative)}>
                                                 Try Again
                                             </Button>

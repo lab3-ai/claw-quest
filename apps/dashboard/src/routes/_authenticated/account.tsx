@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext"
 import { startTelegramLogin } from "@/lib/telegram-oidc"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
+import { PageTitle } from "@/components/page-title"
 import { Input } from "@/components/ui/input"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
@@ -359,7 +360,7 @@ export function Account() {
 
     return (
         <div className="">
-            <h1 className="text-2xl font-semibold mb-6">Account</h1>
+            <div className="mb-6"><PageTitle title="Account" /></div>
 
             {/* Profile */}
             <div className="border border-border rounded mb-5 bg-background">
@@ -389,7 +390,7 @@ export function Account() {
                                                 onChange={e => setEditValue(e.target.value)}
                                                 maxLength={50}
                                                 placeholder="Your display name"
-                                                className="text-base px-2 py-0.5 w-[180px] border border-input rounded bg-background text-foreground outline-none focus:border-accent"
+                                                className="text-base px-2 py-0.5 w-[180px] border border-input rounded bg-background text-foreground outline-hidden focus:border-accent"
                                                 autoFocus
                                                 onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); if (e.key === "Escape") setEditingField(null) }}
                                             />
@@ -417,7 +418,7 @@ export function Account() {
                                                 onChange={e => setEditValue(e.target.value.toLowerCase())}
                                                 maxLength={20}
                                                 placeholder="username"
-                                                className="text-base px-2 py-0.5 w-[180px] border border-input rounded bg-background text-foreground outline-none focus:border-accent"
+                                                className="text-base px-2 py-0.5 w-[180px] border border-input rounded bg-background text-foreground outline-hidden focus:border-accent"
                                                 autoFocus
                                                 onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); if (e.key === "Escape") setEditingField(null) }}
                                             />

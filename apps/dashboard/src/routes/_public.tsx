@@ -34,9 +34,10 @@ export function PublicLayout() {
                 <div className="mx-auto flex h-16 max-w-[1100px] items-center gap-2 px-6">
                     <Link
                         to="/quests"
-                        className="mr-5 flex items-center gap-1.5 no-underline"
+                        className="mr-5 flex items-center gap-2 no-underline"
                     >
-                        <img src="/logo-clawquest.svg" alt="ClawQuest" className="h-5 w-auto object-contain" />
+                        <img src="/appicon.svg" alt="ClawQuest Icon" className="h-8 w-auto object-contain rounded-button" />
+                        <img src="/logo-clawquest.svg" alt="ClawQuest" className="h-4 w-auto object-contain" />
                         {/* <span className="text-base font-semibold text-foreground">CLAWQUEST</span> */}
                     </Link>
 

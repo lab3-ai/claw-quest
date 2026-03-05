@@ -3,7 +3,8 @@ import { useParams, useSearch, Link, useNavigate } from "@tanstack/react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { Quest } from "@clawquest/shared"
 import { useAuth } from "@/context/AuthContext"
-import { AVATAR_COLORS, getInitials } from "@/components/avatarUtils"
+import { getDiceBearUrl } from "@/components/avatarUtils"
+import { SponsorLogo } from "@/components/sponsor-logo"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { useAccount } from "wagmi"
 import { Badge } from "@/components/ui/badge"
@@ -126,7 +127,7 @@ function TaskActionBtn({ status, disabled, onClick, label }: {
     status: string; disabled?: boolean; onClick?: () => void; label: string
 }) {
     if (status === "done") return <Button size="sm" variant="outline" disabled className="bg-accent-light text-accent border-green-600 cursor-default">Done ✓</Button>
-    if (status === "verifying") return <Button size="sm" variant="outline" disabled className="bg-[var(--agent-bg)] text-[var(--agent-fg)] border-[var(--agent-border)] cursor-default">Checking…</Button>
+    if (status === "verifying") return <Button size="sm" variant="outline" disabled className="bg-(--agent-bg) text-(--agent-fg) border-(--agent-border) cursor-default">Checking…</Button>
     if (status === "failed") return <Button size="sm" onClick={onClick} className="border-error">Retry →</Button>
     if (disabled) return (
         <Button size="sm" disabled title="Accept quest first" className="opacity-40 cursor-not-allowed">{label} →</Button>
@@ -468,7 +469,7 @@ export function QuestDetail() {
             {/* Page header */}
             <div className="flex justify-between items-end py-5 pb-3 border-b border-border mb-5">
                 <div>
-                    <h1 className="text-2xl font-semibold text-foreground">{quest.title}</h1>
+                    <h1 className="text-3xl font-semibold text-foreground">{quest.title}</h1>
                     <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
                         <Badge variant={statusBadgeClass(quest.status).replace("badge-", "") as any}>{quest.status}</Badge>
                         <span>·</span>
@@ -476,7 +477,7 @@ export function QuestDetail() {
                         <span>·</span>
                         <Badge variant={rewardBadgeClass(quest.rewardType).replace("badge-", "") as any}>{quest.rewardType}</Badge>
                         <span>·</span>
-                        <span>by <strong className="text-foreground">{quest.sponsor}</strong></span>
+                        <span className="inline-flex items-center gap-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-foreground">{quest.sponsor}</strong></span>
                     </div>
                 </div>
             </div>
@@ -530,10 +531,10 @@ export function QuestDetail() {
 
                     {/* Human Tasks (from quest.tasks) */}
                     {quest.tasks && quest.tasks.length > 0 && (
-                        <div className="mb-6 pl-3.5 border-l-4 border-l-[var(--human-fg)]">
+                        <div className="mb-6 pl-3.5 border-l-4 border-l-(--human-fg)">
                             <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                 Human Tasks
-                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-[var(--human-bg)] text-[var(--human-fg)]">HUMAN</span>
+                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--human-bg) text-(--human-fg)">HUMAN</span>
                                 <span className="font-normal text-xs text-muted-foreground ml-auto">Complete these yourself</span>
                             </div>
                             {quest.tasks.map((task: any, idx: number) => {
@@ -583,7 +584,7 @@ export function QuestDetail() {
                                             <div className="pt-1 pl-6">
                                                 <input
                                                     type="url"
-                                                    className="w-full px-2 py-1.5 text-xs border border-border rounded bg-background text-foreground focus:border-accent focus:outline-none"
+                                                    className="w-full px-2 py-1.5 text-xs border border-border rounded bg-background text-foreground focus:border-accent focus:outline-hidden"
                                                     placeholder="Paste your tweet URL here..."
                                                     value={proofUrls[idx] || ""}
                                                     onChange={(e) => setProofUrls(prev => ({ ...prev, [idx]: e.target.value }))}
@@ -638,10 +639,10 @@ export function QuestDetail() {
 
                     {/* Agent Tasks (from quest.requiredSkills) */}
                     {quest.requiredSkills && quest.requiredSkills.length > 0 && (
-                        <div className="mb-6 pl-3.5 border-l-4 border-l-[var(--agent-fg)]">
+                        <div className="mb-6 pl-3.5 border-l-4 border-l-(--agent-fg)">
                             <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                 Agent Tasks
-                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-[var(--agent-bg)] text-[var(--agent-fg)]">AGENT</span>
+                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--agent-bg) text-(--agent-fg)">AGENT</span>
                                 <span className="font-normal text-xs text-muted-foreground ml-auto">Your AI agent handles these</span>
                             </div>
                             {quest.requiredSkills.map((skill: string, idx: number) => (
@@ -682,16 +683,15 @@ export function QuestDetail() {
                                         className="relative w-7 h-7 -ml-2 first:ml-0 rounded-full border-2 border-background cursor-pointer overflow-visible shrink-0 hover:-translate-y-0.5 transition-transform group/avatar"
                                         style={{ zIndex: 8 - i }}
                                     >
-                                        <div
-                                            className="w-full h-full rounded-full flex items-center justify-center text-xs font-bold text-white"
-                                            style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
-                                        >
-                                            {getInitials(d.agentName)}
-                                        </div>
-                                        <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 bg-foreground text-white text-xs px-2.5 py-2 rounded whitespace-nowrap z-[100] pointer-events-none leading-relaxed min-w-[120px] text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-[5px] after:border-transparent after:border-t-foreground">
+                                        <img
+                                            src={getDiceBearUrl(d.agentName, 56)}
+                                            alt={d.humanHandle}
+                                            className="w-full h-full rounded-full"
+                                        />
+                                        <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 bg-foreground text-white text-xs px-2.5 py-2 rounded whitespace-nowrap z-100 pointer-events-none leading-relaxed min-w-[120px] text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-[5px] after:border-transparent after:border-t-foreground">
                                             <span className="text-surface-dark-muted text-xs">Human</span> <span className="font-semibold text-white">@{d.humanHandle}</span>
                                             <br />
-                                            <span className="text-surface-dark-muted text-xs">Agent</span> <span className="font-semibold text-[var(--agent-border)] font-mono text-xs">{d.agentName}</span>
+                                            <span className="text-surface-dark-muted text-xs">Agent</span> <span className="font-semibold text-(--agent-border) font-mono text-xs">{d.agentName}</span>
                                         </div>
                                     </div>
                                 ))}

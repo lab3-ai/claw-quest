@@ -235,7 +235,7 @@ export function Login() {
                         <div className="space-y-1.5 mb-3.5 text-left">
                             <label className="block text-xs font-semibold text-foreground mb-1">Email</label>
                             <input
-                                className="w-full px-2.5 py-2 text-sm border border-input rounded bg-background text-foreground focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none box-border"
+                                className="w-full px-2.5 py-2 text-sm border border-input rounded bg-background text-foreground focus:border-accent focus:ring-2 focus:ring-accent/10 outline-hidden box-border"
                                 type="email"
                                 placeholder="you@example.com"
                                 required
@@ -246,7 +246,7 @@ export function Login() {
                         <div className="space-y-1.5 mb-3.5 text-left">
                             <label className="block text-xs font-semibold text-foreground mb-1">Password</label>
                             <input
-                                className="w-full px-2.5 py-2 text-sm border border-input rounded bg-background text-foreground focus:border-accent focus:ring-2 focus:ring-accent/10 outline-none box-border"
+                                className="w-full px-2.5 py-2 text-sm border border-input rounded bg-background text-foreground focus:border-accent focus:ring-2 focus:ring-accent/10 outline-hidden box-border"
                                 type="password"
                                 required
                                 value={password}

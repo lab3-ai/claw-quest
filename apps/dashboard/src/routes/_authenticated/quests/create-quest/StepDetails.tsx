@@ -34,12 +34,12 @@ export function StepDetails({
             "before:content-[''] before:absolute before:left-[13px] before:top-7 before:bottom-0 before:w-0.5 before:bg-border before:z-0",
             isDone && "before:bg-success"
         )}>
-            <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-[1] group" onClick={onToggle}>
+            <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
                 <span className={cn(
                     "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white border-2 border-background",
-                    isDone ? "bg-success shadow-[0_0_0_2px_theme(colors.green.500)]"
+                    isDone ? "bg-success shadow-[0_0_0_2px_var(--color-green-500)]"
                         : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
-                            : "bg-gray-300 shadow-[0_0_0_2px_theme(colors.gray.300)]"
+                            : "bg-gray-300 shadow-[0_0_0_2px_var(--color-gray-300)]"
                 )}>{isDone ? "\u2713" : "1"}</span>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -86,11 +86,11 @@ export function StepDetails({
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="space-y-1.5 mb-3.5">
                                 <Label>Start</Label>
-                                <input className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" type="datetime-local" value={form.startAt} onChange={e => onFieldChange("startAt", e.target.value)} />
+                                <input className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" type="datetime-local" value={form.startAt} onChange={e => onFieldChange("startAt", e.target.value)} />
                             </div>
                             <div className="space-y-1.5 mb-3.5">
                                 <Label>End</Label>
-                                <input className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" type="datetime-local" value={form.endAt} onChange={e => onFieldChange("endAt", e.target.value)} />
+                                <input className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" type="datetime-local" value={form.endAt} onChange={e => onFieldChange("endAt", e.target.value)} />
                             </div>
                         </div>
                     </div>

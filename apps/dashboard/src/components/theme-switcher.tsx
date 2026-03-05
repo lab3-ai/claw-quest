@@ -1,10 +1,10 @@
 import { useTheme, THEMES, type ColorMode } from '@/context/ThemeContext'
 import { cn } from '@/lib/utils'
+import { SunLine, MoonLine } from '@mingcute/react'
 
-const COLOR_MODES: { id: ColorMode; label: string }[] = [
-    { id: 'light', label: 'Light' },
-    { id: 'dark', label: 'Dark' },
-    { id: 'system', label: 'System' },
+const COLOR_MODES: { id: ColorMode; label: string; icon: React.ElementType }[] = [
+    { id: 'light', label: 'Light', icon: SunLine },
+    { id: 'dark', label: 'Dark', icon: MoonLine },
 ]
 
 export function ThemeSwitcher({ className }: { className?: string }) {
@@ -13,19 +13,20 @@ export function ThemeSwitcher({ className }: { className?: string }) {
     return (
         <div className={cn('flex flex-col gap-4', className)}>
             {/* Color mode toggle */}
-            <div className="flex items-center gap-1 rounded-md border border-border bg-bg-subtle p-1">
+            <div className="flex items-center gap-1 rounded-button border border-border p-1">
                 {COLOR_MODES.map(m => (
                     <button
                         key={m.id}
                         onClick={() => setColorMode(m.id)}
                         className={cn(
-                            'flex-1 px-3 py-1.5 text-xs font-medium transition-all',
-                            'rounded-sm',
+                            'flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-all',
+                            'rounded-button',
                             colorMode === m.id
                                 ? 'bg-primary text-primary-foreground'
                                 : 'text-fg-muted hover:text-fg'
                         )}
                     >
+                        <m.icon size={14} />
                         {m.label}
                     </button>
                 ))}

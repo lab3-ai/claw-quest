@@ -9,12 +9,11 @@ export const THEMES = [
 ] as const
 
 export type ThemeId = (typeof THEMES)[number]['id']
-export type ColorMode = 'light' | 'dark' | 'system'
+export type ColorMode = 'light' | 'dark'
 
 interface ThemeContextValue {
     theme: ThemeId
     colorMode: ColorMode
-    resolvedMode: 'light' | 'dark'
     setTheme: (theme: ThemeId) => void
     setColorMode: (mode: ColorMode) => void
 }
@@ -24,11 +23,6 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 const STORAGE_KEY_THEME = 'cq-theme'
 const STORAGE_KEY_MODE = 'cq-color-mode'
 
-function getSystemPreference(): 'light' | 'dark' {
-    if (typeof window === 'undefined') return 'light'
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-}
-
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setThemeState] = useState<ThemeId>(() => {
         const stored = localStorage.getItem(STORAGE_KEY_THEME)
@@ -37,32 +31,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const [colorMode, setColorModeState] = useState<ColorMode>(() => {
         const stored = localStorage.getItem(STORAGE_KEY_MODE)
-        return (stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'light') as ColorMode
+        return (stored === 'light' || stored === 'dark' ? stored : 'light') as ColorMode
     })
-
-    const [systemPref, setSystemPref] = useState<'light' | 'dark'>(getSystemPreference)
-
-    const resolvedMode = colorMode === 'system' ? systemPref : colorMode
-
-    // Listen for system preference changes
-    useEffect(() => {
-        const mql = window.matchMedia('(prefers-color-scheme: dark)')
-        // Sync current state on mount
-        setSystemPref(mql.matches ? 'dark' : 'light')
-        const handler = (e: MediaQueryListEvent) => setSystemPref(e.matches ? 'dark' : 'light')
-        mql.addEventListener('change', handler)
-        return () => mql.removeEventListener('change', handler)
-    }, [])
 
     // Apply theme + mode to <html>
     useEffect(() => {
         const root = document.documentElement
         root.setAttribute('data-theme', theme)
-        // For system mode, read media query directly to avoid stale state
-        const isDark = colorMode === 'dark' ||
-            (colorMode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-        root.classList.toggle('dark', isDark)
-    }, [theme, colorMode, resolvedMode])
+        root.classList.toggle('dark', colorMode === 'dark')
+    }, [theme, colorMode])
 
     const setTheme = useCallback((t: ThemeId) => {
         setThemeState(t)
@@ -72,14 +49,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const setColorMode = useCallback((m: ColorMode) => {
         setColorModeState(m)
         localStorage.setItem(STORAGE_KEY_MODE, m)
-        // Re-check system preference when switching to system mode
-        if (m === 'system') {
-            setSystemPref(getSystemPreference())
-        }
     }, [])
 
     return (
-        <ThemeContext.Provider value={{ theme, colorMode, resolvedMode, setTheme, setColorMode }}>
+        <ThemeContext.Provider value={{ theme, colorMode, setTheme, setColorMode }}>
             {children}
         </ThemeContext.Provider>
     )

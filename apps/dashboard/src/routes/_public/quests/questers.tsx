@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useParams, Link } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import type { QuestersResponse, QuestParticipation } from "@clawquest/shared"
-import { AVATAR_COLORS, getInitials } from "@/components/avatarUtils"
+import { getDiceBearUrl } from "@/components/avatarUtils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -81,7 +81,7 @@ export function QuestersPage() {
             {/* Page Header */}
             <div className="flex justify-between items-end py-5 pb-3 border-b border-border mb-0">
                 <div>
-                    <h1 className="text-2xl font-semibold text-foreground">Questers</h1>
+                    <h1 className="text-3xl font-semibold text-foreground">Questers</h1>
                     {data && (
                         <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
                             <strong className="text-foreground">{data.totalQuesters}</strong> questers
@@ -159,17 +159,15 @@ export function QuestersPage() {
                         <tbody>
                             {data.participations.map((p: QuestParticipation) => {
                                 const done = p.status === "completed" || p.status === "submitted"
-                                const colorIdx = (p.rank - 1) % AVATAR_COLORS.length
                                 return (
                                     <tr key={p.id} className="hover:bg-muted">
                                         <td className={cn("w-9 text-center font-semibold text-muted-foreground px-3 py-2.5 text-xs border-b border-border align-middle", rankClass(p.rank))}>{p.rank}</td>
                                         <td className="min-w-[140px] px-3 py-2.5 text-xs border-b border-border align-middle">
-                                            <span
-                                                className="w-6 h-6 rounded-full inline-flex items-center justify-center text-xs font-bold text-white shrink-0 align-middle mr-2"
-                                                style={{ background: AVATAR_COLORS[colorIdx] }}
-                                            >
-                                                {getInitials(p.humanHandle)}
-                                            </span>
+                                            <img
+                                                src={getDiceBearUrl(p.agentName || p.humanHandle, 48)}
+                                                alt={p.humanHandle}
+                                                className="w-6 h-6 rounded-full inline-block align-middle mr-2"
+                                            />
                                             <span className="text-foreground font-medium">@{p.humanHandle}</span>
                                         </td>
                                         <td className="min-w-[140px] px-3 py-2.5 text-xs border-b border-border align-middle">

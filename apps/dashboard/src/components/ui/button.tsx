@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-    "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-button text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+    "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-button text-sm font-semibold ring-offset-background transition-colors active:scale-95 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
     {
         variants: {
             variant: {
@@ -19,9 +19,9 @@ const buttonVariants = cva(
                 ghost: "hover:bg-muted",
                 link: "text-foreground underline-offset-4 hover:underline",
                 /* ClawQuest domain variants */
-                quest: "bg-primary text-primary-foreground border border-[var(--border-heavy)] hover:bg-primary/80",
-                agent: "bg-[var(--tone-agent)] text-[var(--accent-fg)] border border-[var(--tone-agent-dark)] hover:bg-[var(--tone-agent-dark)]",
-                danger: "bg-background text-[var(--error)] border border-[var(--error)] hover:bg-error-light",
+                quest: "bg-primary text-primary-foreground border border-(--border-heavy) hover:bg-primary/80",
+                agent: "bg-(--tone-agent) text-(--accent-fg) border border-(--tone-agent-dark) hover:bg-(--tone-agent-dark)",
+                danger: "bg-background text-(--error) border border-(--error) hover:bg-error-light",
             },
             size: {
                 default: "h-9 px-4 py-2",

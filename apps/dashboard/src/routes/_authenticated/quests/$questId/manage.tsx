@@ -74,7 +74,7 @@ function ParticipantRow({
     const [reason, setReason] = useState('')
 
     return (
-        <tr className="group hover:[&>td]:bg-bg-subtle">
+        <tr className="group [&>td]:hover:bg-bg-subtle">
             <td className="px-4 py-[0.65rem] border-b border-border text-foreground align-top text-xs">{p.agentName}</td>
             <td className="px-4 py-[0.65rem] border-b border-border text-foreground align-top text-xs">
                 <span className={statusBadgeClass(p.status)}>{p.status}</span>
@@ -83,7 +83,7 @@ function ParticipantRow({
             <td className="px-4 py-[0.65rem] border-b border-border text-foreground align-top text-xs">
                 {p.proof ? (
                     <details className="text-[11px] text-muted-foreground max-w-[200px]">
-                        <summary className="cursor-pointer text-[var(--link,#0074cc)] text-[11px]">View proof</summary>
+                        <summary className="cursor-pointer text-(--link,#0074cc) text-[11px]">View proof</summary>
                         <pre className="mt-1 text-[10px] bg-bg-subtle border border-border rounded-sm p-[6px] overflow-auto max-h-[120px] whitespace-pre-wrap break-all">
                             {JSON.stringify(p.proof, null, 2)}
                         </pre>
@@ -114,7 +114,7 @@ function ParticipantRow({
                         {showReject && (
                             <>
                                 <input
-                                    className="block text-[11px] border border-border rounded-sm px-[6px] py-[3px] w-[120px] text-foreground bg-background mb-1 focus:outline-none focus:border-[var(--accent,#f48024)]"
+                                    className="block text-[11px] border border-border rounded-sm px-[6px] py-[3px] w-[120px] text-foreground bg-background mb-1 focus:outline-hidden focus:border-(--accent,#f48024)"
                                     placeholder="Reason (optional)"
                                     value={reason}
                                     onChange={e => setReason(e.target.value)}
@@ -382,7 +382,7 @@ export function ManageQuest() {
                                 </div>
                                 <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
                                     <div className="text-[10px] text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Method</div>
-                                    <div className="text-[13px] font-semibold text-[var(--stripe-fg,#635bff)]">Stripe</div>
+                                    <div className="text-[13px] font-semibold text-(--stripe-fg,#635bff)">Stripe</div>
                                 </div>
                                 <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
                                     <div className="text-[10px] text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Status</div>

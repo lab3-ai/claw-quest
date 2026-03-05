@@ -158,12 +158,12 @@ export function StepTasks({
             "before:content-[''] before:absolute before:left-[13px] before:top-0 before:bottom-0 before:w-0.5 before:bg-border before:z-0",
             isDone && "before:bg-success"
         )}>
-            <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-[1] group" onClick={onToggle}>
+            <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
                 <span className={cn(
                     "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white border-2 border-background",
-                    isDone ? "bg-success shadow-[0_0_0_2px_theme(colors.green.500)]"
+                    isDone ? "bg-success shadow-[0_0_0_2px_var(--color-green-500)]"
                         : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
-                            : "bg-gray-300 shadow-[0_0_0_2px_theme(colors.gray.300)]"
+                            : "bg-gray-300 shadow-[0_0_0_2px_var(--color-gray-300)]"
                 )}>{isDone ? "\u2713" : "2"}</span>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -193,10 +193,10 @@ export function StepTasks({
                         </div>
 
                         {/* ── Human Tasks ── */}
-                        <div className="mb-6 pl-3.5 border-l-4 border-l-[var(--human-fg)]">
+                        <div className="mb-6 pl-3.5 border-l-4 border-l-(--human-fg)">
                             <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                 <span>👤</span> Human Tasks
-                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-[var(--human-bg)] text-[var(--human-fg)]">Social</span>
+                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--human-bg) text-(--human-fg)">Social</span>
                                 <span className="font-normal text-xs text-muted-foreground ml-auto">Actions performed by the operator</span>
                             </div>
 
@@ -221,11 +221,11 @@ export function StepTasks({
                                             {PLATFORM_ACTIONS[activePlatform].map(action => (
                                                 <div
                                                     key={action.type}
-                                                    className="flex items-center justify-between px-3 py-2 border-b border-border/30 text-xs cursor-pointer transition-colors hover:bg-[var(--human-bg)] last:border-b-0"
+                                                    className="flex items-center justify-between px-3 py-2 border-b border-border/30 text-xs cursor-pointer transition-colors hover:bg-(--human-bg) last:border-b-0"
                                                     onClick={() => onAddHumanTask(activePlatform, action)}
                                                 >
                                                     <span className="font-medium text-foreground">{action.label}</span>
-                                                    <button className="bg-transparent border border-[var(--human-border)] text-[var(--human-fg)] text-xs font-semibold py-0.5 px-2.5 rounded cursor-pointer hover:bg-[var(--human-bg)]">+ Add</button>
+                                                    <button className="bg-transparent border border-(--human-border) text-(--human-fg) text-xs font-semibold py-0.5 px-2.5 rounded cursor-pointer hover:bg-(--human-bg)">+ Add</button>
                                                 </div>
                                             ))}
                                         </div>
@@ -253,7 +253,7 @@ export function StepTasks({
                                                 {task.chips.length > 0 && (
                                                     <span className="inline-flex items-center justify-center min-w-4 h-4 rounded-full text-xs font-bold bg-accent-light0 text-white px-1">{task.chips.length}</span>
                                                 )}
-                                                <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-[var(--social-bg)] text-[var(--social-fg)] uppercase">{task.platform}</span>
+                                                <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-(--social-bg) text-(--social-fg) uppercase">{task.platform}</span>
                                                 <button
                                                     className="bg-transparent border-none text-muted-foreground text-xs cursor-pointer px-1.5 py-0.5 rounded hover:text-destructive hover:bg-destructive/10"
                                                     onClick={e => { e.stopPropagation(); onRemoveHumanTask(i) }}
@@ -297,10 +297,10 @@ export function StepTasks({
                         </div>
 
                         {/* ── Agent Tasks ── */}
-                        <div className="mb-6 pl-3.5 border-l-4 border-l-[var(--agent-fg)]">
+                        <div className="mb-6 pl-3.5 border-l-4 border-l-(--agent-fg)">
                             <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                 <span>🤖</span> Agent Tasks
-                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-[var(--agent-bg)] text-[var(--agent-fg)]">Skill</span>
+                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--agent-bg) text-(--agent-fg)">Skill</span>
                                 <span className="font-normal text-xs text-muted-foreground ml-auto">Required skills from ClawHub</span>
                             </div>
 
@@ -324,8 +324,8 @@ export function StepTasks({
                                     {requiredSkills.map(skill => {
                                         const isCustom = skill.id.startsWith("http")
                                         return (
-                                            <div key={skill.id} className="flex items-center gap-2.5 px-2.5 py-2 border border-[var(--skill-border)] rounded mb-1.5 bg-background overflow-hidden" data-agents={skill.agents}>
-                                                <div className="size-7 rounded bg-[var(--skill-bg)] flex items-center justify-center text-sm shrink-0">{isCustom ? "🔗" : "🧩"}</div>
+                                            <div key={skill.id} className="flex items-center gap-2.5 px-2.5 py-2 border border-(--skill-border) rounded mb-1.5 bg-background overflow-hidden" data-agents={skill.agents}>
+                                                <div className="size-7 rounded bg-(--skill-bg) flex items-center justify-center text-sm shrink-0">{isCustom ? "🔗" : "🧩"}</div>
                                                 <div className="flex-1 min-w-0 overflow-hidden">
                                                     <div className="text-xs font-semibold text-foreground font-mono truncate">
                                                         {isCustom ? skill.name : `${skill.id}@${skill.version ?? "latest"}`}
@@ -351,7 +351,7 @@ export function StepTasks({
                             <div className="relative mb-2.5">
                                 <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-base pointer-events-none">🔍</span>
                                 <input
-                                    className="w-full py-2 px-2.5 pl-[30px] text-base border border-[var(--agent-border)] rounded bg-[var(--agent-bg)] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:bg-background focus:ring-[3px] focus:ring-primary/15"
+                                    className="w-full py-2 px-2.5 pl-[30px] text-base border border-(--agent-border) rounded bg-(--agent-bg) text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-primary focus:bg-background focus:ring-[3px] focus:ring-primary/15"
                                     type="text"
                                     placeholder="Search on ClawHub or paste skill URL…"
                                     value={skillSearch}
@@ -401,7 +401,7 @@ export function StepTasks({
                                                             <span className="inline-flex items-center justify-center text-xs font-bold uppercase px-1.5 py-px rounded bg-blue-100 text-info mr-1 tracking-wide shrink-0">URL</span>
                                                             <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{urlPreview.name}</span>
                                                         </div>
-                                                        <div className="text-xs text-muted-foreground leading-snug mt-0.5 break-words">{onTruncateDesc(urlPreview.desc, urlPreview.id)}</div>
+                                                        <div className="text-xs text-muted-foreground leading-snug mt-0.5 wrap-break-word">{onTruncateDesc(urlPreview.desc, urlPreview.id)}</div>
                                                         <div className="flex gap-2.5 text-xs text-muted-foreground mt-0.5">
                                                             <span>v{urlPreview.version}</span>
                                                             {urlPreview.ownerHandle && <span className="font-mono text-xs text-muted-foreground" title={urlPreview.id}>{urlPreview.ownerHandle}</span>}
@@ -409,7 +409,7 @@ export function StepTasks({
                                                     </div>
                                                     {isAdded
                                                         ? <span className="bg-accent-light border border-accent-border text-accent text-xs font-semibold py-1 px-2.5 rounded whitespace-nowrap self-center">✓ Added</span>
-                                                        : <button className="bg-transparent border border-[var(--agent-border)] text-[var(--agent-fg)] text-xs font-semibold py-1 px-2.5 rounded cursor-pointer whitespace-nowrap self-center hover:bg-[var(--agent-bg)]">+ Add</button>
+                                                        : <button className="bg-transparent border border-(--agent-border) text-(--agent-fg) text-xs font-semibold py-1 px-2.5 rounded cursor-pointer whitespace-nowrap self-center hover:bg-(--agent-bg)">+ Add</button>
                                                     }
                                                 </div>
                                             )
@@ -438,7 +438,7 @@ export function StepTasks({
                                                             <span className="text-muted-foreground font-normal shrink-0">{s.id.split("/")[0]} /</span>
                                                             <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}</span>
                                                         </div>
-                                                        <div className="text-xs text-muted-foreground leading-snug mt-0.5 break-words">{onTruncateDesc(s.desc, s.id)}</div>
+                                                        <div className="text-xs text-muted-foreground leading-snug mt-0.5 wrap-break-word">{onTruncateDesc(s.desc, s.id)}</div>
                                                         <div className="flex gap-2.5 text-xs text-muted-foreground mt-0.5">
                                                             <span>↓ {s.downloads}</span>
                                                             <span>★ {s.stars}</span>
@@ -447,7 +447,7 @@ export function StepTasks({
                                                     </div>
                                                     {isAdded
                                                         ? <span className="bg-accent-light border border-accent-border text-accent text-xs font-semibold py-1 px-2.5 rounded whitespace-nowrap self-center">✓ Added</span>
-                                                        : <button className="bg-transparent border border-[var(--agent-border)] text-[var(--agent-fg)] text-xs font-semibold py-1 px-2.5 rounded cursor-pointer whitespace-nowrap self-center hover:bg-[var(--agent-bg)]">+ Add</button>
+                                                        : <button className="bg-transparent border border-(--agent-border) text-(--agent-fg) text-xs font-semibold py-1 px-2.5 rounded cursor-pointer whitespace-nowrap self-center hover:bg-(--agent-bg)">+ Add</button>
                                                     }
                                                 </div>
                                             )

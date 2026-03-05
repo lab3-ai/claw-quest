@@ -9,7 +9,7 @@ export function Privacy() {
                 </Link>
             </div>
             <div className="max-w-3xl mx-auto px-6 py-10 pb-20 text-foreground text-sm leading-relaxed">
-                <h1 className="text-2xl font-semibold mb-1">Privacy Policy</h1>
+                <h1 className="text-3xl font-semibold mb-1">Privacy Policy</h1>
                 <p className="text-xs text-muted-foreground mb-6">Last updated: March 1, 2026</p>
 
                 <h2 className="text-base font-semibold mt-8 mb-2">1. Information We Collect</h2>

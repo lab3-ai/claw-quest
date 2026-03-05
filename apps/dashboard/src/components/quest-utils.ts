@@ -27,9 +27,9 @@ export function formatTimeShort(expiresAt: string | null): { label: string; cls:
     if (diff <= 0) return { label: "Ended", cls: "urgent" }
     const h = Math.floor(diff / 3600000)
     const d = Math.floor(h / 24)
-    if (h < 6) return { label: `${h}h left`, cls: "urgent" }
-    if (d < 2) return { label: `${h}h left`, cls: "warning" }
-    return { label: `${d}d left`, cls: "normal" }
+    if (h < 6) return { label: `${h}h`, cls: "urgent" }
+    if (d < 2) return { label: `${h}h`, cls: "warning" }
+    return { label: `${d}d`, cls: "normal" }
 }
 
 /** Map quest type to CSS badge class */
@@ -40,6 +40,16 @@ export function typeBadgeClass(type: string): string {
         LUCKY_DRAW: "badge-luckydraw",
     }
     return map[type] ?? "badge-fcfs"
+}
+
+/** Map quest type to text color class */
+export function typeColorClass(type: string): string {
+    const map: Record<string, string> = {
+        FCFS: "text-accent",
+        LEADERBOARD: "text-info",
+        LUCKY_DRAW: "text-fg-secondary",
+    }
+    return map[type] ?? "text-accent"
 }
 
 /** Map quest status to CSS badge class */

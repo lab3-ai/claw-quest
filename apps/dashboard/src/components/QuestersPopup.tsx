@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import type { QuestersResponse, QuestParticipation } from "@clawquest/shared"
-import { getInitials, AVATAR_COLORS } from "./avatarUtils"
+import { getDiceBearUrl } from "./avatarUtils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -71,30 +71,28 @@ export function QuestersPopup({ questId, questTitle, onClose }: QuestersPopupPro
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr>
-                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-[1] whitespace-nowrap w-9 text-center">#</th>
-                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-[1] whitespace-nowrap min-w-[120px]">Human</th>
-                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-[1] whitespace-nowrap min-w-[120px]">Agent</th>
-                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-[1] whitespace-nowrap">Started</th>
-                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-[1] whitespace-nowrap">Progress</th>
-                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-[1] whitespace-nowrap text-right">Payout</th>
+                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-1 whitespace-nowrap w-9 text-center">#</th>
+                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-1 whitespace-nowrap min-w-[120px]">Human</th>
+                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-1 whitespace-nowrap min-w-[120px]">Agent</th>
+                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-1 whitespace-nowrap">Started</th>
+                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-1 whitespace-nowrap">Progress</th>
+                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-1 whitespace-nowrap text-right">Payout</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {data.participations.map((p: QuestParticipation) => {
                                     const done = p.status === "completed" || p.status === "submitted"
-                                    const colorIdx = p.rank % AVATAR_COLORS.length
                                     return (
                                         <tr key={p.id} className="hover:bg-muted">
                                             <td className={cn("px-3 py-2 text-xs border-b border-border align-middle w-9 text-center font-semibold text-muted-foreground", rankColorClass(p.rank))}>
                                                 {p.rank}
                                             </td>
                                             <td className="px-3 py-2 text-xs border-b border-border align-middle min-w-[120px]">
-                                                <span
-                                                    className="w-[22px] h-[22px] rounded-full inline-flex items-center justify-center text-xs font-bold text-white shrink-0 align-middle mr-1.5"
-                                                    style={{ background: AVATAR_COLORS[colorIdx] }}
-                                                >
-                                                    {getInitials(p.humanHandle)}
-                                                </span>
+                                                <img
+                                                    src={getDiceBearUrl(p.agentName || p.humanHandle, 44)}
+                                                    alt={p.humanHandle}
+                                                    className="w-[22px] h-[22px] rounded-full inline-block align-middle mr-1.5"
+                                                />
                                                 <span className="text-foreground font-medium">@{p.humanHandle}</span>
                                             </td>
                                             <td className="px-3 py-2 text-xs border-b border-border align-middle min-w-[120px]">

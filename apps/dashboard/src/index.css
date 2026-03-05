@@ -1,6 +1,153 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+    --color-background: var(--bg);
+    --color-foreground: var(--fg);
+
+    --color-card: var(--bg);
+    --color-card-foreground: var(--fg);
+
+    --color-popover: var(--bg);
+    --color-popover-foreground: var(--fg);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-fg);
+
+    --color-secondary: var(--bg-muted);
+    --color-secondary-foreground: var(--fg);
+
+    --color-muted: var(--bg-muted);
+    --color-muted-foreground: var(--fg-muted);
+
+    --color-destructive: var(--error);
+    --color-destructive-foreground: var(--accent-fg);
+
+    --color-input: var(--border);
+    --color-ring: var(--accent);
+
+    --color-bg: var(--bg);
+    --color-bg-subtle: var(--bg-subtle);
+    --color-bg-muted: var(--bg-muted);
+
+    --color-fg: var(--fg);
+    --color-fg-secondary: var(--fg-secondary);
+    --color-fg-muted: var(--fg-muted);
+
+    --color-border: var(--border);
+    --color-border-heavy: var(--border-heavy);
+    --color-border-strong: var(--border-strong);
+
+    --color-accent: var(--accent);
+    --color-accent-hover: var(--accent-hover);
+    --color-accent-light: var(--accent-light);
+    --color-accent-border: var(--accent-border);
+    --color-accent-foreground: var(--accent-fg);
+
+    --color-success: var(--success);
+    --color-success-light: var(--success-light);
+    --color-success-border: var(--success-border);
+
+    --color-error: var(--error);
+    --color-error-light: var(--error-light);
+    --color-error-border: var(--error-border);
+
+    --color-warning: var(--warning);
+    --color-warning-light: var(--warning-light);
+    --color-warning-border: var(--warning-border);
+
+    --color-info: var(--info);
+    --color-info-light: var(--info-light);
+
+    --color-human: var(--human-fg);
+    --color-human-bg: var(--human-bg);
+    --color-human-border: var(--human-border);
+
+    --color-agent: var(--agent-fg);
+    --color-agent-bg: var(--agent-bg);
+    --color-agent-border: var(--agent-border);
+
+    --color-skill: var(--skill-fg);
+    --color-skill-bg: var(--skill-bg);
+    --color-skill-border: var(--skill-border);
+
+    --color-link: var(--link);
+
+    --color-surface-dark: var(--surface-dark);
+    --color-surface-dark-subtle: var(--surface-dark-subtle);
+    --color-surface-dark-fg: var(--surface-dark-fg);
+    --color-surface-dark-muted: var(--surface-dark-muted);
+
+    --font-sans: var(--font);
+    --font-heading: var(--font-heading);
+    --font-mono: var(--font-mono);
+
+    --text-xs: var(--text-xs);
+    --text-sm: var(--text-sm);
+    --text-base: var(--text-base);
+    --text-md: var(--text-md);
+    --text-lg: var(--text-lg);
+    --text-xl: var(--text-xl);
+    --text-2xl: var(--text-2xl);
+    --text-3xl: var(--text-3xl);
+
+    --radius: var(--radius-base);
+    --radius-sm: var(--radius-sm);
+    --radius-md: var(--radius-md);
+    --radius-lg: var(--radius-lg);
+    --radius-xl: var(--radius-xl);
+    --radius-full: var(--radius-full);
+    --radius-button: var(--radius-button);
+
+    --shadow-xs: var(--shadow-xs);
+    --shadow-sm: var(--shadow-sm);
+    --shadow-md: var(--shadow-md);
+    --shadow-lg: var(--shadow-lg);
+    --shadow-accent: var(--shadow-accent);
+
+    --spacing-1: var(--space-1);
+    --spacing-2: var(--space-2);
+    --spacing-3: var(--space-3);
+    --spacing-4: var(--space-4);
+    --spacing-5: var(--space-5);
+    --spacing-6: var(--space-6);
+    --spacing-8: var(--space-8);
+    --spacing-10: var(--space-10);
+    --spacing-12: var(--space-12);
+    --spacing-16: var(--space-16);
+
+    --z-index-dropdown: var(--z-dropdown);
+    --z-index-sticky: var(--z-sticky);
+    --z-index-overlay: var(--z-overlay);
+    --z-index-modal: var(--z-modal);
+    --z-index-toast: var(--z-toast);
+
+    --transition-duration-fast: var(--duration-fast);
+    --transition-duration-base: var(--duration-base);
+    --transition-duration-slow: var(--duration-slow);
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentcolor);
+    }
+}
 
 /* ──────────────────────────────────────────────
    ClawQuest Design Tokens — Base (Terminal Light)
@@ -163,6 +310,20 @@ body {
     background: var(--bg);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+/* All interactive elements get pointer cursor */
+button,
+[role="button"],
+a,
+select,
+input[type="checkbox"],
+input[type="radio"],
+input[type="submit"],
+input[type="button"],
+label[for],
+summary {
+    cursor: pointer;
 }
 
 .page-container {

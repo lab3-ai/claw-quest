@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-    "inline-flex items-center rounded border px-2 py-0.5 text-xs font-bold uppercase tracking-wide transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+    "inline-flex items-center rounded border px-2 py-0.5 text-xs font-bold uppercase tracking-wide transition-colors focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2",
     {
         variants: {
             variant: {
@@ -15,15 +15,17 @@ const badgeVariants = cva(
                     "border-transparent bg-destructive text-destructive-foreground",
                 outline: "text-foreground",
                 /* Quest type variants */
-                fcfs: "border-transparent bg-accent-light text-accent",
-                leaderboard: "border-transparent bg-info-light text-info",
-                luckydraw: "border-transparent bg-muted text-fg-secondary",
+                fcfs: "border-accent bg-accent-light text-accent",
+                leaderboard: "border-info bg-info-light text-info",
+                luckydraw: "border-border-heavy bg-muted text-fg-secondary",
+                /* Reward variants */
+                reward: "border-success/20 bg-success-light text-success",
                 /* Payment/category variants */
                 crypto: "border-transparent bg-info-light text-link",
-                fiat: "border-transparent bg-[var(--stripe-bg)] text-[var(--stripe-fg)]",
+                fiat: "border-transparent bg-(--stripe-bg) text-(--stripe-fg)",
                 skill: "border-transparent bg-skill-bg text-skill",
                 onchain: "border-transparent bg-muted text-fg-secondary",
-                social: "border-transparent bg-[var(--social-bg)] text-fg-secondary",
+                social: "border-transparent bg-(--social-bg) text-fg-secondary",
                 network: "border-transparent bg-info-light text-link",
                 /* Status variants */
                 live: "border-transparent bg-success-light text-success",

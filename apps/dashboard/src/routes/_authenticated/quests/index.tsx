@@ -1,18 +1,21 @@
 import { useState, useRef, useEffect, useCallback } from "react"
-import { Link } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { QuestCard, QuestersAvatarStack } from "@/components/QuestCard"
 import type { QuesterDetail } from "@/components/QuestCard"
 import { QuestGridCard } from "@/components/QuestGridCard"
 import { QuestersPopup } from "@/components/QuestersPopup"
-import { formatTimeShort, typeBadgeClass, statusBadgeClass } from "@/components/quest-utils"
+import { formatTimeShort, typeColorClass } from "@/components/quest-utils"
 
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/context/ThemeContext"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Badge } from "@/components/ui/badge"
-import { FlashFill, FlashLine, TrophyFill, TrophyLine, ClockFill, ClockLine, StarFill, StarLine, CalendarFill, CalendarLine } from "@mingcute/react"
+import { FlashFill, FlashLine, TrophyFill, TrophyLine, ClockFill, ClockLine, StarFill, StarLine, CalendarFill, CalendarLine, Rows3Line, RunLine, RandomLine } from "@mingcute/react"
+import { SponsorLogo } from "@/components/sponsor-logo"
+import { PageTitle } from "@/components/page-title"
+import { TokenIcon } from "@/components/token-icon"
 import type { Quest } from "@clawquest/shared"
 
 type Tab = "featured" | "highest-reward" | "ending-soon" | "new" | "upcoming"
@@ -68,6 +71,7 @@ function filterAndSortQuests(quests: Quest[], tab: Tab): Quest[] {
 export function QuestList() {
     const { session } = useAuth()
     const { theme, colorMode } = useTheme()
+    const navigate = useNavigate()
     const [tab, setTab] = useState<Tab>(() => {
         const stored = sessionStorage.getItem("cq-quest-tab")
         return (stored && ["featured", "highest-reward", "ending-soon", "new", "upcoming"].includes(stored) ? stored : "featured") as Tab
@@ -114,15 +118,6 @@ export function QuestList() {
     useEffect(() => { updateTabIndicator() }, [updateTabIndicator])
     useEffect(() => { updateViewIndicator() }, [updateViewIndicator])
 
-    // Recalculate indicators on theme/mode change (fonts may differ)
-    useEffect(() => {
-        const id = requestAnimationFrame(() => {
-            updateTabIndicator()
-            updateViewIndicator()
-        })
-        return () => cancelAnimationFrame(id)
-    }, [theme, colorMode, updateTabIndicator, updateViewIndicator])
-
     const { data: quests = [], isLoading, error } = useQuery({
         queryKey: ["quests"],
         queryFn: async () => {
@@ -134,6 +129,17 @@ export function QuestList() {
         },
         staleTime: 60_000,
     })
+
+    // Recalculate indicators on theme/mode change, data load, font load, and resize
+    useEffect(() => {
+        const recalc = () => {
+            updateTabIndicator()
+            updateViewIndicator()
+        }
+        document.fonts.ready.then(recalc)
+        window.addEventListener('resize', recalc)
+        return () => window.removeEventListener('resize', recalc)
+    }, [theme, colorMode, isLoading, updateTabIndicator, updateViewIndicator])
 
     const sorted = filterAndSortQuests(quests, tab)
     const tabCounts: Record<Tab, number> = {
@@ -171,10 +177,7 @@ export function QuestList() {
             )}
             {/* Page header */}
             <div className="flex justify-between items-end py-5 pb-3 mb-0">
-                <div>
-                    <h1 className="text-2xl font-semibold text-foreground">Quests</h1>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">Agent-executable tasks with on-chain rewards</div>
-                </div>
+                <PageTitle title="Quests" description="Agent-executable tasks with on-chain rewards" />
             </div>
 
             {/* Tabs row + view toggle */}
@@ -193,22 +196,17 @@ export function QuestList() {
                                 key={t.id}
                                 ref={el => { tabRefs.current[t.id] = el }}
                                 className={cn(
-                                    "relative z-10 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-button cursor-pointer transition-colors duration-150",
+                                    "relative z-10 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-button cursor-pointer transition-all duration-200 ease-out",
                                     isActive
                                         ? "text-primary-foreground font-semibold"
                                         : "text-foreground"
                                 )}
                                 onClick={() => handleTabChange(t.id)}
                             >
-                                <Icon size={14} />
+                                <Icon size={16} />
                                 {t.label}
                                 {tabCounts[t.id] > 0 && (
-                                    <span className={cn(
-                                        "inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full leading-none",
-                                        isActive
-                                            ? "bg-primary/20 text-primary-foreground"
-                                            : "bg-muted text-foreground"
-                                    )}>{tabCounts[t.id]}</span>
+                                    <span className="opacity-70">({tabCounts[t.id]})</span>
                                 )}
                             </button>
                         )
@@ -218,7 +216,7 @@ export function QuestList() {
                 <div className="relative inline-flex border border-border p-0.5 gap-0.5 rounded-button overflow-hidden ml-auto shrink-0">
                     {/* Sliding highlight */}
                     <span
-                        className="absolute top-0.5 bottom-0.5 rounded-button bg-accent transition-all duration-200 ease-out z-0"
+                        className="absolute top-0.5 bottom-0.5 rounded-button bg-primary transition-all duration-200 ease-out z-0"
                         style={{ left: viewIndicatorStyle.left, width: viewIndicatorStyle.width }}
                     />
                     <Tooltip>
@@ -227,7 +225,7 @@ export function QuestList() {
                                 ref={el => { viewRefs.current["grid"] = el }}
                                 className={cn(
                                     "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
-                                    view === "grid" ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+                                    view === "grid" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                                 )}
                                 onClick={() => handleViewChange("grid")}
                             >
@@ -247,15 +245,11 @@ export function QuestList() {
                                 ref={el => { viewRefs.current["list"] = el }}
                                 className={cn(
                                     "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
-                                    view === "list" ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+                                    view === "list" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                                 )}
                                 onClick={() => handleViewChange("list")}
                             >
-                                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                    <line x1="1" y1="3" x2="15" y2="3" strokeWidth="2.5"/>
-                                    <line x1="1" y1="8" x2="15" y2="8" strokeWidth="2.5"/>
-                                    <line x1="1" y1="13" x2="15" y2="13" strokeWidth="2.5"/>
-                                </svg>
+                                <Rows3Line size={14} />
                             </button>
                         </TooltipTrigger>
                         <TooltipContent side="bottom" className="text-xs">List view</TooltipContent>
@@ -266,7 +260,7 @@ export function QuestList() {
                                 ref={el => { viewRefs.current["compact"] = el }}
                                 className={cn(
                                     "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
-                                    view === "compact" ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+                                    view === "compact" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                                 )}
                                 onClick={() => handleViewChange("compact")}
                             >
@@ -278,14 +272,40 @@ export function QuestList() {
                                 </svg>
                             </button>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom" className="text-xs">Compact list</TooltipContent>
+                        <TooltipContent side="bottom" className="text-xs">Table view</TooltipContent>
                     </Tooltip>
                 </div>
                 </TooltipProvider>
             </div>
 
-            {/* Loading */}
-            {isLoading && (
+            {/* Loading skeletons — match active view */}
+            {isLoading && view === "grid" && (
+                <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4 py-4">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                        <div key={i} className="flex flex-col border border-border rounded p-4 pointer-events-none">
+                            <div className="flex justify-between items-center mb-3">
+                                <div className="animate-pulse bg-muted rounded w-[70px] h-5" />
+                                <div className="animate-pulse bg-muted rounded w-[50px] h-4" />
+                            </div>
+                            <div className="animate-pulse bg-muted rounded w-4/5 h-4 mb-2" />
+                            <div className="animate-pulse bg-muted rounded w-full h-3 mb-1.5" />
+                            <div className="animate-pulse bg-muted rounded w-3/5 h-3 mb-3" />
+                            <div className="flex gap-1 mb-3">
+                                <div className="animate-pulse bg-muted rounded w-[50px] h-5" />
+                                <div className="animate-pulse bg-muted rounded w-[40px] h-5" />
+                            </div>
+                            <div className="mt-auto pt-3 border-t border-border flex justify-between items-end">
+                                <div>
+                                    <div className="animate-pulse bg-muted rounded w-[80px] h-4 mb-1" />
+                                    <div className="animate-pulse bg-muted rounded w-[60px] h-3" />
+                                </div>
+                                <div className="animate-pulse bg-muted rounded w-[50px] h-4" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+            {isLoading && view !== "grid" && (
                 <div className="block">
                     {[1, 2, 3, 4].map(i => (
                         <div key={i} className="flex gap-4 py-3.5 border-b border-border items-start pointer-events-none">
@@ -349,48 +369,53 @@ export function QuestList() {
                     <table className="w-full border-collapse">
                         <thead>
                             <tr>
-                                <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Reward</th>
+                                <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[140px]">Reward</th>
                                 <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[240px]">Name</th>
                                 <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
                                 <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Questers</th>
-                                <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Slots</th>
-                                <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Time Left</th>
+                                <th className="text-right px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Slots</th>
+                                <th className="text-right px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Time Left</th>
                             </tr>
                         </thead>
                         <tbody>
                             {sorted.length === 0 ? (
-                                <tr><td colSpan={6} className="px-2 py-2.5 text-xs border-b border-border align-top text-center py-8 text-muted-foreground">{emptyMessage}</td></tr>
+                                <tr><td colSpan={6} className="px-2 py-3 text-xs border-b border-border align-top text-center py-8 text-muted-foreground">{emptyMessage}</td></tr>
                             ) : sorted.map(quest => {
                                 const time = formatTimeShort(quest.expiresAt)
                                 return (
-                                    <tr key={quest.id} className="hover:bg-muted">
-                                        <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
-                                            <span className="text-md font-semibold text-success whitespace-nowrap leading-tight">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</span>
+                                    <tr key={quest.id} className="hover:bg-muted cursor-pointer transition-colors" onClick={() => navigate({ to: "/quests/$questId", params: { questId: quest.id } })}>
+                                        <td className="px-2 py-3 text-xs border-b border-border align-top whitespace-nowrap">
+                                            <span className="inline-flex items-center gap-1 text-sm font-semibold text-success whitespace-nowrap">
+                                                <TokenIcon token={quest.rewardType} size={16} />
+                                                {quest.rewardAmount.toLocaleString()} {quest.rewardType}
+                                            </span>
                                         </td>
-                                        <td className="px-2 py-2.5 text-xs border-b border-border align-top min-w-[240px]">
-                                            <div className="text-base font-normal leading-snug mb-0.5">
-                                                <Link className="text-foreground no-underline font-semibold text-base leading-snug hover:text-primary" to="/quests/$questId" params={{ questId: quest.id }}>{quest.title}</Link>
-                                            </div>
+                                        <td className="px-2 py-3 text-xs border-b border-border align-top min-w-[240px]">
+                                            <div className="text-base font-semibold leading-snug mb-0.5">{quest.title}</div>
                                             <div className="text-xs text-muted-foreground leading-snug line-clamp-1 my-0.5">{quest.description}</div>
-                                            <div className="text-xs text-muted-foreground">by <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
+                                            <div className="text-xs text-muted-foreground inline-flex items-center gap-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
                                         </td>
-                                        <td className="px-2 py-2.5 text-xs border-b border-border align-top">
-                                            <Badge variant={typeBadgeClass(quest.type).replace("badge-", "") as any}>{quest.type}</Badge>
-                                            <Badge variant={statusBadgeClass(quest.status).replace("badge-", "") as any} className="ml-1">{quest.status}</Badge>
+                                        <td className="px-2 py-3 text-xs border-b border-border align-top">
+                                            <span className={cn("inline-flex items-center gap-1 text-xs font-bold uppercase", typeColorClass(quest.type))}>
+                                                {quest.type === "FCFS" && <RunLine size={14} />}
+                                                {quest.type === "LEADERBOARD" && <TrophyLine size={14} />}
+                                                {quest.type === "LUCKY_DRAW" && <RandomLine size={14} />}
+                                                {quest.type}
+                                            </span>
                                         </td>
-                                        <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                        <td className="px-2 py-3 text-xs border-b border-border align-top whitespace-nowrap">
                                             {quest.questers > 0 ? (
                                                 <QuestersAvatarStack
                                                     details={(quest.questerDetails ?? []) as QuesterDetail[]}
                                                     total={quest.questers}
-                                                    onClick={() => setPopupQuest({ id: quest.id, title: quest.title })}
+                                                    onClick={(e) => { e.stopPropagation(); setPopupQuest({ id: quest.id, title: quest.title }) }}
                                                 />
                                             ) : (
                                                 <span className="text-xs text-muted-foreground">—</span>
                                             )}
                                         </td>
-                                        <td className="px-2 py-2.5 text-xs border-b border-border align-top">{quest.totalSlots - quest.filledSlots} left</td>
-                                        <td className="px-2 py-2.5 text-xs border-b border-border align-top">
+                                        <td className="px-2 py-3 text-xs border-b border-border align-top text-right">{quest.totalSlots - quest.filledSlots}</td>
+                                        <td className="px-2 py-3 text-xs border-b border-border align-top text-right">
                                             <div className={cn(
                                                 "font-mono text-xs font-semibold whitespace-nowrap",
                                                 time.cls === "warning" && "text-warning",

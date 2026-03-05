@@ -62,12 +62,12 @@ export function StepReward({
             "before:content-[''] before:absolute before:left-[13px] before:top-0 before:bottom-0 before:w-0.5 before:bg-border before:z-0",
             isDone && "before:bg-success"
         )}>
-            <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-[1] group" onClick={onToggle}>
+            <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
                 <span className={cn(
                     "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white border-2 border-background",
-                    isDone ? "bg-success shadow-[0_0_0_2px_theme(colors.green.500)]"
+                    isDone ? "bg-success shadow-[0_0_0_2px_var(--color-green-500)]"
                         : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
-                            : "bg-gray-300 shadow-[0_0_0_2px_theme(colors.gray.300)]"
+                            : "bg-gray-300 shadow-[0_0_0_2px_var(--color-gray-300)]"
                 )}>{isDone ? "\u2713" : "3"}</span>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -93,13 +93,13 @@ export function StepReward({
                             <Label>Reward Method</Label>
                             <div className="inline-flex border border-border rounded overflow-hidden">
                                 <button
-                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none border-r border-border bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "crypto" && "bg-[var(--tag-bg)] text-[var(--tag-fg)] font-semibold")}
+                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none border-r border-border bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "crypto" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
                                     onClick={() => onFieldChange("rail", "crypto")}
                                 >
                                     <span className="text-base leading-none">⛓</span> Crypto
                                 </button>
                                 <button
-                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "fiat" && "bg-[var(--tag-bg)] text-[var(--tag-fg)] font-semibold")}
+                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "fiat" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
                                     onClick={() => onFieldChange("rail", "fiat")}
                                 >
                                     <span className="text-base leading-none">💳</span> Fiat (USD)
@@ -115,7 +115,7 @@ export function StepReward({
                             <div className="flex items-start gap-3">
                                 <div className="flex-1 space-y-1.5 mb-3.5">
                                     <Label>Network</Label>
-                                    <select className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={form.network} onChange={e => onFieldChange("network", e.target.value)}>
+                                    <select className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring" value={form.network} onChange={e => onFieldChange("network", e.target.value)}>
                                         <optgroup label="Primary">
                                             {NETWORKS_PRIMARY.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
                                         </optgroup>
@@ -126,7 +126,7 @@ export function StepReward({
                                 </div>
                                 <div className="flex-1 space-y-1.5 mb-3.5">
                                     <Label>Token</Label>
-                                    <select className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={form.token} onChange={e => onFieldChange("token", e.target.value)}>
+                                    <select className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring" value={form.token} onChange={e => onFieldChange("token", e.target.value)}>
                                         <optgroup label="Stablecoin">
                                             <option value="USDC">USDC</option>
                                             <option value="USDT">USDT</option>
@@ -158,7 +158,7 @@ export function StepReward({
                                 <span>Sponsor pays via <strong>Stripe</strong> (charged upfront at quest creation). Winners withdraw rewards as crypto.</span>
                             </div>
                             <div className="flex items-center gap-2.5 p-2 px-3 border border-border rounded bg-muted" style={{ marginTop: 10 }}>
-                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 bg-[var(--stripe-fg)]">S</div>
+                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 bg-(--stripe-fg)">S</div>
                                 <div className="flex-1">
                                     <div className="text-sm font-semibold text-foreground">USD via Stripe</div>
                                     <div className="text-xs text-muted-foreground font-mono">
@@ -261,7 +261,7 @@ export function StepReward({
                                 <div className="space-y-1.5 mb-3.5">
                                     <Label>Draw Time</Label>
                                     <input
-                                        className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                         type="datetime-local"
                                         value={form.drawTime}
                                         onChange={e => onFieldChange("drawTime", e.target.value)}

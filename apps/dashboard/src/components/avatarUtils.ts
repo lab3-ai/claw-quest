@@ -14,3 +14,8 @@ export function getInitials(name: string): string {
     if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
     return name.slice(0, 2).toUpperCase()
 }
+
+/** DiceBear thumbs avatar URL — deterministic per seed (handle/name) */
+export function getDiceBearUrl(seed: string, size = 40): string {
+    return `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(seed)}&size=${size}`
+}

@@ -69,7 +69,7 @@ export function QuestJoin({ questId, token }: { questId: string; token: string }
         return (
             <div className="max-w-[480px] mx-auto py-12 px-4">
                 <div className="bg-background border border-border rounded-lg p-6">
-                    <p className="text-xs text-fg-muted mb-4">You've been invited to co-sponsor</p>
+                    <p className="text-xs text-fg-muted mb-4">You've been invited as a partner for</p>
 
                     {quest ? (
                         <>
@@ -103,7 +103,7 @@ export function QuestJoin({ questId, token }: { questId: string; token: string }
                     )}
 
                     <Button className="w-full mt-2" onClick={handleAccept}>
-                        Accept & Become Co-Sponsor
+                        Accept & Become Partner
                     </Button>
                 </div>
             </div>
@@ -127,7 +127,7 @@ export function QuestJoin({ questId, token }: { questId: string; token: string }
                     <div className="w-10 h-10 rounded-full bg-success/10 text-success inline-flex items-center justify-center text-lg font-bold mb-3">
                         ✓
                     </div>
-                    <h3 className="text-base font-semibold text-foreground m-0 mb-1">You're now a co-sponsor!</h3>
+                    <h3 className="text-base font-semibold text-foreground m-0 mb-1">You're now a partner!</h3>
                     <p className="text-sm text-fg-muted m-0 mb-5">
                         You can now edit and manage this quest.
                     </p>

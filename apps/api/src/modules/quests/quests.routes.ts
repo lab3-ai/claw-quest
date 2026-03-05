@@ -1409,7 +1409,7 @@ export async function questsRoutes(server: FastifyInstance) {
         {
             schema: {
                 tags: ['Quests'],
-                summary: 'Generate a co-sponsor invite link',
+                summary: 'Generate a partner invite link',
                 security: [{ bearerAuth: [] }],
                 params: z.object({ id: z.string().uuid() }),
                 response: {
@@ -1438,7 +1438,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 where: { questId: id, acceptedAt: { not: null } },
             });
             if (sponsorCount >= 5) {
-                return reply.status(400).send({ error: { message: 'Max 5 sponsors reached', code: 'MAX_SPONSORS' } } as any);
+                return reply.status(400).send({ error: { message: 'Max 5 partners reached', code: 'MAX_SPONSORS' } } as any);
             }
 
             const token = generateCollabToken();
@@ -1500,7 +1500,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 return reply.status(400).send({ error: { message: 'Quest is closed', code: 'QUEST_CLOSED' } } as any);
             }
             if (quest.creatorUserId === userId) {
-                return reply.status(400).send({ error: { message: 'Owner cannot be a sponsor', code: 'OWNER_CONFLICT' } } as any);
+                return reply.status(400).send({ error: { message: 'Owner is already a partner', code: 'OWNER_CONFLICT' } } as any);
             }
 
             // Check not already a sponsor (use findFirst since userId can be null)
@@ -1508,7 +1508,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 where: { questId: id, userId, acceptedAt: { not: null } },
             });
             if (existing) {
-                return reply.status(400).send({ error: { message: 'Already a sponsor', code: 'ALREADY_SPONSOR' } } as any);
+                return reply.status(400).send({ error: { message: 'Already a partner', code: 'ALREADY_SPONSOR' } } as any);
             }
 
             // Use interactive transaction to avoid TOCTOU race on sponsor count
@@ -1525,7 +1525,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 });
             }).catch((err: any) => {
                 if (err.message === 'MAX_SPONSORS') {
-                    return reply.status(400).send({ error: { message: 'Max 5 sponsors reached', code: 'MAX_SPONSORS' } } as any);
+                    return reply.status(400).send({ error: { message: 'Max 5 partners reached', code: 'MAX_SPONSORS' } } as any);
                 }
                 throw err;
             });
@@ -1612,7 +1612,7 @@ export async function questsRoutes(server: FastifyInstance) {
 
             const { allowed, isOwner } = await isQuestOwnerOrSponsor(server.prisma, id, userId, userRole);
             if (!allowed || !isOwner) {
-                return reply.status(403).send({ error: { message: 'Only owner can remove sponsors', code: 'FORBIDDEN' } } as any);
+                return reply.status(403).send({ error: { message: 'Only owner can remove partners', code: 'FORBIDDEN' } } as any);
             }
 
             const collab = await server.prisma.questCollaborator.findUnique({

@@ -459,7 +459,7 @@ function FundingProgress({ quest, session, questId }: { quest: any; session: any
                         onClick={() => inviteMutation.mutate()}
                         disabled={inviteMutation.isPending}
                     >
-                        {inviteMutation.isPending ? 'Generating...' : 'Invite a co-sponsor'}
+                        {inviteMutation.isPending ? 'Generating...' : 'Invite a partner'}
                     </Button>
                     {inviteMutation.isError && (
                         <span className="text-destructive text-xs">{(inviteMutation.error as Error).message}</span>
@@ -470,7 +470,7 @@ function FundingProgress({ quest, session, questId }: { quest: any; session: any
             <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Invite a Co-Sponsor</DialogTitle>
+                        <DialogTitle>Invite a Partner</DialogTitle>
                         <DialogDescription>
                             Share this link. Expires in 7 days, single use.
                         </DialogDescription>

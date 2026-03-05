@@ -829,26 +829,37 @@ export function QuestDetail() {
                                     )
                                 }
 
-                                // Scheduled + owner/sponsor
+                                // Scheduled + owner/partner
                                 if (quest.status === "scheduled" && isOwnerOrSponsor) {
                                     return (
                                         <>
                                             <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>
                                                 <Button className="w-full mb-2">Edit Quest</Button>
                                             </Link>
-                                            <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>
-                                                <Button variant="secondary" className="w-full">Manage Quest</Button>
-                                            </Link>
+                                            {isCreator && (
+                                                <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>
+                                                    <Button variant="secondary" className="w-full">Manage Quest</Button>
+                                                </Link>
+                                            )}
                                         </>
                                     )
                                 }
 
-                                // Live + owner/sponsor
+                                // Live + owner/partner
                                 if (isLive && isOwnerOrSponsor) {
                                     return (
-                                        <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>
-                                            <Button variant="secondary" className="w-full">Manage Quest</Button>
-                                        </Link>
+                                        <>
+                                            {isCreator && (
+                                                <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>
+                                                    <Button variant="secondary" className="w-full mb-2">Manage Quest</Button>
+                                                </Link>
+                                            )}
+                                            {!isFunded && (
+                                                <Link to="/quests/$questId/fund" params={{ questId: quest.id }}>
+                                                    <Button className="w-full bg-success hover:bg-success/90 border-success">Fund Quest</Button>
+                                                </Link>
+                                            )}
+                                        </>
                                     )
                                 }
 

@@ -9,8 +9,8 @@ function PartialFundingBanner({ tokenSymbol, walletBalance }: { tokenSymbol: str
     return (
         <div className="text-xs text-fg-muted bg-muted/50 border border-border rounded p-2 px-3 mb-3">
             {isEmpty
-                ? `Your wallet has 0 ${tokenSymbol}. Deposit more funds or invite a co-sponsor.`
-                : `You have ${walletBalance} ${tokenSymbol}. You can deposit a partial amount — invite co-sponsors for the rest.`
+                ? `Your wallet has 0 ${tokenSymbol}. Deposit more funds or invite a partner.`
+                : `You have ${walletBalance} ${tokenSymbol}. You can deposit a partial amount — invite partners for the rest.`
             }
         </div>
     )

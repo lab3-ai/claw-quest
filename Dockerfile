@@ -44,13 +44,9 @@ COPY --from=builder /app/apps/api/node_modules/ apps/api/node_modules/
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/skill.md ./
 
-# Copy entrypoint script
-COPY apps/api/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
 EXPOSE 3000
 
 WORKDIR /app/apps/api
 
 # Run migrations then start server
-ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && exec node dist/app.js"]

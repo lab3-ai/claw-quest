@@ -73,6 +73,10 @@ typings/
 # dotenv environment variables file
 .env
 .env.test
+.env.local
+.env*.local
+apps/api/.env
+apps/dashboard/.env
 # Note: .env.development and .env.production are committed (no secrets!)
 # They contain non-secret defaults for testnet/mainnet environments.
 

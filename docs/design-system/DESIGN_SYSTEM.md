@@ -14,7 +14,7 @@
 | **Components** | shadcn/ui (Radix UI) | Accessible primitives |
 | **Icons** | MingCute (`@mingcute/react`) | 24x24 grid, 2px stroke |
 | **Brand icons** | Custom `<PlatformIcon>` | X, Discord, Telegram, OpenClaw SVGs |
-| **Font** | Geist Mono | Single monospace font, all weights |
+| **Font** | JetBrains Mono | Single monospace font, all weights |
 
 ### Installed shadcn/ui Components
 
@@ -30,7 +30,7 @@ To add more: `pnpm --filter dashboard dlx shadcn@latest add <component-name>`
 Monospace typography, flat surfaces, high contrast, no decorative flourishes.
 
 Principles:
-1. **Monospace-first** — Geist Mono everywhere, code-like precision
+1. **Monospace-first** — JetBrains Mono everywhere, code-like precision
 2. **Flat & minimal** — no shadows, no gradients, borders define surfaces
 3. **High contrast** — near-black on light gray, clear hierarchy
 4. **Information density** — compact sizing, tight spacing, data-rich layouts
@@ -39,7 +39,7 @@ Principles:
 
 ## Typography
 
-**Single font:** Geist Mono — monospace for everything.
+**Single font:** JetBrains Mono — monospace for everything.
 
 ```html
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -49,9 +49,9 @@ Principles:
 
 | Token | Value | Tailwind |
 |-------|-------|----------|
-| `--font` | `"Geist Mono", ui-monospace, ...` | `font-sans` |
-| `--font-heading` | `"Geist Mono", ui-monospace, ...` | `font-heading` |
-| `--font-mono` | `"Geist Mono", ui-monospace, ...` | `font-mono` |
+| `--font` | `"JetBrains Mono", ui-monospace, ...` | `font-sans` |
+| `--font-heading` | `"JetBrains Mono", ui-monospace, ...` | `font-heading` |
+| `--font-mono` | `"JetBrains Mono", ui-monospace, ...` | `font-mono` |
 
 **Note:** All three font stacks resolve to the same monospace family. `font-sans` in Tailwind outputs monospace — this is intentional.
 
@@ -431,8 +431,8 @@ Tailwind mapping in `apps/dashboard/tailwind.config.js`.
 
 | Theme | Font | Style | Radius | Shadows |
 |-------|------|-------|--------|---------|
-| **Terminal** (default) | Geist Mono | Flat, monospace, high-contrast | 0–8px | None (light), subtle + brand glow (dark) |
-| **Glass** | Inter | Frosted blur, translucent, rounded | 8–20px | Soft layered (light), deeper translucent (dark) |
+| **Terminal** (default) | JetBrains Mono | Flat, monospace, high-contrast | 0–8px | None (light), subtle + brand glow (dark) |
+| **Glass** | Google Sans Flex | Frosted blur, translucent, rounded | 8–20px | Soft layered (light), deeper translucent (dark) |
 | **Brutalist** | Space Grotesk | Heavy borders, hard offset shadows | 0px all | Black offset (light), white offset (dark) |
 | **Minimal** | Inter | Clean, airy, subtle | 4–12px | Very subtle (light), slightly stronger (dark) |
 | **Bauhaus** | DM Sans | Geometric, warm palette, bold | 0px + 50px xl | None (both modes) |

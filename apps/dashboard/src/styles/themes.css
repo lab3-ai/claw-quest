@@ -8,9 +8,9 @@
    THEME: Terminal (default) — monospace, flat, high-contrast
    ═══════════════════════════════════════════════ */
 [data-theme="terminal"] {
-    --font: "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
-    --font-heading: "Geist Mono", ui-monospace, "Cascadia Mono", monospace;
-    --font-mono: "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    --font: "JetBrains Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    --font-heading: "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
+    --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
     --radius-base: 0px;
     --radius-sm: 0px;
     --radius-md: 0px;
@@ -106,9 +106,9 @@
    THEME: Glass — frosted glass, blur, translucent
    ═══════════════════════════════════════════════ */
 [data-theme="glass"] {
-    --font: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
-    --font-heading: "Inter", "SF Pro Display", -apple-system, system-ui, sans-serif;
-    --font-mono: "Geist Mono", ui-monospace, monospace;
+    --font: "Google Sans Flex", "Inter", -apple-system, system-ui, sans-serif;
+    --font-heading: "Google Sans Flex", "Inter", -apple-system, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
     --radius-base: 12px;
     --radius-sm: 8px;
     --radius-md: 12px;
@@ -264,7 +264,7 @@
 [data-theme="brutalist"] {
     --font: "Space Grotesk", "Inter", system-ui, sans-serif;
     --font-heading: "Space Grotesk", "Inter", system-ui, sans-serif;
-    --font-mono: "Geist Mono", ui-monospace, monospace;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
     --radius-base: 0px;
     --radius-sm: 0px;
     --radius-md: 0px;
@@ -420,7 +420,7 @@
 [data-theme="minimal"] {
     --font: "Inter", -apple-system, system-ui, sans-serif;
     --font-heading: "Inter", -apple-system, system-ui, sans-serif;
-    --font-mono: "Geist Mono", ui-monospace, monospace;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
     --radius-base: 6px;
     --radius-sm: 4px;
     --radius-md: 6px;
@@ -576,7 +576,7 @@
 [data-theme="bauhaus"] {
     --font: "DM Sans", "Inter", system-ui, sans-serif;
     --font-heading: "DM Sans", "Inter", system-ui, sans-serif;
-    --font-mono: "Geist Mono", ui-monospace, monospace;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
     --radius-base: 0px;
     --radius-sm: 0px;
     --radius-md: 0px;

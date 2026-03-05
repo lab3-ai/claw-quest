@@ -32,6 +32,9 @@ export const escrowPollerHealth = {
     chains: {} as Record<number, ChainHealth>,
 };
 
+/** Per-chain lock: if true, that chain is currently being polled (skip next tick until done) */
+const chainPollInProgress: Record<number, boolean> = {};
+
 /** Initialize per-chain health entries */
 function initChainHealth(chainIds: number[]): void {
     for (const id of chainIds) {
@@ -40,6 +43,7 @@ function initChainHealth(chainIds: number[]): void {
             lastError: null,
             eventsProcessed: 0,
         };
+        chainPollInProgress[id] = false;
     }
 }
 
@@ -82,6 +86,9 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
     const client = getPublicClient(chainId);
     const chainHealth = escrowPollerHealth.chains[chainId];
 
+    if (chainPollInProgress[chainId]) return;
+
+    chainPollInProgress[chainId] = true;
     try {
         const currentBlock = await client.getBlockNumber();
         // Safe block = tip minus confirmation buffer (re-org protection)
@@ -176,6 +183,8 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
         escrowPollerHealth.lastError = `chain ${chainId}: ${err.message}`;
         if (chainHealth) chainHealth.lastError = err.message;
         server.log.error({ err, chainId }, '[escrow:poller] Error polling chain');
+    } finally {
+        chainPollInProgress[chainId] = false;
     }
 }
 

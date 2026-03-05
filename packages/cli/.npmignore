@@ -1,0 +1,10 @@
+src/
+tsconfig.json
+tsup.config.ts
+test-cli.js
+examples/
+*.md
+!README.md
+.gitignore
+.eslintrc*
+.prettierrc*

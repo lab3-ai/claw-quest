@@ -10,7 +10,7 @@ import {
     TOKEN_REGISTRY,
     SUPPORTED_CHAINS,
 } from '@clawquest/shared';
-import { escrowConfig, getContractAddress } from './escrow.config';
+import { escrowConfig, getContractAddress, isChainAllowed } from './escrow.config';
 
 /** Resolve numeric chain ID from quest.network string (e.g. "Base" → 8453) */
 function resolveChainIdFromNetwork(networkName: string | null | undefined): number | undefined {
@@ -49,7 +49,10 @@ export async function getDepositParams(
     const quest = await prisma.quest.findUnique({ where: { id: questId } });
     if (!quest) throw new Error('Quest not found');
 
-    const targetChainId = chainId || quest.cryptoChainId || resolveChainIdFromNetwork(quest.network) || escrowConfig.defaultChainId;
+    let targetChainId = chainId ?? quest.cryptoChainId ?? resolveChainIdFromNetwork(quest.network) ?? escrowConfig.defaultChainId;
+    if (!isChainAllowed(targetChainId)) {
+        targetChainId = escrowConfig.defaultChainId;
+    }
     const chain = getChainById(targetChainId);
     if (!chain) throw new Error(`Unsupported chain: ${targetChainId}`);
 

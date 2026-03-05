@@ -95,7 +95,7 @@ export const TOKEN_REGISTRY: Record<number, Record<string, TokenInfo>> = {
     },
     // Base Sepolia (testnet)
     84532: {
-        USDC: { address: '0x036CbD53842c5426634e7929541eC2318f3dCF7e', decimals: 6, symbol: 'USDC', name: 'USD Coin' },
+        USDC: { address: '0xAA87A3f8E6017F1f02af0f306B765FCfBeCac3E4', decimals: 6, symbol: 'USDC', name: 'USD Coin' },
         NATIVE: { address: '0x0000000000000000000000000000000000000000', decimals: 18, symbol: 'ETH', name: 'Ether' },
     },
     // Ethereum

@@ -82,7 +82,7 @@ Updated 6 core ClawQuest documentation files to reflect 8 completed tasks and 10
 - `CHANGELOG.md`: "Base Sepolia Deployment" subsection
 
 **Documented:**
-- Proxy contract: `0xe1d2b3d041934e2f245d5a366396e4787d3802c1`
+- Proxy contract: `0xd771ca2fa508a462f07269ec3745d33b4dbc24b0`
 - `ESCROW_CONTRACT_84532` env var
 - Roles: DEFAULT_ADMIN, OPERATOR
 - USDC allowlisted

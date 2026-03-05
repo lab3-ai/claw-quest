@@ -18,6 +18,8 @@ import { StepPreview } from "./create-quest/StepPreview"
 import { getTokenSymbol } from "./create-quest/constants"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
+const ESCROW_NETWORK_MODE = import.meta.env.VITE_ESCROW_NETWORK_MODE ?? "testnet"
+const IS_TESTNET = ESCROW_NETWORK_MODE === "testnet"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -50,6 +52,9 @@ interface FormData {
     // Lucky Draw only
     drawTime: string
 }
+
+// ─── Default network (testnet vs mainnet) ─────────────────────────────────────
+const DEFAULT_NETWORK = IS_TESTNET ? "Base Sepolia" : "Base"
 
 // ─── Platform / action data ────────────────────────────────────────────────────
 
@@ -667,7 +672,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const [tab, setTab] = useState<Tab | null>("details")
     const [form, setForm] = useState<FormData>({
         title: "", description: "", startAt: "", endAt: "",
-        rail: "crypto", network: "Base", token: "USDC", type: "FCFS",
+        rail: "crypto", network: DEFAULT_NETWORK, token: "USDC", type: "FCFS",
         total: "100.00", winners: "50",
         drawTime: "",
     })

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { PageTitle } from "@/components/page-title"
 import type { Quest } from "@clawquest/shared"
+import { FUNDING_STATUS } from "@clawquest/shared"
 
 type MineQuest = Quest & { fundingStatus?: string; previewToken?: string }
 
@@ -63,6 +64,7 @@ function getPublishErrors(quest: MineQuest): Record<string, string> {
     if (!quest.totalSlots || quest.totalSlots <= 0) errors.totalSlots = 'Slots required'
     const tasks = (quest.tasks as any[]) ?? []
     if (tasks.length === 0) errors.tasks = 'Tasks required'
+    if (quest.fundingStatus !== FUNDING_STATUS.CONFIRMED) errors.funding = 'Funding required'
     return errors
 }
 

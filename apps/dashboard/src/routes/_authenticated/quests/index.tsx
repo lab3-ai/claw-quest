@@ -11,7 +11,6 @@ import { formatTimeShort, typeColorClass } from "@/components/quest-utils"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/context/ThemeContext"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Badge } from "@/components/ui/badge"
 import { FlashFill, FlashLine, TrophyFill, TrophyLine, ClockFill, ClockLine, StarFill, StarLine, CalendarFill, CalendarLine, Rows3Line, RunLine, RandomLine } from "@mingcute/react"
 import { SponsorLogo } from "@/components/sponsor-logo"
 import { PageTitle } from "@/components/page-title"
@@ -335,35 +334,35 @@ export function QuestList() {
                     slideDir === "right" ? "slide-in-from-right-3" : "slide-in-from-left-3"
                 )}
             >
-            {/* Grid view */}
-            {!isLoading && view === "grid" && (
-                sorted.length === 0 ? (
-                    <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4 py-4">
-                        {sorted.map(quest => (
-                            <QuestGridCard key={quest.id} quest={quest} />
-                        ))}
-                    </div>
-                )
-            )}
-
-            {/* List view (card rows) */}
-            {!isLoading && view === "list" && (
-                <div className="block">
-                    {sorted.length === 0 ? (
+                {/* Grid view */}
+                {!isLoading && view === "grid" && (
+                    sorted.length === 0 ? (
                         <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>
                     ) : (
-                        <div>
+                        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4 py-4">
                             {sorted.map(quest => (
-                                <QuestCard key={quest.id} quest={quest} />
+                                <QuestGridCard key={quest.id} quest={quest} />
                             ))}
                         </div>
-                    )}
-                </div>
-            )}
+                    )
+                )}
 
-            {/* Compact list (table) view */}
+                {/* List view (card rows) */}
+                {!isLoading && view === "list" && (
+                    <div className="block">
+                        {sorted.length === 0 ? (
+                            <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>
+                        ) : (
+                            <ul className="list-none">
+                                {sorted.map(quest => (
+                                    <QuestCard key={quest.id} quest={quest} />
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                )}
+
+                {/* Compact list (table) view */}
             {!isLoading && view === "compact" && (
                 <div className="block">
                     <table className="w-full border-collapse">

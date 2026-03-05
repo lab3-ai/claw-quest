@@ -32,6 +32,9 @@ export const escrowPollerHealth = {
     chains: {} as Record<number, ChainHealth>,
 };
 
+/** Per-chain lock: if true, that chain is currently being polled (skip next tick until done) */
+const chainPollInProgress: Record<number, boolean> = {};
+
 /** Initialize per-chain health entries */
 function initChainHealth(chainIds: number[]): void {
     for (const id of chainIds) {
@@ -40,6 +43,7 @@ function initChainHealth(chainIds: number[]): void {
             lastError: null,
             eventsProcessed: 0,
         };
+        chainPollInProgress[id] = false;
     }
 }
 
@@ -47,10 +51,14 @@ function initChainHealth(chainIds: number[]): void {
 async function getCursor(server: FastifyInstance, chainId: number, currentBlock: bigint): Promise<bigint> {
     try {
         const row = await server.prisma.escrowCursor.findUnique({ where: { chainId } });
-        if (row) return row.lastBlock;
-    } catch {
+        if (row) {
+            server.log.debug(`[escrow:poller] chain ${chainId} cursor from DB: block ${row.lastBlock}`);
+            return row.lastBlock;
+        }
+        server.log.info(`[escrow:poller] chain ${chainId} no cursor in DB — first run, starting from block ${currentBlock - 100n}`);
+    } catch (err: any) {
         // Table may not exist yet (migration pending) — fall through to default
-        server.log.warn('[escrow:poller] EscrowCursor table not available, using default cursor');
+        server.log.warn(`[escrow:poller] EscrowCursor table not available (${err.message}), using default cursor`);
     }
     // First run: start from last ~100 blocks to catch recent events
     return currentBlock > 100n ? currentBlock - 100n : 0n;
@@ -78,6 +86,9 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
     const client = getPublicClient(chainId);
     const chainHealth = escrowPollerHealth.chains[chainId];
 
+    if (chainPollInProgress[chainId]) return;
+
+    chainPollInProgress[chainId] = true;
     try {
         const currentBlock = await client.getBlockNumber();
         // Safe block = tip minus confirmation buffer (re-org protection)
@@ -104,6 +115,7 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
         });
 
         if (rawLogs.length === 0) {
+            server.log.info(`[escrow:poller] Saving cursor for chain ${chainId} to block ${toBlock}`);
             await saveCursor(server, chainId, toBlock);
             if (chainHealth) {
                 chainHealth.lastPollAt = new Date();
@@ -156,6 +168,7 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
             escrowPollerHealth.eventsProcessed += processed;
             if (chainHealth) chainHealth.eventsProcessed += processed;
         }
+        server.log.info(`[escrow:poller] Saving cursor for chain ${chainId} to block ${toBlock}`);
 
         await saveCursor(server, chainId, toBlock);
 
@@ -170,6 +183,8 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
         escrowPollerHealth.lastError = `chain ${chainId}: ${err.message}`;
         if (chainHealth) chainHealth.lastError = err.message;
         server.log.error({ err, chainId }, '[escrow:poller] Error polling chain');
+    } finally {
+        chainPollInProgress[chainId] = false;
     }
 }
 
@@ -178,6 +193,7 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
  * Uses Promise.allSettled so one chain failing doesn't block others.
  */
 async function pollAllChains(server: FastifyInstance, chainIds: number[]): Promise<void> {
+    server.log.info(`[escrow:poller] Tick — polling chains [${chainIds.join(', ')}]`);
     await Promise.allSettled(
         chainIds.map(chainId => pollChain(server, chainId))
     );

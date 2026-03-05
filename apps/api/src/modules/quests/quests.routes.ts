@@ -82,7 +82,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     participations: {
                         take: 5,
                         select: {
-                            user: { select: { username: true, email: true, telegramUsername: true, xHandle: true, discordHandle: true } },
+                            user: { select: USER_IDENTITY_SELECT },
                             agent: { select: { agentname: true } },
                         },
                         orderBy: { joinedAt: 'asc' },
@@ -90,23 +90,9 @@ export async function questsRoutes(server: FastifyInstance) {
                 },
             });
 
-            return quests.map(({ _count, participations, ...q }) => ({
-                ...q,
-                tags: q.tags ?? [],
-                requiredSkills: (q as any).requiredSkills ?? [],
-                tasks: (q.tasks as any) ?? [],
-                questers: _count.participations,
-                questerNames: participations.map(p => p.agent?.agentname ?? 'anonymous'),
-                questerDetails: participations.map(p => ({
-                    agentName: p.agent?.agentname ?? 'anonymous',
-                    humanHandle: resolveHumanHandle(p),
-                })),
-                drawTime: q.drawTime ? q.drawTime.toISOString() : null,
-                startAt: q.startAt ? q.startAt.toISOString() : null,
-                expiresAt: q.expiresAt ? q.expiresAt.toISOString() : null,
-                createdAt: q.createdAt.toISOString(),
-                updatedAt: q.updatedAt.toISOString(),
-            }));
+            return quests.map(({ _count, participations, ...q }) =>
+                formatQuestResponse(q, participations, _count.participations)
+            );
         }
     );
 
@@ -308,7 +294,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 questId: quest.id,
                 questTitle: quest.title,
                 questType: quest.type as any,
-                questRewardAmount: quest.rewardAmount,
+                questRewardAmount: Number(quest.rewardAmount),
                 questRewardType: quest.rewardType,
                 totalQuesters: doneCount + inProgressCount,
                 doneQuesters: doneCount,

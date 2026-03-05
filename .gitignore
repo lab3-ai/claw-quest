@@ -70,9 +70,12 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
 .env
 .env.test
+.env.local
+.env*.local
+apps/api/.env
+apps/dashboard/.env
 # Note: .env.development and .env.production are committed (no secrets!)
 # They contain non-secret defaults for testnet/mainnet environments.
 
@@ -133,9 +136,11 @@ vercel.env
 _tmp_*
 
 # Personal logs (not committed)
-docs/WORKFLOW-LOG.md
-docs/DECISIONS-LOG.md
-STATUS.md
-docs/design-system/DECISIONS-LOG.md
 docs/design-system/WORKFLOW-LOG.md
-.claude/hooks/.logs/hook-log.jsonl
+docs/design-system/DECISIONS-LOG.md
+docs/design-system/STATUS.md
+.env
+apps/api/.env
+apps/dashboard/.env
+# Claude/ClaudeKit hooks logs (whole directory)
+.claude/hooks/.logs/

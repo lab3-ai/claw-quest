@@ -13,7 +13,8 @@ export function validatePublishRequirements(quest: any): PublishValidationError 
 
     if (!quest.title?.trim()) fields.title = 'Title is required';
     if (!quest.description?.trim()) fields.description = 'Description is required';
-    if (!quest.rewardAmount || quest.rewardAmount <= 0) fields.rewardAmount = 'Reward amount must be > 0';
+    const rewardAmountNum = Number(quest.rewardAmount ?? 0);
+    if (!(rewardAmountNum > 0)) fields.rewardAmount = 'Reward amount must be > 0';
     if (!quest.totalSlots || quest.totalSlots <= 0) fields.totalSlots = 'Total slots must be > 0';
 
     // Tasks — safe-parse from JSON to prevent crash on malformed data

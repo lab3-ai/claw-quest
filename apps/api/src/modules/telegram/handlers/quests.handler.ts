@@ -53,7 +53,7 @@ export async function handleQuests(server: FastifyInstance, ctx: BotContext) {
         let message = MSG.questListHeader;
         quests.forEach((quest, i) => {
             const slotsLeft = quest.totalSlots - quest.filledSlots;
-            message += `${i + 1}. ${quest.title} \u2014 ${quest.rewardAmount} ${quest.rewardType} (${slotsLeft} slot${slotsLeft !== 1 ? 's' : ''} left)\n`;
+            message += `${i + 1}. ${quest.title} \u2014 ${Number(quest.rewardAmount)} ${quest.rewardType} (${slotsLeft} slot${slotsLeft !== 1 ? 's' : ''} left)\n`;
         });
         message += MSG.questListFooter;
 

@@ -9,34 +9,34 @@ datasource db {
 }
 
 model User {
-  id                  String    @id @default(uuid())
-  supabaseId          String?   @unique // Supabase Auth user UUID
-  email               String    @unique
-  username            String?   @unique
-  displayName         String? // Human-friendly name (synced from Supabase user_metadata.full_name)
-  password            String? // Legacy — kept for backward compat
-  role                String    @default("user") // "user" | "admin"
-  telegramId          String?   @unique // Telegram user ID stored as string (BigInt overflows PG bigint)
-  telegramUsername    String? // Telegram @username
-  xId                 String?   @unique // Twitter/X user ID (from identity_data.sub)
-  xHandle             String? // Twitter/X username (from identity_data.user_name)
-  xAccessToken        String? // X OAuth2 access token (2h lifetime)
-  xRefreshToken       String? // X OAuth2 refresh token (one-time use, 6mo)
-  xTokenExpiry        DateTime? // When the X access token expires
-  discordId           String?   @unique // Discord user ID
-  discordHandle       String? // Discord username
-  discordAccessToken  String? // Discord OAuth access token (guilds.members.read)
-  discordRefreshToken String? // Discord OAuth refresh token
-  discordTokenExpiry  DateTime? // When the access token expires
+  id                String   @id @default(uuid())
+  supabaseId        String?  @unique  // Supabase Auth user UUID
+  email             String   @unique
+  username          String?  @unique
+  displayName       String?            // Human-friendly name (synced from Supabase user_metadata.full_name)
+  password          String?            // Legacy — kept for backward compat
+  role              String   @default("user") // "user" | "admin"
+  telegramId        String?  @unique          // Telegram user ID stored as string (BigInt overflows PG bigint)
+  telegramUsername  String?                   // Telegram @username
+  xId               String?  @unique          // Twitter/X user ID (from identity_data.sub)
+  xHandle           String?                   // Twitter/X username (from identity_data.user_name)
+  xAccessToken      String?                   // X OAuth2 access token (2h lifetime)
+  xRefreshToken     String?                   // X OAuth2 refresh token (one-time use, 6mo)
+  xTokenExpiry      DateTime?                 // When the X access token expires
+  discordId         String?  @unique          // Discord user ID
+  discordHandle     String?                   // Discord username
+  discordAccessToken  String?                 // Discord OAuth access token (guilds.members.read)
+  discordRefreshToken String?                 // Discord OAuth refresh token
+  discordTokenExpiry  DateTime?               // When the access token expires
 
   // Stripe Connect — for receiving fiat payouts as winner
-  stripeConnectedAccountId String? @unique // Stripe Express account ID (acct_xxx)
-  stripeConnectedOnboarded Boolean @default(false)
+  stripeConnectedAccountId  String?   @unique  // Stripe Express account ID (acct_xxx)
+  stripeConnectedOnboarded  Boolean   @default(false)
   // Stripe Customer — for paying as sponsor
-  stripeCustomerId         String? @unique // Stripe customer ID (cus_xxx)
+  stripeCustomerId          String?   @unique  // Stripe customer ID (cus_xxx)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   agents         Agent[]
   wallets        WalletLink[]
@@ -50,21 +50,21 @@ model Agent {
   agentname             String
   status                String    @default("idle") // idle, questing, offline
   activationCode        String?   @unique
-  agentApiKey           String?   @unique // issued on /agents/register — used by agents as Bearer token
-  verificationToken     String?   @unique // for agent-first registration claim flow
-  verificationExpiresAt DateTime? // 48h expiry for verification token
+  agentApiKey           String?   @unique  // issued on /agents/register — used by agents as Bearer token
+  verificationToken     String?   @unique  // for agent-first registration claim flow
+  verificationExpiresAt DateTime?           // 48h expiry for verification token
 
-  claimedAt  DateTime? // null = unclaimed
-  claimedVia String? // "telegram" | "email" | "supabase"
-  claimEmail String? // email used to claim (if email flow)
+  claimedAt             DateTime?           // null = unclaimed
+  claimedVia            String?             // "telegram" | "email" | "supabase"
+  claimEmail            String?             // email used to claim (if email flow)
 
   TelegramLink   TelegramLink?
   logs           AgentLog[]
   participations QuestParticipation[]
   skills         AgentSkill[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([ownerId])
   @@index([agentApiKey])
@@ -72,79 +72,79 @@ model Agent {
 }
 
 model TelegramLink {
-  id         String  @id @default(uuid())
-  agentId    String  @unique
-  agent      Agent   @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  telegramId BigInt // one Telegram user can claim multiple agents
-  username   String?
-  firstName  String?
+  id          String   @id @default(uuid())
+  agentId     String   @unique
+  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  telegramId  BigInt               // one Telegram user can claim multiple agents
+  username    String?
+  firstName   String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([telegramId])
 }
 
 model Quest {
-  id          String @id @default(uuid())
+  id          String   @id @default(uuid())
   title       String
   description String
-  sponsor     String @default("System")
+  sponsor     String   @default("System")
 
-  type   String @default("FCFS") // FCFS, LEADERBOARD, LUCKY_DRAW
-  status String @default("draft") // draft, live, scheduled, completed, cancelled, expired
+  type        String   @default("FCFS") // FCFS, LEADERBOARD, LUCKY_DRAW
+  status      String   @default("draft") // draft, live, scheduled, completed, cancelled, expired
 
-  rewardAmount Int    @default(0)
-  rewardType   String @default("USDC")
+  rewardAmount Decimal  @default(0) @db.Decimal(36, 18)
+  rewardType   String   @default("USDC")
 
-  totalSlots  Int @default(100)
-  filledSlots Int @default(0)
+  totalSlots  Int      @default(100)
+  filledSlots Int      @default(0)
 
-  tags           String[] @default([])
+  tags        String[] @default([])
   requiredSkills String[] @default([]) // skill names agent must have to accept
-  tasks          Json     @default("[]") // QuestTask[] — social task definitions
+  tasks         Json      @default("[]")  // QuestTask[] — social task definitions
 
-  rewardTiers Json? // LEADERBOARD: [40, 25, 15, 20] = % per rank (last = split among rest)
-  network     String? // blockchain name (e.g. "Base", "BNB Smart Chain")
-  drawTime    DateTime? // Lucky Draw deadline
+  rewardTiers   Json?                   // LEADERBOARD: [40, 25, 15, 20] = % per rank (last = split among rest)
+  network     String?                 // blockchain name (e.g. "Base", "BNB Smart Chain")
+  drawTime    DateTime?               // Lucky Draw deadline
 
-  expiresAt DateTime?
-  startAt   DateTime? // null = immediately live after funding
+  expiresAt   DateTime?
+  startAt     DateTime?               // null = immediately live after funding
 
   // Ownership / claim fields
-  creatorAgentId      String? // Agent who created this quest (Flow B)
-  creatorTelegramId   BigInt? // Telegram user who claimed this quest
-  creatorEmail        String? // Email of creator (alternative identity)
-  creatorUserId       String? // Optional — linked Supabase user
-  claimToken          String?   @unique // Token for claiming ownership (cleared on claim)
-  claimTokenExpiresAt DateTime? // 48h expiry
-  claimedAt           DateTime? // null = unclaimed
-  previewToken        String?   @unique // Permanent preview link token (survives claim)
+  creatorAgentId      String?             // Agent who created this quest (Flow B)
+  creatorTelegramId   BigInt?             // Telegram user who claimed this quest
+  creatorEmail        String?             // Email of creator (alternative identity)
+  creatorUserId       String?             // Optional — linked Supabase user
+  claimToken          String?   @unique   // Token for claiming ownership (cleared on claim)
+  claimTokenExpiresAt DateTime?           // 48h expiry
+  claimedAt           DateTime?           // null = unclaimed
+  previewToken        String?   @unique   // Permanent preview link token (survives claim)
 
   // Funding
-  fundingMethod   String? // "stripe" | "crypto"
-  fundingStatus   String    @default("unfunded") // unfunded, pending, confirmed, refunded
-  stripeSessionId String?   @unique
-  stripePaymentId String?
-  cryptoTxHash    String?
-  cryptoChainId   Int? // e.g. 8453 (Base)
-  fundedAt        DateTime?
-  fundedAmount    Int? // actual amount received (same unit as rewardAmount)
+  fundingMethod       String?             // "stripe" | "crypto"
+  fundingStatus       String   @default("unfunded") // unfunded, pending, confirmed, refunded
+  stripeSessionId     String?  @unique
+  stripePaymentId     String?
+  cryptoTxHash        String?
+  cryptoChainId       Int?                // e.g. 8453 (Base)
+  fundedAt            DateTime?
+  fundedAmount        Int?                // actual amount received (same unit as rewardAmount)
 
   // Refund
-  refundStatus String? // pending, completed
-  refundAmount Int?
-  refundTxHash String?
-  refundedAt   DateTime?
+  refundStatus        String?             // pending, completed
+  refundAmount        Int?
+  refundTxHash        String?
+  refundedAt          DateTime?
 
   // Crypto escrow — on-chain data
-  tokenAddress  String? // ERC20 contract address on-chain (null for native)
-  tokenDecimals Int? // 6 for USDC, 18 for ETH
-  sponsorWallet String? // Sponsor's wallet address
-  escrowQuestId String? // bytes32 hex for contract reference
+  tokenAddress        String?             // ERC20 contract address on-chain (null for native)
+  tokenDecimals       Int?                // 6 for USDC, 18 for ETH
+  sponsorWallet       String?             // Sponsor's wallet address
+  escrowQuestId       String?             // bytes32 hex for contract reference
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   participations QuestParticipation[]
 
@@ -157,24 +157,24 @@ model Quest {
 }
 
 model QuestParticipation {
-  id      String  @id @default(uuid())
-  questId String
-  quest   Quest   @relation(fields: [questId], references: [id], onDelete: Cascade)
-  userId  String? // null for agent-only participations
-  user    User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  agentId String? // null until user links an agent
-  agent   Agent?  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  questId   String
+  quest     Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+  userId    String?  // null for agent-only participations
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agentId   String?  // null until user links an agent
+  agent     Agent?   @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
-  status         String  @default("in_progress") // in_progress, submitted, completed, failed
-  proof          Json? // Store proof details
-  tasksCompleted Int     @default(0)
-  tasksTotal     Int     @default(5)
-  payoutAmount   Float? // null = N/A, value = paid/pending amount
-  payoutStatus   String  @default("na") // na, pending, paid
-  payoutTxHash   String? // on-chain tx hash of distribute()
-  payoutWallet   String? // winner's wallet address
+  status          String   @default("in_progress") // in_progress, submitted, completed, failed
+  proof           Json?    // Store proof details
+  tasksCompleted  Int      @default(0)
+  tasksTotal      Int      @default(5)
+  payoutAmount    Float?   // null = N/A, value = paid/pending amount
+  payoutStatus    String   @default("na") // na, pending, paid
+  payoutTxHash    String?  // on-chain tx hash of distribute()
+  payoutWallet    String?  // winner's wallet address
 
-  joinedAt    DateTime  @default(now())
+  joinedAt    DateTime @default(now())
   completedAt DateTime?
 
   @@unique([questId, userId]) // One participation per user per quest (nulls are distinct)
@@ -182,15 +182,15 @@ model QuestParticipation {
 }
 
 model AgentSkill {
-  id      String @id @default(uuid())
-  agentId String
-  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
-  name      String // e.g. "sponge-wallet", "onchain-actions"
-  version   String? // e.g. "1.0.0" — null if unknown (Claude Code)
-  source    String  @default("unknown") // "clawhub", "mcp", "manual"
-  publisher String? // e.g. "paysponge", "openclaw", "leeknowsai"
-  meta      Json? // extra metadata (tool names for MCP, description, etc.)
+  name      String   // e.g. "sponge-wallet", "onchain-actions"
+  version   String?  // e.g. "1.0.0" — null if unknown (Claude Code)
+  source    String   @default("unknown") // "clawhub", "mcp", "manual"
+  publisher String?  // e.g. "paysponge", "openclaw", "leeknowsai"
+  meta      Json?    // extra metadata (tool names for MCP, description, etc.)
 
   lastSeenAt DateTime @default(now()) // updated each time agent re-reports
   createdAt  DateTime @default(now())
@@ -201,12 +201,12 @@ model AgentSkill {
 }
 
 model AgentLog {
-  id      String @id @default(uuid())
-  agentId String
-  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  type    String // QUEST_START, QUEST_COMPLETE, ERROR, INFO
-  message String
-  meta    Json?
+  id        String   @id @default(uuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  type      String   // QUEST_START, QUEST_COMPLETE, ERROR, INFO
+  message   String
+  meta      Json?
 
   createdAt DateTime @default(now())
 
@@ -218,7 +218,7 @@ model WalletLink {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  address   String // checksummed Ethereum address
+  address   String   // checksummed Ethereum address
   chainId   Int?
   isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -234,34 +234,82 @@ model EscrowCursor {
   updatedAt DateTime @updatedAt
 }
 
+// ─── Chain & RPC Registry ────────────────────────────────────────────────────
+
+model Chain {
+  id              Int      @id         // chainId (e.g. 56, 8453)
+  name            String
+  shortName       String
+  nativeCurrency  Json                 // { symbol, name, decimals }
+  explorerUrl     String
+  isTestnet       Boolean  @default(false)
+  isEscrowEnabled Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  rpcs            ChainRpc[]
+  contracts       EscrowContract[]
+}
+
+model ChainRpc {
+  id        String   @id @default(uuid())
+  chainId   Int
+  chain     Chain    @relation(fields: [chainId], references: [id])
+  url       String
+  provider  String?                   // "public", "alchemy", "quicknode", "custom"
+  priority  Int      @default(10)     // lower number = higher priority
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([chainId, url])
+  @@index([chainId, isActive, priority])
+}
+
+model EscrowContract {
+  id         String    @id @default(uuid())
+  chainId    Int
+  chain      Chain     @relation(fields: [chainId], references: [id])
+  address    String
+  isActive   Boolean   @default(true)
+  deployedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([chainId, address])
+  @@index([chainId, isActive])
+}
+
 // External data — crawled from ClawHub registry
 model clawhub_skills {
-  id                 String    @id @default(uuid()) @db.Uuid
-  clawhub_id         String    @unique
-  slug               String    @unique
-  display_name       String
-  summary            String?
-  downloads          Int       @default(0)
-  installs_all_time  Int       @default(0)
-  installs_current   Int       @default(0)
-  stars              Int       @default(0)
-  comments           Int       @default(0)
-  versions           Int       @default(0)
-  owner_handle       String?
-  owner_display_name String?
-  owner_image        String?
-  latest_version     String?
-  latest_version_id  String?
-  badges             Json      @default("{}")
-  tags               Json      @default("{}")
-  parsed_clawdis     Json?
-  clawhub_created_at DateTime? @db.Timestamptz
-  clawhub_updated_at DateTime? @db.Timestamptz
-  crawled_at         DateTime  @default(now()) @db.Timestamptz
+  id                  String    @id @default(uuid()) @db.Uuid
+  clawhub_id          String    @unique
+  slug                String    @unique
+  display_name        String
+  summary             String?
+  downloads           Int       @default(0)
+  installs_all_time   Int       @default(0)
+  installs_current    Int       @default(0)
+  stars               Int       @default(0)
+  comments            Int       @default(0)
+  versions            Int       @default(0)
+  owner_handle        String?
+  owner_display_name  String?
+  owner_image         String?
+  latest_version      String?
+  latest_version_id   String?
+  badges              Json      @default("{}")
+  tags                Json      @default("{}")
+  parsed_clawdis      Json?
+  clawhub_created_at  DateTime? @db.Timestamptz
+  clawhub_updated_at  DateTime? @db.Timestamptz
+  crawled_at          DateTime  @default(now()) @db.Timestamptz
 
   @@index([downloads(sort: Desc)])
   @@index([stars(sort: Desc)])
   @@index([owner_handle])
   @@index([crawled_at])
+
   @@map("clawhub_skills")
 }

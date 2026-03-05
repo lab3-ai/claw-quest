@@ -205,14 +205,8 @@ if (TELEGRAM_BOT_TOKEN) {
 // Escrow Event Poller (detect on-chain deposits)
 import { startEscrowPoller } from './modules/escrow/escrow.poller';
 import { isEscrowConfigured } from './modules/escrow/escrow.config';
-
-if (isEscrowConfigured()) {
-    startEscrowPoller(server).catch((err) => {
-        console.error('⚠️  Escrow poller failed (non-fatal):', err.message);
-    });
-} else {
-    console.warn('⚠️  Escrow not configured (missing contract address or operator key) — poller will not start');
-}
+import { rpcManager } from './modules/escrow/rpc-manager.service';
+import { invalidateClientCache } from './modules/escrow/escrow.client';
 
 // Serve skill.md for agents to read
 import { readFileSync, existsSync } from 'fs';
@@ -233,6 +227,17 @@ server.get('/skill.md', async (_request, reply) => {
 // Main
 const start = async () => {
     try {
+        // Load RPC registry from DB before starting escrow poller or accepting requests
+        if (isEscrowConfigured()) {
+            await rpcManager.load(prisma);
+            invalidateClientCache(); // ensure clients are rebuilt with DB-sourced RPCs
+            startEscrowPoller(server).catch((err) => {
+                console.error('⚠️  Escrow poller failed (non-fatal):', err.message);
+            });
+        } else {
+            console.warn('⚠️  Escrow not configured (missing contract address or operator key) — poller will not start');
+        }
+
         const port = parseInt(process.env.PORT || '3000', 10);
         await server.listen({ port, host: '0.0.0.0' });
         console.log(`Server listening on http://localhost:${port}`);

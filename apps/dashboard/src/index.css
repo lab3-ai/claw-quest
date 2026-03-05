@@ -3,11 +3,12 @@
 @tailwind utilities;
 
 /* ──────────────────────────────────────────────
-   ClawQuest Design System v3 — Terminal Edition
-   Monospace-first · Terminal green accent · Flat & high-contrast
+   ClawQuest Design Tokens — Base (Terminal Light)
+   Theme overrides in styles/themes.css via [data-theme="x"]
    Source of truth: docs/design-system/DESIGN_SYSTEM.md
    ────────────────────────────────────────────── */
-:root {
+:root,
+[data-theme="terminal"] {
     /* ── Core Colors ── */
     --bg: #ffffff;
     --bg-subtle: #e8e8e8;

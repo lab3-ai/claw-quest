@@ -167,8 +167,8 @@ model QuestCollaborator {
   id          String    @id @default(uuid())
   questId     String
   quest       Quest     @relation(fields: [questId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id])
   inviteToken String    @unique  // "collab_<hex>"
   invitedBy   String?            // userId of who invited
   acceptedAt  DateTime?          // null = pending invite

@@ -1438,14 +1438,11 @@ export async function questsRoutes(server: FastifyInstance) {
             const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
             const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-            // Pending invite: use crypto.randomUUID() as placeholder userId
-            // to avoid @@unique([questId, userId]) conflicts when inviter creates multiple invites.
-            // On accept, this record is deleted and replaced with the invitee's real userId.
-            const { randomUUID } = await import('crypto');
+            // Pending invite: userId is null until invitee accepts
             await server.prisma.questCollaborator.create({
                 data: {
                     questId: id,
-                    userId: randomUUID(),  // placeholder — replaced on accept
+                    userId: null,
                     inviteToken: token,
                     invitedBy: userId,
                     expiresAt,
@@ -1499,15 +1496,14 @@ export async function questsRoutes(server: FastifyInstance) {
                 return reply.status(400).send({ error: { message: 'Owner cannot be a sponsor', code: 'OWNER_CONFLICT' } } as any);
             }
 
-            // Check not already a sponsor
-            const existing = await server.prisma.questCollaborator.findUnique({
-                where: { questId_userId: { questId: id, userId } },
+            // Check not already a sponsor (use findFirst since userId can be null)
+            const existing = await server.prisma.questCollaborator.findFirst({
+                where: { questId: id, userId, acceptedAt: { not: null } },
             });
-            if (existing?.acceptedAt) {
+            if (existing) {
                 return reply.status(400).send({ error: { message: 'Already a sponsor', code: 'ALREADY_SPONSOR' } } as any);
             }
 
-            const invitedBy = invite.invitedBy;
             // Use interactive transaction to avoid TOCTOU race on sponsor count
             await server.prisma.$transaction(async (tx) => {
                 const sponsorCount = await tx.questCollaborator.count({
@@ -1516,16 +1512,9 @@ export async function questsRoutes(server: FastifyInstance) {
                 if (sponsorCount >= 5) {
                     throw new Error('MAX_SPONSORS');
                 }
-                await tx.questCollaborator.delete({ where: { id: invite.id } });
-                await tx.questCollaborator.create({
-                    data: {
-                        questId: id,
-                        userId,
-                        inviteToken: token,
-                        invitedBy,
-                        acceptedAt: new Date(),
-                        expiresAt: invite.expiresAt,
-                    },
+                await tx.questCollaborator.update({
+                    where: { id: invite.id },
+                    data: { userId, acceptedAt: new Date() },
                 });
             }).catch((err: any) => {
                 if (err.message === 'MAX_SPONSORS') {

@@ -668,7 +668,7 @@ export function QuestDetail() {
 
                     {/* Questers avatar crowd */}
                     {quest.questers > 0 && quest.questerDetails && (
-                        <div className="mt-5 border border-border rounded px-3 py-2.5 border-b-0">
+                        <div className="mt-5 border border-border rounded px-3 py-2.5">
                             <div className="flex justify-between items-center text-xs text-muted-foreground mb-2">
                                 <span><strong className="text-foreground">{quest.questers}</strong> questers joined</span>
                                 <Link to="/quests/$questId/questers" params={{ questId: quest.id }}>

@@ -2,17 +2,19 @@ import { useState, useRef, useEffect } from "react"
 import { useNavigate, Link } from "@tanstack/react-router"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
-import { PlatformIcon } from "@/components/PlatformIcon"
 import { useSkillSearch, isSkillUrl, fetchSkillFromUrl, type ClawHubSkill } from "@/hooks/useSkillSearch"
 import { useDraftPersistence } from "@/hooks/use-draft-persistence"
 import { useSocialValidation, type ChipStatus } from "@/hooks/use-social-validation"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
+import { StepDetails } from "./create-quest/StepDetails"
+import { StepTasks } from "./create-quest/StepTasks"
+import { StepReward } from "./create-quest/StepReward"
+import { StepPreview } from "./create-quest/StepPreview"
+import { getTokenSymbol } from "./create-quest/constants"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
@@ -48,71 +50,7 @@ interface FormData {
     drawTime: string
 }
 
-// ─── Network / Token data (matching JS template exactly) ─────────────────────
-
-const NETWORKS_PRIMARY = [
-    { value: "Base", label: "🔵 Base (8453)" },
-    { value: "BNB Smart Chain", label: "🟡 BNB Smart Chain (56)" },
-    { value: "Ethereum", label: "✠ Ethereum (1)" },
-]
-const NETWORKS_OTHER = [
-    { value: "Arbitrum One", label: "🔷 Arbitrum One (42161)" },
-    { value: "Optimism", label: "🔴 Optimism (10)" },
-    { value: "Polygon", label: "🟣 Polygon (137)" },
-    { value: "Avalanche", label: "🔺 Avalanche (43114)" },
-    { value: "Solana", label: "◎ Solana" },
-]
-
-const TOKEN_CONTRACTS: Record<string, Record<string, string>> = {
-    USDC: {
-        "Base": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-        "BNB Smart Chain": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
-        "Ethereum": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        "Arbitrum One": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
-        "Optimism": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
-        "Polygon": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
-        "Avalanche": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
-        "Solana": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-    },
-    USDT: {
-        "Base": "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
-        "BNB Smart Chain": "0x55d398326f99059fF775485246999027B3197955",
-        "Ethereum": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-        "Arbitrum One": "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
-        "Optimism": "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
-        "Polygon": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
-        "Avalanche": "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
-        "Solana": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
-    },
-}
-
-const NATIVE_TOKENS: Record<string, { symbol: string; name: string }> = {
-    "Base": { symbol: "ETH", name: "Ether" },
-    "BNB Smart Chain": { symbol: "BNB", name: "BNB" },
-    "Ethereum": { symbol: "ETH", name: "Ether" },
-    "Arbitrum One": { symbol: "ETH", name: "Ether" },
-    "Optimism": { symbol: "ETH", name: "Ether" },
-    "Polygon": { symbol: "POL", name: "POL" },
-    "Avalanche": { symbol: "AVAX", name: "Avalanche" },
-    "Solana": { symbol: "SOL", name: "Solana" },
-}
-
-const TOKEN_COLORS: Record<string, string> = {
-    USDC: "#2775ca",
-    USDT: "#26a17b",
-    NATIVE: "#627eea",
-}
-
 // ─── Platform / action data ────────────────────────────────────────────────────
-
-const PLATFORM_ICON_KEYS: Record<string, "x" | "discord" | "telegram"> = {
-    X: "x", Discord: "discord", Telegram: "telegram",
-}
-function PlatformBtnIcon({ platform }: { platform: string }) {
-    const key = PLATFORM_ICON_KEYS[platform]
-    if (!key) return <span>{platform[0]}</span>
-    return <PlatformIcon name={key} size={15} colored />
-}
 
 type ActionDef = {
     type: string
@@ -200,77 +138,74 @@ function socialEntriesToTasks(entries: SocialEntry[]): any[] {
         switch (entry.actionType) {
             case "follow_account":
                 for (const chip of entry.chips) {
-                    tasks.push({ id: crypto.randomUUID(), platform, actionType: "follow_account",
+                    tasks.push({
+                        id: crypto.randomUUID(), platform, actionType: "follow_account",
                         label: `Follow @${chip.replace(/^@/, "")}`,
-                        params: { username: chip.replace(/^@/, "").trim() }, requireTagFriends: false })
+                        params: { username: chip.replace(/^@/, "").trim() }, requireTagFriends: false
+                    })
                 }
                 break
             case "like_post":
             case "repost":
                 for (const chip of entry.chips) {
-                    tasks.push({ id: crypto.randomUUID(), platform, actionType: entry.actionType,
+                    tasks.push({
+                        id: crypto.randomUUID(), platform, actionType: entry.actionType,
                         label: `${entry.actionType === "like_post" ? "Like" : "Repost"} post`,
-                        params: { postUrl: chip.trim() }, requireTagFriends: false })
+                        params: { postUrl: chip.trim() }, requireTagFriends: false
+                    })
                 }
                 break
             case "post":
-                tasks.push({ id: crypto.randomUUID(), platform, actionType: "post",
+                tasks.push({
+                    id: crypto.randomUUID(), platform, actionType: "post",
                     label: entry.action, params: { content: (entry.params.content ?? "").trim() },
-                    requireTagFriends: entry.requireTagFriends ?? false })
+                    requireTagFriends: entry.requireTagFriends ?? false
+                })
                 break
             case "quote_post":
                 if (entry.chips.length > 0)
-                    tasks.push({ id: crypto.randomUUID(), platform, actionType: "quote_post",
-                        label: entry.action, params: { postUrl: entry.chips[0].trim(),
-                            ...(entry.params.content ? { content: entry.params.content.trim() } : {}) },
-                        requireTagFriends: entry.requireTagFriends ?? false })
+                    tasks.push({
+                        id: crypto.randomUUID(), platform, actionType: "quote_post",
+                        label: entry.action, params: {
+                            postUrl: entry.chips[0].trim(),
+                            ...(entry.params.content ? { content: entry.params.content.trim() } : {})
+                        },
+                        requireTagFriends: entry.requireTagFriends ?? false
+                    })
                 break
             case "join_server":
                 if (entry.chips.length > 0)
-                    tasks.push({ id: crypto.randomUUID(), platform, actionType: "join_server",
+                    tasks.push({
+                        id: crypto.randomUUID(), platform, actionType: "join_server",
                         label: entry.action, params: { inviteUrl: entry.chips[0].trim() },
-                        requireTagFriends: false })
+                        requireTagFriends: false
+                    })
                 break
             case "verify_role":
                 if (entry.chips.length > 0)
-                    tasks.push({ id: crypto.randomUUID(), platform, actionType: "verify_role",
-                        label: entry.action, params: { inviteUrl: entry.chips[0].trim(),
+                    tasks.push({
+                        id: crypto.randomUUID(), platform, actionType: "verify_role",
+                        label: entry.action, params: {
+                            inviteUrl: entry.chips[0].trim(),
                             guildId: (entry.params.guildId ?? "").trim(),
                             roleId: (entry.params.roleId ?? "").trim(),
-                            roleName: (entry.params.roleName ?? entry.params.role ?? "").trim() }, requireTagFriends: false })
+                            roleName: (entry.params.roleName ?? entry.params.role ?? "").trim()
+                        }, requireTagFriends: false
+                    })
                 break
             case "join_channel":
                 if (entry.chips.length > 0)
-                    tasks.push({ id: crypto.randomUUID(), platform, actionType: "join_channel",
+                    tasks.push({
+                        id: crypto.randomUUID(), platform, actionType: "join_channel",
                         label: entry.action, params: { channelUrl: entry.chips[0].trim() },
-                        requireTagFriends: false })
+                        requireTagFriends: false
+                    })
                 break
         }
     }
     return tasks
 }
 
-// ─── Leaderboard payout calc (linear decay — matches JS template exactly) ────
-function calcLbPayouts(total: number, n: number): number[] {
-    if (n < 2) return [Math.round(total * 100) / 100]
-    const clampedN = Math.min(Math.max(n, 2), 100)
-    const weights: number[] = []
-    for (let i = 0; i < clampedN; i++) weights.push(clampedN - i)
-    const weightSum = weights.reduce((a, b) => a + b, 0)
-    const payouts = weights.map(w => Math.round((w / weightSum) * total * 100) / 100)
-    // Fix rounding drift — add diff to first place
-    const payoutSum = payouts.reduce((a, b) => a + b, 0)
-    const diff = Math.round((total - payoutSum) * 100) / 100
-    if (payouts.length > 0) payouts[0] = Math.round((payouts[0] + diff) * 100) / 100
-    return payouts
-}
-
-// ─── Helper: get display token symbol ────────────────────────────────────────
-function getTokenSymbol(rail: PaymentRail, token: string, network: string): string {
-    if (rail === "fiat") return "USD"
-    if (token === "NATIVE") return (NATIVE_TOKENS[network] ?? { symbol: "?" }).symbol
-    return token
-}
 
 // ─── Reverse-map API QuestTask[] → SocialEntry[] for edit mode ──────────────
 function questTasksToSocialEntries(tasks: any[]): SocialEntry[] {
@@ -375,7 +310,7 @@ function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, 
                                 "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs border leading-tight",
                                 status === "pending" ? "bg-muted border-border"
                                     : status === "invalid" ? "bg-error-light border-warning"
-                                    : "bg-accent-light border-accent-border text-foreground"
+                                        : "bg-accent-light border-accent-border text-foreground"
                             )}>
                                 {status === "pending"
                                     ? <span className="inline-block size-2.5 border-[1.5px] border-border border-t-muted-foreground rounded-full animate-spin" />
@@ -996,13 +931,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
     const activeTotal = parseFloat(form.total) || 0
     const activeWinners = parseInt(form.winners) || 1
-    const perWinner = activeWinners > 0 ? (activeTotal / activeWinners).toFixed(2) : "0.00"
-
     const tokenLabel = getTokenSymbol(form.rail, form.token, form.network)
-
-    // LB payouts — clamp winners 2-100, calc full set, display truncated if > 20
-    const lbWinnersNum = Math.min(Math.max(activeWinners, 2), 100)
-    const lbPayouts = calcLbPayouts(activeTotal, lbWinnersNum)
 
     const durationDays = form.startAt && form.endAt
         ? Math.max(0, Math.round((new Date(form.endAt).getTime() - new Date(form.startAt).getTime()) / 86400000))
@@ -1022,16 +951,6 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     }
 
     const TABS: Tab[] = ["details", "tasks", "reward", "preview"]
-
-    // Token display info (dynamic by network + token)
-    const isNativeToken = form.token === "NATIVE"
-    const nativeInfo = NATIVE_TOKENS[form.network] ?? { symbol: "?", name: "?" }
-    const tokenDisplaySymbol = isNativeToken ? nativeInfo.symbol : form.token
-    const tokenContract = isNativeToken
-        ? "Native token — no contract address"
-        : (TOKEN_CONTRACTS[form.token]?.[form.network] ?? "")
-    const tokenIconChar = isNativeToken ? nativeInfo.symbol.charAt(0) : "$"
-    const tokenIconColor = isNativeToken ? "#627eea" : (TOKEN_COLORS[form.token] ?? "#888")
 
     // ─────────────────────────────────────────────────────────────────────────
     if (isEditMode && editLoading) {
@@ -1086,7 +1005,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const topUpAmount = rewardIncreased ? newTotal - originalRewardAmount : 0
 
     return (
-        <div className="page-container" style={{ maxWidth: 960 }}>
+        <div className="">
             <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
                 {isEditMode ? (
                     <>
@@ -1115,983 +1034,157 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 </div>
             </div>
 
-            <div className="block max-w-[720px]">
-              {restoredBanner && (
-                <div className="bg-info-light border border-info rounded px-4 py-2 flex justify-between items-center mb-4 text-base text-foreground">
-                    <span>Draft restored from local backup</span>
-                    <Button size="sm" onClick={() => setRestoredBanner(false)}>Dismiss</Button>
+            <div className=" w-full flex flex-col items-center">
+                <div className="w-full">
+                    {restoredBanner && (
+                        <div className="w-full bg-info-light border border-info rounded px-4 py-2 flex justify-between 
+                        items-center mb-4 text-base text-foreground">
+                            <span>Draft restored from local backup</span>
+                            <Button size="sm" onClick={() => setRestoredBanner(false)}>Dismiss</Button>
+                        </div>
+                    )}
+                    <div className="relative">
+
+                        {/* ══ STEP 1: DETAILS ══ */}
+                        <StepDetails
+                            isActive={tab === "details"}
+                            isDone={tabDone.details && tab !== "details"}
+                            form={{
+                                title: form.title,
+                                description: form.description,
+                                startAt: form.startAt,
+                                endAt: form.endAt,
+                            }}
+                            stepSummary={stepSummaries.details}
+                            onToggle={() => setTab(tab === "details" ? null : "details")}
+                            onFieldChange={(key, value) => set(key, value)}
+                            onNext={() => setTab("tasks")}
+                        />
+
+                        {/* ══ STEP 2: TASKS ══ */}
+                        <StepTasks
+                            isActive={tab === "tasks"}
+                            isDone={tabDone.tasks && tab !== "tasks"}
+                            isFuture={TABS.indexOf(tab as Tab) < TABS.indexOf("tasks") && !tabDone.tasks}
+                            stepSummary={stepSummaries.tasks}
+                            activePlatform={activePlatform}
+                            expandedTask={expandedTask}
+                            humanTasks={humanTasks}
+                            requiredSkills={requiredSkills}
+                            skillSearch={skillSearch}
+                            skillSearchResults={skillSearchResults}
+                            skillSearchLoading={skillSearchLoading}
+                            showSkillResults={showSkillResults}
+                            urlFetching={urlFetching}
+                            urlPreview={urlPreview}
+                            urlFetchError={urlFetchError}
+                            taskErrors={taskErrors}
+                            addedSkillIds={addedSkillIds}
+                            expandedDescs={expandedDescs}
+                            onToggle={() => setTab(tab === "tasks" ? null : "tasks")}
+                            onSetActivePlatform={setActivePlatform}
+                            onAddHumanTask={addHumanTask}
+                            onRemoveHumanTask={removeHumanTask}
+                            onSetExpandedTask={setExpandedTask}
+                            onSetTaskParam={setTaskParam}
+                            onToggleTagFriends={toggleTagFriends}
+                            onAddChip={addChip}
+                            onRemoveChip={removeChip}
+                            onSetSkillSearch={setSkillSearch}
+                            onSetShowSkillResults={setShowSkillResults}
+                            onAddSkill={addSkill}
+                            onRemoveSkill={removeSkill}
+                            onSetUrlFetching={setUrlFetching}
+                            onSetUrlPreview={setUrlPreview}
+                            onSetUrlFetchError={setUrlFetchError}
+                            onToggleDesc={(id) => {
+                                setExpandedDescs(prev => {
+                                    const next = new Set(prev)
+                                    if (next.has(id)) next.delete(id)
+                                    else next.add(id)
+                                    return next
+                                })
+                            }}
+                            onTruncateDesc={truncateDesc}
+                            onChipStatus={(platform, actionType, value) => socialValidation.getStatus(platform, actionType, value)}
+                            onPrevious={() => setTab("details")}
+                            onNext={() => setTab("reward")}
+                            SocialEntryBody={SocialEntryBody}
+                            isSkillUrl={isSkillUrl}
+                            fetchSkillFromUrl={fetchSkillFromUrl}
+                        />
+
+                        {/* ══ STEP 3: REWARD ══ */}
+                        <StepReward
+                            isActive={tab === "reward"}
+                            isDone={tabDone.reward && tab !== "reward"}
+                            isFuture={TABS.indexOf(tab as Tab) < TABS.indexOf("reward") && !tabDone.reward}
+                            form={{
+                                rail: form.rail,
+                                network: form.network,
+                                token: form.token,
+                                type: form.type,
+                                total: form.total,
+                                winners: form.winners,
+                                drawTime: form.drawTime,
+                            }}
+                            stepSummary={stepSummaries.reward}
+                            onToggle={() => setTab(tab === "reward" ? null : "reward")}
+                            onFieldChange={(key, value) => {
+                                if (key === "rail" || key === "type") {
+                                    setForm(prev => {
+                                        if (key === "type" && value === "LEADERBOARD") {
+                                            const n = parseInt(prev.winners) || 2
+                                            return { ...prev, type: value as QuestType, winners: String(Math.min(100, Math.max(2, n))) }
+                                        }
+                                        return { ...prev, [key]: value }
+                                    })
+                                } else {
+                                    set(key, value as string)
+                                }
+                            }}
+                            onNext={() => setTab("preview")}
+                            onPrevious={() => setTab("tasks")}
+                        />
+
+                        {/* ══ STEP 4: PREVIEW & FUND ══ */}
+                        <StepPreview
+                            isActive={tab === "preview"}
+                            isFuture={TABS.indexOf(tab as Tab) < TABS.indexOf("preview")}
+                            form={{
+                                title: form.title,
+                                description: form.description,
+                                startAt: form.startAt,
+                                endAt: form.endAt,
+                                rail: form.rail,
+                                network: form.network,
+                                token: form.token,
+                                type: form.type,
+                                total: form.total,
+                                winners: form.winners,
+                            }}
+                            humanTasks={humanTasks}
+                            requiredSkills={requiredSkills}
+                            isEditMode={isEditMode}
+                            isScheduled={isScheduled}
+                            isFunded={isFunded}
+                            rewardIncreased={rewardIncreased}
+                            topUpAmount={topUpAmount}
+                            mutation={{
+                                isPending: mutation.isPending,
+                                isError: mutation.isError,
+                                error: mutation.error as Error | null,
+                            }}
+                            onToggle={() => setTab(tab === "preview" ? null : "preview")}
+                            onPrevious={() => setTab("reward")}
+                            onSaveDraft={() => { fundAfterSave.current = false; mutation.mutate() }}
+                            onSaveAndFund={() => { fundAfterSave.current = true; mutation.mutate() }}
+                            onUpdate={() => { fundAfterSave.current = false; mutation.mutate() }}
+                            onUpdateAndFund={() => { fundAfterSave.current = true; mutation.mutate() }}
+                        />
+
+                    </div>
                 </div>
-              )}
-              <div className="relative">
-
-                    {/* ══ STEP 1: DETAILS ══ */}
-                    {(() => {
-                        const isActive = tab === "details"
-                        const isDone = tabDone.details && !isActive
-                        return (
-                    <div className={cn(
-                        "relative mb-0 border-none rounded-none",
-                        "before:content-[''] before:absolute before:left-[13px] before:top-7 before:bottom-0 before:w-0.5 before:bg-border before:z-0",
-                        isDone && "before:bg-accent-light0"
-                    )}>
-                        <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-[1] group" onClick={() => setTab(tab === "details" ? null : "details")}>
-                            <span className={cn(
-                                "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white border-2 border-background",
-                                isDone ? "bg-accent-light0 shadow-[0_0_0_2px_theme(colors.green.500)]"
-                                    : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
-                                    : "bg-gray-300 shadow-[0_0_0_2px_theme(colors.gray.300)]"
-                            )}>{isDone ? "\u2713" : "1"}</span>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-sm text-foreground group-hover:text-primary">Quest Details</span>
-                                    {isDone && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-accent-light text-accent">Completed</span>}
-                                    {isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-50 text-warning">In Progress</span>}
-                                    {!isDone && !isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-muted text-muted-foreground">Not Started</span>}
-                                </div>
-                                <div className="text-xs text-muted-foreground mt-0.5 leading-snug truncate">
-                                    {tab !== "details" && stepSummaries.details ? stepSummaries.details : "Title, description, and timing"}
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-end gap-0.5 shrink-0 pt-0.5">
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">Step 1 of 4</span>
-                                <span className="text-xs text-primary whitespace-nowrap">{isDone ? "Modify if required" : isActive ? "" : "Fill the details"}</span>
-                            </div>
-                        </div>
-                        {isActive && (
-                        <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
-                            <div className="space-y-4 mb-6">
-                                <div className="space-y-1.5 mb-3.5">
-                                    <Label>Title</Label>
-                                    <Input
-                                        type="text"
-                                        placeholder="e.g. Register & trade shares on ClawFriend"
-                                        value={form.title}
-                                        onChange={e => set("title", e.target.value)}
-                                        maxLength={80}
-                                    />
-                                </div>
-                                <div className="space-y-1.5 mb-3.5">
-                                    <Label>Description</Label>
-                                    <div className="text-xs text-muted-foreground mb-1 leading-snug">Agent-readable. Explain the overall quest goal.</div>
-                                    <Textarea
-                                        rows={3}
-                                        placeholder="Use the ClawFriend skill to register your agent…"
-                                        value={form.description}
-                                        onChange={e => set("description", e.target.value)}
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-4 mb-6">
-                                <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Timing</div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div className="space-y-1.5 mb-3.5">
-                                        <Label>Start</Label>
-                                        <input className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" type="datetime-local" value={form.startAt} onChange={e => set("startAt", e.target.value)} />
-                                    </div>
-                                    <div className="space-y-1.5 mb-3.5">
-                                        <Label>End</Label>
-                                        <input className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" type="datetime-local" value={form.endAt} onChange={e => set("endAt", e.target.value)} />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex justify-between mt-5 pt-4 border-t border-border">
-                                <span />
-                                <Button onClick={() => setTab("tasks")}>Next: Tasks →</Button>
-                            </div>
-                        </div></div>
-                        )}
-                    </div>
-                        )})()}
-
-                    {/* ══ STEP 2: TASKS ══ */}
-                    {(() => {
-                        const isActive = tab === "tasks"
-                        const isDone = tabDone.tasks && !isActive
-                        const isFuture = TABS.indexOf(tab as Tab) < TABS.indexOf("tasks") && !tabDone.tasks
-                        return (
-                    <div className={cn(
-                        "relative mb-0 border-none rounded-none",
-                        "before:content-[''] before:absolute before:left-[13px] before:top-0 before:bottom-0 before:w-0.5 before:bg-border before:z-0",
-                        isDone && "before:bg-accent-light0"
-                    )}>
-                        <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-[1] group" onClick={() => setTab(tab === "tasks" ? null : "tasks")}>
-                            <span className={cn(
-                                "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white border-2 border-background",
-                                isDone ? "bg-accent-light0 shadow-[0_0_0_2px_theme(colors.green.500)]"
-                                    : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
-                                    : "bg-gray-300 shadow-[0_0_0_2px_theme(colors.gray.300)]"
-                            )}>{isDone ? "\u2713" : "2"}</span>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-sm text-foreground group-hover:text-primary">Tasks</span>
-                                    {isDone && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-accent-light text-accent">Completed</span>}
-                                    {isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-50 text-warning">In Progress</span>}
-                                    {!isDone && !isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-muted text-muted-foreground">Not Started</span>}
-                                </div>
-                                <div className="text-xs text-muted-foreground mt-0.5 leading-snug truncate">
-                                    {tab !== "tasks" && stepSummaries.tasks !== "No tasks" ? stepSummaries.tasks : "Human social actions and agent skill requirements"}
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-end gap-0.5 shrink-0 pt-0.5">
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">Step 2 of 4</span>
-                                <span className={cn("text-xs whitespace-nowrap", isFuture ? "text-muted-foreground" : "text-primary")}>{isDone ? "Modify if required" : isActive ? "" : "Add tasks"}</span>
-                            </div>
-                        </div>
-                        {isActive && (
-                        <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
-                            <div className="space-y-4 mb-6">
-                                <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginBottom: 14 }}>
-                                    Define what needs to be done. Human tasks are social actions.
-                                    Agent tasks require specific skills from{" "}
-                                    <a href="https://clawhub.ai/skills" target="_blank" rel="noreferrer" style={{ color: "var(--link)" }}>
-                                        ClawHub
-                                    </a>.
-                                </div>
-
-                                {/* ── Human Tasks ── */}
-                                <div className="mb-6 pl-3.5 border-l-4 border-l-[var(--human-fg)]">
-                                    <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
-                                        <span>👤</span> Human Tasks
-                                        <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-[var(--human-bg)] text-[var(--human-fg)]">Social</span>
-                                        <span className="font-normal text-xs text-muted-foreground ml-auto">Actions performed by the operator</span>
-                                    </div>
-
-                                    <div className="mb-2.5" style={{ marginBottom: 12 }}>
-                                        <div style={{ fontSize: 11, fontWeight: 600, color: "var(--fg-muted)", marginBottom: 6 }}>
-                                            Select a task template
-                                        </div>
-                                        <div className="flex flex-wrap gap-1.5 mb-2.5">
-                                            {Object.keys(PLATFORM_ACTIONS).map(p => (
-                                                <button
-                                                    key={p}
-                                                    className={cn("flex items-center gap-1.5 px-3 py-1.5 border border-input rounded bg-background text-foreground text-xs font-medium cursor-pointer transition-colors hover:border-muted-foreground hover:bg-muted", activePlatform === p && "border-accent text-accent bg-accent-light font-semibold")}
-                                                    onClick={() => setActivePlatform(activePlatform === p ? null : p)}
-                                                >
-                                                    <span className="icon"><PlatformBtnIcon platform={p} /></span> {p}
-                                                </button>
-                                            ))}
-                                        </div>
-                                        {activePlatform && (
-                                            <div className="block">
-                                                <div className="border border-border rounded overflow-hidden mb-2.5">
-                                                    {PLATFORM_ACTIONS[activePlatform].map(action => (
-                                                        <div
-                                                            key={action.type}
-                                                            className="flex items-center justify-between px-3 py-2 border-b border-border/30 text-xs cursor-pointer transition-colors hover:bg-[var(--human-bg)] last:border-b-0"
-                                                            onClick={() => addHumanTask(activePlatform, action)}
-                                                        >
-                                                            <span className="font-medium text-foreground">{action.label}</span>
-                                                            <button className="bg-transparent border border-[var(--human-border)] text-[var(--human-fg)] text-xs font-semibold py-0.5 px-2.5 rounded cursor-pointer hover:bg-[var(--human-bg)]">+ Add</button>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {humanTasks.length === 0 ? (
-                                        <div style={{ fontSize: 12, color: "var(--fg-muted)", padding: "8px 0" }}>
-                                            No tasks added yet. Use the template picker above.
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--fg)", marginBottom: 6 }}>
-                                                Added Tasks
-                                            </div>
-                                            {humanTasks.map((task, i) => (
-                                                <div key={i} className="border border-border rounded mb-2 last:mb-0" data-platform={task.platform.toLowerCase()}>
-                                                    <div
-                                                        className="flex items-center gap-2 px-3 py-2 bg-muted/50 border-b border-border text-xs cursor-pointer select-none"
-                                                        onClick={() => setExpandedTask(expandedTask === i ? null : i)}
-                                                    >
-                                                        <span className="text-sm"><PlatformBtnIcon platform={task.platform} /></span>
-                                                        <span className="font-semibold text-foreground flex-1">{task.action}</span>
-                                                        {task.chips.length > 0 && (
-                                                            <span className="inline-flex items-center justify-center min-w-4 h-4 rounded-full text-xs font-bold bg-accent-light0 text-white px-1">{task.chips.length}</span>
-                                                        )}
-                                                        <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-[var(--social-bg)] text-[var(--social-fg)] uppercase">{task.platform}</span>
-                                                        <button
-                                                            className="bg-transparent border-none text-muted-foreground text-xs cursor-pointer px-1.5 py-0.5 rounded hover:text-destructive hover:bg-destructive/10"
-                                                            onClick={e => { e.stopPropagation(); removeHumanTask(i) }}
-                                                        >✕</button>
-                                                    </div>
-                                                    {expandedTask !== i && task.chips.length > 0 && (
-                                                        <div className="flex flex-wrap gap-1 px-3 py-1.5 pb-2 text-xs border-t border-dashed border-border">
-                                                            {task.chips.slice(0, 4).map((c, ci) => {
-                                                                const st = socialValidation.getStatus(task.platform.toLowerCase(), task.actionType, c)
-                                                                const icon = st === "pending" ? "⋯" : st === "invalid" ? "⚠" : "✓"
-                                                                return (
-                                                                    <span key={ci} className={cn(
-                                                                        "font-mono text-xs px-1.5 py-px rounded whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]",
-                                                                        st === "invalid" ? "text-warning bg-error-light"
-                                                                            : st === "pending" ? "text-muted-foreground bg-muted"
-                                                                            : "text-success bg-accent-light"
-                                                                    )}>
-                                                                        {icon} {task.actionType === "follow_account" ? `@${c.replace(/^@/, "")}` : c.length > 35 ? c.slice(0, 35) + "…" : c}
-                                                                    </span>
-                                                                )
-                                                            })}
-                                                            {task.chips.length > 4 && <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-px rounded">+{task.chips.length - 4} more</span>}
-                                                        </div>
-                                                    )}
-                                                    {expandedTask === i && (
-                                                        <SocialEntryBody
-                                                            task={task}
-                                                            idx={i}
-                                                            setTaskParam={setTaskParam}
-                                                            toggleTagFriends={toggleTagFriends}
-                                                            addChip={addChip}
-                                                            removeChip={removeChip}
-                                                            errors={taskErrors}
-                                                            chipStatus={v => socialValidation.getStatus(task.platform.toLowerCase(), task.actionType, v)}
-                                                        />
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </>
-                                    )}
-                                </div>
-
-                                {/* ── Agent Tasks ── */}
-                                <div className="mb-6 pl-3.5 border-l-4 border-l-[var(--agent-fg)]">
-                                    <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
-                                        <span>🤖</span> Agent Tasks
-                                        <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-[var(--agent-bg)] text-[var(--agent-fg)]">Skill</span>
-                                        <span className="font-normal text-xs text-muted-foreground ml-auto">Required skills from ClawHub</span>
-                                    </div>
-
-                                    <div className="bg-muted/50 border border-border rounded px-3 py-2 text-xs text-muted-foreground leading-relaxed mb-2.5">
-                                        Agents must have{" "}
-                                        <code style={{ fontFamily: "var(--font-mono)", fontSize: 11, background: "var(--code-bg)", padding: "0 3px", borderRadius: 2 }}>
-                                            clawquest
-                                        </code>{" "}
-                                        installed + each required skill below. CQ checks capabilities before submission.
-                                    </div>
-
-                                    <div style={{ fontSize: 11, fontWeight: 600, color: "var(--fg)", margin: "12px 0 6px" }}>
-                                        Required Skills
-                                    </div>
-                                    {requiredSkills.length === 0 ? (
-                                        <div style={{ fontSize: 12, color: "var(--fg-muted)", padding: "4px 0 8px" }}>
-                                            No skills required yet. Search below to add.
-                                        </div>
-                                    ) : (
-                                        <div className="mt-2.5">
-                                            {requiredSkills.map(skill => {
-                                                const isCustom = skill.id.startsWith("http")
-                                                return (
-                                                    <div key={skill.id} className="flex items-center gap-2.5 px-2.5 py-2 border border-[var(--skill-border)] rounded mb-1.5 bg-background overflow-hidden" data-agents={skill.agents}>
-                                                        <div className="size-7 rounded bg-[var(--skill-bg)] flex items-center justify-center text-sm shrink-0">{isCustom ? "🔗" : "🧩"}</div>
-                                                        <div className="flex-1 min-w-0 overflow-hidden">
-                                                            <div className="text-xs font-semibold text-foreground font-mono truncate">
-                                                                {isCustom ? skill.name : `${skill.id}@${skill.version ?? "latest"}`}
-                                                            </div>
-                                                            <div className="text-xs text-muted-foreground leading-tight truncate">{skill.desc}</div>
-                                                            {isCustom && (
-                                                                <div className="text-xs text-primary mt-0.5 truncate font-mono opacity-70" title={skill.id}>
-                                                                    {skill.id}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        {isCustom
-                                                            ? <span className="text-xs font-semibold text-muted-foreground bg-muted border border-border px-1.5 py-0.5 rounded whitespace-nowrap self-center">custom</span>
-                                                            : <span className="text-xs font-semibold text-accent bg-accent-light px-1.5 py-0.5 rounded whitespace-nowrap self-center">{skill.agents} agents</span>
-                                                        }
-                                                        <button className="bg-transparent border-none text-muted-foreground text-sm cursor-pointer p-0.5 rounded leading-none hover:text-destructive hover:bg-destructive/10" onClick={() => removeSkill(skill.id)}>✕</button>
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    )}
-
-                                    <div className="relative mb-2.5">
-                                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-base pointer-events-none">🔍</span>
-                                        <input
-                                            className="w-full py-2 px-2.5 pl-[30px] text-base border border-[var(--agent-border)] rounded bg-[var(--agent-bg)] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:bg-background focus:ring-[3px] focus:ring-primary/15"
-                                            type="text"
-                                            placeholder="Search on ClawHub or paste skill URL…"
-                                            value={skillSearch}
-                                            onChange={e => {
-                                                const val = e.target.value
-                                                setSkillSearch(val)
-                                                setShowSkillResults(true)
-                                                setUrlFetchError(null)
-                                                setUrlPreview(null)
-                                                if (isSkillUrl(val.trim())) {
-                                                    setUrlFetching(true)
-                                                    fetchSkillFromUrl(val.trim())
-                                                        .then(skill => {
-                                                            setUrlPreview(skill)
-                                                            if (!skill) setUrlFetchError("Could not parse skill.md from this URL")
-                                                        })
-                                                        .catch(() => setUrlFetchError("Failed to fetch URL"))
-                                                        .finally(() => setUrlFetching(false))
-                                                }
-                                            }}
-                                            onFocus={() => setShowSkillResults(true)}
-                                        />
-
-                                        {/* URL-based skill preview */}
-                                        {showSkillResults && isSkillUrl(skillSearch.trim()) && (urlFetching || urlPreview || urlFetchError) && (
-                                            <div className="border border-border rounded bg-background overflow-hidden overflow-y-auto mb-2.5 max-h-[360px]">
-                                                <div className="px-2.5 py-1.5 text-xs text-muted-foreground bg-muted/50 border-b border-border flex justify-between">
-                                                    <span>{urlFetching ? "Fetching skill.md…" : urlPreview ? "Skill found" : "Error"}</span>
-                                                    <span style={{ cursor: "pointer" }} onClick={() => setShowSkillResults(false)}>✕ close</span>
-                                                </div>
-                                                {urlFetching && (
-                                                    <div style={{ padding: "12px", textAlign: "center", color: "var(--fg-muted)", fontSize: 12 }}>
-                                                        Fetching skill.md…
-                                                    </div>
-                                                )}
-                                                {urlFetchError && !urlFetching && (
-                                                    <div style={{ padding: "12px", textAlign: "center", color: "var(--red)", fontSize: 12 }}>
-                                                        {urlFetchError}. Ensure the URL points to a public skill.md file.
-                                                    </div>
-                                                )}
-                                                {urlPreview && !urlFetching && (() => {
-                                                    const isAdded = addedSkillIds.has(urlPreview.id)
-                                                    return (
-                                                        <div className={cn("flex items-start gap-2.5 px-2.5 py-2 border-b border-border/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-muted/50", isAdded && "opacity-50 cursor-default bg-muted/50")} onClick={() => !isAdded && addSkill(urlPreview)}>
-                                                            <div className="flex-1 min-w-0 overflow-hidden">
-                                                                <div className="text-xs font-semibold text-primary flex items-center gap-1.5 truncate">
-                                                                    <span className="inline-flex items-center justify-center text-xs font-bold uppercase px-1.5 py-px rounded bg-blue-100 text-info mr-1 tracking-wide shrink-0">URL</span>
-                                                                    <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{urlPreview.name}</span>
-                                                                </div>
-                                                                <div className="text-xs text-muted-foreground leading-snug mt-0.5 break-words">{truncateDesc(urlPreview.desc, urlPreview.id)}</div>
-                                                                <div className="flex gap-2.5 text-xs text-muted-foreground mt-0.5">
-                                                                    <span>v{urlPreview.version}</span>
-                                                                    <span className="font-mono text-xs text-muted-foreground" title={urlPreview.id}>{urlPreview.ownerHandle}</span>
-                                                                </div>
-                                                            </div>
-                                                            {isAdded
-                                                                ? <span className="bg-accent-light border border-accent-border text-accent text-xs font-semibold py-1 px-2.5 rounded whitespace-nowrap self-center">✓ Added</span>
-                                                                : <button className="bg-transparent border border-[var(--agent-border)] text-[var(--agent-fg)] text-xs font-semibold py-1 px-2.5 rounded cursor-pointer whitespace-nowrap self-center hover:bg-[var(--agent-bg)]">+ Add</button>
-                                                            }
-                                                        </div>
-                                                    )
-                                                })()}
-                                            </div>
-                                        )}
-
-                                        {/* ClawHub search results */}
-                                        {showSkillResults && !isSkillUrl(skillSearch.trim()) && skillSearch.length >= 2 && (skillSearchResults.length > 0 || skillSearchLoading) && (
-                                            <div className="border border-border rounded bg-background overflow-hidden overflow-y-auto mb-2.5 max-h-[360px]">
-                                                <div className="px-2.5 py-1.5 text-xs text-muted-foreground bg-muted/50 border-b border-border flex justify-between">
-                                                    <span>{skillSearchLoading ? `Searching "${skillSearch}"…` : `${skillSearchResults.length} results for "${skillSearch}"`}</span>
-                                                    <span style={{ cursor: "pointer" }} onClick={() => setShowSkillResults(false)}>✕ close</span>
-                                                </div>
-                                                {skillSearchLoading && skillSearchResults.length === 0 && (
-                                                    <div style={{ padding: "12px", textAlign: "center", color: "var(--fg-muted)", fontSize: 12 }}>
-                                                        Searching ClawHub…
-                                                    </div>
-                                                )}
-                                                {skillSearchResults.map(s => {
-                                                    const isAdded = addedSkillIds.has(s.id)
-                                                    return (
-                                                        <div key={s.id} className={cn("flex items-start gap-2.5 px-2.5 py-2 border-b border-border/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-muted/50", isAdded && "opacity-50 cursor-default bg-muted/50")} onClick={() => !isAdded && addSkill(s)}>
-                                                            <div className="flex-1 min-w-0 overflow-hidden">
-                                                                <div className="text-xs font-semibold text-primary flex items-center gap-1.5 truncate">
-                                                                    <span className="text-muted-foreground font-normal shrink-0">{s.id.split("/")[0]} /</span>
-                                                                    <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}</span>
-                                                                </div>
-                                                                <div className="text-xs text-muted-foreground leading-snug mt-0.5 break-words">{truncateDesc(s.desc, s.id)}</div>
-                                                                <div className="flex gap-2.5 text-xs text-muted-foreground mt-0.5">
-                                                                    <span>↓ {s.downloads}</span>
-                                                                    <span>★ {s.stars}</span>
-                                                                    <span>v{s.version}</span>
-                                                                </div>
-                                                            </div>
-                                                            {isAdded
-                                                                ? <span className="bg-accent-light border border-accent-border text-accent text-xs font-semibold py-1 px-2.5 rounded whitespace-nowrap self-center">✓ Added</span>
-                                                                : <button className="bg-transparent border border-[var(--agent-border)] text-[var(--agent-fg)] text-xs font-semibold py-1 px-2.5 rounded cursor-pointer whitespace-nowrap self-center hover:bg-[var(--agent-bg)]">+ Add</button>
-                                                            }
-                                                        </div>
-                                                    )
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex justify-between mt-5 pt-4 border-t border-border">
-                                <Button variant="secondary" onClick={() => setTab("details")}>← Details</Button>
-                                <Button onClick={() => setTab("reward")}>Next: Reward →</Button>
-                            </div>
-                        </div></div>
-                        )}
-                    </div>
-                        )})()}
-
-                    {/* ══ STEP 3: REWARD ══ */}
-                    {(() => {
-                        const isActive = tab === "reward"
-                        const isDone = tabDone.reward && !isActive
-                        const isFuture = TABS.indexOf(tab as Tab) < TABS.indexOf("reward") && !tabDone.reward
-                        return (
-                    <div className={cn(
-                        "relative mb-0 border-none rounded-none",
-                        "before:content-[''] before:absolute before:left-[13px] before:top-0 before:bottom-0 before:w-0.5 before:bg-border before:z-0",
-                        isDone && "before:bg-accent-light0"
-                    )}>
-                        <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-[1] group" onClick={() => setTab(tab === "reward" ? null : "reward")}>
-                            <span className={cn(
-                                "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white border-2 border-background",
-                                isDone ? "bg-accent-light0 shadow-[0_0_0_2px_theme(colors.green.500)]"
-                                    : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
-                                    : "bg-gray-300 shadow-[0_0_0_2px_theme(colors.gray.300)]"
-                            )}>{isDone ? "\u2713" : "3"}</span>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-sm text-foreground group-hover:text-primary">Reward</span>
-                                    {isDone && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-accent-light text-accent">Completed</span>}
-                                    {isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-50 text-warning">In Progress</span>}
-                                    {!isDone && !isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-muted text-muted-foreground">Not Started</span>}
-                                </div>
-                                <div className="text-xs text-muted-foreground mt-0.5 leading-snug truncate">
-                                    {tab !== "reward" && stepSummaries.reward ? stepSummaries.reward : "Reward method, network, token, and distribution"}
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-end gap-0.5 shrink-0 pt-0.5">
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">Step 3 of 4</span>
-                                <span className={cn("text-xs whitespace-nowrap", isFuture ? "text-muted-foreground" : "text-primary")}>{isDone ? "Modify if required" : isActive ? "" : "Fill the details"}</span>
-                            </div>
-                        </div>
-                        {isActive && (
-                        <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
-                            {/* Payment Rail */}
-                            <div className="space-y-4 mb-6">
-                                <div className="space-y-1.5 mb-3.5">
-                                    <Label>Reward Method</Label>
-                                    <div className="inline-flex border border-border rounded overflow-hidden">
-                                        <button
-                                            className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none border-r border-border bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "crypto" && "bg-[var(--tag-bg)] text-[var(--tag-fg)] font-semibold")}
-                                            onClick={() => set("rail", "crypto")}
-                                        >
-                                            <span className="text-base leading-none">⛓</span> Crypto
-                                        </button>
-                                        <button
-                                            className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "fiat" && "bg-[var(--tag-bg)] text-[var(--tag-fg)] font-semibold")}
-                                            onClick={() => set("rail", "fiat")}
-                                        >
-                                            <span className="text-base leading-none">💳</span> Fiat (USD)
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Network & Token (crypto only) */}
-                            {form.rail === "crypto" && (
-                                <div className="space-y-4 mb-6">
-                                    <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Network &amp; Token</div>
-                                    <div className="flex items-start gap-3">
-                                        <div className="flex-1 space-y-1.5 mb-3.5">
-                                            <Label>Network</Label>
-                                            <select className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={form.network} onChange={e => set("network", e.target.value)}>
-                                                <optgroup label="Primary">
-                                                    {NETWORKS_PRIMARY.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
-                                                </optgroup>
-                                                <optgroup label="Other Networks">
-                                                    {NETWORKS_OTHER.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
-                                                </optgroup>
-                                            </select>
-                                        </div>
-                                        <div className="flex-1 space-y-1.5 mb-3.5">
-                                            <Label>Token</Label>
-                                            <select className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" value={form.token} onChange={e => set("token", e.target.value)}>
-                                                <optgroup label="Stablecoin">
-                                                    <option value="USDC">USDC</option>
-                                                    <option value="USDT">USDT</option>
-                                                </optgroup>
-                                                <optgroup label="Native">
-                                                    <option value="NATIVE">{nativeInfo.symbol}</option>
-                                                </optgroup>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2.5 p-2 px-3 border border-border rounded bg-muted" style={{ marginTop: 8 }}>
-                                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: tokenIconColor }}>
-                                            {tokenIconChar}
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="text-sm font-semibold text-foreground">{tokenDisplaySymbol} on {form.network}</div>
-                                            <div className="text-xs text-muted-foreground font-mono">{tokenContract}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Fiat */}
-                            {form.rail === "fiat" && (
-                                <div className="space-y-4 mb-6">
-                                    <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Fiat Payment</div>
-                                    <div className="flex items-center gap-2 px-3 py-2 bg-info-light border border-info rounded text-xs text-foreground leading-relaxed mt-2">
-                                        <span className="text-sm shrink-0">ℹ️</span>
-                                        <span>Sponsor pays via <strong>Stripe</strong> (charged upfront at quest creation). Winners withdraw rewards as crypto.</span>
-                                    </div>
-                                    <div className="flex items-center gap-2.5 p-2 px-3 border border-border rounded bg-muted" style={{ marginTop: 10 }}>
-                                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: "#635bff" }}>S</div>
-                                        <div className="flex-1">
-                                            <div className="text-sm font-semibold text-foreground">USD via Stripe</div>
-                                            <div className="text-xs text-muted-foreground font-mono" style={{ fontFamily: "var(--font)" }}>
-                                                Credit / debit card · Apple Pay · Google Pay
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Distribution Method */}
-                            <div className="space-y-4 mb-6">
-                                <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Distribution Method</div>
-                                <div className="flex border border-input rounded overflow-hidden">
-                                    {[
-                                        { id: "payout-fcfs", val: "FCFS" as QuestType, label: "FCFS" },
-                                        { id: "payout-draw", val: "LUCKY_DRAW" as QuestType, label: "Lucky Draw" },
-                                        { id: "payout-leaderboard", val: "LEADERBOARD" as QuestType, label: "Leaderboard" },
-                                    ].map((opt, i, arr) => (
-                                        <button
-                                            key={opt.val}
-                                            type="button"
-                                            className={cn(
-                                                "flex-1 text-center px-3 py-2 text-xs font-semibold cursor-pointer transition-colors",
-                                                i < arr.length - 1 && "border-r border-input",
-                                                form.type === opt.val
-                                                    ? "bg-muted text-foreground"
-                                                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                                            )}
-                                            onClick={() => {
-                                                setForm(prev => {
-                                                    let winners = prev.winners
-                                                    if (opt.val === "LEADERBOARD") {
-                                                        const n = parseInt(winners) || 2
-                                                        winners = String(Math.min(100, Math.max(2, n)))
-                                                    }
-                                                    return { ...prev, type: opt.val, winners }
-                                                })
-                                            }}
-                                        >
-                                            {opt.label}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* Shared: Total Reward + Winners — shown for all modes */}
-                                <div style={{ marginTop: 12 }}>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div className="space-y-1.5 mb-3.5">
-                                            <Label>Total Reward ({tokenLabel})</Label>
-                                            <Input
-                                                className="font-mono text-xs"
-                                                type="text"
-                                                value={form.total}
-                                                onChange={e => set("total", e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="space-y-1.5 mb-3.5">
-                                            <Label>
-                                                Number of Winners
-                                                {form.type === "LEADERBOARD" && (
-                                                    <span style={{ fontSize: 10, color: "var(--fg-muted)", marginLeft: 4 }}>(min 2, max 100)</span>
-                                                )}
-                                            </Label>
-                                            <Input
-                                                type="number"
-                                                min={form.type === "LEADERBOARD" ? 2 : 1}
-                                                max={form.type === "LEADERBOARD" ? 100 : undefined}
-                                                value={form.winners}
-                                                onChange={e => {
-                                                    let v = e.target.value
-                                                    if (form.type === "LEADERBOARD") {
-                                                        const n = parseInt(v) || 2
-                                                        v = String(Math.min(100, Math.max(2, n)))
-                                                    }
-                                                    set("winners", v)
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* FCFS fields */}
-                                {form.type === "FCFS" && (
-                                    <div className="conditional visible" style={{ marginTop: 4 }}>
-                                        <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginBottom: 8 }}>
-                                            First N eligible agents get paid immediately.
-                                        </div>
-                                        <div className="text-xs text-muted-foreground mt-1.5 p-1.5 px-2.5 bg-muted rounded border border-border">
-                                            Per winner: <strong className="text-accent font-mono">{perWinner} {tokenLabel}</strong>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Lucky Draw fields */}
-                                {form.type === "LUCKY_DRAW" && (
-                                    <div className="conditional visible" style={{ marginTop: 4 }}>
-                                        <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginBottom: 8 }}>
-                                            All eligible submissions enter a raffle. N winners drawn at end.
-                                        </div>
-                                        <div className="space-y-1.5 mb-3.5">
-                                            <Label>Draw Time</Label>
-                                            <input
-                                                className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                                type="datetime-local"
-                                                value={form.drawTime}
-                                                onChange={e => set("drawTime", e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="text-xs text-muted-foreground mt-1.5 p-1.5 px-2.5 bg-muted rounded border border-border">
-                                            Per winner: <strong className="text-accent font-mono">{perWinner} {tokenLabel}</strong>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Leaderboard fields */}
-                                {form.type === "LEADERBOARD" && (
-                                    <div className="conditional visible" style={{ marginTop: 4 }}>
-                                        <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginBottom: 8 }}>
-                                            All verified submissions ranked by completion time. At quest end, top N get tiered rewards (1st gets more than 2nd, etc.).
-                                        </div>
-                                        <div className="space-y-1.5 mb-3.5">
-                                            <Label>Payout Structure ({tokenLabel})</Label>
-                                            <div className="text-xs text-muted-foreground mb-1 leading-snug">
-                                                Auto-generated from total &amp; winners count. Weighted decay: 1st gets most.
-                                            </div>
-                                            <div className="flex flex-wrap gap-1 px-2.5 py-2 border border-border rounded bg-muted/50 font-mono text-xs">
-                                                {/* Show first 5 + ellipsis + last 2 if > 20, else show all */}
-                                                {lbWinnersNum <= 20
-                                                    ? lbPayouts.map((amt, i) => (
-                                                        <div key={i} className={cn("inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-background border border-border rounded", i === 0 && "border-accent")}>
-                                                            <span className="text-muted-foreground text-xs">#{i + 1}</span>
-                                                            <span className={cn("font-semibold", i === 0 ? "text-accent" : "text-foreground")}>{amt.toFixed(2)}</span>
-                                                        </div>
-                                                    ))
-                                                    : (
-                                                        <>
-                                                            {lbPayouts.slice(0, 5).map((amt, i) => (
-                                                                <div key={i} className={cn("inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-background border border-border rounded", i === 0 && "border-accent")}>
-                                                                    <span className="text-muted-foreground text-xs">#{i + 1}</span>
-                                                                    <span className={cn("font-semibold", i === 0 ? "text-accent" : "text-foreground")}>{amt.toFixed(2)}</span>
-                                                                </div>
-                                                            ))}
-                                                            <span style={{ color: "var(--fg-muted)", padding: "2px 4px", fontSize: 11 }}>…</span>
-                                                            {lbPayouts.slice(-2).map((amt, i) => (
-                                                                <div key={`last-${i}`} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-background border border-border rounded">
-                                                                    <span className="text-muted-foreground text-xs">#{lbWinnersNum - 1 + i}</span>
-                                                                    <span className="font-semibold text-foreground">{amt.toFixed(2)}</span>
-                                                                </div>
-                                                            ))}
-                                                        </>
-                                                    )
-                                                }
-                                            </div>
-                                        </div>
-                                        <div className="text-xs text-muted-foreground mt-1.5 p-1.5 px-2.5 bg-muted rounded border border-border">
-                                            <span>1st: <strong className="text-accent font-mono">{lbPayouts[0]?.toFixed(2)} {tokenLabel}</strong></span>
-                                            <span style={{ marginLeft: 8 }}>→ Last: <strong className="text-accent font-mono">{lbPayouts[lbPayouts.length - 1]?.toFixed(2)} {tokenLabel}</strong></span>
-                                            <span style={{ marginLeft: "auto" }}>Total: <strong className="text-accent font-mono">{activeTotal.toFixed(2)} {tokenLabel}</strong></span>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex justify-between mt-5 pt-4 border-t border-border">
-                                <Button variant="secondary" onClick={() => setTab("tasks")}>← Tasks</Button>
-                                <Button onClick={() => setTab("preview")}>Next: Preview →</Button>
-                            </div>
-                        </div></div>
-                        )}
-                    </div>
-                        )})()}
-
-                    {/* ══ STEP 4: PREVIEW & FUND ══ */}
-                    {(() => {
-                        const isActive = tab === "preview"
-                        const isFuture = TABS.indexOf(tab as Tab) < TABS.indexOf("preview")
-                        return (
-                    <div className="relative mb-0 border-none rounded-none">
-                        <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-[1] group" onClick={() => setTab(tab === "preview" ? null : "preview")}>
-                            <span className={cn(
-                                "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white border-2 border-background",
-                                isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
-                                    : "bg-gray-300 shadow-[0_0_0_2px_theme(colors.gray.300)]"
-                            )}>4</span>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-semibold text-sm text-foreground group-hover:text-primary">Preview &amp; Fund</span>
-                                    {isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-50 text-warning">In Progress</span>}
-                                    {!isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-muted text-muted-foreground">Not Started</span>}
-                                </div>
-                                <div className="text-xs text-muted-foreground mt-0.5 leading-snug truncate">Review your quest and deposit funds</div>
-                            </div>
-                            <div className="flex flex-col items-end gap-0.5 shrink-0 pt-0.5">
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">Step 4 of 4</span>
-                                <span className={cn("text-xs whitespace-nowrap", isFuture ? "text-muted-foreground" : "text-primary")}>{isActive ? "" : "Review & fund"}</span>
-                            </div>
-                        </div>
-                        {isActive && (
-                        <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
-                            {/* Header badges */}
-                            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap" style={{ marginBottom: 16 }}>
-                                <Badge variant="draft">draft</Badge>
-                                <span>·</span>
-                                <Badge variant={form.type === "FCFS" ? "fcfs" : form.type === "LEADERBOARD" ? "leaderboard" : "luckydraw"}>
-                                    {form.type === "LUCKY_DRAW" ? "Lucky Draw" : form.type === "LEADERBOARD" ? "Leaderboard" : "FCFS"}
-                                </Badge>
-                                <span>·</span>
-                                <span className={`badge ${form.rail === "fiat" ? "badge-fiat" : "badge-crypto"}`}>
-                                    {tokenLabel}
-                                </span>
-                                <span>·</span>
-                                <span>by <strong>you</strong></span>
-                            </div>
-
-                            {/* Description */}
-                            <div className="py-3.5 border-b border-border mb-5 text-sm leading-relaxed text-foreground">
-                                <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3.5">About this Quest</div>
-                                <p>{form.description || <span className="text-muted-foreground italic">No description provided</span>}</p>
-                            </div>
-
-                            {/* Reward grid */}
-                            <div className="grid grid-cols-2 gap-2.5 mb-2.5">
-                                <div className="px-3 py-2.5 border border-border rounded bg-muted">
-                                    <div className="text-xs text-muted-foreground mb-0.5">total reward</div>
-                                    <div className="text-sm font-semibold text-accent font-mono">
-                                        {activeTotal > 0 ? activeTotal.toLocaleString() : "—"} {tokenLabel}
-                                    </div>
-                                </div>
-                                <div className="px-3 py-2.5 border border-border rounded bg-muted">
-                                    <div className="text-xs text-muted-foreground mb-0.5">total slots</div>
-                                    <div className="text-sm font-semibold text-foreground">{activeWinners}</div>
-                                </div>
-                                <div className="px-3 py-2.5 border border-border rounded bg-muted">
-                                    <div className="text-xs text-muted-foreground mb-0.5">per winner</div>
-                                    <div className="text-sm font-semibold text-accent font-mono">
-                                        {form.type === "LEADERBOARD"
-                                            ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
-                                            : `${perWinner} ${tokenLabel}`}
-                                    </div>
-                                </div>
-                                <div className="px-3 py-2.5 border border-border rounded bg-muted">
-                                    <div className="text-xs text-muted-foreground mb-0.5">duration</div>
-                                    <div className="text-sm font-semibold text-foreground">
-                                        {durationDays !== null && durationDays > 0 ? `${durationDays} day${durationDays === 1 ? "" : "s"}` : "—"}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Human Tasks */}
-                            {humanTasks.length > 0 && (
-                                <div className="mb-6 pl-3.5 border-l-4 border-l-[var(--human-fg)] mt-4">
-                                    <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
-                                        Human Tasks
-                                        <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-[var(--human-bg)] text-[var(--human-fg)]">HUMAN</span>
-                                        <span className="font-normal text-xs text-muted-foreground ml-auto">Complete these yourself</span>
-                                    </div>
-                                    {humanTasks.map((task, i) => (
-                                        <div key={i} className="border border-border rounded mb-2.5 overflow-hidden last:mb-0">
-                                            <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
-                                                <span className="w-5 h-5 rounded-full border-2 border-input shrink-0 flex items-center justify-center text-xs"></span>
-                                                <span className="flex-1 font-medium">
-                                                    <span className="text-xs text-muted-foreground font-mono mr-1">#{i + 1}</span>
-                                                    {task.action}
-                                                    {task.chips.length > 0 && (
-                                                        <span className="text-muted-foreground font-normal ml-1.5 text-xs">
-                                                            ({task.chips.length} {task.chips.length === 1 ? "item" : "items"})
-                                                        </span>
-                                                    )}
-                                                </span>
-                                                <Badge variant="social">{task.platform}</Badge>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Agent Tasks */}
-                            {requiredSkills.length > 0 && (
-                                <div className={cn("mb-6 pl-3.5 border-l-4 border-l-[var(--agent-fg)]", humanTasks.length > 0 ? "mt-2.5" : "mt-4")}>
-                                    <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
-                                        Agent Tasks
-                                        <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-[var(--agent-bg)] text-[var(--agent-fg)]">AGENT</span>
-                                        <span className="font-normal text-xs text-muted-foreground ml-auto">Your AI agent handles these</span>
-                                    </div>
-                                    {requiredSkills.map((skill) => (
-                                        <div key={skill.id} className="border border-border rounded mb-2.5 overflow-hidden last:mb-0">
-                                            <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
-                                                <span className="w-5 h-5 rounded-full border-2 border-input shrink-0 flex items-center justify-center text-xs"></span>
-                                                <span className="flex-1 font-medium">
-                                                    Requires skill: <code className="font-mono text-xs bg-muted px-1 py-px rounded">{skill.name}</code>
-                                                </span>
-                                                <Badge variant="skill">Skill</Badge>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* No tasks fallback */}
-                            {humanTasks.length === 0 && requiredSkills.length === 0 && (
-                                <div className="py-4 text-muted-foreground text-sm">
-                                    No tasks defined. Go back to the Tasks step to add human or agent tasks.
-                                </div>
-                            )}
-
-                            {/* Payment Summary */}
-                            <div className="border border-border rounded mt-4 overflow-hidden">
-                                <div className="bg-muted/50 px-3.5 py-2.5 font-semibold text-base border-b border-border">Payment Summary</div>
-                                <div className="px-3.5 py-3">
-                                    <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
-                                        <span className="text-muted-foreground">Payment</span>
-                                        <span className="font-semibold text-right">{form.rail === "crypto" ? "Crypto" : "Fiat (Stripe)"}</span>
-                                    </div>
-                                    {form.rail === "crypto" && (
-                                        <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
-                                            <span className="text-muted-foreground">Network</span>
-                                            <span className="font-semibold text-right">{form.network}</span>
-                                        </div>
-                                    )}
-                                    <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
-                                        <span className="text-muted-foreground">Token</span>
-                                        <span className="font-semibold text-right">{tokenLabel}</span>
-                                    </div>
-                                    <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
-                                        <span className="text-muted-foreground">Winners</span>
-                                        <span className="font-semibold text-right">
-                                            {form.type === "LEADERBOARD" ? `${lbWinnersNum} spots` : activeWinners}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
-                                        <span className="text-muted-foreground">Per winner</span>
-                                        <span className="font-semibold text-right text-accent">
-                                            {form.type === "LEADERBOARD"
-                                                ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
-                                                : `${perWinner} ${tokenLabel}`}
-                                        </span>
-                                    </div>
-                                    <div className="border-t-2 border-border mt-2 pt-2 flex justify-between text-sm font-bold">
-                                        <span>Total Fund</span>
-                                        <span className="text-accent">
-                                            {activeTotal > 0 ? `${activeTotal.toFixed(2)} ${tokenLabel}` : "\u2014"}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Pay With */}
-                            <div className="mt-4">
-                                <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2.5">Pay with</div>
-                                {form.rail === "crypto" ? (
-                                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                                        <span style={{ fontSize: 20 }}>{"\uD83D\uDD17"}</span>
-                                        <div>
-                                            <div style={{ fontSize: 12, fontWeight: 600 }}>Smart Contract Escrow</div>
-                                            <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>
-                                                {form.network} {"\u00b7"} {tokenLabel}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <div className="flex items-center gap-2.5 p-2 px-3 border border-border rounded bg-muted" style={{ marginBottom: 8 }}>
-                                            <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: "#635bff" }}>S</div>
-                                            <div className="flex-1">
-                                                <div className="text-sm font-semibold text-foreground">Pay via Stripe</div>
-                                                <div className="text-xs text-muted-foreground font-mono" style={{ fontFamily: "var(--font)" }}>
-                                                    Card {"\u00b7"} Apple Pay {"\u00b7"} Google Pay
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="text-xs text-muted-foreground text-center mt-1.5 italic">Stripe integration coming soon</div>
-                                    </>
-                                )}
-                            </div>
-
-                            {/* Mutation error */}
-                            {mutation.isError && (
-                                <div style={{ marginTop: 16, padding: "10px 12px", background: "var(--red-bg)", border: "1px solid var(--red)", borderRadius: 3, fontSize: 12, color: "var(--red)" }}>
-                                    {(mutation.error as Error).message}
-                                </div>
-                            )}
-
-                            <div className="flex justify-between mt-5 pt-4 border-t border-border">
-                                <Button variant="secondary" onClick={() => setTab("reward")}>{"\u2190"} Reward</Button>
-                                <div style={{ display: "flex", gap: 8 }}>
-                                    {isFunded ? (
-                                        <>
-                                            <Button
-                                                variant={rewardIncreased ? "secondary" : "default"}
-                                                disabled={mutation.isPending}
-                                                onClick={() => { fundAfterSave.current = false; mutation.mutate() }}
-                                            >
-                                                {mutation.isPending && !fundAfterSave.current
-                                                    ? "Saving\u2026"
-                                                    : "Update Quest"}
-                                            </Button>
-                                            {rewardIncreased && form.rail === "crypto" && (
-                                                <Button
-                                                    disabled={mutation.isPending}
-                                                    onClick={() => { fundAfterSave.current = true; mutation.mutate() }}
-                                                >
-                                                    {mutation.isPending && fundAfterSave.current
-                                                        ? "Saving\u2026"
-                                                        : `Update & Fund Difference (+${topUpAmount.toFixed(2)} ${tokenLabel}) \u2192`}
-                                                </Button>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Button
-                                                variant={form.rail === "crypto" ? "secondary" : "default"}
-                                                disabled={mutation.isPending}
-                                                onClick={() => { fundAfterSave.current = false; mutation.mutate() }}
-                                            >
-                                                {mutation.isPending && !fundAfterSave.current
-                                                    ? "Saving\u2026"
-                                                    : isEditMode ? (isScheduled ? "Update Quest" : "Update Draft") : "Save Draft"}
-                                            </Button>
-                                            {form.rail === "crypto" && (
-                                                <Button
-                                                    disabled={mutation.isPending}
-                                                    onClick={() => { fundAfterSave.current = true; mutation.mutate() }}
-                                                >
-                                                    {mutation.isPending && fundAfterSave.current
-                                                        ? "Saving\u2026"
-                                                        : isEditMode ? "Update & Fund Now \u2192" : "Save & Fund Now \u2192"}
-                                                </Button>
-                                            )}
-                                            {form.rail === "fiat" && (
-                                                <button
-                                                    className="btn btn-stripe"
-                                                    disabled={mutation.isPending}
-                                                    onClick={() => { fundAfterSave.current = true; mutation.mutate() }}
-                                                >
-                                                    {mutation.isPending && fundAfterSave.current
-                                                        ? "Saving\u2026"
-                                                        : isEditMode ? "Update & Pay with Card \u2192" : "Save & Pay with Card \u2192"}
-                                                </button>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="text-xs text-muted-foreground leading-relaxed mt-3">
-                                {isFunded && rewardIncreased
-                                    ? `Top-up: +${topUpAmount.toFixed(2)} ${tokenLabel} will be deposited to escrow.`
-                                    : isFunded
-                                        ? "Quest is funded. Changes will be saved without additional deposit."
-                                        : form.rail === "crypto"
-                                            ? "Funds held in escrow. Skill tasks verified via CQ Skill proof. Social tasks verified via platform API."
-                                            : isEditMode
-                                                ? "Quest updated as draft. Fund later to go live."
-                                                : "Quest saved as draft. Fund later to go live."}
-                            </div>
-                        </div></div>
-                        )}
-                    </div>
-                        )})()}
-
-              </div>{/* /accordion */}
             </div>
         </div>
     )

@@ -358,7 +358,7 @@ export function Account() {
     }
 
     return (
-        <div className="max-w-3xl mx-auto">
+        <div className="">
             <h1 className="text-2xl font-semibold mb-6">Account</h1>
 
             {/* Profile */}
@@ -378,7 +378,7 @@ export function Account() {
                         </div>
                     ) : (
                         <>
-                            <div className="flex items-baseline py-1.5 text-sm">
+                            <div className="flex items-baseline py-1.5 text-sm justify-between">
                                 <span className="w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Display Name</span>
                                 <span className="text-foreground">
                                     {editingField === "displayName" ? (
@@ -406,11 +406,11 @@ export function Account() {
                                     )}
                                 </span>
                             </div>
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5">
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5 justify-between">
                                 <span className="w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Username</span>
                                 <span className="text-foreground">
                                     {editingField === "username" ? (
-                                        <span className="flex gap-1.5 items-center flex-wrap">
+                                        <span className="flex gap-1.5 items-center flex-wrap justify-end">
                                             <input
                                                 type="text"
                                                 value={editValue}
@@ -425,7 +425,7 @@ export function Account() {
                                                 {updateProfile.isPending ? "…" : "Save"}
                                             </Button>
                                             <Button variant="secondary" size="sm" onClick={() => setEditingField(null)}>Cancel</Button>
-                                            <span className="text-xs text-muted-foreground w-full">3-20 chars, lowercase letters, numbers, hyphens</span>
+                                            <span className="text-xs text-muted-foreground w-full text-right">3-20 chars, lowercase letters, numbers, hyphens</span>
                                         </span>
                                     ) : (
                                         <span className="flex gap-2 items-center">
@@ -436,7 +436,7 @@ export function Account() {
                                 </span>
                             </div>
                             {editError && <div className="text-xs text-destructive py-3 flex items-center gap-2 mt-1">{editError}</div>}
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5">
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5 justify-between">
                                 <span className="w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Email</span>
                                 <span className="text-foreground">
                                     {profile?.email?.match(/^tg_\d+@tg\.clawquest\.ai$/)
@@ -444,7 +444,7 @@ export function Account() {
                                         : (profile?.email ?? supabaseUser?.email ?? "—")}
                                 </span>
                             </div>
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5">
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5 justify-between">
                                 <span className="w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Member since</span>
                                 <span className="text-foreground">
                                     {profile?.createdAt ? formatDate(profile.createdAt) : "—"}
@@ -480,14 +480,16 @@ export function Account() {
                                 {isTelegram ? (
                                     telegramLinked ? (
                                         <>
-                                            <span className="text-success text-xs font-semibold">Connected</span>
-                                            <span className="text-muted-foreground text-xs">
-                                                {profile?.telegramUsername ? `@${profile.telegramUsername}` : ""}
-                                            </span>
+                                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                                                <span className="text-success text-xs font-semibold">Connected</span>
+                                                <span className="text-muted-foreground text-xs">
+                                                    {profile?.telegramUsername ? `@${profile.telegramUsername}` : ""}
+                                                </span>
+                                            </div>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="ml-2 text-[12px] px-[10px] py-1"
+                                                className="text-[12px] px-[10px] py-1 min-w-[70px]"
                                                 disabled={unlinkPending === "telegram"}
                                                 onClick={() => handleUnlinkTelegram()}
                                             >
@@ -495,35 +497,40 @@ export function Account() {
                                             </Button>
                                         </>
                                     ) : (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="ml-auto text-[12px] px-[10px] py-1"
-                                            onClick={() => startTelegramLogin("link")}
-                                        >
-                                            Link
-                                        </Button>
-                                    )
-                                ) : isLinked ? (
-                                    <>
-                                        <span className="text-success text-xs font-semibold">Connected</span>
-                                        {detail && <span className="text-muted-foreground text-xs">{detail}</span>}
-                                        {/* X read access button: show when X linked but no read token yet */}
-                                        {p.key === "twitter" && profile?.xId && !profile?.hasXToken && (
+                                        <>
+                                            <div className="flex-1" />
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="ml-2 text-[12px] px-[10px] py-1"
-                                                disabled={xAuthPending}
-                                                onClick={handleXReadAccess}
+                                                className="text-[12px] px-[10px] py-1 min-w-[70px]"
+                                                onClick={() => startTelegramLogin("link")}
                                             >
-                                                {xAuthPending ? "Redirecting…" : "Authorize read access"}
+                                                Link
                                             </Button>
-                                        )}
+                                        </>
+                                    )
+                                ) : isLinked ? (
+                                    <>
+                                        <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
+                                            <span className="text-success text-xs font-semibold">Connected</span>
+                                            {detail && <span className="text-muted-foreground text-xs">{detail}</span>}
+                                            {/* X read access button: show when X linked but no read token yet */}
+                                            {p.key === "twitter" && profile?.xId && !profile?.hasXToken && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="ml-2 text-[12px] px-[10px] py-1"
+                                                    disabled={xAuthPending}
+                                                    onClick={handleXReadAccess}
+                                                >
+                                                    {xAuthPending ? "Redirecting…" : "Authorize read access"}
+                                                </Button>
+                                            )}
+                                        </div>
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className="ml-2 text-[12px] px-[10px] py-1"
+                                            className="text-[12px] px-[10px] py-1 min-w-[70px]"
                                             disabled={unlinkPending === p.key}
                                             onClick={() => handleUnlinkProvider(p.key)}
                                         >
@@ -531,15 +538,18 @@ export function Account() {
                                         </Button>
                                     </>
                                 ) : (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="ml-auto text-[12px] px-[10px] py-1"
-                                        disabled={linkPending === p.supabaseProvider}
-                                        onClick={() => handleLinkProvider(p.supabaseProvider!)}
-                                    >
-                                        {linkPending === p.supabaseProvider ? "Linking…" : "Link"}
-                                    </Button>
+                                    <>
+                                        <div className="flex-1" />
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="text-[12px] px-[10px] py-1 min-w-[70px]"
+                                            disabled={linkPending === p.supabaseProvider}
+                                            onClick={() => handleLinkProvider(p.supabaseProvider!)}
+                                        >
+                                            {linkPending === p.supabaseProvider ? "Linking…" : "Link"}
+                                        </Button>
+                                    </>
                                 )}
                             </div>
                         )
@@ -553,12 +563,14 @@ export function Account() {
                             <div key={identity.id} className="flex items-center gap-2.5 py-2 text-sm min-w-0 opacity-70 border-t border-border">
                                 <span className="w-5 text-center text-sm shrink-0">{info.icon}</span>
                                 <span className="font-semibold min-w-[90px]">{info.label}</span>
-                                <span className="text-success text-xs font-semibold">Connected</span>
-                                {detail && <span className="text-muted-foreground text-xs">{detail}</span>}
+                                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                                    <span className="text-success text-xs font-semibold">Connected</span>
+                                    {detail && <span className="text-muted-foreground text-xs">{detail}</span>}
+                                </div>
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="ml-2 text-[12px] px-[10px] py-1"
+                                    className="text-[12px] px-[10px] py-1 min-w-[70px]"
                                     disabled={unlinkPending === identity.provider}
                                     onClick={() => handleUnlinkProvider(identity.provider)}
                                 >
@@ -628,7 +640,7 @@ export function Account() {
                             type="text"
                             placeholder="0x..."
                             autoComplete="off"
-                            className="flex-1 font-mono text-xs"
+                            className="flex-1 font-mono text-xs h-8"
                             value={walletInput}
                             onChange={e => setWalletInput(e.target.value)}
                         />

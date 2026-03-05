@@ -45,7 +45,7 @@ export function Login() {
         // On success, browser redirects to Google → then to /auth/callback
     }
 
-const handleTwitterLogin = async () => {
+    const handleTwitterLogin = async () => {
         setTwitterLoading(true)
         setError("")
         const { error: oauthError } = await supabase.auth.signInWithOAuth({
@@ -96,14 +96,28 @@ const handleTwitterLogin = async () => {
     return (
         <div className="min-h-screen flex flex-col bg-muted">
             {/* Topbar */}
-            <div className="topbar">
-                <Link to="/quests" className="topbar-logo">
-                    Claw<span>Quest</span>
-                </Link>
-                <div className="topbar-nav">
-                    <Link to="/quests">Quests</Link>
+            <header className="sticky top-0 z-50 bg-background border-b border-border">
+                <div className="mx-auto flex h-14 max-w-[1100px] items-center gap-2 px-6">
+                    <Link
+                        to="/quests"
+                        className="mr-5 flex items-center gap-1.5 no-underline"
+                    >
+                        <span className="text-base font-semibold text-foreground uppercase">
+                            Claw<span className="text-accent uppercase">Quest</span>
+                        </span>
+                    </Link>
+
+                    {/* Desktop nav */}
+                    <nav className="hidden items-center gap-1 sm:flex">
+                        <Link
+                            to="/quests"
+                            className="px-0 py-1.5 text-sm text-muted-foreground no-underline hover:text-foreground transition-colors"
+                        >
+                            Quests
+                        </Link>
+                    </nav>
                 </div>
-            </div>
+            </header>
 
             {/* Centered login card */}
             <div className="flex-1 flex items-center justify-center px-4 py-10">

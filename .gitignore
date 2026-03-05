@@ -136,3 +136,6 @@ _tmp_*
 docs/design-system/WORKFLOW-LOG.md
 docs/design-system/DECISIONS-LOG.md
 docs/design-system/STATUS.md
+.env
+apps/api/.env
+apps/dashboard/.env

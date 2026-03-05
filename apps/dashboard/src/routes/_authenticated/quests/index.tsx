@@ -196,16 +196,17 @@ export function QuestList() {
                                 ref={el => { tabRefs.current[t.id] = el }}
                                 className={cn(
                                     "relative z-10 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-button cursor-pointer transition-all duration-200 ease-out",
+                                    "font-semibold",
                                     isActive
-                                        ? "text-primary-foreground font-semibold"
-                                        : "text-foreground"
+                                        ? "text-primary-foreground"
+                                        : "text-foreground hover:text-primary"
                                 )}
                                 onClick={() => handleTabChange(t.id)}
                             >
                                 <Icon size={16} />
                                 {t.label}
                                 {tabCounts[t.id] > 0 && (
-                                    <span className="opacity-70">({tabCounts[t.id]})</span>
+                                    <span className="text-xs opacity-70">({tabCounts[t.id]})</span>
                                 )}
                             </button>
                         )

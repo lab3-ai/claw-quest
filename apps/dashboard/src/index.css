@@ -243,9 +243,9 @@
     --sidebar-bg: #e8e8e8;
 
     /* ── Typography — monospace-first ── */
-    --font: "JetBrains Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
-    --font-heading: "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
-    --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    --font: "Google Sans Code", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    --font-heading: "Google Sans Code", ui-monospace, "Cascadia Mono", monospace;
+    --font-mono: "Google Sans Code", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
 
     --text-xs: 12px;
     --text-sm: 14px;

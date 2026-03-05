@@ -138,3 +138,4 @@ docs/DECISIONS-LOG.md
 STATUS.md
 docs/design-system/DECISIONS-LOG.md
 docs/design-system/WORKFLOW-LOG.md
+.claude/hooks/.logs/hook-log.jsonl

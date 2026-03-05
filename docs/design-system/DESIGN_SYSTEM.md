@@ -312,7 +312,7 @@ All buttons: `font-weight: 600`, monospace, tight radius.
 
 ### Badges / Tags
 
-- Radius: `--radius-sm` (3px)
+- Radius: `--radius-full` (999px)
 - Padding: `4px 8px`
 - Font: `--text-xs`, `font-weight: 500`, monospace
 - Variants: filled (bg + text) or outline (border + text)
@@ -328,7 +328,7 @@ All buttons: `font-weight: 600`, monospace, tight radius.
 
 ### Navigation / Topbar
 
-- Height: `44px` (compact)
+- Height: `54px` (default), `44px` (compact)
 - Background: `--bg` with bottom border
 - Logo: text `CLAWQUEST`, `text-base font-semibold`
 - Active link: `border-b-2 border-foreground` (underline indicator, not bg fill)

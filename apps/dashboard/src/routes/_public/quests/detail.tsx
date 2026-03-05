@@ -423,7 +423,7 @@ export function QuestDetail() {
     const isCompleted = quest.status === "completed"
 
     return (
-        <div className="max-w-[960px]">
+        <div className="">
             {/* Breadcrumb */}
             <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
                 <Link to="/quests">Quests</Link>

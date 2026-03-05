@@ -99,7 +99,9 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
             <div className="bg-bg-subtle border border-border rounded-md px-5 py-4 mb-5">
                 <div className="flex justify-between items-center py-2 text-xs text-fg-muted">
                     <span>Amount</span>
-                    <span className="font-bold text-sm text-foreground">${quest?.rewardAmount?.toLocaleString()} USD</span>
+                    <span className="font-bold text-sm text-foreground">
+                        ${Math.max(0, (quest?.rewardAmount ?? 0) - (quest?.totalFunded ?? 0)).toLocaleString()} USD
+                    </span>
                 </div>
                 <div className="flex justify-between items-center py-2 text-xs text-fg-muted border-t border-border">
                     <span>Quest</span>
@@ -283,6 +285,11 @@ export function FundQuest() {
                     </div>
                 )}
 
+                {/* Funding progress — shared across both methods */}
+                {quest && (
+                    <FundingProgress quest={quest} session={session} questId={questId} />
+                )}
+
                 {/* Stripe flow */}
                 {method === 'stripe' && (
                     <StripeFundFlow questId={questId} quest={quest} />
@@ -309,9 +316,6 @@ export function FundQuest() {
                         {params && (
                             <>
                                 <FundSummary params={params} />
-                                {quest && (
-                                    <FundingProgress quest={quest} session={session} questId={questId} />
-                                )}
                                 <FundStepIndicator step={step} isNative={params.isNative} />
 
                                 <div className="text-center min-h-[120px]">
@@ -429,7 +433,7 @@ function FundingProgress({ quest, session, questId }: { quest: any; session: any
 
     return (
         <>
-            <div className="mt-6 pt-4 border-t border-border space-y-2">
+            <div className="mb-6 space-y-2">
                 <div className="flex justify-between text-xs text-fg-muted">
                     <span>Funding progress</span>
                     <span>{totalFunded} / {rewardAmount} {quest.rewardType}</span>

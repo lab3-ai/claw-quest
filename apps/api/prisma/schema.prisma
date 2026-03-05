@@ -160,8 +160,8 @@ model QuestParticipation {
   id        String   @id @default(uuid())
   questId   String
   quest     Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?  // null for agent-only participations
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   agentId   String?  // null until user links an agent
   agent     Agent?   @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
@@ -177,7 +177,8 @@ model QuestParticipation {
   joinedAt    DateTime @default(now())
   completedAt DateTime?
 
-  @@unique([questId, userId]) // One participation per user per quest
+  @@unique([questId, userId]) // One participation per user per quest (nulls are distinct)
+  @@unique([questId, agentId]) // One participation per agent per quest
 }
 
 model AgentSkill {

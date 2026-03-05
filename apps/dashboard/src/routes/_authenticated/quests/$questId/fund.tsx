@@ -309,6 +309,9 @@ export function FundQuest() {
                         {params && (
                             <>
                                 <FundSummary params={params} />
+                                {quest && (
+                                    <FundingProgress quest={quest} session={session} questId={questId} />
+                                )}
                                 <FundStepIndicator step={step} isNative={params.isNative} />
 
                                 <div className="text-center min-h-[120px]">
@@ -363,10 +366,6 @@ export function FundQuest() {
                             </>
                         )}
                     </>
-                )}
-                {/* Funding Progress Bar */}
-                {quest && (
-                    <FundingProgress quest={quest} session={session} questId={questId} />
                 )}
             </div>
         </div>
@@ -450,16 +449,17 @@ function FundingProgress({ quest, session, questId }: { quest: any; session: any
             </div>
 
             {isOwnerOrSponsor && (
-                <div className="mt-4 pt-4 border-t border-border">
-                    <button
+                <div className="mt-3 flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => inviteMutation.mutate()}
                         disabled={inviteMutation.isPending}
-                        className="text-sm text-fg-muted hover:text-foreground underline cursor-pointer bg-transparent border-none p-0"
                     >
                         {inviteMutation.isPending ? 'Generating...' : 'Invite a co-sponsor'}
-                    </button>
+                    </Button>
                     {inviteMutation.isError && (
-                        <p className="text-error text-xs mt-1">{(inviteMutation.error as Error).message}</p>
+                        <span className="text-destructive text-xs">{(inviteMutation.error as Error).message}</span>
                     )}
                 </div>
             )}

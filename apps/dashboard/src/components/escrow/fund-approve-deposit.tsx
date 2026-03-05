@@ -1,15 +1,17 @@
-import { Link } from '@tanstack/react-router'
 import type { DepositParams } from '@/components/escrow/fund-types'
 import { TxLink } from '@/components/escrow/tx-link'
 import { Button } from '@/components/ui/button'
 
-function InsufficientBalanceWarning({ tokenSymbol, questId }: { tokenSymbol: string; questId: string }) {
+function PartialFundingBanner({ tokenSymbol, walletBalance }: { tokenSymbol: string; walletBalance: string }) {
+    const balanceNum = parseFloat(walletBalance)
+    const isEmpty = balanceNum === 0
+
     return (
-        <div className="text-xs text-destructive bg-destructive/10 border border-destructive rounded p-2 px-3 mb-3">
-            Insufficient {tokenSymbol} balance to fund this quest.
-            <Link to="/quests/$questId/edit" params={{ questId }} className="block mt-1.5 text-primary font-medium underline">
-                Edit reward amount
-            </Link>
+        <div className="text-xs text-fg-muted bg-muted/50 border border-border rounded p-2 px-3 mb-3">
+            {isEmpty
+                ? `Your wallet has 0 ${tokenSymbol}. Deposit more funds or invite a co-sponsor.`
+                : `You have ${walletBalance} ${tokenSymbol}. You can deposit a partial amount — invite co-sponsors for the rest.`
+            }
         </div>
     )
 }
@@ -27,7 +29,6 @@ interface FundApproveProps {
 
 export function FundApprove({
     params,
-    questId,
     approveLoading,
     approveTxHash,
     approveConfirmed,
@@ -42,14 +43,14 @@ export function FundApprove({
                     Balance: {walletBalance} {params.tokenSymbol}
                 </p>
             )}
-            {hasInsufficientBalance && (
-                <InsufficientBalanceWarning tokenSymbol={params.tokenSymbol} questId={questId} />
+            {hasInsufficientBalance && walletBalance !== undefined && (
+                <PartialFundingBanner tokenSymbol={params.tokenSymbol} walletBalance={walletBalance} />
             )}
             <p>Approve {params.tokenSymbol} spending</p>
             <Button
                 className="w-full"
                 onClick={onApprove}
-                disabled={approveLoading || hasInsufficientBalance}
+                disabled={approveLoading}
             >
                 {approveLoading ? 'Approving...' : `Approve ${params.amount} ${params.tokenSymbol}`}
             </Button>
@@ -73,7 +74,6 @@ interface FundDepositProps {
 
 export function FundDeposit({
     params,
-    questId,
     depositLoading,
     depositTxHash,
     depositConfirmed,
@@ -88,14 +88,14 @@ export function FundDeposit({
                     Balance: {walletBalance} {params.tokenSymbol}
                 </p>
             )}
-            {hasInsufficientBalance && (
-                <InsufficientBalanceWarning tokenSymbol={params.tokenSymbol} questId={questId} />
+            {hasInsufficientBalance && walletBalance !== undefined && (
+                <PartialFundingBanner tokenSymbol={params.tokenSymbol} walletBalance={walletBalance} />
             )}
             <p>Deposit {params.amount} {params.tokenSymbol} to escrow</p>
             <Button
                 className="w-full"
                 onClick={onDeposit}
-                disabled={depositLoading || hasInsufficientBalance}
+                disabled={depositLoading}
             >
                 {depositLoading ? 'Depositing...' : `Deposit ${params.amount} ${params.tokenSymbol}`}
             </Button>

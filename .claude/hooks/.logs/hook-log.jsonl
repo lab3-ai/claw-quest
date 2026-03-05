@@ -893,3 +893,7 @@
 {"ts":"2026-03-05T06:50:18.823Z","hook":"scout-block","tool":"Bash","dur":4,"status":"block","exit":2,"error":""}
 {"ts":"2026-03-05T06:50:24.179Z","hook":"scout-block","tool":"Bash","dur":4,"status":"ok","exit":0,"error":""}
 {"ts":"2026-03-05T06:50:44.738Z","hook":"scout-block","tool":"Bash","dur":2,"status":"ok","exit":0,"error":""}
+{"ts":"2026-03-05T08:57:36.431Z","hook":"scout-block","tool":"Bash","dur":5,"status":"ok","exit":0,"error":""}
+{"ts":"2026-03-05T08:58:00.819Z","hook":"scout-block","tool":"Read","dur":5,"status":"ok","exit":0,"error":""}
+{"ts":"2026-03-05T08:58:13.949Z","hook":"scout-block","tool":"Read","dur":2,"status":"ok","exit":0,"error":""}
+{"ts":"2026-03-05T08:58:17.332Z","hook":"scout-block","tool":"Write","dur":3,"status":"ok","exit":0,"error":""}

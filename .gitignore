@@ -143,4 +143,5 @@ docs/design-system/STATUS.md
 .env
 apps/api/.env
 apps/dashboard/.env
-.claude/hooks/.logs/hook-log.jsonl
+# Claude/ClaudeKit hooks logs (whole directory)
+.claude/hooks/.logs/

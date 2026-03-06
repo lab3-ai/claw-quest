@@ -138,14 +138,16 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
 
 export function FundQuest() {
     const { questId } = useParams({ strict: false }) as { questId: string }
-    const { session } = useAuth()
+    const { session, isLoading: authLoading } = useAuth()
     const { isConnected, address } = useAccount()
     const currentChainId = useChainId()
     const { switchChain } = useSwitchChain()
 
-    // Determine funding method from quest data
+    // Wait for token before making any API calls
     const token = session?.access_token
-    const { data: quest, isLoading: questLoading, refetch: refetchQuest } = useQuery({
+
+    // Step 1: Fetch quest data to determine payment method (only after token is ready)
+    const { data: quest, isLoading: questLoading } = useQuery({
         queryKey: ['quest', questId],
         queryFn: async () => {
             const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
@@ -153,8 +155,8 @@ export function FundQuest() {
             if (!res.ok) throw new Error('Quest not found')
             return res.json()
         },
-        enabled: !!questId,
-        refetchOnMount: true, // Always refetch when component mounts
+        enabled: !!questId && !authLoading, // Wait for auth to finish loading
+        refetchOnMount: true, // Refetch when component mounts
         refetchOnWindowFocus: true, // Refetch when window gets focus
         staleTime: 0, // Always consider data stale, force refetch
         refetchInterval: (query) => {
@@ -163,21 +165,16 @@ export function FundQuest() {
         },
     })
 
-    // Refetch quest data when component mounts or questId changes
-    useEffect(() => {
-        if (questId) {
-            refetchQuest()
-        }
-    }, [questId, refetchQuest])
+    // Step 2: Determine payment method from quest data
+    const method: FundingMethod | null = quest
+        ? (quest.fundingMethod
+            ? (quest.fundingMethod === 'stripe' ? 'stripe' : 'crypto')
+            : quest.rewardType === 'USD'
+                ? 'stripe'
+                : 'crypto')
+        : null
 
-    // Determine method: prioritize fundingMethod from quest, fallback to rewardType
-    // No toggle - method is determined by quest data only
-    const method: FundingMethod = quest?.fundingMethod
-        ? (quest.fundingMethod === 'stripe' ? 'stripe' : 'crypto')
-        : quest?.rewardType === 'USD'
-            ? 'stripe'
-            : 'crypto'
-
+    // Step 3: Only fetch method-specific APIs after method is determined
     // ── Crypto: Fetch deposit params ────────────────────────────────────────
     const { data: params, isLoading: paramsLoading, error: paramsError } = useQuery<DepositParams>({
         queryKey: ['deposit-params', questId],
@@ -189,7 +186,7 @@ export function FundQuest() {
             }
             return res.json()
         },
-        enabled: !!questId && method === 'crypto',
+        enabled: !!questId && method === 'crypto' && !authLoading, // Only fetch when method is crypto and auth is ready
     })
 
     // ── Fund flow state + contract writes ───────────────────────────────────
@@ -244,8 +241,8 @@ export function FundQuest() {
     }, [fundingStatus, setStep])
 
     // ── Render ──────────────────────────────────────────────────────────────
-    // Show skeleton while loading quest data
-    if (questLoading) {
+    // Show skeleton while waiting for auth token or loading quest data
+    if (authLoading || questLoading) {
         return (
             <div className="max-w-[560px] mx-auto py-8 px-4">
                 <nav className="flex items-center gap-1 text-xs text-fg-muted mb-4">
@@ -300,6 +297,11 @@ export function FundQuest() {
                 {/* Funding progress — shared across both methods */}
                 {quest && (
                     <FundingProgress quest={quest} session={session} questId={questId} />
+                )}
+
+                {/* Wait for payment method to be determined */}
+                {!method && (
+                    <div className="text-center text-fg-muted py-12">Determining payment method...</div>
                 )}
 
                 {/* Stripe flow */}

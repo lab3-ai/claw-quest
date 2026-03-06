@@ -10,6 +10,7 @@ type PaymentRail = "crypto" | "fiat"
 interface StepRewardProps {
     isActive: boolean
     isDone: boolean
+    isValid: boolean
     isFuture: boolean
     form: {
         rail: PaymentRail
@@ -30,6 +31,7 @@ interface StepRewardProps {
 export function StepReward({
     isActive,
     isDone,
+    isValid,
     isFuture,
     form,
     stepSummary,
@@ -41,6 +43,11 @@ export function StepReward({
     const activeTotal = parseFloat(form.total) || 0
     const activeWinners = parseInt(form.winners) || 1
     const perWinner = activeWinners > 0 ? (activeTotal / activeWinners).toFixed(2) : "0.00"
+
+    const totalError = activeTotal <= 0 && isActive
+    const winnersError = activeWinners <= 0 && isActive
+    const drawTimeError = form.type === "LUCKY_DRAW" && !form.drawTime.trim() && isActive
+    const leaderboardError = form.type === "LEADERBOARD" && activeWinners < 2 && isActive
 
     const tokenLabel = getTokenSymbol(form.rail, form.token, form.network)
 
@@ -207,17 +214,18 @@ export function StepReward({
                         <div style={{ marginTop: 12 }}>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div className="space-y-1.5 mb-3.5">
-                                    <Label>Total Reward ({tokenLabel})</Label>
+                                    <Label>Total Reward ({tokenLabel}) <span className="text-destructive">*</span></Label>
                                     <Input
-                                        className="font-mono text-xs"
+                                        className={cn("font-mono text-xs", totalError && "border-destructive focus-visible:ring-destructive")}
                                         type="text"
                                         value={form.total}
                                         onChange={e => onFieldChange("total", e.target.value)}
                                     />
+                                    {totalError && <div className="text-xs text-destructive mt-0.5">Total reward must be greater than 0</div>}
                                 </div>
                                 <div className="space-y-1.5 mb-3.5">
                                     <Label>
-                                        Number of Winners
+                                        Number of Winners <span className="text-destructive">*</span>
                                         {form.type === "LEADERBOARD" && (
                                             <span style={{ fontSize: 10, color: "var(--fg-muted)", marginLeft: 4 }}>(min 2, max 100)</span>
                                         )}
@@ -235,7 +243,10 @@ export function StepReward({
                                             }
                                             onFieldChange("winners", v)
                                         }}
+                                        className={cn((winnersError || leaderboardError) && "border-destructive focus-visible:ring-destructive")}
                                     />
+                                    {winnersError && <div className="text-xs text-destructive mt-0.5">Number of winners must be greater than 0</div>}
+                                    {leaderboardError && <div className="text-xs text-destructive mt-0.5">Leaderboard requires at least 2 winners</div>}
                                 </div>
                             </div>
                         </div>
@@ -259,13 +270,14 @@ export function StepReward({
                                     All eligible submissions enter a raffle. N winners drawn at end.
                                 </div>
                                 <div className="space-y-1.5 mb-3.5">
-                                    <Label>Draw Time</Label>
+                                    <Label>Draw Time <span className="text-destructive">*</span></Label>
                                     <input
-                                        className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                        className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50", drawTimeError && "border-destructive focus-visible:ring-destructive")}
                                         type="datetime-local"
                                         value={form.drawTime}
                                         onChange={e => onFieldChange("drawTime", e.target.value)}
                                     />
+                                    {drawTimeError && <div className="text-xs text-destructive mt-0.5">Draw time is required for Lucky Draw</div>}
                                 </div>
                                 <div className="text-xs text-muted-foreground mt-1.5 p-1.5 px-2.5 bg-muted rounded border border-border">
                                     Per winner: <strong className="text-accent font-mono">{perWinner} {tokenLabel}</strong>
@@ -323,8 +335,15 @@ export function StepReward({
 
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <Button variant="secondary" onClick={onPrevious}>← Tasks</Button>
-                        <Button onClick={onNext}>Next: Preview →</Button>
+                        <Button onClick={onNext} disabled={!isValid}>
+                            Next: Preview →
+                        </Button>
                     </div>
+                    {!isValid && (
+                        <div className="text-xs text-destructive mt-2 text-center">
+                            Please fill in all required fields to continue
+                        </div>
+                    )}
                 </div></div>
             )}
         </div>

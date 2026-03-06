@@ -940,12 +940,52 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
         },
     })
 
+    // ── Validation functions ──────────────────────────────────────────────────
+    const validateDetails = (): boolean => {
+        return !!(form.title.trim() && form.description.trim())
+    }
+
+    const validateTasks = (): boolean => {
+        // Tasks are optional, but if they exist, they must be valid
+        if (humanTasks.length === 0 && requiredSkills.length === 0) return true
+        if (humanTasks.length > 0) {
+            // Check if there are any validation errors
+            if (taskErrors.length > 0) return false
+            const errors = validateSocialTasks(humanTasks)
+            return errors.length === 0
+        }
+        return true
+    }
+
+    const validateReward = (): boolean => {
+        const total = parseFloat(form.total) || 0
+        const winners = parseInt(form.winners) || 0
+
+        if (total <= 0) return false
+        if (winners <= 0) return false
+
+        // Lucky Draw requires drawTime
+        if (form.type === "LUCKY_DRAW" && !form.drawTime.trim()) return false
+
+        // Leaderboard requires at least 2 winners
+        if (form.type === "LEADERBOARD" && winners < 2) return false
+
+        return true
+    }
+
     // ── Derived values ────────────────────────────────────────────────────────
     const tabDone: Record<Tab, boolean> = {
-        details: !!(form.title.trim() && form.description.trim()),
-        reward: true,
-        tasks: humanTasks.length > 0 || requiredSkills.length > 0,
+        details: validateDetails(),
+        reward: validateReward(),
+        tasks: validateTasks(),
         preview: false,
+    }
+
+    const tabValid: Record<Tab, boolean> = {
+        details: validateDetails(),
+        reward: validateReward(),
+        tasks: validateTasks(),
+        preview: true, // Preview doesn't need validation
     }
 
     const activeTotal = parseFloat(form.total) || 0
@@ -970,6 +1010,34 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     }
 
     const TABS: Tab[] = ["details", "tasks", "reward", "preview"]
+
+    // ── Handle step navigation ────────────────────────────────────────────────
+    const handleStepToggle = (targetTab: Tab) => {
+        if (!tab) {
+            setTab(targetTab)
+            return
+        }
+
+        const currentIndex = TABS.indexOf(tab)
+        const targetIndex = TABS.indexOf(targetTab)
+
+        // Allow going back to previous steps
+        if (targetIndex < currentIndex) {
+            setTab(targetTab)
+            return
+        }
+
+        // Allow going forward only if current step is valid
+        if (targetIndex > currentIndex) {
+            if (tabValid[tab]) {
+                setTab(targetTab)
+            }
+            return
+        }
+
+        // Toggle same step
+        setTab(tab === targetTab ? null : targetTab)
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     if (isEditMode && editLoading) {
@@ -1066,6 +1134,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                         <StepDetails
                             isActive={tab === "details"}
                             isDone={tabDone.details && tab !== "details"}
+                            isValid={tabValid.details}
                             form={{
                                 title: form.title,
                                 description: form.description,
@@ -1073,15 +1142,20 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 endAt: form.endAt,
                             }}
                             stepSummary={stepSummaries.details}
-                            onToggle={() => setTab(tab === "details" ? null : "details")}
+                            onToggle={() => handleStepToggle("details")}
                             onFieldChange={(key, value) => set(key, value)}
-                            onNext={() => setTab("tasks")}
+                            onNext={() => {
+                                if (tabValid.details) {
+                                    setTab("tasks")
+                                }
+                            }}
                         />
 
                         {/* ══ STEP 2: TASKS ══ */}
                         <StepTasks
                             isActive={tab === "tasks"}
                             isDone={tabDone.tasks && tab !== "tasks"}
+                            isValid={tabValid.tasks}
                             isFuture={TABS.indexOf(tab as Tab) < TABS.indexOf("tasks") && !tabDone.tasks}
                             stepSummary={stepSummaries.tasks}
                             activePlatform={activePlatform}
@@ -1098,7 +1172,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             taskErrors={taskErrors}
                             addedSkillIds={addedSkillIds}
                             expandedDescs={expandedDescs}
-                            onToggle={() => setTab(tab === "tasks" ? null : "tasks")}
+                            onToggle={() => handleStepToggle("tasks")}
                             onSetActivePlatform={setActivePlatform}
                             onAddHumanTask={addHumanTask}
                             onRemoveHumanTask={removeHumanTask}
@@ -1125,7 +1199,11 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             onTruncateDesc={truncateDesc}
                             onChipStatus={(platform, actionType, value) => socialValidation.getStatus(platform, actionType, value)}
                             onPrevious={() => setTab("details")}
-                            onNext={() => setTab("reward")}
+                            onNext={() => {
+                                if (tabValid.tasks) {
+                                    setTab("reward")
+                                }
+                            }}
                             SocialEntryBody={SocialEntryBody}
                             isSkillUrl={isSkillUrl}
                             fetchSkillFromUrl={fetchSkillFromUrl}
@@ -1137,6 +1215,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                         <StepReward
                             isActive={tab === "reward"}
                             isDone={tabDone.reward && tab !== "reward"}
+                            isValid={tabValid.reward}
                             isFuture={TABS.indexOf(tab as Tab) < TABS.indexOf("reward") && !tabDone.reward}
                             form={{
                                 rail: form.rail,
@@ -1148,7 +1227,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 drawTime: form.drawTime,
                             }}
                             stepSummary={stepSummaries.reward}
-                            onToggle={() => setTab(tab === "reward" ? null : "reward")}
+                            onToggle={() => handleStepToggle("reward")}
                             onFieldChange={(key, value) => {
                                 if (key === "rail") {
                                     const fundingMethod: "crypto" | "stripe" = value === "fiat" ? "stripe" : "crypto"
@@ -1165,7 +1244,11 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                     set(key, value as string)
                                 }
                             }}
-                            onNext={() => setTab("preview")}
+                            onNext={() => {
+                                if (tabValid.reward) {
+                                    setTab("preview")
+                                }
+                            }}
                             onPrevious={() => setTab("tasks")}
                         />
 
@@ -1197,7 +1280,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 isError: mutation.isError,
                                 error: mutation.error as Error | null,
                             }}
-                            onToggle={() => setTab(tab === "preview" ? null : "preview")}
+                            onToggle={() => handleStepToggle("preview")}
                             onPrevious={() => setTab("reward")}
                             onSaveDraft={() => { fundAfterSave.current = false; mutation.mutate() }}
                             onSaveAndFund={() => { fundAfterSave.current = true; mutation.mutate() }}

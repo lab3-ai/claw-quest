@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 interface StepDetailsProps {
     isActive: boolean
     isDone: boolean
+    isValid: boolean
     form: {
         title: string
         description: string
@@ -22,12 +23,15 @@ interface StepDetailsProps {
 export function StepDetails({
     isActive,
     isDone,
+    isValid,
     form,
     stepSummary,
     onToggle,
     onFieldChange,
     onNext,
 }: StepDetailsProps) {
+    const titleError = !form.title.trim() && isActive
+    const descriptionError = !form.description.trim() && isActive
     return (
         <div className={cn(
             "relative mb-0 border-none rounded-none",
@@ -61,24 +65,28 @@ export function StepDetails({
                 <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
                     <div className="space-y-4 mb-6">
                         <div className="space-y-1.5 mb-3.5">
-                            <Label>Title</Label>
+                            <Label>Title <span className="text-destructive">*</span></Label>
                             <Input
                                 type="text"
                                 placeholder="e.g. Register & trade shares on ClawFriend"
                                 value={form.title}
                                 onChange={e => onFieldChange("title", e.target.value)}
                                 maxLength={80}
+                                className={cn(titleError && "border-destructive focus-visible:ring-destructive")}
                             />
+                            {titleError && <div className="text-xs text-destructive mt-0.5">Title is required</div>}
                         </div>
                         <div className="space-y-1.5 mb-3.5">
-                            <Label>Description</Label>
+                            <Label>Description <span className="text-destructive">*</span></Label>
                             <div className="text-xs text-muted-foreground mb-1 leading-snug">Agent-readable. Explain the overall quest goal.</div>
                             <Textarea
                                 rows={3}
                                 placeholder="Use the ClawFriend skill to register your agent…"
                                 value={form.description}
                                 onChange={e => onFieldChange("description", e.target.value)}
+                                className={cn(descriptionError && "border-destructive focus-visible:ring-destructive")}
                             />
+                            {descriptionError && <div className="text-xs text-destructive mt-0.5">Description is required</div>}
                         </div>
                     </div>
                     <div className="space-y-4 mb-6">
@@ -96,8 +104,15 @@ export function StepDetails({
                     </div>
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <span />
-                        <Button onClick={onNext}>Next: Tasks →</Button>
+                        <Button onClick={onNext} disabled={!isValid}>
+                            Next: Tasks →
+                        </Button>
                     </div>
+                    {!isValid && (
+                        <div className="text-xs text-destructive mt-2 text-center">
+                            Please fill in all required fields to continue
+                        </div>
+                    )}
                 </div></div>
             )}
         </div>

@@ -59,6 +59,7 @@ type ChipStatus = "pending" | "valid" | "invalid"
 interface StepTasksProps {
     isActive: boolean
     isDone: boolean
+    isValid: boolean
     isFuture: boolean
     stepSummary?: string
     activePlatform: string | null
@@ -115,6 +116,7 @@ interface StepTasksProps {
 export function StepTasks({
     isActive,
     isDone,
+    isValid,
     isFuture,
     stepSummary,
     activePlatform,
@@ -478,8 +480,15 @@ export function StepTasks({
 
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <Button variant="secondary" onClick={onPrevious}>← Details</Button>
-                        <Button onClick={onNext}>Next: Reward →</Button>
+                        <Button onClick={onNext} disabled={!isValid}>
+                            Next: Reward →
+                        </Button>
                     </div>
+                    {!isValid && taskErrors.length > 0 && (
+                        <div className="text-xs text-destructive mt-2 text-center">
+                            Please fix task errors before continuing
+                        </div>
+                    )}
                 </div></div>
             )}
         </div>

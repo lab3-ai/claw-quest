@@ -112,6 +112,7 @@ export interface CreateQuestInput {
     totalSlots?: number;
     tags?: string[];
     requiredSkills?: string[];
+    requireVerified?: boolean;
     tasks?: QuestTask[];
     expiresAt?: string;
     startAt?: string;
@@ -166,6 +167,7 @@ export async function createQuest(
             filledSlots: 0,
             tags: input.tags || [],
             requiredSkills: input.requiredSkills || [],
+            requireVerified: input.requireVerified ?? false,
             tasks: tasks as any,
             expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
             startAt: input.startAt ? new Date(input.startAt) : null,
@@ -209,6 +211,7 @@ export interface UpdateQuestInput {
     totalSlots?: number;
     tags?: string[];
     requiredSkills?: string[];
+    requireVerified?: boolean;
     tasks?: QuestTask[];
     expiresAt?: string | null;
     startAt?: string | null;
@@ -239,6 +242,7 @@ export async function updateQuest(
     if (input.totalSlots !== undefined) data.totalSlots = input.totalSlots;
     if (input.tags !== undefined) data.tags = input.tags;
     if (input.requiredSkills !== undefined) data.requiredSkills = input.requiredSkills;
+    if (input.requireVerified !== undefined) data.requireVerified = input.requireVerified;
     if (input.tasks !== undefined) data.tasks = input.tasks as any;
     if (input.expiresAt !== undefined) data.expiresAt = input.expiresAt ? new Date(input.expiresAt) : null;
     if (input.startAt !== undefined) data.startAt = input.startAt ? new Date(input.startAt) : null;

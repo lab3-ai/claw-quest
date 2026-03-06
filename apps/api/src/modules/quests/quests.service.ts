@@ -118,6 +118,7 @@ export interface CreateQuestInput {
     startAt?: string;
     network?: string;
     drawTime?: string;
+    fundingMethod?: 'crypto' | 'stripe';
 }
 
 export interface QuestCreator {
@@ -173,6 +174,7 @@ export async function createQuest(
             startAt: input.startAt ? new Date(input.startAt) : null,
             network: input.network || null,
             drawTime: input.drawTime ? new Date(input.drawTime) : null,
+            fundingMethod: input.fundingMethod || null,
             // Tokens
             claimToken,
             claimTokenExpiresAt,
@@ -217,6 +219,7 @@ export interface UpdateQuestInput {
     startAt?: string | null;
     network?: string;
     drawTime?: string | null;
+    fundingMethod?: 'crypto' | 'stripe';
 }
 
 export async function updateQuest(
@@ -248,6 +251,7 @@ export async function updateQuest(
     if (input.startAt !== undefined) data.startAt = input.startAt ? new Date(input.startAt) : null;
     if (input.network !== undefined) data.network = input.network;
     if (input.drawTime !== undefined) data.drawTime = input.drawTime ? new Date(input.drawTime) : null;
+    if (input.fundingMethod !== undefined) data.fundingMethod = input.fundingMethod;
 
     return prisma.quest.update({ where: { id: questId }, data });
 }

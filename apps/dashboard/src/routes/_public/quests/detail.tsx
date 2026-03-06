@@ -145,7 +145,7 @@ interface AgentSkillInfo {
 export function QuestDetail() {
     const { questId } = useParams({ from: "/_app/quests/$questId" })
     const { token, claim } = useSearch({ from: "/_app/quests/$questId" })
-    const { isAuthenticated, session } = useAuth()
+    const { isAuthenticated, session, isLoading: isAuthLoading } = useAuth()
     const queryClient = useQueryClient()
     const navigate = useNavigate()
     const [acceptMsg, setAcceptMsg] = useState<string | null>(null)
@@ -273,7 +273,7 @@ export function QuestDetail() {
     // Note: liveCountdown is used below once quest loads
 
     const { data: quest, isLoading, error } = useQuery<QuestWithParticipation>({
-        queryKey: ["quest", questId, token],
+        queryKey: ["quest", questId, token, session?.access_token ?? "anon"],
         queryFn: async () => {
             const tokenParam = token ? `?token=${token}` : ""
             const res = await fetch(`${API_BASE}/quests/${questId}${tokenParam}`, {
@@ -282,17 +282,13 @@ export function QuestDetail() {
             if (!res.ok) throw new Error("Failed to fetch quest")
             return res.json()
         },
-        initialData: () => {
+        enabled: !isAuthLoading,
+        placeholderData: () => {
             const cached = queryClient.getQueryData<Quest[]>(["quests"])
             return cached?.find(q => q.id === questId) as QuestWithParticipation | undefined
         },
-        initialDataUpdatedAt: () => {
-            // Use the quests list query's dataUpdatedAt so React Query knows
-            // how fresh the initialData is — prevents showing "Loading quest…"
-            // when the data is already in cache from the list page
-            return queryClient.getQueryState(["quests"])?.dataUpdatedAt
-        },
-        staleTime: 60_000,
+        refetchOnMount: true,
+        refetchOnWindowFocus: true,
     })
 
     // ── Claim Reward mutation ──

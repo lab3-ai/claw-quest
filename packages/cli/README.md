@@ -4,10 +4,10 @@ Command-line tool for ClawQuest agents to interact with the platform.
 
 ## Installation
 
-### Option 1: Install from npm (Recommended)
+### Install from npm 
 
 ```bash
-npm install -g @clawquest/cli
+npm install -g @clawquestai/cli
 ```
 
 Sau khi install, bạn có thể dùng `cq` command từ bất kỳ đâu:
@@ -16,38 +16,6 @@ Sau khi install, bạn có thể dùng `cq` command từ bất kỳ đâu:
 cq --help
 cq status
 cq quickstart
-```
-
-### Option 2: Install from Source
-
-```bash
-# Clone repository
-git clone https://github.com/clawquest/clawquest.git
-cd clawquest
-
-# Install dependencies
-pnpm install
-
-# Build CLI
-pnpm --filter @clawquest/cli build
-
-# Link globally (optional)
-cd packages/cli
-pnpm link --global
-```
-
-### Option 3: Use npx (No Installation)
-
-```bash
-npx @clawquest/cli status
-npx @clawquest/cli quickstart
-```
-
-### Option 4: Run from Source (Development)
-
-```bash
-cd packages/cli
-pnpm exec tsx src/index.ts --help
 ```
 
 ## All Commands Reference

@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { QuestSchema, QuestTaskSchema, QuestersResponseSchema, QUEST_STATUS, QUEST_TYPE } from '@clawquest/shared';
 import type { QuestTask } from '@clawquest/shared';
 import {
-    validateTaskParams,
     createQuest,
     updateQuest,
     formatQuestResponse,
@@ -45,6 +44,7 @@ const CreateQuestSchema = QuestSchema.omit({
     requiredSkills: z.array(z.string()).default([]),
     network: z.string().optional(),
     drawTime: z.string().datetime().optional(),
+    fundingMethod: z.enum(['crypto', 'stripe']).optional(),
 });
 
 export async function questsRoutes(server: FastifyInstance) {
@@ -66,7 +66,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 },
             },
         },
-        async (request, reply) => {
+        async (request) => {
             const { status, type, limit, offset } = request.query as any;
 
             const where: any = {};
@@ -160,6 +160,51 @@ export async function questsRoutes(server: FastifyInstance) {
 
             if (!quest) {
                 return reply.status(404).send({ message: 'Quest not found', code: 'NOT_FOUND' } as any);
+            }
+
+            // Auto-check and reset Stripe session if canceled/expired (background, non-blocking)
+            if (quest.fundingStatus === 'pending' && quest.stripeSessionId && quest.fundingMethod === 'stripe') {
+                // Check session status asynchronously (don't block response)
+                (async () => {
+                    try {
+                        const { stripe, isStripeConfigured } = await import('../stripe/stripe.config');
+                        if (!isStripeConfigured() || !stripe) return;
+
+                        const session = await stripe.checkout.sessions.retrieve(quest.stripeSessionId!);
+
+                        // If session is not paid, reset funding status
+                        if (session.payment_status !== 'paid') {
+                            const currentQuest = await server.prisma.quest.findUnique({
+                                where: { id },
+                                select: { fundingStatus: true },
+                            });
+
+                            // Only reset if still pending (idempotency)
+                            if (currentQuest?.fundingStatus === 'pending') {
+                                await server.prisma.quest.update({
+                                    where: { id },
+                                    data: {
+                                        fundingStatus: 'unfunded',
+                                        fundingMethod: null,
+                                        stripeSessionId: null,
+                                        stripePaymentId: null,
+                                    },
+                                });
+
+                                server.log.info(
+                                    { questId: id, sessionId: quest.stripeSessionId, paymentStatus: session.payment_status },
+                                    '[quests:get] Auto-reset funding status (session canceled/expired)'
+                                );
+                            }
+                        }
+                    } catch (err: any) {
+                        // Silently fail - session might not exist or Stripe API error
+                        server.log.debug(
+                            { questId: id, sessionId: quest.stripeSessionId, error: err.message },
+                            '[quests:get] Failed to check session status'
+                        );
+                    }
+                })();
             }
 
             // Draft access control: require token or creator auth
@@ -345,6 +390,64 @@ export async function questsRoutes(server: FastifyInstance) {
         }
     );
 
+    // ── Skill Search (ClawHub catalog) ─────────────────────────────────────────
+    server.get(
+        '/skills/search',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Search ClawHub skills catalog',
+                querystring: z.object({
+                    q: z.string().min(2).max(100),
+                    limit: z.coerce.number().int().min(1).max(50).default(20),
+                }),
+                response: {
+                    200: z.object({
+                        data: z.array(z.object({
+                            slug: z.string(),
+                            display_name: z.string(),
+                            summary: z.string().nullable(),
+                            owner_handle: z.string().nullable(),
+                            owner_display_name: z.string().nullable(),
+                            owner_image: z.string().nullable(),
+                            downloads: z.number(),
+                            installs_all_time: z.number(),
+                            stars: z.number(),
+                            latest_version: z.string().nullable(),
+                        })),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const { q, limit } = request.query as { q: string; limit: number };
+            const rows = await server.prisma.clawhub_skills.findMany({
+                where: {
+                    OR: [
+                        { slug: { contains: q.trim(), mode: 'insensitive' } },
+                        { display_name: { contains: q.trim(), mode: 'insensitive' } },
+                        { owner_handle: { contains: q.trim(), mode: 'insensitive' } },
+                    ],
+                },
+                select: {
+                    slug: true,
+                    display_name: true,
+                    summary: true,
+                    owner_handle: true,
+                    owner_display_name: true,
+                    owner_image: true,
+                    downloads: true,
+                    installs_all_time: true,
+                    stars: true,
+                    latest_version: true,
+                },
+                orderBy: { downloads: 'desc' },
+                take: limit,
+            });
+            return reply.send({ data: rows });
+        }
+    );
+
     // ── Skill Preview (proxy fetch + parse) ────────────────────────────────────
     server.get(
         '/skill-preview',
@@ -445,8 +548,9 @@ export async function questsRoutes(server: FastifyInstance) {
                 }
 
                 // 3b. Fallback: strip all boilerplate, take first prose sentence
+                let bodyText = '';
                 if (!substantialText) {
-                    const bodyText = text
+                    bodyText = text
                         .replace(/<script[\s\S]*?<\/script>/gi, '')
                         .replace(/<style[\s\S]*?<\/style>/gi, '')
                         .replace(/<nav[\s\S]*?<\/nav>/gi, '')
@@ -486,7 +590,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     desc = substantialText.slice(0, 350);
                 } else if (metaDesc) {
                     desc = metaDesc.slice(0, 350);
-                } else {
+                } else if (bodyText) {
                     desc = bodyText.slice(0, 350);
                 }
 
@@ -1121,6 +1225,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     network: z.string().optional(),
                     drawTime: z.string().datetime().nullable().optional(),
                     startAt: z.string().datetime().nullable().optional(),
+                    fundingMethod: z.enum(['crypto', 'stripe']).optional(),
                 }),
                 response: {
                     200: QuestSchema,
@@ -1192,7 +1297,7 @@ export async function questsRoutes(server: FastifyInstance) {
         },
         async (request, reply) => {
             const { id } = request.params as any;
-            const { status: newStatus, reason } = request.body as any;
+            const { status: newStatus } = request.body as any;
             const userId = (request as any).user?.id;
 
             const quest = await server.prisma.quest.findUnique({ where: { id } });
@@ -1250,7 +1355,7 @@ export async function questsRoutes(server: FastifyInstance) {
             },
             onRequest: [server.authenticate],
         },
-        async (request, reply) => {
+        async (request) => {
             const userId = (request as any).user?.id;
 
             const questInclude = {
@@ -1432,7 +1537,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 }
             }
 
-            notifyQuestCancelled(server, id).catch(() => {});
+            notifyQuestCancelled(server, id).catch(() => { });
             return { message: 'Quest cancelled', questId: id };
         }
     );
@@ -1602,12 +1707,14 @@ export async function questsRoutes(server: FastifyInstance) {
             ]);
 
             return {
-                collaborators: collaborators.map(c => ({
-                    id: c.id, questId: c.questId, userId: c.userId,
-                    invitedBy: c.invitedBy, acceptedAt: c.acceptedAt?.toISOString() ?? null,
-                    expiresAt: c.expiresAt.toISOString(), createdAt: c.createdAt.toISOString(),
-                    displayName: c.user.displayName, username: c.user.username,
-                })),
+                collaborators: collaborators
+                    .filter(c => c.user !== null)
+                    .map(c => ({
+                        id: c.id, questId: c.questId, userId: c.userId,
+                        invitedBy: c.invitedBy, acceptedAt: c.acceptedAt?.toISOString() ?? null,
+                        expiresAt: c.expiresAt.toISOString(), createdAt: c.createdAt.toISOString(),
+                        displayName: c.user!.displayName, username: c.user!.username,
+                    })),
                 deposits: deposits.map(d => ({
                     id: d.id, questId: d.questId, userId: d.userId,
                     escrowQuestId: d.escrowQuestId, amount: Number(d.amount),
@@ -1701,7 +1808,7 @@ export async function questsRoutes(server: FastifyInstance) {
 
             try {
                 const participation = await verifyParticipation(server.prisma, questId, pid, action, reason);
-                notifyProofVerified(server, pid, action === 'approve' ? 'approved' : 'rejected').catch(() => {});
+                notifyProofVerified(server, pid, action === 'approve' ? 'approved' : 'rejected').catch(() => { });
                 return {
                     message: `Proof ${action === 'approve' ? 'approved' : 'rejected'}`,
                     participation: { id: participation.id, status: participation.status },

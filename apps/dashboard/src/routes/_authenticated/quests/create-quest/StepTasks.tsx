@@ -59,6 +59,7 @@ type ChipStatus = "pending" | "valid" | "invalid"
 interface StepTasksProps {
     isActive: boolean
     isDone: boolean
+    isValid: boolean
     isFuture: boolean
     stepSummary?: string
     activePlatform: string | null
@@ -115,6 +116,7 @@ interface StepTasksProps {
 export function StepTasks({
     isActive,
     isDone,
+    isValid,
     isFuture,
     stepSummary,
     activePlatform,
@@ -195,6 +197,11 @@ export function StepTasks({
                                 ClawHub
                             </a>.
                         </div>
+                        {!isValid && humanTasks.length === 0 && requiredSkills.length === 0 && (
+                            <div className="px-3 py-2.5 bg-warning-light border border-warning rounded text-xs text-foreground mb-4">
+                                <strong>⚠️ At least one task is required:</strong> Add at least one human task (social action) or one agent task (required skill) to continue.
+                            </div>
+                        )}
 
                         {/* ── Human Tasks ── */}
                         <div className="mb-6 pl-3.5 border-l-4 border-l-(--human-fg)">
@@ -478,8 +485,19 @@ export function StepTasks({
 
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <Button variant="secondary" onClick={onPrevious}>← Details</Button>
-                        <Button onClick={onNext}>Next: Reward →</Button>
+                        <Button onClick={onNext} disabled={!isValid}>
+                            Next: Reward →
+                        </Button>
                     </div>
+                    {!isValid && (
+                        <div className="text-xs text-destructive mt-2 text-center">
+                            {humanTasks.length === 0 && requiredSkills.length === 0
+                                ? "At least one task (human or agent) is required"
+                                : taskErrors.length > 0
+                                    ? "Please fix task errors before continuing"
+                                    : "Please complete the tasks step to continue"}
+                        </div>
+                    )}
                 </div></div>
             )}
         </div>

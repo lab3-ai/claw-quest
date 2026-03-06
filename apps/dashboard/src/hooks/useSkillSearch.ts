@@ -1,16 +1,17 @@
 import { useState, useEffect, useRef } from "react"
-import { supabase } from "../lib/supabase"
 
 export interface ClawHubSkill {
-    id: string          // "owner_handle/slug"
+    id: string              // "owner_handle/slug"
     slug: string
-    name: string        // display_name
-    desc: string        // summary
-    downloads: string   // formatted ("1.2k")
+    name: string            // display_name
+    desc: string            // summary
+    downloads: string       // formatted ("1.2k")
     stars: string
-    version: string     // latest_version
-    agents: number      // installs_all_time (proxy)
+    version: string         // latest_version
+    agents: number          // installs_all_time (proxy)
     ownerHandle: string
+    ownerDisplayName: string | null
+    ownerImage: string | null
 }
 
 function formatCount(n: number): string {
@@ -38,32 +39,40 @@ export function useSkillSearch(debounceMs = 300) {
 
         timerRef.current = setTimeout(async () => {
             try {
-                const term = `%${query.trim()}%`
-                const { data, error } = await supabase
-                    .from("clawhub_skills")
-                    .select("slug, display_name, summary, owner_handle, downloads, installs_all_time, stars, latest_version")
-                    .or(`slug.ilike.${term},display_name.ilike.${term},owner_handle.ilike.${term}`)
-                    .order("downloads", { ascending: false })
-                    .limit(20)
-
-                if (error) {
-                    console.error("Skill search error:", error.message)
+                const res = await fetch(`${API_BASE}/quests/skills/search?q=${encodeURIComponent(query.trim())}&limit=20`)
+                if (!res.ok) {
                     setResults([])
-                } else {
-                    setResults(
-                        (data ?? []).map(row => ({
-                            id: `${row.owner_handle ?? "unknown"}/${row.slug}`,
-                            slug: row.slug,
-                            name: row.display_name,
-                            desc: row.summary ?? "",
-                            downloads: formatCount(row.downloads ?? 0),
-                            stars: String(row.stars ?? 0),
-                            version: row.latest_version ?? "0.0.0",
-                            agents: row.installs_all_time ?? 0,
-                            ownerHandle: row.owner_handle ?? "unknown",
-                        }))
-                    )
+                    return
                 }
+                const { data } = await res.json() as {
+                    data: Array<{
+                        slug: string
+                        display_name: string
+                        summary: string | null
+                        owner_handle: string | null
+                        owner_display_name: string | null
+                        owner_image: string | null
+                        downloads: number
+                        installs_all_time: number
+                        stars: number
+                        latest_version: string | null
+                    }>
+                }
+                setResults(
+                    (data ?? []).map(row => ({
+                        id: `${row.owner_handle ?? "unknown"}/${row.slug}`,
+                        slug: row.slug,
+                        name: row.display_name,
+                        desc: row.summary ?? "",
+                        downloads: formatCount(row.downloads ?? 0),
+                        stars: String(row.stars ?? 0),
+                        version: row.latest_version ?? "0.0.0",
+                        agents: row.installs_all_time ?? 0,
+                        ownerHandle: row.owner_handle ?? "unknown",
+                        ownerDisplayName: row.owner_display_name ?? null,
+                        ownerImage: row.owner_image ?? null,
+                    }))
+                )
             } catch (e) {
                 console.error("Skill search failed:", e)
                 setResults([])
@@ -109,5 +118,7 @@ export async function fetchSkillFromUrl(url: string): Promise<ClawHubSkill | nul
         version: data.version,
         agents: 0,
         ownerHandle: hostname,
+        ownerDisplayName: null,
+        ownerImage: null,
     }
 }

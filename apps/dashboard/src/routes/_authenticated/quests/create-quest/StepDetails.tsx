@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 interface StepDetailsProps {
     isActive: boolean
     isDone: boolean
+    isValid: boolean
     form: {
         title: string
         description: string
@@ -22,12 +23,18 @@ interface StepDetailsProps {
 export function StepDetails({
     isActive,
     isDone,
+    isValid,
     form,
     stepSummary,
     onToggle,
     onFieldChange,
     onNext,
 }: StepDetailsProps) {
+    const titleError = !form.title.trim() && isActive
+    const descriptionError = !form.description.trim() && isActive
+    const startAtError = !form.startAt.trim() && isActive
+    const endAtError = !form.endAt.trim() && isActive
+    const dateOrderError = form.startAt && form.endAt && new Date(form.endAt) <= new Date(form.startAt) && isActive
     return (
         <div className={cn(
             "relative mb-0 border-none rounded-none",
@@ -61,43 +68,71 @@ export function StepDetails({
                 <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
                     <div className="space-y-4 mb-6">
                         <div className="space-y-1.5 mb-3.5">
-                            <Label>Title</Label>
+                            <Label>Title <span className="text-destructive">*</span></Label>
                             <Input
                                 type="text"
                                 placeholder="e.g. Register & trade shares on ClawFriend"
                                 value={form.title}
                                 onChange={e => onFieldChange("title", e.target.value)}
                                 maxLength={80}
+                                className={cn(titleError && "border-destructive focus-visible:ring-destructive")}
                             />
+                            {titleError && <div className="text-xs text-destructive mt-0.5">Title is required</div>}
                         </div>
                         <div className="space-y-1.5 mb-3.5">
-                            <Label>Description</Label>
+                            <Label>Description <span className="text-destructive">*</span></Label>
                             <div className="text-xs text-muted-foreground mb-1 leading-snug">Agent-readable. Explain the overall quest goal.</div>
                             <Textarea
                                 rows={3}
                                 placeholder="Use the ClawFriend skill to register your agent…"
                                 value={form.description}
                                 onChange={e => onFieldChange("description", e.target.value)}
+                                className={cn(descriptionError && "border-destructive focus-visible:ring-destructive")}
                             />
+                            {descriptionError && <div className="text-xs text-destructive mt-0.5">Description is required</div>}
                         </div>
                     </div>
                     <div className="space-y-4 mb-6">
                         <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Timing</div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="space-y-1.5 mb-3.5">
-                                <Label>Start</Label>
-                                <input className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" type="datetime-local" value={form.startAt} onChange={e => onFieldChange("startAt", e.target.value)} />
+                                <Label>Start <span className="text-destructive">*</span></Label>
+                                <input
+                                    className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", (startAtError || dateOrderError) && "border-destructive focus-visible:ring-destructive")}
+                                    type="datetime-local"
+                                    value={form.startAt}
+                                    onChange={e => onFieldChange("startAt", e.target.value)}
+                                    onClick={(e) => e.currentTarget.showPicker?.()}
+                                    style={{ cursor: 'pointer' }}
+                                />
+                                {startAtError && <div className="text-xs text-destructive mt-0.5">Start date is required</div>}
                             </div>
                             <div className="space-y-1.5 mb-3.5">
-                                <Label>End</Label>
-                                <input className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" type="datetime-local" value={form.endAt} onChange={e => onFieldChange("endAt", e.target.value)} />
+                                <Label>End <span className="text-destructive">*</span></Label>
+                                <input
+                                    className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", (endAtError || dateOrderError) && "border-destructive focus-visible:ring-destructive")}
+                                    type="datetime-local"
+                                    value={form.endAt}
+                                    onChange={e => onFieldChange("endAt", e.target.value)}
+                                    onClick={(e) => e.currentTarget.showPicker?.()}
+                                    style={{ cursor: 'pointer' }}
+                                />
+                                {endAtError && <div className="text-xs text-destructive mt-0.5">End date is required</div>}
+                                {dateOrderError && !endAtError && <div className="text-xs text-destructive mt-0.5">End date must be after start date</div>}
                             </div>
                         </div>
                     </div>
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <span />
-                        <Button onClick={onNext}>Next: Tasks →</Button>
+                        <Button onClick={onNext} disabled={!isValid}>
+                            Next: Tasks →
+                        </Button>
                     </div>
+                    {!isValid && (
+                        <div className="text-xs text-destructive mt-2 text-center">
+                            Please fill in all required fields to continue
+                        </div>
+                    )}
                 </div></div>
             )}
         </div>

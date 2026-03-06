@@ -143,25 +143,25 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
                     case 'QuestFunded': {
                         const { questId, sponsor, token, amount, expiresAt } = event.args as any;
                         await handleQuestFunded(server.prisma, questId, sponsor, token, BigInt(amount), BigInt(expiresAt), txHash, chainId);
-                        notifyQuestFunded(server, bytes32ToUuid(questId)).catch(() => {});
+                        notifyQuestFunded(server, bytes32ToUuid(questId)).catch(() => { });
                         break;
                     }
                     case 'QuestDistributed': {
                         const { questId, recipients, amounts, totalPayout } = event.args as any;
                         await handleQuestDistributed(server.prisma, questId, recipients, amounts.map(BigInt), BigInt(totalPayout), txHash, chainId);
-                        notifyQuestDistributed(server, bytes32ToUuid(questId)).catch(() => {});
+                        notifyQuestDistributed(server, bytes32ToUuid(questId)).catch(() => { });
                         break;
                     }
                     case 'QuestRefunded': {
                         const { questId, sponsor, amount } = event.args as any;
                         await handleQuestRefunded(server.prisma, questId, sponsor, BigInt(amount), txHash, chainId);
-                        notifyQuestRefunded(server, bytes32ToUuid(questId)).catch(() => {});
+                        notifyQuestRefunded(server, bytes32ToUuid(questId)).catch(() => { });
                         break;
                     }
                     case 'EmergencyWithdrawal': {
                         const { questId, sponsor, amount } = event.args as any;
                         await handleEmergencyWithdrawal(server.prisma, questId, sponsor, BigInt(amount), txHash, chainId);
-                        notifyQuestRefunded(server, bytes32ToUuid(questId)).catch(() => {});
+                        notifyQuestRefunded(server, bytes32ToUuid(questId)).catch(() => { });
                         break;
                     }
                     default:

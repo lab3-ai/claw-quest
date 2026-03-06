@@ -14,6 +14,7 @@ import { useTokenBalance, useTokenAllowance } from '@/hooks/use-token-balance'
 import { useFundQuest } from '@/hooks/use-fund-quest'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
@@ -26,8 +27,8 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
 
     const checkoutMutation = useMutation({
         mutationFn: async () => {
-            const successUrl = `${window.location.origin}/quests/${questId}`
-            const cancelUrl = window.location.href
+            const successUrl = `${window.location.origin}/quests/${questId}/fund/success?session_id={CHECKOUT_SESSION_ID}`
+            const cancelUrl = `${window.location.origin}/quests/${questId}/fund/cancel`
 
             const res = await fetch(`${API_BASE}/stripe/checkout/${questId}`, {
                 method: 'POST',
@@ -66,7 +67,7 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
         )
     }
 
-    // Pending (waiting for webhook)
+    // Pending (waiting for webhook) - will auto-reset if canceled
     if (quest?.fundingStatus === 'pending') {
         return (
             <div className="text-center py-8">
@@ -144,7 +145,7 @@ export function FundQuest() {
 
     // Determine funding method from quest data
     const token = session?.access_token
-    const { data: quest, refetch: refetchQuest } = useQuery({
+    const { data: quest, isLoading: questLoading, refetch: refetchQuest } = useQuery({
         queryKey: ['quest', questId],
         queryFn: async () => {
             const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
@@ -170,27 +171,12 @@ export function FundQuest() {
     }, [questId, refetchQuest])
 
     // Determine method: prioritize fundingMethod from quest, fallback to rewardType
-    const questMethod: FundingMethod = quest?.fundingMethod
+    // No toggle - method is determined by quest data only
+    const method: FundingMethod = quest?.fundingMethod
         ? (quest.fundingMethod === 'stripe' ? 'stripe' : 'crypto')
         : quest?.rewardType === 'USD'
             ? 'stripe'
             : 'crypto'
-
-    const [method, setMethod] = useState<FundingMethod>(questMethod)
-
-    // Sync method when quest loads - always use fundingMethod if available
-    useEffect(() => {
-        if (quest) {
-            if (quest.fundingMethod) {
-                // Quest has explicit fundingMethod - use it
-                setMethod(quest.fundingMethod === 'stripe' ? 'stripe' : 'crypto')
-            } else {
-                // Fallback to rewardType-based logic for legacy quests
-                const fallbackMethod: FundingMethod = quest.rewardType === 'USD' ? 'stripe' : 'crypto'
-                setMethod(fallbackMethod)
-            }
-        }
-    }, [quest?.fundingMethod, quest?.rewardType])
 
     // ── Crypto: Fetch deposit params ────────────────────────────────────────
     const { data: params, isLoading: paramsLoading, error: paramsError } = useQuery<DepositParams>({
@@ -238,6 +224,7 @@ export function FundQuest() {
         refetchInterval: 5000,
     })
 
+
     // ── Step transitions driven by external state ───────────────────────────
     useEffect(() => {
         if (quest && (quest.fundingStatus === 'confirmed' || quest.status === 'live' || quest.status === 'scheduled')) {
@@ -256,14 +243,44 @@ export function FundQuest() {
         if (fundingStatus === 'confirmed' || fundingStatus === 'live' || fundingStatus === 'scheduled') setStep('success')
     }, [fundingStatus, setStep])
 
-    // ── Can user toggle method? Only if quest not yet funded AND no explicit fundingMethod set
-    // If quest has fundingMethod set, it should match the reward method and cannot be changed
-    const canToggle = quest
-        && quest.fundingStatus !== 'confirmed'
-        && quest.status === 'draft'
-        && !quest.fundingMethod // Don't allow toggle if fundingMethod is explicitly set
-
     // ── Render ──────────────────────────────────────────────────────────────
+    // Show skeleton while loading quest data
+    if (questLoading) {
+        return (
+            <div className="max-w-[560px] mx-auto py-8 px-4">
+                <nav className="flex items-center gap-1 text-xs text-fg-muted mb-4">
+                    <Skeleton className="h-4 w-16" />
+                    <span className="text-fg-muted">/</span>
+                    <Skeleton className="h-4 w-24" />
+                    <span className="text-fg-muted">/</span>
+                    <Skeleton className="h-4 w-12" />
+                </nav>
+
+                <div className="bg-background border border-border rounded-lg p-8">
+                    <Skeleton className="h-7 w-32 mb-1" />
+                    <Skeleton className="h-4 w-48 mb-6" />
+
+                    {/* Funding progress skeleton */}
+                    <div className="mb-6 space-y-2">
+                        <div className="flex justify-between">
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-4 w-20" />
+                        </div>
+                        <Skeleton className="h-2 w-full rounded-full" />
+                        <Skeleton className="h-4 w-40" />
+                    </div>
+
+                    {/* Content area skeleton */}
+                    <div className="space-y-4">
+                        <Skeleton className="h-20 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-32 w-full" />
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="max-w-[560px] mx-auto py-8 px-4">
             <nav className="flex items-center gap-1 text-xs text-fg-muted mb-4">
@@ -279,34 +296,6 @@ export function FundQuest() {
             <div className="bg-background border border-border rounded-lg p-8">
                 <h2 className="text-xl font-bold text-foreground m-0 mb-1">Fund Quest</h2>
                 {quest && <p className="text-fg-muted text-xs m-0 mb-6">{quest.title}</p>}
-
-                {/* Payment method toggle */}
-                {canToggle && (
-                    <div className="flex mb-6 border border-border rounded-md overflow-hidden">
-                        <button
-                            className={cn(
-                                'flex-1 py-[0.6rem] px-4 text-sm font-semibold border-none cursor-pointer flex items-center justify-center gap-1 transition-all border-r border-border',
-                                method === 'crypto'
-                                    ? 'bg-background text-foreground shadow-[inset_0_-2px_0_var(--accent)]'
-                                    : 'bg-bg-subtle text-fg-muted hover:bg-background'
-                            )}
-                            onClick={() => setMethod('crypto')}
-                        >
-                            <span>⛓</span> Crypto
-                        </button>
-                        <button
-                            className={cn(
-                                'flex-1 py-[0.6rem] px-4 text-sm font-semibold border-none cursor-pointer flex items-center justify-center gap-1 transition-all',
-                                method === 'stripe'
-                                    ? 'bg-background text-foreground shadow-[inset_0_-2px_0_var(--accent)]'
-                                    : 'bg-bg-subtle text-fg-muted hover:bg-background'
-                            )}
-                            onClick={() => setMethod('stripe')}
-                        >
-                            <span>💳</span> Card (Stripe)
-                        </button>
-                    </div>
-                )}
 
                 {/* Funding progress — shared across both methods */}
                 {quest && (

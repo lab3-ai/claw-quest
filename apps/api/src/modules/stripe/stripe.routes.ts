@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { isStripeConfigured } from './stripe.config';
+import { stripe } from './stripe.config';
 import { createFundCheckout, distributeFiat, refundFiat } from './stripe.service';
 import { createConnectedAccount, getConnectedAccountStatus, createDashboardLink } from './stripe-connect.service';
 import { stripeWebhookRoute } from './stripe.webhook';
@@ -62,6 +63,125 @@ export async function stripeRoutes(server: FastifyInstance) {
             }
         },
     );
+
+    // ── GET /stripe/checkout/session/:sessionId ─────────────────────────────
+    server.get(
+        '/checkout/session/:sessionId',
+        {
+            schema: {
+                tags: ['Stripe'],
+                summary: 'Get Stripe Checkout Session status (for callback verification)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ sessionId: z.string() }),
+                response: {
+                    200: z.object({
+                        sessionId: z.string(),
+                        paymentStatus: z.string(),
+                        questId: z.string().nullable(),
+                        paid: z.boolean(),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            if (!isStripeConfigured()) {
+                return reply.status(503).send({ message: 'Stripe not configured' } as any);
+            }
+
+            const { sessionId } = request.params as any;
+
+            try {
+                const session = await stripe.checkout.sessions.retrieve(sessionId);
+                const questId = session.metadata?.questId || null;
+
+                return {
+                    sessionId: session.id,
+                    paymentStatus: session.payment_status,
+                    questId,
+                    paid: session.payment_status === 'paid',
+                };
+            } catch (err: any) {
+                if (err.type === 'StripeInvalidRequestError') {
+                    return reply.status(404).send({ message: 'Session not found' } as any);
+                }
+                server.log.error({ err: err.message, sessionId }, '[stripe:session] failed');
+                return reply.status(400).send({ message: err.message } as any);
+            }
+        },
+    );
+
+    // ── POST /stripe/reset-funding/:questId ─────────────────────────────────
+    server.post(
+        '/reset-funding/:questId',
+        {
+            schema: {
+                tags: ['Stripe'],
+                summary: 'Reset quest funding status if Stripe session was canceled/expired',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ questId: z.string().uuid() }),
+                response: {
+                    200: z.object({
+                        message: z.string(),
+                        reset: z.boolean(),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            if (!isStripeConfigured()) {
+                return reply.status(503).send({ message: 'Stripe not configured' } as any);
+            }
+
+            const { questId } = request.params as any;
+            const quest = await server.prisma.quest.findUnique({ where: { id: questId } });
+            if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any);
+
+            const isOwner = quest.creatorUserId === request.user.id || request.user.role === 'admin';
+            if (!isOwner) {
+                return reply.status(403).send({ message: 'Only quest owner can reset funding' } as any);
+            }
+
+            // Only allow reset if quest is in pending state
+            if (quest.fundingStatus !== 'pending') {
+                return reply.status(400).send({
+                    message: `Quest funding status is ${quest.fundingStatus}, cannot reset`
+                } as any);
+            }
+
+            // Check session status if sessionId exists
+            if (quest.stripeSessionId) {
+                try {
+                    const session = await stripe.checkout.sessions.retrieve(quest.stripeSessionId);
+                    // If session is paid, don't reset
+                    if (session.payment_status === 'paid') {
+                        return reply.status(400).send({
+                            message: 'Session is paid, cannot reset'
+                        } as any);
+                    }
+                } catch (err: any) {
+                    // Session might not exist or be expired, that's okay
+                    server.log.debug({ err: err.message, sessionId: quest.stripeSessionId },
+                        '[stripe:reset] Session check failed, proceeding with reset');
+                }
+            }
+
+            // Reset funding status
+            await server.prisma.quest.update({
+                where: { id: questId },
+                data: {
+                    fundingStatus: 'unfunded',
+                    fundingMethod: null,
+                    stripeSessionId: null,
+                    stripePaymentId: null,
+                },
+            });
+
+            return { message: 'Funding status reset successfully', reset: true };
+        },
+    );
+
 
     // ── POST /stripe/distribute/:questId ────────────────────────────────────
     server.post(

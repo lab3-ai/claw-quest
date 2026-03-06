@@ -14,6 +14,8 @@ import { CreateQuest } from './routes/_authenticated/quests/create'
 import { VerifyAgent } from './routes/_authenticated/verify'
 import { ClaimQuest } from './routes/_authenticated/quests/claim'
 import { FundQuest } from './routes/_authenticated/quests/$questId/fund'
+import { FundSuccess } from './routes/_authenticated/quests/$questId/fund-success'
+import { FundCancel } from './routes/_authenticated/quests/$questId/fund-cancel'
 import { EditQuest } from './routes/_authenticated/quests/$questId/edit'
 import { ManageQuest } from './routes/_authenticated/quests/$questId/manage'
 import { Account } from './routes/_authenticated/account'
@@ -201,6 +203,29 @@ const fundQuestRoute = createRoute({
     component: FundQuest,
 })
 
+const fundSuccessRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/quests/$questId/fund/success',
+    validateSearch: (search: Record<string, unknown>): { session_id?: string } => {
+        const result: { session_id?: string } = {}
+        if (search.session_id) result.session_id = search.session_id as string
+        return result
+    },
+    beforeLoad: ({ context }) => {
+        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
+    },
+    component: FundSuccess,
+})
+
+const fundCancelRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/quests/$questId/fund/cancel',
+    beforeLoad: ({ context }) => {
+        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
+    },
+    component: FundCancel,
+})
+
 const editQuestRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/quests/$questId/edit',
@@ -252,6 +277,8 @@ const routeTree = rootRoute.addChildren([
         myQuestsRoute,
         questDetailRoute,
         fundQuestRoute,
+        fundSuccessRoute,
+        fundCancelRoute,
         editQuestRoute,
         manageQuestRoute,
         questersRoute,

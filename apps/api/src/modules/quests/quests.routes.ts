@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { QuestSchema, QuestTaskSchema, QuestersResponseSchema, QUEST_STATUS, QUEST_TYPE } from '@clawquest/shared';
 import type { QuestTask } from '@clawquest/shared';
 import {
-    validateTaskParams,
     createQuest,
     updateQuest,
     formatQuestResponse,
@@ -67,7 +66,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 },
             },
         },
-        async (request, reply) => {
+        async (request) => {
             const { status, type, limit, offset } = request.query as any;
 
             const where: any = {};
@@ -161,6 +160,51 @@ export async function questsRoutes(server: FastifyInstance) {
 
             if (!quest) {
                 return reply.status(404).send({ message: 'Quest not found', code: 'NOT_FOUND' } as any);
+            }
+
+            // Auto-check and reset Stripe session if canceled/expired (background, non-blocking)
+            if (quest.fundingStatus === 'pending' && quest.stripeSessionId && quest.fundingMethod === 'stripe') {
+                // Check session status asynchronously (don't block response)
+                (async () => {
+                    try {
+                        const { stripe, isStripeConfigured } = await import('../stripe/stripe.config');
+                        if (!isStripeConfigured() || !stripe) return;
+
+                        const session = await stripe.checkout.sessions.retrieve(quest.stripeSessionId!);
+
+                        // If session is not paid, reset funding status
+                        if (session.payment_status !== 'paid') {
+                            const currentQuest = await server.prisma.quest.findUnique({
+                                where: { id },
+                                select: { fundingStatus: true },
+                            });
+
+                            // Only reset if still pending (idempotency)
+                            if (currentQuest?.fundingStatus === 'pending') {
+                                await server.prisma.quest.update({
+                                    where: { id },
+                                    data: {
+                                        fundingStatus: 'unfunded',
+                                        fundingMethod: null,
+                                        stripeSessionId: null,
+                                        stripePaymentId: null,
+                                    },
+                                });
+
+                                server.log.info(
+                                    { questId: id, sessionId: quest.stripeSessionId, paymentStatus: session.payment_status },
+                                    '[quests:get] Auto-reset funding status (session canceled/expired)'
+                                );
+                            }
+                        }
+                    } catch (err: any) {
+                        // Silently fail - session might not exist or Stripe API error
+                        server.log.debug(
+                            { questId: id, sessionId: quest.stripeSessionId, error: err.message },
+                            '[quests:get] Failed to check session status'
+                        );
+                    }
+                })();
             }
 
             // Draft access control: require token or creator auth
@@ -504,8 +548,9 @@ export async function questsRoutes(server: FastifyInstance) {
                 }
 
                 // 3b. Fallback: strip all boilerplate, take first prose sentence
+                let bodyText = '';
                 if (!substantialText) {
-                    const bodyText = text
+                    bodyText = text
                         .replace(/<script[\s\S]*?<\/script>/gi, '')
                         .replace(/<style[\s\S]*?<\/style>/gi, '')
                         .replace(/<nav[\s\S]*?<\/nav>/gi, '')
@@ -545,7 +590,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     desc = substantialText.slice(0, 350);
                 } else if (metaDesc) {
                     desc = metaDesc.slice(0, 350);
-                } else {
+                } else if (bodyText) {
                     desc = bodyText.slice(0, 350);
                 }
 
@@ -1252,7 +1297,7 @@ export async function questsRoutes(server: FastifyInstance) {
         },
         async (request, reply) => {
             const { id } = request.params as any;
-            const { status: newStatus, reason } = request.body as any;
+            const { status: newStatus } = request.body as any;
             const userId = (request as any).user?.id;
 
             const quest = await server.prisma.quest.findUnique({ where: { id } });
@@ -1310,7 +1355,7 @@ export async function questsRoutes(server: FastifyInstance) {
             },
             onRequest: [server.authenticate],
         },
-        async (request, reply) => {
+        async (request) => {
             const userId = (request as any).user?.id;
 
             const questInclude = {
@@ -1662,12 +1707,14 @@ export async function questsRoutes(server: FastifyInstance) {
             ]);
 
             return {
-                collaborators: collaborators.map(c => ({
-                    id: c.id, questId: c.questId, userId: c.userId,
-                    invitedBy: c.invitedBy, acceptedAt: c.acceptedAt?.toISOString() ?? null,
-                    expiresAt: c.expiresAt.toISOString(), createdAt: c.createdAt.toISOString(),
-                    displayName: c.user.displayName, username: c.user.username,
-                })),
+                collaborators: collaborators
+                    .filter(c => c.user !== null)
+                    .map(c => ({
+                        id: c.id, questId: c.questId, userId: c.userId,
+                        invitedBy: c.invitedBy, acceptedAt: c.acceptedAt?.toISOString() ?? null,
+                        expiresAt: c.expiresAt.toISOString(), createdAt: c.createdAt.toISOString(),
+                        displayName: c.user!.displayName, username: c.user!.username,
+                    })),
                 deposits: deposits.map(d => ({
                     id: d.id, questId: d.questId, userId: d.userId,
                     escrowQuestId: d.escrowQuestId, amount: Number(d.amount),

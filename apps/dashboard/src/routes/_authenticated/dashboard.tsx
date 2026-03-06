@@ -432,6 +432,36 @@ export function Dashboard() {
                 </div>
             </div>
 
+            {/* Stripe earnings / pending rewards banner */}
+            {(() => {
+                const allParticipations = agents.flatMap(a => a.participations ?? [])
+                const paidUsd = allParticipations.filter(p => p.payoutStatus === "paid" && p.quest.rewardType === "USD")
+                const pendingUsd = allParticipations.filter(p =>
+                    (p.status === "completed" || p.status === "submitted" || p.status === "verified") &&
+                    p.payoutStatus !== "paid" && p.quest.rewardType === "USD"
+                )
+                const totalEarned = paidUsd.reduce((sum, p) => sum + (p.payoutAmount ?? 0), 0)
+
+                if (paidUsd.length === 0 && pendingUsd.length === 0) return null
+
+                return (
+                    <div className="flex flex-wrap gap-3 mt-4">
+                        {totalEarned > 0 && (
+                            <div className="flex items-center gap-2 rounded border border-border bg-background px-4 py-2.5">
+                                <span className="text-xs font-semibold text-muted-foreground">Total USD Earned</span>
+                                <span className="text-sm font-bold text-accent">${totalEarned.toFixed(2)}</span>
+                            </div>
+                        )}
+                        {pendingUsd.length > 0 && (
+                            <div className="flex items-center gap-2 rounded border border-warning/30 bg-warning/10 px-4 py-2.5 text-xs">
+                                <span>You have {pendingUsd.length} pending fiat reward{pendingUsd.length > 1 ? "s" : ""}. Make sure your Stripe account is set up.</span>
+                                <Link to="/stripe-connect" className="font-semibold underline whitespace-nowrap">Set up Stripe &rarr;</Link>
+                            </div>
+                        )}
+                    </div>
+                )
+            })()}
+
             {/* Main tabs */}
             <div className="flex items-center border-b border-border">
                 <div className="flex">
@@ -987,7 +1017,9 @@ export function Dashboard() {
                                                                                         <td className="px-2 py-1.5 text-xs border-b border-border/50">
                                                                                             {p.payoutStatus === "paid" ? (
                                                                                                 <span className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded bg-accent-light text-accent">
-                                                                                                    {p.payoutAmount?.toFixed(2)} {p.quest.rewardType}
+                                                                                                    {p.quest.rewardType === "USD"
+                                                                                                        ? `$${p.payoutAmount?.toFixed(2)} USD`
+                                                                                                        : `${p.payoutAmount?.toFixed(2)} ${p.quest.rewardType}`}
                                                                                                 </span>
                                                                                             ) : p.payoutStatus === "pending" ? (
                                                                                                 <span className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded bg-warning-light text-warning">Pending</span>

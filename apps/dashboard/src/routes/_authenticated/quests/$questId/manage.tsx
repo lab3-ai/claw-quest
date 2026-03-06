@@ -343,6 +343,27 @@ export function ManageQuest() {
                         <DistributeError error={((distributeMutation.error || refundMutation.error) as Error)?.message} />
                     )}
 
+                    {/* Fiat distribute info */}
+                    {isCreator && isFiatFunded && hasVerified && (
+                        <div className="flex items-start gap-2 rounded border border-warning/30 bg-warning/10 px-3 py-2 text-xs mb-3">
+                            <span className="shrink-0 mt-0.5">&#9888;</span>
+                            <span>
+                                Stripe payouts are sent only to winners who have completed Stripe onboarding.
+                                Winners without a Stripe account won't receive payment until they set up.
+                                Share{" "}
+                                <button
+                                    className="font-semibold underline bg-transparent border-none p-0 text-xs cursor-pointer"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(`${DASHBOARD_URL}/stripe-connect`)
+                                    }}
+                                >
+                                    this setup link
+                                </button>
+                                {" "}with your winners.
+                            </span>
+                        </div>
+                    )}
+
                     {/* Actions */}
                     {isCreator && (
                         <div className="flex flex-wrap gap-2 mb-4">
@@ -351,7 +372,10 @@ export function ManageQuest() {
                                 size="sm"
                                 disabled={!isFunded || !hasVerified || distributeMutation.isPending}
                                 onClick={() => {
-                                    if (window.confirm('Distribute payout to all verified participants?')) {
+                                    const msg = isFiatFunded
+                                        ? 'Distribute payout via Stripe to verified participants who have completed onboarding?'
+                                        : 'Distribute payout to all verified participants?'
+                                    if (window.confirm(msg)) {
                                         distributeMutation.mutate()
                                     }
                                 }}
@@ -388,7 +412,11 @@ export function ManageQuest() {
                         </div>
                         <div className="flex justify-between items-center text-xs text-muted-foreground py-[0.35rem] border-t border-border">
                             <span>Reward</span>
-                            <span className="font-semibold text-foreground">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</span>
+                            <span className="font-semibold text-foreground">
+                                {quest.rewardType === "USD"
+                                    ? `$${quest.rewardAmount.toLocaleString()} USD`
+                                    : `${quest.rewardAmount.toLocaleString()} ${quest.rewardType}`}
+                            </span>
                         </div>
                         <div className="flex justify-between items-center text-xs text-muted-foreground py-[0.35rem] border-t border-border">
                             <span>Slots</span>

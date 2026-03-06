@@ -967,6 +967,40 @@ export function QuestDetail() {
                         </div>
 
                         {/* ── Claim Reward Section ── */}
+                        {/* ── Fiat Payout Section (Stripe) ── */}
+                        {isAuthenticated && quest.fundingMethod === "stripe" && quest.myParticipation &&
+                            (quest.myParticipation.status === "completed" || quest.myParticipation.status === "submitted") && (
+                                <div className="mt-4 px-3 pt-4 border-t border-border">
+                                    <div className="text-center">
+                                        {quest.myParticipation.payoutStatus === "paid" ? (
+                                            <>
+                                                <div className="text-sm font-semibold text-accent mb-1">
+                                                    Reward Paid
+                                                </div>
+                                                <div className="text-xs text-muted-foreground">
+                                                    ${quest.myParticipation.payoutAmount?.toFixed(2)} USD paid via Stripe
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="text-sm font-semibold text-foreground mb-1">
+                                                    Payout Pending
+                                                </div>
+                                                <div className="text-xs text-muted-foreground mb-2">
+                                                    ${quest.rewardAmount} USD will be sent via Stripe when distributed
+                                                </div>
+                                                {!stripeStatus?.isOnboarded && (
+                                                    <Link to="/stripe-connect">
+                                                        <Button size="sm" variant="outline" className="text-xs">Set up Stripe to receive payout</Button>
+                                                    </Link>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                        {/* ── Claim Reward Section (Crypto) ── */}
                         {isAuthenticated && quest.fundingMethod === "crypto" && quest.myParticipation &&
                             (quest.myParticipation.status === "completed" || quest.myParticipation.status === "submitted") && (
                                 <div className="mt-4 px-3 pt-4 border-t border-border">

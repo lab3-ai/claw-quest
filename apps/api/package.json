@@ -9,6 +9,7 @@
         "db:migrate": "prisma migrate dev",
         "db:deploy": "prisma migrate deploy",
         "db:seed": "tsx prisma/seed.ts",
+        "db:seed:skills": "tsx prisma/clawhub-skills-seed.ts",
         "db:studio": "prisma studio",
         "test": "vitest run"
     },

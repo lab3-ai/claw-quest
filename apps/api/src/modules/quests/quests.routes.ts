@@ -345,6 +345,64 @@ export async function questsRoutes(server: FastifyInstance) {
         }
     );
 
+    // ── Skill Search (ClawHub catalog) ─────────────────────────────────────────
+    server.get(
+        '/skills/search',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Search ClawHub skills catalog',
+                querystring: z.object({
+                    q: z.string().min(2).max(100),
+                    limit: z.coerce.number().int().min(1).max(50).default(20),
+                }),
+                response: {
+                    200: z.object({
+                        data: z.array(z.object({
+                            slug: z.string(),
+                            display_name: z.string(),
+                            summary: z.string().nullable(),
+                            owner_handle: z.string().nullable(),
+                            owner_display_name: z.string().nullable(),
+                            owner_image: z.string().nullable(),
+                            downloads: z.number(),
+                            installs_all_time: z.number(),
+                            stars: z.number(),
+                            latest_version: z.string().nullable(),
+                        })),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const { q, limit } = request.query as { q: string; limit: number };
+            const rows = await server.prisma.clawhub_skills.findMany({
+                where: {
+                    OR: [
+                        { slug: { contains: q.trim(), mode: 'insensitive' } },
+                        { display_name: { contains: q.trim(), mode: 'insensitive' } },
+                        { owner_handle: { contains: q.trim(), mode: 'insensitive' } },
+                    ],
+                },
+                select: {
+                    slug: true,
+                    display_name: true,
+                    summary: true,
+                    owner_handle: true,
+                    owner_display_name: true,
+                    owner_image: true,
+                    downloads: true,
+                    installs_all_time: true,
+                    stars: true,
+                    latest_version: true,
+                },
+                orderBy: { downloads: 'desc' },
+                take: limit,
+            });
+            return reply.send({ data: rows });
+        }
+    );
+
     // ── Skill Preview (proxy fetch + parse) ────────────────────────────────────
     server.get(
         '/skill-preview',

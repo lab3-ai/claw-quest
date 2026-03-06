@@ -16,7 +16,8 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { useState } from "react"
-import { BankCardLine } from "@mingcute/react"
+import { BankCardLine, Dashboard4Line, AddLine, DownLine } from "@mingcute/react"
+import { getDiceBearUrl } from "@/components/avatarUtils"
 
 export function AuthenticatedLayout() {
     const { isAuthenticated, isLoading, logout, user } = useAuth()
@@ -137,12 +138,14 @@ export function AuthenticatedLayout() {
                     <div className="ml-auto hidden items-center gap-3 sm:flex">
                         <Button asChild>
                             <Link to="/quests/new" className="no-underline">
-                                + Create Quest
+                                <AddLine size={16} />
+                                Create Quest
                             </Link>
                         </Button>
 
                         <Button asChild variant="outline">
                             <Link to="/dashboard" className="no-underline">
+                                <Dashboard4Line size={16} />
                                 Dashboard
                             </Link>
                         </Button>
@@ -150,16 +153,9 @@ export function AuthenticatedLayout() {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline">
+                                    <img src={getDiceBearUrl(handle, 32)} alt="" className="h-5 w-5 rounded-full" />
                                     {handleLabel}
-                                    <svg
-                                        className="h-3 w-3 ml-1"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={2}
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path d="m6 9 6 6 6-6" />
-                                    </svg>
+                                    <DownLine size={16} />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-40">

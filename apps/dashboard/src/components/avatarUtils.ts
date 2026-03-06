@@ -17,5 +17,6 @@ export function getInitials(name: string): string {
 
 /** DiceBear thumbs avatar URL — deterministic per seed (handle/name) */
 export function getDiceBearUrl(seed: string, size = 40): string {
-    return `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(seed)}&size=${size}`
+    const bgColors = AVATAR_COLORS.map((c) => c.replace("#", "")).join(",")
+    return `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(seed)}&size=${size}&backgroundColor=${bgColors}`
 }

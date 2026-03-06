@@ -179,6 +179,14 @@
     border-color: rgba(71, 85, 105, 0.35);
 }
 
+/* Glass card hover — brighten background */
+[data-theme="glass"] .hover-shadow:hover {
+    background: rgba(255, 255, 255, 0.8) !important;
+}
+[data-theme="glass"].dark .hover-shadow:hover {
+    background: rgba(30, 41, 59, 0.6) !important;
+}
+
 /* Glass card helper */
 [data-theme="glass"] .glass-card {
     backdrop-filter: blur(12px) saturate(1.5);

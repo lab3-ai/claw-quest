@@ -16,7 +16,8 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { ThemeSwitcher } from "@/components/theme-switcher"
-import { Palette2Line } from "@mingcute/react"
+import { Palette2Line, Dashboard4Line, AddLine, DownLine } from "@mingcute/react"
+import { getDiceBearUrl } from "@/components/avatarUtils"
 import { useState } from "react"
 
 export function PublicLayout() {
@@ -146,12 +147,14 @@ export function PublicLayout() {
                             <>
                                 <Button asChild>
                                     <Link to="/quests/new" className="no-underline">
-                                        + Create Quest
+                                        <AddLine size={16} />
+                                        Create Quest
                                     </Link>
                                 </Button>
 
                                 <Button asChild variant="outline">
                                     <Link to="/dashboard" className="no-underline">
+                                        <Dashboard4Line size={16} />
                                         Dashboard
                                     </Link>
                                 </Button>
@@ -159,16 +162,9 @@ export function PublicLayout() {
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="outline">
+                                            <img src={getDiceBearUrl(handle, 32)} alt="" className="h-5 w-5 rounded-full" />
                                             {handleLabel}
-                                            <svg
-                                                className="h-3 w-3 ml-1"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth={2}
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path d="m6 9 6 6 6-6" />
-                                            </svg>
+                                            <DownLine size={16} />
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-40">
@@ -196,7 +192,8 @@ export function PublicLayout() {
                                 </Button>
                                 <Button asChild>
                                     <Link to="/quests/new" className="no-underline">
-                                        + Create Quest
+                                        <AddLine size={16} />
+                                        Create Quest
                                     </Link>
                                 </Button>
                             </>

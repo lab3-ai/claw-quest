@@ -5,6 +5,8 @@ import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
+const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL ?? window.location.origin
+
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -137,6 +139,37 @@ function ParticipantRow({
             </td>
         </tr>
     )
+}
+
+// ─── Distribute Error ─────────────────────────────────────────────────────────
+
+function DistributeError({ error }: { error: string | undefined }) {
+    const [copied, setCopied] = useState(false)
+    if (!error) return null
+
+    if (error.includes("No winners have onboarded Stripe")) {
+        const stripeUrl = `${DASHBOARD_URL}/stripe-connect`
+        return (
+            <div className="text-xs mb-2">
+                <p className="text-error mb-1">Winners haven't completed Stripe setup yet. Share this link with them:</p>
+                <div className="flex items-center gap-2 bg-bg-subtle border border-border rounded px-2 py-1.5">
+                    <code className="text-[11px] text-foreground flex-1 break-all">{stripeUrl}</code>
+                    <button
+                        className="text-[11px] font-medium text-accent hover:underline shrink-0"
+                        onClick={() => {
+                            navigator.clipboard.writeText(stripeUrl)
+                            setCopied(true)
+                            setTimeout(() => setCopied(false), 2000)
+                        }}
+                    >
+                        {copied ? "Copied!" : "Copy"}
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
+    return <p className="text-error text-xs">{error}</p>
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -307,9 +340,7 @@ export function ManageQuest() {
                         <p className="text-error text-xs">{(verifyMutation.error as Error).message}</p>
                     )}
                     {(distributeMutation.isError || refundMutation.isError) && (
-                        <p className="text-error text-xs">
-                            {((distributeMutation.error || refundMutation.error) as Error)?.message}
-                        </p>
+                        <DistributeError error={((distributeMutation.error || refundMutation.error) as Error)?.message} />
                     )}
 
                     {/* Actions */}

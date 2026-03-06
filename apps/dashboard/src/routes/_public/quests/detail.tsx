@@ -190,6 +190,20 @@ export function QuestDetail() {
         staleTime: 60_000,
     })
 
+    // Fetch Stripe connect status for USD quest banner
+    const { data: stripeStatus } = useQuery<{ hasAccount: boolean; isOnboarded: boolean }>({
+        queryKey: ["stripe-connect-status"],
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/stripe/connect/status`, {
+                headers: { Authorization: `Bearer ${session?.access_token}` },
+            })
+            if (!res.ok) return { hasAccount: false, isOnboarded: false }
+            return res.json()
+        },
+        enabled: isAuthenticated && !!session?.access_token,
+        staleTime: 60_000,
+    })
+
     // ── Auto-claim: if user is authenticated and claim token is present ──
     const claimMutation = useMutation({
         mutationFn: async (claimToken: string) => {
@@ -799,6 +813,20 @@ export function QuestDetail() {
                                 </div>
                             )}
                         </div>
+
+                        {/* Stripe setup banner for USD quests */}
+                        {isAuthenticated && !stripeStatus?.isOnboarded &&
+                            (quest.fundingMethod === "stripe" || quest.rewardType === "USD") && (
+                            <div className="px-3 pt-3">
+                                <div className="flex items-start gap-2 rounded-md bg-warning/10 border border-warning/30 px-3 py-2 text-xs text-warning-foreground">
+                                    <span className="shrink-0 mt-0.5">⚠</span>
+                                    <span>
+                                        This quest pays in USD. Set up your Stripe account to receive rewards.{" "}
+                                        <Link to="/stripe-connect" className="font-semibold underline">Set up Stripe &rarr;</Link>
+                                    </span>
+                                </div>
+                            </div>
+                        )}
 
                         {/* CTA */}
                         <div className="p-3 border-b border-border">

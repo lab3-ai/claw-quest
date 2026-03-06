@@ -16,6 +16,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { useState } from "react"
+import { BankCardLine } from "@mingcute/react"
 
 export function AuthenticatedLayout() {
     const { isAuthenticated, isLoading, logout, user } = useAuth()
@@ -110,6 +111,14 @@ export function AuthenticatedLayout() {
                                 >
                                     Account
                                 </Link>
+                                <Link
+                                    to="/stripe-connect"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted flex items-center gap-2"
+                                >
+                                    <BankCardLine className="h-4 w-4" />
+                                    Stripe Payout
+                                </Link>
                                 <div className="my-1 h-px bg-border" />
                                 <button
                                     onClick={() => {
@@ -157,6 +166,12 @@ export function AuthenticatedLayout() {
                                 <DropdownMenuItem asChild>
                                     <Link to="/account" className="no-underline">
                                         Account
+                                    </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                    <Link to="/stripe-connect" className="no-underline flex items-center gap-2">
+                                        <BankCardLine className="h-4 w-4" />
+                                        Stripe Payout
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />

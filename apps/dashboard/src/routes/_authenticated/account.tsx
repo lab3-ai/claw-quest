@@ -1,11 +1,13 @@
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { Link } from "@tanstack/react-router"
 import { useAuth } from "@/context/AuthContext"
 import { startTelegramLogin } from "@/lib/telegram-oidc"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { PageTitle } from "@/components/page-title"
 import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
@@ -651,6 +653,126 @@ export function Account() {
                     </form>
                     {walletError && <div className="text-xs text-destructive mt-1.5">{walletError}</div>}
                 </div>
+            </div>
+
+            {/* Fiat Payout */}
+            <FiatPayoutSection token={token} />
+        </div>
+    )
+}
+
+// ─── Fiat Payout Section ─────────────────────────────────────────────────────
+
+function FiatPayoutSection({ token }: { token: string | undefined }) {
+    const { data: status, isLoading } = useQuery<{
+        hasAccount: boolean
+        isOnboarded: boolean
+        accountId: string | null
+    }>({
+        queryKey: ["stripe-connect-status"],
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/stripe/connect/status`, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            if (!res.ok) throw new Error("Failed to check status")
+            return res.json()
+        },
+        enabled: !!token,
+    })
+
+    const onboardMutation = useMutation({
+        mutationFn: async () => {
+            const res = await fetch(`${API_BASE}/stripe/connect/onboard`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    returnUrl: window.location.href,
+                    refreshUrl: window.location.href,
+                }),
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error(err.message || "Failed to start onboarding")
+            }
+            return res.json()
+        },
+        onSuccess: (data: { onboardingUrl: string }) => {
+            window.location.href = data.onboardingUrl
+        },
+    })
+
+    const dashboardMutation = useMutation({
+        mutationFn: async () => {
+            const res = await fetch(`${API_BASE}/stripe/connect/dashboard`, {
+                headers: { Authorization: `Bearer ${token}` },
+            })
+            if (!res.ok) throw new Error("Failed to get dashboard link")
+            return res.json()
+        },
+        onSuccess: (data: { dashboardUrl: string }) => {
+            window.open(data.dashboardUrl, "_blank")
+        },
+    })
+
+    return (
+        <div className="border border-border rounded mb-5 bg-background">
+            <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-muted text-foreground">Fiat Payout</div>
+            <div className="p-4">
+                {isLoading ? (
+                    <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
+                ) : (
+                    <>
+                        <div className="flex items-center gap-2 text-sm mb-3">
+                            <div className={cn(
+                                "w-2 h-2 rounded-full shrink-0",
+                                status?.isOnboarded ? "bg-success"
+                                    : status?.hasAccount ? "bg-warning"
+                                        : "bg-border-heavy"
+                            )} />
+                            <span className="text-foreground text-xs">
+                                {status?.isOnboarded
+                                    ? "Ready to receive payouts"
+                                    : status?.hasAccount
+                                        ? "Onboarding incomplete"
+                                        : "No Stripe account connected"}
+                            </span>
+                        </div>
+                        {onboardMutation.isError && (
+                            <div className="text-xs text-destructive mb-2">{(onboardMutation.error as Error).message}</div>
+                        )}
+                        <div className="flex gap-2">
+                            {!status?.isOnboarded && (
+                                <Button
+                                    size="sm"
+                                    disabled={onboardMutation.isPending}
+                                    onClick={() => onboardMutation.mutate()}
+                                >
+                                    {onboardMutation.isPending
+                                        ? "Redirecting\u2026"
+                                        : status?.hasAccount
+                                            ? "Complete Setup"
+                                            : "Connect Stripe Account"}
+                                </Button>
+                            )}
+                            {status?.isOnboarded && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={dashboardMutation.isPending}
+                                    onClick={() => dashboardMutation.mutate()}
+                                >
+                                    {dashboardMutation.isPending ? "Opening\u2026" : "Open Stripe Dashboard"}
+                                </Button>
+                            )}
+                            <Button variant="outline" size="sm" asChild>
+                                <Link to="/stripe-connect" className="no-underline">Details</Link>
+                            </Button>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     )

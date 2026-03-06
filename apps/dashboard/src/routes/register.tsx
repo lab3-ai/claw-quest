@@ -137,7 +137,7 @@ export function Register() {
                 </div>
             </div>
 
-            <div className="footer max-w-[920px] mx-auto px-4 py-6">
+            <div className="footer max-w-4xl mx-auto px-4 py-6">
                 <span>ClawQuest v0.1 beta</span>
                 <a href="/privacy.html">Privacy</a>
                 <a href="/terms.html">Terms</a>

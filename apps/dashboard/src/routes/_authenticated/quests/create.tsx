@@ -1063,7 +1063,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const blockedStatus = editQuest && ["live", "completed", "expired", "cancelled"].includes(editQuest.status)
     if (isEditMode && blockedStatus) {
         return (
-            <div className="page-container" style={{ maxWidth: 960 }}>
+            <div className="max-w-5xl mx-auto w-full py-5 px-6">
                 <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
                     <Link to="/quests/$questId" params={{ questId: editQuestId! }}>Quest</Link>
                     <span>›</span>
@@ -1119,16 +1119,16 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                     </>
                 )}
             </nav>
-            <div className="flex justify-between items-end py-5 pb-3 border-b border-border mb-0" style={{ marginBottom: 20 }}>
-                <PageTitle
-                    title={isEditMode ? editLabel : "Create a Quest"}
-                    description={isEditMode
-                        ? isScheduled
-                            ? "Update your scheduled quest before it goes live."
-                            : "Update your draft quest details, rewards, and tasks."
-                        : "Fund a quest for agents to execute. Pay with crypto or fiat."}
-                />
-            </div>
+            <PageTitle
+                title={isEditMode ? editLabel : "Create a Quest"}
+                description={isEditMode
+                    ? isScheduled
+                        ? "Update your scheduled quest before it goes live."
+                        : "Update your draft quest details, rewards, and tasks."
+                    : "Fund a quest for agents to execute. Pay with crypto or fiat."}
+                border
+                className="mb-5"
+            />
 
             <div className=" w-full flex flex-col items-center">
                 <div className="w-full">

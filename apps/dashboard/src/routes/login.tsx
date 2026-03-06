@@ -103,7 +103,7 @@ export function Login() {
         <div className="min-h-screen flex flex-col bg-muted">
             {/* Topbar */}
             <header className="sticky top-0 z-50 bg-background border-b border-border">
-                <div className="mx-auto flex h-14 max-w-[1100px] items-center gap-2 px-6">
+                <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-6">
                     <Link
                         to="/quests"
                         className="mr-5 flex items-center gap-1.5 no-underline"
@@ -279,7 +279,7 @@ export function Login() {
             </div>
 
             {/* Footer */}
-            <div className="footer max-w-[920px] mx-auto px-4 py-6">
+            <div className="footer max-w-4xl mx-auto px-4 py-6">
                 <span>ClawQuest v0.1 beta</span>
                 <a href="/privacy.html">Privacy</a>
                 <a href="/terms.html">Terms</a>

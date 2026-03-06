@@ -261,12 +261,12 @@ export function ManageQuest() {
     })
 
     if (isLoading) return (
-        <div className="max-w-[960px] mx-auto px-4 py-6 text-muted-foreground text-center py-12">
+        <div className="max-w-5xl mx-auto px-4 py-6 text-muted-foreground text-center py-12">
             Loading...
         </div>
     )
     if (error || !data) return (
-        <div className="max-w-[960px] mx-auto px-4 py-6">
+        <div className="max-w-5xl mx-auto px-4 py-6">
             <p className="text-error">{(error as Error)?.message || 'Failed to load'}</p>
             <Link to="/dashboard">Back to Dashboard</Link>
         </div>
@@ -278,7 +278,7 @@ export function ManageQuest() {
     const isCreator = quest.creatorUserId === user?.id
 
     return (
-        <div className="max-w-[960px] mx-auto px-4 py-6">
+        <div className="max-w-5xl mx-auto px-4 py-6">
             {/* Breadcrumb */}
             <nav className="flex items-center gap-1 text-xs text-muted-foreground mb-4">
                 <Link to="/quests" className="hover:text-foreground">Quests</Link>
@@ -288,9 +288,9 @@ export function ManageQuest() {
                 <span className="text-foreground">Manage</span>
             </nav>
 
-            <div className="grid grid-cols-[1fr_280px] gap-6 items-start max-md:grid-cols-1">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
                 {/* Main column */}
-                <div>
+                <div className="flex-1 min-w-0">
                     {/* Participants */}
                     <div className="bg-background border border-border rounded-lg overflow-hidden mb-4">
                         <h3 className="text-[13px] font-bold text-muted-foreground uppercase tracking-[0.05em] m-0 px-5 py-4 border-b border-border">
@@ -399,7 +399,7 @@ export function ManageQuest() {
                 </div>
 
                 {/* Sidebar */}
-                <div>
+                <div className="w-full md:min-w-2xs md:max-w-xs shrink-0">
                     {/* Quest overview */}
                     <div className="bg-background border border-border rounded-lg p-5 mb-4">
                         <h3 className="text-[13px] font-bold text-muted-foreground uppercase tracking-[0.05em] m-0 mb-3">

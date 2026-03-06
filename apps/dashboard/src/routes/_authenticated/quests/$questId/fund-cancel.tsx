@@ -23,7 +23,7 @@ export function FundCancel() {
     })
 
     return (
-        <div className="max-w-[560px] mx-auto py-8 px-4">
+        <div className="max-w-xl mx-auto py-8 px-4">
             <nav className="flex items-center gap-1 text-xs text-fg-muted mb-4">
                 <Link to="/quests" className="hover:text-foreground transition-colors">Quests</Link>
                 <span className="text-fg-muted">/</span>

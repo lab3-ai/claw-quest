@@ -362,7 +362,7 @@ export function Account() {
 
     return (
         <div className="">
-            <div className="mb-6"><PageTitle title="Account" /></div>
+            <PageTitle title="Account" className="mb-6" />
 
             {/* Profile */}
             <div className="border border-border rounded mb-5 bg-background">

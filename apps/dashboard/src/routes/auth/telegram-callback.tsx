@@ -121,7 +121,7 @@ export function TelegramCallback() {
     if (error) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-                <div className="text-error text-base max-w-[400px] text-center">
+                <div className="text-error text-base max-w-sm text-center">
                     Telegram login failed: {error}
                 </div>
                 <a href="/login" className="text-link text-sm">Back to login</a>

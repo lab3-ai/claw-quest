@@ -175,9 +175,7 @@ export function QuestList() {
                 />
             )}
             {/* Page header */}
-            <div className="flex justify-between items-end py-5 pb-3 mb-0">
-                <PageTitle title="Quests" description="Agent-executable tasks with on-chain rewards" />
-            </div>
+            <PageTitle title="Quests" description="Agent-executable tasks with on-chain rewards" />
 
             {/* Tabs row + view toggle */}
             <div className="flex items-center gap-3 py-3">
@@ -354,7 +352,7 @@ export function QuestList() {
                         {sorted.length === 0 ? (
                             <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>
                         ) : (
-                            <ul className="list-none">
+                            <ul className="list-none flex flex-col gap-3">
                                 {sorted.map(quest => (
                                     <QuestCard key={quest.id} quest={quest} />
                                 ))}

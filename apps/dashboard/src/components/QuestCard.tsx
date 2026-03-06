@@ -84,7 +84,7 @@ export function QuestCard({ quest }: QuestCardProps) {
         <Link
             to="/quests/$questId"
             params={{ questId: quest.id }}
-            className="flex gap-6 py-4 border-b border-border items-start px-2 -mx-2 rounded-none no-underline text-foreground transition-colors hover:bg-bg-subtle"
+            className="hover-shadow flex gap-6 p-4 border border-border rounded items-start no-underline text-foreground hover:border-foreground bg-background"
         >
             {/* Stats column */}
             <div className="hidden sm:flex flex-col items-end gap-1.5 w-[140px] shrink-0 text-xs text-muted-foreground text-right pt-0.5">

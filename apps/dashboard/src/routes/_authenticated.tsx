@@ -46,7 +46,7 @@ export function AuthenticatedLayout() {
         <div className="flex min-h-screen flex-col">
             {/* Topbar */}
             <header className="sticky top-0 z-50 bg-background">
-                <div className="mx-auto flex h-14 max-w-[1100px] items-center gap-2 px-6">
+                <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-6">
                     <Link
                         to="/quests"
                         className="mr-5 flex items-center gap-1.5 no-underline"
@@ -187,12 +187,12 @@ export function AuthenticatedLayout() {
                 </div>
             </header>
 
-            <div className="page-container flex-1">
+            <div className="max-w-7xl mx-auto w-full py-5 px-6 flex-1">
                 <Outlet />
             </div>
 
             {/* Footer */}
-            <footer className="mx-auto flex max-w-[1100px] flex-wrap items-center justify-center gap-4 px-6 py-6 text-xs text-muted-foreground max-sm:flex-col max-sm:gap-2 max-sm:py-4">
+            <footer className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-4 px-6 py-6 text-xs text-muted-foreground max-sm:flex-col max-sm:gap-2 max-sm:py-4">
                 <span>ClawQuest v0.1 beta</span>
                 <a
                     href="https://api.clawquest.ai/docs"

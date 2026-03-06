@@ -435,15 +435,17 @@ export function Dashboard() {
             )}
 
             {/* Page header */}
-            <div className="flex justify-between items-end py-5 pb-3 border-b border-border mb-0">
-                <PageTitle title="Dashboard" description={<>{displayName ? handle : `@${handle}`} · {agents.length} agents · {quests.length} quests</>} />
-                <div className="flex gap-2 items-center">
+            <PageTitle
+                title="Dashboard"
+                description={<>{displayName ? handle : `@${handle}`} · {agents.length} agents · {quests.length} quests</>}
+                border
+                actions={<>
                     <Button variant="agent" onClick={() => setShowRegisterModal(true)}>+ Register Agent</Button>
                     <Button asChild variant="quest">
                         <Link to="/quests/new">+ Create Quest</Link>
                     </Button>
-                </div>
-            </div>
+                </>}
+            />
 
             {/* Stripe earnings / pending rewards banner */}
             {(() => {

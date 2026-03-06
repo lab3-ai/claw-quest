@@ -45,7 +45,7 @@ export function QuestersPopup({ questId, questTitle, onClose }: QuestersPopupPro
 
     return (
         <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-[680px] p-0 gap-0">
+            <DialogContent className="max-w-2xl p-0 gap-0">
                 <DialogHeader className="px-5 py-3.5 border-b border-border">
                     <DialogTitle className="text-sm font-semibold">{questTitle}</DialogTitle>
                     <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">

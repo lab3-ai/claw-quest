@@ -24,8 +24,8 @@ export function QuestTypeBadge({ type, size = 14 }: { type: string; size?: numbe
 
 /* ── Quest Status — filled badge ── */
 
-const STATUS_VARIANT: Record<string, "filled-success" | "filled-error" | "filled-warning" | "filled-muted"> = {
-    live: "filled-success",
+const STATUS_VARIANT: Record<string, "outline-success" | "filled-success" | "filled-error" | "filled-warning" | "filled-muted"> = {
+    live: "outline-success",
     completed: "filled-muted",
     draft: "filled-muted",
     scheduled: "filled-muted",
@@ -37,7 +37,18 @@ const STATUS_VARIANT: Record<string, "filled-success" | "filled-error" | "filled
 
 export function QuestStatusBadge({ status }: { status: string }) {
     const variant = STATUS_VARIANT[status.toLowerCase()] ?? "filled-muted"
-    return <Badge variant={variant} className="uppercase">{status}</Badge>
+    const isLive = status.toLowerCase() === "live"
+    return (
+        <Badge variant={variant} className="uppercase">
+            {isLive && (
+                <span className="relative inline-flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+                </span>
+            )}
+            {status}
+        </Badge>
+    )
 }
 
 /* ── Reward — token icon + amount ── */

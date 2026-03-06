@@ -151,10 +151,6 @@ export async function questsRoutes(server: FastifyInstance) {
                         },
                         orderBy: { joinedAt: 'asc' },
                     },
-                    collaborators: {
-                        where: { acceptedAt: { not: null } },
-                        include: { user: { select: { displayName: true, username: true } } },
-                    },
                 },
             });
 
@@ -246,12 +242,12 @@ export async function questsRoutes(server: FastifyInstance) {
                 }
 
                 // Return with preview flags
-                const { _count, participations, collaborators, ...q } = quest;
+                const { _count, participations, ...q } = quest;
                 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
                 const draftUser = (request as any).user;
                 const isCreator = !!(draftUser?.id && quest.creatorUserId === draftUser.id);
                 return {
-                    ...formatQuestResponse(q, participations, _count.participations, collaborators),
+                    ...formatQuestResponse(q, participations, _count.participations),
                     isPreview: true,
                     isCreator,
                     isSponsor: !isCreator && hasAccess && !!draftUser?.id,
@@ -262,8 +258,8 @@ export async function questsRoutes(server: FastifyInstance) {
             }
 
             // Public quest (live, completed, etc.)
-            const { _count, participations, collaborators, ...q } = quest;
-            const response: any = formatQuestResponse(q, participations, _count.participations, collaborators);
+            const { _count, participations, ...q } = quest;
+            const response: any = formatQuestResponse(q, participations, _count.participations);
 
             // Include user's participation + isCreator if authenticated
             const authHeader = request.headers.authorization;

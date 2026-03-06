@@ -64,7 +64,7 @@ export function StripeConnect() {
 
     if (isLoading) {
         return (
-            <div className="max-w-[560px] mx-auto py-8 px-4">
+            <div className="max-w-xl mx-auto py-8 px-4">
                 <div className="bg-background border border-border rounded-lg p-8">
                     <div className="text-center text-muted-foreground py-12">Loading...</div>
                 </div>
@@ -73,7 +73,7 @@ export function StripeConnect() {
     }
 
     return (
-        <div className="max-w-[560px] mx-auto py-8 px-4">
+        <div className="max-w-xl mx-auto py-8 px-4">
             <div className="bg-background border border-border rounded-lg p-8">
                 {/* Header */}
                 <div className="flex gap-4 items-start mb-6">

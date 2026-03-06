@@ -362,14 +362,33 @@ All buttons: `font-weight: 600`, monospace, tight radius.
 - Padding: `20px 24px`
 - Centered with `margin: 0 auto`
 
-### Breakpoints
+### Responsive Breakpoints
 
-| Name | Width | Use |
-|------|-------|-----|
-| `sm` | 640px | Mobile/desktop breakpoint |
-| `md` | 768px | Tablet |
-| `lg` | 1024px | Desktop |
-| `xl` | 1280px | Wide desktop |
+3 supported breakpoints (mobile-first):
+
+| Breakpoint | Tailwind | Width | Target |
+|------------|----------|-------|--------|
+| Mobile | default | < 640px | Phone (portrait) |
+| Tablet | `md:` | >= 768px | Tablet / small laptop |
+| Desktop | `xl:` | >= 1280px | Desktop / wide screens |
+
+**Rules:**
+- Write mobile-first: base styles = mobile, then `md:` for tablet, `xl:` for desktop
+- Use `sm:` (640px) only for minor tweaks (show/hide elements), not as a primary breakpoint
+- Container: `max-w-7xl` (1280px) centered with `mx-auto px-6`
+- Avoid `lg:` and `2xl:` — keep breakpoints to 3 for consistency
+
+**Pattern examples:**
+```
+// Stack on mobile, side-by-side on tablet, wider gaps on desktop
+<div className="flex flex-col md:flex-row md:gap-4 xl:gap-6">
+
+// Hide on mobile, show from tablet
+<div className="hidden md:block">
+
+// Full-width mobile, constrained on desktop
+<div className="w-full xl:max-w-7xl xl:mx-auto">
+```
 
 ### Grid
 

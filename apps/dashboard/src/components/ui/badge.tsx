@@ -17,12 +17,16 @@ const badgeVariants = cva(
                 /* Pill — rounded, border, light bg (for tags, skills, categories) */
                 pill: "border border-border rounded-full px-2.5 py-0.5 text-fg-secondary",
                 /* Filled — solid bg (for status indicators) */
-                "filled-success": "rounded bg-success-light text-success px-2 py-0.5",
-                "filled-error": "rounded bg-error-light text-error px-2 py-0.5",
-                "filled-warning": "rounded bg-warning-light text-warning px-2 py-0.5",
-                "filled-muted": "rounded bg-muted text-muted-foreground px-2 py-0.5",
-                /* Outline — border only (for subtle labels) */
-                outline: "border border-border rounded px-2 py-0.5 text-foreground",
+                "filled-success": "rounded-full bg-success-light text-success px-2 py-0.5",
+                "filled-error": "rounded-full bg-error-light text-error px-2 py-0.5",
+                "filled-warning": "rounded-full bg-warning-light text-warning px-2 py-0.5",
+                "filled-muted": "rounded-full bg-muted text-muted-foreground px-2 py-0.5",
+                /* Outline — border + light bg (for subtle labels) */
+                outline: "border border-border rounded-full px-2 py-0.5 bg-muted/50 text-foreground",
+                "outline-success": "border border-success/40 rounded-full px-2 py-0.5 bg-success-light text-success",
+                "outline-error": "border border-error/40 rounded-full px-2 py-0.5 bg-error-light text-error",
+                "outline-warning": "border border-warning/40 rounded-full px-2 py-0.5 bg-warning-light text-warning",
+                "outline-muted": "border border-border rounded-full px-2 py-0.5 bg-muted/50 text-muted-foreground",
             },
         },
         defaultVariants: {

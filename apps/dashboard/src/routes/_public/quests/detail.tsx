@@ -423,8 +423,117 @@ export function QuestDetail() {
 
     if (isLoading) {
         return (
-            <div className="p-10 text-center text-muted-foreground">
-                Loading quest…
+            <div>
+                {/* Breadcrumb skeleton */}
+                <div className="flex items-center gap-1.5 py-3">
+                    <div className="skeleton h-3 w-12" />
+                    <span className="text-muted-foreground">›</span>
+                    <div className="skeleton h-3 w-32" />
+                </div>
+
+                {/* Header skeleton */}
+                <div className="py-3 border-b border-border mb-5">
+                    <div className="skeleton h-7 w-3/4 mb-2" />
+                    <div className="flex items-center gap-2 mt-1">
+                        <div className="skeleton h-5 w-14 rounded-full" />
+                        <div className="skeleton h-3 w-24" />
+                        <div className="skeleton h-3 w-28" />
+                    </div>
+                </div>
+
+                {/* 2-column layout skeleton */}
+                <div className="flex flex-col md:flex-row gap-8 items-start">
+                    {/* Left: main content */}
+                    <div className="flex-1 min-w-0">
+                        {/* Description */}
+                        <div className="py-3.5 border-b border-border mb-5">
+                            <div className="skeleton h-4 w-32 mb-3.5" />
+                            <div className="space-y-2">
+                                <div className="skeleton h-3 w-full" />
+                                <div className="skeleton h-3 w-full" />
+                                <div className="skeleton h-3 w-5/6" />
+                                <div className="skeleton h-3 w-2/3" />
+                            </div>
+                        </div>
+
+                        {/* Reward grid */}
+                        <div className="grid grid-cols-2 gap-2.5 mb-2.5">
+                            {[...Array(4)].map((_, i) => (
+                                <div key={i} className="px-3 py-2.5 border border-border rounded bg-muted">
+                                    <div className="skeleton h-3 w-16 mb-1" />
+                                    <div className="skeleton h-4 w-20" />
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Tasks section */}
+                        <div className="mt-5 border-t border-border pt-3.5">
+                            <div className="skeleton h-4 w-24 mb-3" />
+                            <div className="space-y-2">
+                                {[...Array(3)].map((_, i) => (
+                                    <div key={i} className="flex items-center gap-2 px-3 py-2 border border-border rounded">
+                                        <div className="skeleton h-4 w-4 shrink-0" />
+                                        <div className="skeleton h-3 w-full" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Tags */}
+                        <div className="mt-5 border-t border-border pt-3.5">
+                            <div className="skeleton h-4 w-20 mb-2" />
+                            <div className="flex gap-1.5 flex-wrap">
+                                {[...Array(4)].map((_, i) => (
+                                    <div key={i} className="skeleton h-5 w-16 rounded-full" />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right: sidebar */}
+                    <div className="w-full md:min-w-2xs md:max-w-xs shrink-0">
+                        <div className="border border-border rounded">
+                            {/* Reward hero */}
+                            <div className="px-3 py-4 text-center border-b border-border">
+                                <div className="skeleton h-8 w-28 mx-auto mb-2" />
+                                <div className="flex justify-center gap-2 mt-2">
+                                    <div className="skeleton h-5 w-14 rounded-full" />
+                                    <div className="skeleton h-5 w-14 rounded-full" />
+                                </div>
+                                <div className="skeleton h-3 w-24 mx-auto mt-1.5" />
+                            </div>
+
+                            {/* Countdown */}
+                            <div className="px-3 py-2.5 border-b border-border text-center">
+                                <div className="skeleton h-3 w-24 mx-auto mb-2" />
+                                <div className="flex justify-center gap-3">
+                                    {[...Array(4)].map((_, i) => (
+                                        <div key={i} className="flex flex-col items-center">
+                                            <div className="skeleton h-6 w-8 mb-0.5" />
+                                            <div className="skeleton h-2 w-3" />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Spots bar */}
+                            <div className="px-3 py-2.5 border-b border-border">
+                                <div className="flex justify-between mb-1">
+                                    <div className="skeleton h-3 w-28" />
+                                    <div className="skeleton h-3 w-12" />
+                                </div>
+                                <div className="h-1.5 bg-muted rounded overflow-hidden">
+                                    <div className="skeleton h-full w-1/3 rounded" />
+                                </div>
+                            </div>
+
+                            {/* CTA button */}
+                            <div className="p-3">
+                                <div className="skeleton h-10 w-full rounded" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         )
     }
@@ -492,17 +601,15 @@ export function QuestDetail() {
             )}
 
             {/* Page header */}
-            <div className="flex justify-between items-end py-5 pb-3 border-b border-border mb-5">
+            <div className="flex justify-between items-end py-3 border-b border-border mb-5">
                 <div>
                     <h1 className="text-3xl font-semibold text-foreground">{quest.title}</h1>
                     <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
                         <QuestStatusBadge status={quest.status} />
                         <span>·</span>
-                        <QuestTypeBadge type={quest.type} />
-                        <span>·</span>
-                        <RewardBadge type={quest.rewardType} amount={quest.rewardAmount} />
-                        <span>·</span>
                         <span className="inline-flex items-center gap-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-foreground">{quest.sponsor}</strong></span>
+                        <span>·</span>
+                        <span>{new Date(quest.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                         {quest.sponsorNames && quest.sponsorNames.length > 0 && (
                             <>
                                 <span>·</span>
@@ -514,9 +621,9 @@ export function QuestDetail() {
             </div>
 
             {/* 2-column grid */}
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-8 items-start">
+            <div className="flex flex-col md:flex-row gap-8 items-start">
                 {/* ── Left: main content ── */}
-                <div>
+                <div className="flex-1 min-w-0">
                     {/* Description */}
                     <div className="py-3.5 border-b border-border mb-5 text-sm leading-relaxed text-foreground">
                         <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3.5">About this Quest</div>
@@ -801,7 +908,7 @@ export function QuestDetail() {
                 </div>
 
                 {/* ── Right: sidebar ── */}
-                <div>
+                <div className="w-full md:min-w-2xs md:max-w-xs shrink-0">
                     <div className="border border-border rounded mb-3.5 sticky top-[55px]">
                         {/* Reward hero */}
                         <div className="px-3 py-4 text-center border-b border-border">

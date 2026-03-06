@@ -70,7 +70,7 @@ export function QuestersPage() {
             </nav>
 
             {/* Page Header */}
-            <div className="flex justify-between items-end py-5 pb-3 border-b border-border mb-0">
+            <div className="flex justify-between items-end py-3 border-b border-border mb-0">
                 <div>
                     <h1 className="text-3xl font-semibold text-foreground">Questers</h1>
                     {data && (

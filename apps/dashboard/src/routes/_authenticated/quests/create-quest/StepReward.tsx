@@ -90,7 +90,7 @@ export function StepReward({
                     {/* Payment Rail */}
                     <div className="space-y-4 mb-6">
                         <div className="space-y-1.5 mb-3.5">
-                            <Label>Reward Method</Label>
+                            <Label className="mr-4">Reward Method</Label>
                             <div className="inline-flex border border-border rounded overflow-hidden">
                                 <button
                                     className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none border-r border-border bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "crypto" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}

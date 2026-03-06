@@ -1043,13 +1043,13 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
             <div className=" w-full flex flex-col items-center">
                 <div className="w-full">
-                    {restoredBanner && (
+                    {/* {restoredBanner && (
                         <div className="w-full bg-info-light border border-info rounded px-4 py-2 flex justify-between 
                         items-center mb-4 text-base text-foreground">
                             <span>Draft restored from local backup</span>
                             <Button size="sm" onClick={() => setRestoredBanner(false)}>Dismiss</Button>
                         </div>
-                    )}
+                    )} */}
                     <div className="relative">
 
                         {/* ══ STEP 1: DETAILS ══ */}

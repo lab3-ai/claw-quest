@@ -1,243 +1,211 @@
 # ClawQuest Waitlist Page Spec — V2 (Agent-Owner-First)
 
-> Design brief for the waitlist landing page. Flow, content, features, and copy only — not UI/UX.
-> **Strategic shift:** Primary audience is now Agent Owners & Humans (80%). Sponsors are secondary (20%) with a dedicated below-fold section.
-> **Frameworks applied:** PAS (hero), AIDA (page flow), Conversion Psychology (scarcity, belonging, instant gratification).
+> Design brief for the waitlist landing page. Content, flow, and visual direction only.
+> **Primary audience (80%):** Agent Owners & Humans. **Secondary (20%):** Sponsors (below fold).
+> **Design references:** hello.trade, gm.ai, lora.finance — dark, lean, visual-first.
+> **Frameworks:** PAS (hero), AIDA (page flow), Conversion Psychology.
 
 ---
 
 ## Concept
 
-Single page. No tabs, no sub-pages. Scroll to see everything. Goal: visitor understands ClawQuest in 10 seconds, enters email in 30 seconds.
+Single page. 4 screens max. Dark theme. Minimal text — product mockups and visuals do the talking. Visitor understands ClawQuest in 10 seconds, enters email in 30 seconds.
 
-**Primary target (80%):** Humans who own AI agents — developers, builders, power users. They want their agents earning real money. Appeal to both Web3 natives (want crypto) and Web2 developers (want fiat/giftcards).
-
-**Secondary target (20%):** Sponsors & publishers who want access to a large pool of skilled AI agents. They get a dedicated section below the fold.
+**Visual style:** Product mockups (realistic UI screenshots of the ClawQuest dashboard). No abstract illustrations. Real interfaces build credibility.
 
 ---
 
-## Page Structure (top to bottom)
+## Page Structure — 4 Screens
 
-### 1. Hero
+### Screen 1: Hero
 
 **Headline:**
 "Your AI Agent Could Be Earning Right Now"
 
-> Rationale: PAS solution-first. 8 words, under 10-word threshold. "Could Be Earning" = instant gratification trigger + implied loss (why isn't it?). Speaks directly to agent owner aspiration. Active voice, "you"-focused.
-
 **Sub-headline:**
 "Register your agent on ClawQuest. Complete quests from real sponsors. Get paid in USDC, crypto, or giftcards — you choose."
 
-> Rationale: 21 words. Three short sentences mirroring the How It Works flow. Emphasizes flexible payout (Web2 + Web3 appeal). "You choose" = autonomy trigger. Eliminates jargon.
-
 **CTA:** Email input + **"Join the Waitlist"** button
 
-> Rationale: Clear, low-friction. "Join" = belonging trigger. No ambiguity about the action. First-person A/B variant: "Get My Early Access."
-
-**Countdown timer below CTA:**
+**Countdown timer:**
 "Public launch in [X] days [H:M:S]"
 
-> Rationale: Countdown timers deliver +15-25% conversion lift (research data). More credible than "spots remaining" for a pre-launch product. Creates real, verifiable urgency.
-
-**Trust indicator below countdown:**
+**Trust indicator:**
 "[X]+ agent owners already on the waitlist"
 
-> Rationale: Social proof near CTA. Single audience mention (agent owners) reinforces who this page is for. Dynamic number builds momentum.
+> No changes from previous version. Hero is approved.
 
-### 2. Problem (2 columns side by side)
+---
 
-**Section header:** "Sound familiar?"
-
-**Left column: "Without ClawQuest"**
-- Your AI agent has skills but no way to monetize them
-- You scroll Discord servers looking for manual bounties
-- Payouts are delayed, unclear, or never arrive
-- No proof your agent actually completed anything
-- Web3-only rewards lock out Web2 developers
-
-> Rationale: Each bullet is a specific, felt pain point for agent owners. "Scroll Discord" = relatable daily behavior. "Web3-only" names the exclusion problem for the Web2 crowd.
-
-**Right column: "With ClawQuest"**
-- Your agent earns rewards by completing real quests from verified sponsors
-- Browse and accept quests directly — no manual hunting
-- Get paid in USDC, crypto, or fiat giftcards on your terms
-- Every completed task is verified on-chain — portable proof of work
-- One platform, flexible payouts — works for Web3 and Web2
-
-> Rationale: Mirrors left column point-by-point. "On your terms" = autonomy. "Portable proof of work" = long-term value beyond immediate earnings. "Verified sponsors" = trust signal.
-
-### 3. How It Works (3 steps)
+### Screen 2: How It Works
 
 **Section header:** "Three steps to your first reward."
 
-1. **Register your agent.** Connect your AI agent (OpenClaw, Claude Code, or any compatible agent) and scan its skills.
-2. **Accept a quest.** Browse available quests from real sponsors. Pick one that matches your agent's skills. Your agent gets to work.
-3. **Get paid.** Task verified on-chain. Rewards hit your wallet — USDC, crypto, or giftcards. You pick.
+3 cards in a horizontal row. Each card contains a **product mockup screenshot** with a **1-line caption** below it.
 
-> Rationale: Written from agent owner's perspective. Each step ends with a tangible outcome. Step 3 reinforces flexible payout. "You pick" = autonomy trigger (consistent with hero).
+| Card | Mockup Visual | Caption |
+|------|--------------|---------|
+| 1 | Agent registration screen — skill scan in progress, skills detected list | **Register your agent.** |
+| 2 | Quest browser — list of available quests with reward amounts, sponsor logos, quest type badges (FCFS/Leaderboard/Lucky Draw) | **Accept a quest.** |
+| 3 | Payout confirmation screen — "$127.50 USDC sent to wallet" or "Amazon $50 Giftcard delivered" | **Get paid.** |
 
-### 4. Social Proof (3 large numbers on one row)
+> Rationale: Mockups replace all body text. Visitor sees the actual product, not descriptions of it. Each caption is 3 words max. Visual storytelling inspired by hello.trade card layout.
 
-[X] agents registered | [X] quests available | $[X] in rewards paid out
+**Mockup direction:**
+- Dark UI matching ClawQuest dashboard aesthetic (terminal meets SaaS)
+- ClawQuest orange (#F97316) accent for CTAs and active states
+- Geist Mono typography in mockups for brand consistency
+- Show realistic data (agent names, quest titles, reward amounts) — not lorem ipsum
 
-> Note: Use real data when available. If pre-launch, use "Growing" or milestone targets. Never use fake numbers — Web3 audiences detect this instantly and it destroys trust (conversion psychology principle).
+---
 
-### 5. Sponsor Hook (dedicated section — below the fold)
+### Screen 3: Social Proof + Tiers
 
-**Section header:** "Are you a project or publisher?"
+**Top half: 3 floating stat counters** (single horizontal row, large animated numbers)
 
-**Body copy:**
-"Tap into a growing army of AI agents ready to use your product. Post a quest, set a reward, and get on-chain proof that real agents are using your skill — with 7, 14, and 30-day retention data. Pay only for verified results."
+| Stat | Display |
+|------|---------|
+| Agents on waitlist | **[X]+** agents |
+| Quests ready at launch | **[X]+** quests |
+| Total rewards pool | **$[X]+** in rewards |
 
-**CTA:** **"List Your First Quest"** (links to a separate sponsor signup/interest form)
+> Animated count-up on scroll. Large typography (48-64px). No body text. Numbers speak for themselves.
+> Pre-launch: use milestone targets ("500+ agents targeting", "50+ quests planned", "$25K+ reward pool"). Update to real numbers post-traction.
 
-> Rationale: Distinct section, visually separated. Does not compete with hero messaging. Speaks to sponsor pain (retention proof, pay-for-results). "Army of AI agents" = supply-side social proof that attracts demand.
+**Bottom half: Gamified progress visual**
 
-### 6. Early Access Tiers
+A visual leaderboard/progress bar that shows:
+- Your current position: **"You're #[X]"** (dynamic after signup, placeholder before)
+- Two tier thresholds marked on the bar:
+  - **OG Pioneer (Top 100):** OG Discord badge + 500 bonus XP
+  - **Early Access (Top 1,000):** Premium quests 30 min before public
+- Filled vs remaining slots visualized (e.g., progress bar with "86/100 OG Pioneer slots claimed")
+- Referral mechanic baked into the visual: **"Refer a friend → move up 10 spots"** as a single line below the bar
 
-**Section header:** "Climb the waitlist. Unlock better perks."
+> Rationale: Gamified visual replaces the text table + separate referral section. Position, tiers, perks, and referral mechanic all visible in one glance. Drives "tier-chase" behavior (+2-3x engagement per research). Progress bar creates scarcity per tier.
 
-> Rationale: "Climb" = action-oriented gamification. "Unlock" consistent with quest platform identity.
+---
 
-| Position | Tier | Perks |
-|----------|------|-------|
-| Top 100 | OG Pioneer | OG Discord badge + 500 bonus XP (rank higher for premium quests) |
-| Top 1,000 | Early Access | Access premium quests 30 minutes before the public |
+### Screen 4: Repeat CTA + Sponsor Banner + Footer
 
-> Rationale: 2 tiers keep it simple and achievable. Perks are platform-friendly — no token giveaways or fee waivers that break tokenomics. XP has in-platform utility (quest ranking). 30-minute head start is concrete and valuable for competitive FCFS quests.
+**Repeat CTA:**
 
-**Referral mechanic (explicit):**
-"Move up 10 spots for every friend who joins with your link."
+Email form (same as hero).
 
-> Rationale: Clear, specific reward. +10 positions per referral aligns with research-optimal range (10-15). Research shows 35-50% of users attempt referral sharing at this level. Simple enough to explain in one sentence.
+Above: "Early access is first come, first served."
+Below: "[X]+ people already in line. Where will you land?"
 
-**Progress bar:** "[X] / 1,000 spots claimed"
+**Sponsor banner** (thin strip, visually distinct):
 
-### 7. Repeat CTA
+"Are you a sponsor? Tap into our agent army →" **[List Your Quest]**
 
-Email form (same as hero). Line above CTA:
+> Single line + CTA link. No paragraph. Enough to capture sponsors without competing with agent-owner messaging.
 
-"The countdown is live. Early access is first come, first served."
+**Footer:**
 
-> Rationale: Echoes countdown timer urgency. "First come, first served" = scarcity + loss aversion. No fake scarcity — it's genuinely position-based.
-
-Line below CTA:
-
-"[X]+ people already on the waitlist. Where will you land?"
-
-> Rationale: Social proof + question = engagement. "Where will you land?" prompts mental simulation of queue position.
-
-### 8. Footer
-
-Links: Twitter/X, Telegram, Discord, GitHub, Docs.
+Links: Twitter/X · Telegram · Discord · GitHub · Docs
 
 ---
 
 ## Post-Signup Flow
 
-After entering email, displayed on the same page (replaces the form area):
+After entering email, replaces the form area on the same page:
 
 **Step 1: Role selection**
 
-"One quick question — what brings you here?"
+"What brings you here?"
 
-Button A: "I own AI agents" → tag as Agent Owner
-Button B: "I sponsor quests" → tag as Sponsor
-
-> Rationale: Simple binary. Micro-commitment ladder — email first (low friction), then role (invested). Tags enable role-specific email drip and share templates.
+| Button A | Button B |
+|----------|----------|
+| "I own AI agents" → tag Agent Owner | "I sponsor quests" → tag Sponsor |
 
 **Step 2: Confirmation**
 
 "You're #[position] in line."
 
-"Share your link to move up. Every friend who joins = 10 spots closer to the front."
+Referral link + Copy button.
 
-Display: Referral link + Copy button.
+"Share to move up. Every friend = 10 spots closer."
 
-**Share buttons:**
-- "Share on X" (pre-filled tweet — see Share Templates below)
-- "Share on Telegram" (pre-filled message — see Share Templates below)
-- "Copy Link"
+Share buttons: **Share on X** · **Share on Telegram** · **Copy Link**
 
 ---
 
 ## Share Templates (Viral Loop)
 
-All templates use first-person perspective to sound like a personal flex, creating FOMO.
+First-person perspective. Status signaling + FOMO.
 
-### Twitter — Agent Owner:
+### Twitter — Agent Owner
 
-"My AI agent is about to start farming real rewards on @ClawQuest.
+```
+My AI agent is about to start farming real rewards on @ClawQuest.
 
 USDC, crypto, or giftcards — you pick how you get paid. One platform for Web3 and Web2.
 
 Top 100 on the waitlist get 500 bonus XP. Use my link to jump the queue:
 
-[link]"
+[link]
+```
 
-> Rationale: First-person flex ("My AI agent"). Emphasizes flexible payouts (Web2 + Web3 appeal). Specific tier incentive (500 XP). Referral CTA. Character count: ~248 chars (under 280).
+> ~248 chars (under 280).
 
-### Twitter — Sponsor / Publisher:
+### Twitter — Sponsor / Publisher
 
-"Looking to get real AI agents using your product — not just installs that vanish?
+```
+Looking to get real AI agents using your product — not just installs that vanish?
 
 @ClawQuest lets you post quests, set rewards, and get on-chain retention proof. Pay only for results.
 
 Early sponsor spots are limited:
 
-[link]"
+[link]
+```
 
-> Rationale: Hooks with publisher pain point. Mirrors sponsor section copy. "Early sponsor spots" = scarcity for this audience. Character count: ~243 chars.
+> ~243 chars.
 
-### Telegram — Agent Owner (English):
+### Telegram — Agent Owner
 
-"I just signed up for ClawQuest early access. My AI agent is going to complete quests and earn real rewards — USDC, crypto, or giftcards.
+```
+I just signed up for ClawQuest early access. My AI agent is going to complete quests and earn real rewards — USDC, crypto, or giftcards.
 
 Top 100 waitlist get OG Pioneer status + 500 XP head start. I'm already climbing.
 
-Jump the queue with my referral link: [link]"
+Jump the queue with my referral link: [link]
+```
 
-> Rationale: Longer format for Telegram. Personal tone ("I just signed up", "I'm already climbing"). Status signaling drives 35-45% of Web3 shares.
+### Telegram — General
 
-### Telegram — General (English):
-
-"ClawQuest: the first platform where AI agents earn real money by completing quests.
+```
+ClawQuest: the first platform where AI agents earn real money by completing quests.
 
 Agents: register, complete quests, get paid in USDC or giftcards.
 Sponsors: post quests, get verified retention data, pay for results.
 
-Early access waitlist is live. Top 100 get OG perks: [link]"
-
-> Rationale: Addresses both audiences. Neutral tone for general sharing. Concise benefit summary per role.
+Early access waitlist is live. Top 100 get OG perks: [link]
+```
 
 ---
 
 ## Email Capture
 
-Fields collected:
-1. **Email** (required)
-2. **Role:** Agent Owner / Sponsor (after email submit — micro-commitment ladder)
-3. **Twitter/X handle** (optional — pre-fill share template)
-4. **Referral code** (hidden, auto-populated from URL parameter)
-
-> Principle: 2 visible fields (email + role) = optimal. Twitter optional adds zero friction. Referral code invisible.
+| Field | Type | Notes |
+|-------|------|-------|
+| Email | Required | Primary conversion |
+| Role | Post-submit | Agent Owner / Sponsor (micro-commitment ladder) |
+| Twitter/X handle | Optional | Pre-fill share template |
+| Referral code | Hidden | Auto-populated from URL param |
 
 ---
 
 ## Technical Notes
 
-- Static page. Deploy on Vercel (or standalone repo).
-- Backend for email: Loops, Resend, or direct DB storage.
-- Referral: unique code per signup, track joins, update queue position in real-time.
-- Countdown timer: server-side target date, client-side countdown. Fallback to static "Launching Soon" if date not set.
-- Analytics: conversion per step, UTM params, share button clicks, countdown interaction.
-
-**Additional tracking:**
-- Share button clicks by template type (X agent, X sponsor, TG agent, TG general)
-- Tier threshold notifications (when tiers approach capacity)
-- A/B test tracking: variant assignment + conversion per variant
-- Referral chain depth (how many levels deep referrals go)
-- Role split ratio over time (Agent Owner vs Sponsor)
+- Static page on Vercel (or standalone repo)
+- Email backend: Loops, Resend, or direct DB
+- Referral: unique code per signup, queue position updates in real-time
+- Countdown: server-side target date, client-side JS. Fallback: "Launching Soon"
+- Mockup images: static PNGs or Lottie animations for card reveals
+- Analytics: conversion per step, UTM params, share clicks, countdown interaction
+- Track: share clicks by template type, tier threshold alerts, referral chain depth, role split ratio, A/B variant assignment
 
 ---
 
@@ -246,79 +214,35 @@ Fields collected:
 | KPI | Metric | Target |
 |-----|--------|--------|
 | Signup rate | Visitor → email | >15% |
-| Role split | Agent Owner vs Sponsor | Track ratio (expect ~80/20) |
-| Referral rate | % who click a share button | >25% |
+| Role split | Agent Owner vs Sponsor | Track (expect ~80/20) |
+| Referral rate | % who click share | >25% |
 | Viral coefficient | Avg referrals per signup | >1.2 |
-| Return rate | Visit again within 7 days | >30% |
-| Share template performance | Clicks per template type | Track & compare |
-| Countdown engagement | Interaction with timer element | Track baseline |
+| Return rate | Revisit within 7 days | >30% |
 
 ---
 
-## A/B Test Variants
+## A/B Tests
 
-### Test 1: Headlines
+Priority order:
 
-| Variant | Copy | Framework | Hypothesis |
-|---------|------|-----------|------------|
-| **Control** | "Your AI Agent Could Be Earning Right Now" | PAS (implied loss) | Direct, aspiration-focused. Triggers instant gratification + loss aversion. |
-| A | "Put Your AI Agent to Work. Get Paid." | Imperative | Shorter, more commanding. May convert higher with action-oriented audiences. |
-| B | "AI Agents Are Earning Real Rewards. Is Yours?" | FOMO + question | Social proof framing + question hook. May drive higher engagement via curiosity. |
-
-**Priority:** Test Control vs A first (same intent, different tone). Winner vs B.
-
-### Test 2: CTA Button
-
-| Variant | Copy | Hypothesis |
-|---------|------|------------|
-| **Control** | "Join the Waitlist" | Clear, low-friction. Belonging trigger. |
-| A | "Get My Early Access" | First-person CTA (research: up to 90% more clicks). More personal. |
-
-### Test 3: Urgency Mechanism
-
-| Variant | Mechanism | Hypothesis |
-|---------|-----------|------------|
-| **Control** | Countdown timer ("Public launch in X days") | +15-25% conversion lift (research). Real, verifiable urgency. |
-| A | Spots remaining ("Only [X] early access spots left") | Classic scarcity. May feel less credible pre-launch but proven in Web3. |
-
-### Test 4: Sub-headline
-
-| Variant | Copy | Word count |
-|---------|------|------------|
-| **Control** | "Register your agent on ClawQuest. Complete quests from real sponsors. Get paid in USDC, crypto, or giftcards — you choose." | 21 |
-| A | "Real quests. Real sponsors. Get paid in crypto or giftcards. Your agent, your choice." | 15 |
-
-**Hypothesis:** Shorter A may scan faster on mobile. Control has more narrative flow.
-
-### Recommended Test Priority
-
-1. **Headlines** (highest impact — 80% won't read past headline)
-2. **CTA button** (direct conversion impact)
-3. **Urgency mechanism** (countdown vs spots — fundamentally different approach)
-4. **Sub-headline** (supporting conversion signal)
+| # | Element | Control | Variant A | Hypothesis |
+|---|---------|---------|-----------|------------|
+| 1 | Headline | "Your AI Agent Could Be Earning Right Now" | "Put Your AI Agent to Work. Get Paid." | Imperative may convert higher with action-oriented audiences |
+| 2 | CTA | "Join the Waitlist" | "Get My Early Access" | First-person CTA: up to 90% more clicks (research) |
+| 3 | Urgency | Countdown timer | Spots remaining counter | Countdown = +15-25% lift, but spots remaining is proven in Web3 |
+| 4 | Sub-headline | 21-word narrative version | 15-word punchy version ("Real quests. Real sponsors. Get paid in crypto or giftcards. Your agent, your choice.") | Shorter may scan faster on mobile |
 
 ---
 
-## Copy Review Summary
+## Visual Direction Summary
 
-### V1 → V2 Changes
-
-| Section | V1 (Publisher Focus) | V2 (Agent Owner Focus) |
-|---------|---------------------|----------------------|
-| Headline | "Stop Paying for Installs That Vanish" | "Your AI Agent Could Be Earning Right Now" |
-| Sub-headline | Quest posting flow for publishers (22 words) | Flexible payout appeal for agent owners (21 words) |
-| Problem bullets | Publisher pain: installs deleted, no retention data | Agent owner pain: idle agents, no earning path, Web3-only payouts |
-| How It Works | Post quest → agents work → track retention | Register agent → accept quest → get paid |
-| Social proof metrics | Skills in catalog, agents active, retention % | Agents registered, quests available, rewards paid out |
-| Sponsor messaging | Mixed into hero section | Dedicated below-fold section with own CTA |
-| Tiers | 3 tiers, publisher perks (fee discounts) | 2 tiers, user perks (XP + early quest access) |
-| Urgency | Spots remaining counter | Countdown timer to launch |
-| CTA | "Claim Your Spot" (scarcity framing) | "Join the Waitlist" (belonging framing) |
-| Share templates | Third-person product descriptions | First-person flex/FOMO |
-| Payout messaging | Not emphasized | Core value prop: USDC, crypto, OR giftcards |
-
-### Frameworks Applied
-- **PAS** (Problem-Agitate-Solution): Hero (implied loss → aspiration → CTA), Problem section
-- **AIDA** (Attention-Interest-Desire-Action): Overall page flow from hero → problem → how it works → tiers → CTA
-- **Conversion Psychology**: Belonging trigger (join), instant gratification (earning now), scarcity (countdown), social proof (waitlist count), loss aversion (repeat CTA), status signaling (share templates), autonomy ("you choose")
-- **Research-backed**: Countdown timer (+15-25%), 2-tier structure, +10 referral positions, first-person share templates
+| Principle | Implementation |
+|-----------|---------------|
+| **Dark theme** | Black/dark gray background, white text, orange (#F97316) accents |
+| **Lean copy** | Max 15 words per section (excluding hero). Visuals replace text. |
+| **Product mockups** | 3 realistic UI screenshots for How It Works cards |
+| **Floating stats** | Large animated counters, no body text |
+| **Gamified progress** | Visual leaderboard bar with tier thresholds + referral mechanic |
+| **Sponsor = minimal** | 1-line banner strip with CTA, no paragraph |
+| **Typography** | Geist Mono (headings), clean sans-serif (body). Large sizes for stats. |
+| **4 screens total** | Hero → How It Works → Social Proof + Tiers → CTA + Sponsor + Footer |

@@ -460,7 +460,14 @@ export function StepTasks({
                                                 <div key={s.id} className={cn("flex items-start gap-2.5 px-2.5 py-2 border-b border-border/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-muted/50", isAdded && "opacity-50 cursor-default bg-muted/50")} onClick={() => !isAdded && onAddSkill(s)}>
                                                     <div className="flex-1 min-w-0 overflow-hidden">
                                                         <div className="text-xs font-semibold text-primary flex items-center gap-1.5 truncate">
-                                                            <span className="text-muted-foreground font-normal shrink-0">{s.id.split("/")[0]} /</span>
+                                                            {s.ownerImage ? (
+                                                                <img src={s.ownerImage} alt={s.ownerDisplayName ?? s.ownerHandle} className="w-4 h-4 rounded-full shrink-0 object-cover" />
+                                                            ) : (
+                                                                <span className="w-4 h-4 rounded-full shrink-0 bg-muted flex items-center justify-center text-[9px] font-bold text-muted-foreground uppercase">
+                                                                    {(s.ownerDisplayName ?? s.ownerHandle).charAt(0)}
+                                                                </span>
+                                                            )}
+                                                            <span className="text-muted-foreground font-normal shrink-0">{s.ownerDisplayName ?? s.id.split("/")[0]} /</span>
                                                             <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}</span>
                                                         </div>
                                                         <div className="text-xs text-muted-foreground leading-snug mt-0.5 wrap-break-word">{onTruncateDesc(s.desc, s.id)}</div>

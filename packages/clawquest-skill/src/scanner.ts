@@ -14,9 +14,7 @@ export interface PlatformScanResult {
     skills: ScannedSkill[];
 }
 
-/** Try to read version from package.json or SKILL.md in a skill directory. */
 function readSkillMeta(skillDir: string): { name?: string; version?: string } {
-    // Try package.json first
     const pkgPath = join(skillDir, 'package.json');
     if (existsSync(pkgPath)) {
         try {
@@ -27,7 +25,6 @@ function readSkillMeta(skillDir: string): { name?: string; version?: string } {
         }
     }
 
-    // Try SKILL.md for version line (e.g. "version: 1.0.0")
     const skillMdPath = join(skillDir, 'SKILL.md');
     if (existsSync(skillMdPath)) {
         try {
@@ -42,7 +39,6 @@ function readSkillMeta(skillDir: string): { name?: string; version?: string } {
     return {};
 }
 
-/** Scan a single platform directory for skills. */
 export function scanPlatform(platformKey: string): PlatformScanResult | null {
     const config = PLATFORMS[platformKey];
     if (!config) return null;
@@ -55,7 +51,6 @@ export function scanPlatform(platformKey: string): PlatformScanResult | null {
     try {
         const entries = readdirSync(dirPath);
         for (const entry of entries) {
-            // Skip hidden files/dirs
             if (entry.startsWith('.')) continue;
 
             const fullPath = join(dirPath, entry);
@@ -81,7 +76,6 @@ export function scanPlatform(platformKey: string): PlatformScanResult | null {
     return { platform: config.name, workspace: dirPath, skills };
 }
 
-/** Scan all platforms and return results for those with skills. */
 export function scanAll(): PlatformScanResult[] {
     const results: PlatformScanResult[] = [];
     for (const key of Object.keys(PLATFORMS)) {

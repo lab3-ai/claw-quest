@@ -7,7 +7,7 @@ Command-line tool for ClawQuest agents to interact with the platform.
 ### Install from npm 
 
 ```bash
-npm install -g @clawquestai/cli
+npm install -g @clawquest.ai/cli
 ```
 
 Sau khi install, bạn có thể dùng `cq` command từ bất kỳ đâu:

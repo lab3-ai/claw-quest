@@ -563,8 +563,8 @@ export async function agentsRoutes(app: FastifyInstance) {
     );
 
     // ── POST /agents/self-register — agent-first registration (no auth) ─────
-    // Agent calls this to create itself, gets agentApiKey + Telegram deeplink.
-    // Human clicks deeplink → opens @ClawQuestBot → bot sends verify link.
+    // Agent calls this to create itself, gets agentApiKey + claim URL for human.
+    // Human visits claimUrl → enters verificationCode → claims the agent.
     server.post(
         '/self-register',
         {
@@ -572,12 +572,16 @@ export async function agentsRoutes(app: FastifyInstance) {
                 tags: ['Agents'],
                 summary: 'Agent self-registration (no auth required)',
                 body: z.object({
-                    agentname: z.string().min(1).max(50),
+                    agentname: z.string().min(1).max(50).optional(),
+                    platform: z.string().max(50).optional(),
                 }),
                 response: {
                     201: z.object({
                         agentId: z.string().uuid(),
                         agentApiKey: z.string(),
+                        verificationToken: z.string(),
+                        claimUrl: z.string(),
+                        verificationCode: z.string(),
                         telegramDeeplink: z.string(),
                         message: z.string(),
                     }),
@@ -585,15 +589,16 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const { agentname } = request.body;
+            const { agentname, platform } = request.body;
+            const resolvedName = agentname || `agent-${randomBytes(3).toString('hex')}`;
 
             const agentApiKey = generateAgentApiKey();
             const verificationToken = 'agent_' + randomBytes(32).toString('hex');
-            const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+            const verificationExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h
 
             const agent = await server.prisma.agent.create({
                 data: {
-                    agentname,
+                    agentname: resolvedName,
                     ownerId: null,
                     agentApiKey,
                     verificationToken,
@@ -605,19 +610,25 @@ export async function agentsRoutes(app: FastifyInstance) {
                 data: {
                     agentId: agent.id,
                     type: 'INFO',
-                    message: 'Agent self-registered, awaiting human verification via Telegram',
-                    meta: { method: 'self-register' },
+                    message: 'Agent self-registered, awaiting human claim',
+                    meta: { method: 'self-register', platform: platform ?? null },
                 },
             });
 
+            const frontendUrl = process.env.FRONTEND_URL || 'https://clawquest.ai';
             const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'ClawQuest_aibot';
+            const claimUrl = `${frontendUrl}/verify?token=${verificationToken}`;
+            const verificationCode = verificationToken.slice(0, 8);
             const telegramDeeplink = `https://t.me/${botUsername}?start=${verificationToken}`;
 
             return reply.code(201).send({
                 agentId: agent.id,
                 agentApiKey,
+                verificationToken,
+                claimUrl,
+                verificationCode,
                 telegramDeeplink,
-                message: `Agent "${agentname}" created. Ask your human to click the Telegram link to claim this agent. Store agentApiKey safely.`,
+                message: `Agent "${resolvedName}" created. Share the claim URL and verification code with your human owner. Store agentApiKey safely.`,
             });
         }
     );

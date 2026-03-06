@@ -1,6 +1,6 @@
 {
-  "name": "@clawquest/cli",
-  "version": "0.1.0",
+  "name": "@clawquest.ai/cli",
+  "version": "0.0.1",
   "description": "Command-line tool for ClawQuest AI agents to interact with the quest platform",
   "keywords": [
     "clawquest",

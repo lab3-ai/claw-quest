@@ -731,42 +731,6 @@ cq quests list
 
 ---
 
-## Development
-
-### Build CLI
-
-```bash
-cd packages/cli
-pnpm install
-pnpm build
-```
-
-### Run from Source
-
-```bash
-# Using tsx (no build needed)
-pnpm exec tsx src/index.ts --help
-
-# After build
-node dist/index.js --help
-```
-
-### Link Globally for Testing
-
-```bash
-cd packages/cli
-pnpm link --global
-cq --help
-```
-
-### Watch Mode (Auto-rebuild)
-
-```bash
-cd packages/cli
-pnpm dev
-```
-
----
 
 ## Help
 
@@ -822,6 +786,5 @@ cq auth login --email user@example.com --password mypassword
 
 ## See Also
 
-- [Local Setup Guide](test-logs/LOCAL_SETUP.md) - Guide for running CLI with local API
 - [API Documentation](../../docs/API.md) - API reference
 - [Architecture](../../docs/ARCHITECTURE.md) - System architecture

@@ -45,6 +45,7 @@ const CreateQuestSchema = QuestSchema.omit({
     requiredSkills: z.array(z.string()).default([]),
     network: z.string().optional(),
     drawTime: z.string().datetime().optional(),
+    fundingMethod: z.enum(['crypto', 'stripe']).optional(),
 });
 
 export async function questsRoutes(server: FastifyInstance) {
@@ -1179,6 +1180,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     network: z.string().optional(),
                     drawTime: z.string().datetime().nullable().optional(),
                     startAt: z.string().datetime().nullable().optional(),
+                    fundingMethod: z.enum(['crypto', 'stripe']).optional(),
                 }),
                 response: {
                     200: QuestSchema,
@@ -1490,7 +1492,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 }
             }
 
-            notifyQuestCancelled(server, id).catch(() => {});
+            notifyQuestCancelled(server, id).catch(() => { });
             return { message: 'Quest cancelled', questId: id };
         }
     );
@@ -1759,7 +1761,7 @@ export async function questsRoutes(server: FastifyInstance) {
 
             try {
                 const participation = await verifyParticipation(server.prisma, questId, pid, action, reason);
-                notifyProofVerified(server, pid, action === 'approve' ? 'approved' : 'rejected').catch(() => {});
+                notifyProofVerified(server, pid, action === 'approve' ? 'approved' : 'rejected').catch(() => { });
                 return {
                     message: `Proof ${action === 'approve' ? 'approved' : 'rejected'}`,
                     participation: { id: participation.id, status: participation.status },

@@ -144,7 +144,7 @@ export function FundQuest() {
 
     // Determine funding method from quest data
     const token = session?.access_token
-    const { data: quest } = useQuery({
+    const { data: quest, refetch: refetchQuest } = useQuery({
         queryKey: ['quest', questId],
         queryFn: async () => {
             const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
@@ -153,24 +153,43 @@ export function FundQuest() {
             return res.json()
         },
         enabled: !!questId,
+        refetchOnMount: true, // Always refetch when component mounts
+        refetchOnWindowFocus: true, // Refetch when window gets focus
+        staleTime: 0, // Always consider data stale, force refetch
         refetchInterval: (query) => {
             const data = query.state.data as any
             return data?.fundingStatus === 'pending' ? 5000 : false
         },
     })
 
-    // Determine method: from quest data, or default based on rewardType
-    const questMethod: FundingMethod = quest?.fundingMethod === 'stripe'
-        ? 'stripe'
+    // Refetch quest data when component mounts or questId changes
+    useEffect(() => {
+        if (questId) {
+            refetchQuest()
+        }
+    }, [questId, refetchQuest])
+
+    // Determine method: prioritize fundingMethod from quest, fallback to rewardType
+    const questMethod: FundingMethod = quest?.fundingMethod
+        ? (quest.fundingMethod === 'stripe' ? 'stripe' : 'crypto')
         : quest?.rewardType === 'USD'
             ? 'stripe'
             : 'crypto'
 
     const [method, setMethod] = useState<FundingMethod>(questMethod)
 
-    // Sync method when quest loads
+    // Sync method when quest loads - always use fundingMethod if available
     useEffect(() => {
-        if (quest) setMethod(questMethod)
+        if (quest) {
+            if (quest.fundingMethod) {
+                // Quest has explicit fundingMethod - use it
+                setMethod(quest.fundingMethod === 'stripe' ? 'stripe' : 'crypto')
+            } else {
+                // Fallback to rewardType-based logic for legacy quests
+                const fallbackMethod: FundingMethod = quest.rewardType === 'USD' ? 'stripe' : 'crypto'
+                setMethod(fallbackMethod)
+            }
+        }
     }, [quest?.fundingMethod, quest?.rewardType])
 
     // ── Crypto: Fetch deposit params ────────────────────────────────────────
@@ -237,8 +256,12 @@ export function FundQuest() {
         if (fundingStatus === 'confirmed' || fundingStatus === 'live' || fundingStatus === 'scheduled') setStep('success')
     }, [fundingStatus, setStep])
 
-    // ── Can user toggle method? Only if quest not yet funded ────────────────
-    const canToggle = quest && quest.fundingStatus !== 'confirmed' && quest.status === 'draft'
+    // ── Can user toggle method? Only if quest not yet funded AND no explicit fundingMethod set
+    // If quest has fundingMethod set, it should match the reward method and cannot be changed
+    const canToggle = quest
+        && quest.fundingStatus !== 'confirmed'
+        && quest.status === 'draft'
+        && !quest.fundingMethod // Don't allow toggle if fundingMethod is explicitly set
 
     // ── Render ──────────────────────────────────────────────────────────────
     return (
@@ -452,7 +475,7 @@ function FundingProgress({ quest, session, questId }: { quest: any; session: any
             </div>
 
             {isOwnerOrSponsor && (
-                <div className="mt-3 flex items-center gap-2">
+                <div className="my-3 flex items-center gap-2">
                     <Button
                         variant="outline"
                         size="sm"

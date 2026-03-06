@@ -51,6 +51,8 @@ interface FormData {
     winners: string
     // Lucky Draw only
     drawTime: string
+    // Funding method (auto-set based on rail)
+    fundingMethod?: "crypto" | "stripe"
 }
 
 // ─── Default network (testnet vs mainnet) ─────────────────────────────────────
@@ -675,6 +677,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
         rail: "crypto", network: DEFAULT_NETWORK, token: "USDC", type: "FCFS",
         total: "100.00", winners: "50",
         drawTime: "",
+        fundingMethod: "crypto",
     })
     const [activePlatform, setActivePlatform] = useState<string | null>(null)
     const [humanTasks, setHumanTasks] = useState<SocialEntry[]>([])
@@ -746,6 +749,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
         const token = isFiat ? "USDC" : (editQuest.rewardType || "USDC")
         // Check if token is a native token (not USDC/USDT)
         const isNative = !isFiat && token !== "USDC" && token !== "USDT"
+        // Determine fundingMethod from existing quest or default based on rail
+        const fundingMethod = editQuest.fundingMethod || (isFiat ? "stripe" : "crypto")
 
         setForm({
             title: editQuest.title || "",
@@ -759,6 +764,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
             total: String(editQuest.rewardAmount ?? "100.00"),
             winners: String(editQuest.totalSlots ?? "50"),
             drawTime: editQuest.drawTime ? new Date(editQuest.drawTime).toISOString().slice(0, 16) : "",
+            fundingMethod: fundingMethod as "crypto" | "stripe",
         })
 
         // Populate human tasks
@@ -881,6 +887,9 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
             const url = isEditMode ? `${API_BASE}/quests/${editQuestId}` : `${API_BASE}/quests`
             const method = isEditMode ? "PATCH" : "POST"
 
+            // Always calculate fundingMethod from current rail value
+            const fundingMethod: "crypto" | "stripe" = form.rail === "fiat" ? "stripe" : "crypto"
+
             const payload: any = {
                 title: form.title,
                 description: form.description || undefined,
@@ -895,6 +904,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
                 network: form.network || undefined,
                 drawTime: form.drawTime ? new Date(form.drawTime).toISOString() : undefined,
+                fundingMethod,
             }
             if (!isEditMode) payload.status = "draft"
 
@@ -1140,13 +1150,16 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             stepSummary={stepSummaries.reward}
                             onToggle={() => setTab(tab === "reward" ? null : "reward")}
                             onFieldChange={(key, value) => {
-                                if (key === "rail" || key === "type") {
+                                if (key === "rail") {
+                                    const fundingMethod: "crypto" | "stripe" = value === "fiat" ? "stripe" : "crypto"
+                                    setForm(prev => ({ ...prev, rail: value as PaymentRail, fundingMethod }))
+                                } else if (key === "type") {
                                     setForm(prev => {
-                                        if (key === "type" && value === "LEADERBOARD") {
+                                        if (value === "LEADERBOARD") {
                                             const n = parseInt(prev.winners) || 2
                                             return { ...prev, type: value as QuestType, winners: String(Math.min(100, Math.max(2, n))) }
                                         }
-                                        return { ...prev, [key]: value }
+                                        return { ...prev, type: value as QuestType }
                                     })
                                 } else {
                                     set(key, value as string)

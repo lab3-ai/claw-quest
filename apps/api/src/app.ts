@@ -202,6 +202,9 @@ if (TELEGRAM_BOT_TOKEN) {
     console.warn('⚠️  Missing TELEGRAM_BOT_TOKEN — Telegram bot will not start');
 }
 
+// ClawHub daily skill sync job
+import { startClawhubSyncJob } from './modules/clawhub/clawhub-sync.job';
+
 // Escrow Event Poller (detect on-chain deposits)
 import { startEscrowPoller } from './modules/escrow/escrow.poller';
 import { isEscrowConfigured } from './modules/escrow/escrow.config';
@@ -237,6 +240,11 @@ const start = async () => {
         } else {
             console.warn('⚠️  Escrow not configured (missing contract address or operator key) — poller will not start');
         }
+
+        // ClawHub skill catalog sync (runs on startup + every 24h)
+        startClawhubSyncJob(server).catch((err) => {
+            console.error('⚠️  ClawHub sync job failed (non-fatal):', err.message);
+        });
 
         const port = parseInt(process.env.PORT || '3000', 10);
         await server.listen({ port, host: '0.0.0.0' });

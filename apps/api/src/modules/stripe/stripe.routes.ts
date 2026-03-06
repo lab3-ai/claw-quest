@@ -41,11 +41,18 @@ export async function stripeRoutes(server: FastifyInstance) {
             const { questId } = request.params as any;
             const { successUrl, cancelUrl } = request.body as any;
 
-            // Verify ownership
+            // Verify ownership or partnership
             const quest = await server.prisma.quest.findUnique({ where: { id: questId } });
             if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any);
-            if (quest.creatorUserId !== request.user.id && request.user.role !== 'admin') {
-                return reply.status(403).send({ message: 'Only quest creator can fund' } as any);
+            const isOwner = quest.creatorUserId === request.user.id || request.user.role === 'admin';
+            if (!isOwner) {
+                const partner = await server.prisma.questCollaborator.findFirst({
+                    where: { questId, userId: request.user.id, acceptedAt: { not: null } },
+                    select: { id: true },
+                });
+                if (!partner) {
+                    return reply.status(403).send({ message: 'Only quest owner or partner can fund' } as any);
+                }
             }
 
             try {

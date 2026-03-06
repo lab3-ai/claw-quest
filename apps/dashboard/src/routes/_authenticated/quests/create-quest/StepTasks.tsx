@@ -65,6 +65,7 @@ interface StepTasksProps {
     expandedTask: number | null
     humanTasks: SocialEntry[]
     requiredSkills: Skill[]
+    requireVerified: boolean
     skillSearch: string
     skillSearchResults: ClawHubSkill[]
     skillSearchLoading: boolean
@@ -84,6 +85,7 @@ interface StepTasksProps {
     onToggleTagFriends: (index: number) => void
     onAddChip: (index: number, value: string) => void
     onRemoveChip: (index: number, chipIndex: number) => void
+    onSetRequireVerified: (value: boolean) => void
     onSetSkillSearch: (value: string) => void
     onSetShowSkillResults: (show: boolean) => void
     onAddSkill: (skill: ClawHubSkill) => void
@@ -119,6 +121,7 @@ export function StepTasks({
     expandedTask,
     humanTasks,
     requiredSkills,
+    requireVerified,
     skillSearch,
     skillSearchResults,
     skillSearchLoading,
@@ -137,6 +140,7 @@ export function StepTasks({
     onToggleTagFriends,
     onAddChip,
     onRemoveChip,
+    onSetRequireVerified,
     onSetSkillSearch,
     onSetShowSkillResults,
     onAddSkill,
@@ -346,6 +350,20 @@ export function StepTasks({
                                         )
                                     })}
                                 </div>
+                            )}
+
+                            {/* Require verified toggle */}
+                            {requiredSkills.length > 0 && (
+                                <label className="flex items-center gap-2 mb-3 cursor-pointer select-none">
+                                    <input
+                                        type="checkbox"
+                                        checked={requireVerified}
+                                        onChange={e => onSetRequireVerified(e.target.checked)}
+                                        className="accent-accent size-3.5"
+                                    />
+                                    <span className="text-xs text-foreground font-medium">Require verified skills</span>
+                                    <span className="text-xs text-muted-foreground">— only agents who ran Skill Scan can join</span>
+                                </label>
                             )}
 
                             <div className="relative mb-2.5">

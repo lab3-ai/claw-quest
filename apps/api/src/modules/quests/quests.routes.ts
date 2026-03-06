@@ -951,16 +951,26 @@ export async function questsRoutes(server: FastifyInstance) {
             // ── Skill Gate: only check if agent is provided ─────────────
             const requiredSkills = (quest as any).requiredSkills as string[] ?? [];
             if (agentId && requiredSkills.length > 0) {
+                const whereClause: any = {
+                    agentId,
+                    name: { in: requiredSkills },
+                };
+                if ((quest as any).requireVerified) {
+                    whereClause.verified = true;
+                }
                 const agentSkills = await server.prisma.agentSkill.findMany({
-                    where: { agentId, name: { in: requiredSkills } },
-                    select: { name: true },
+                    where: whereClause,
+                    select: { name: true, verified: true },
                 });
                 const agentSkillNames = new Set(agentSkills.map(s => s.name));
                 const missingSkills = requiredSkills.filter(s => !agentSkillNames.has(s));
 
                 if (missingSkills.length > 0) {
+                    const msg = (quest as any).requireVerified
+                        ? `Agent is missing verified skills: ${missingSkills.join(', ')}. Run Skill Scan to verify your skills.`
+                        : `Agent is missing required skills: ${missingSkills.join(', ')}. Report your skills via POST /agents/me/skills before accepting this quest.`;
                     return reply.status(403).send({
-                        message: `Agent is missing required skills: ${missingSkills.join(', ')}. Report your skills via POST /agents/me/skills before accepting this quest.`,
+                        message: msg,
                         missingSkills,
                         requiredSkills,
                     } as any);
@@ -976,8 +986,20 @@ export async function questsRoutes(server: FastifyInstance) {
             const questTasks = (quest.tasks as any[]) ?? [];
             const tasksTotal = questTasks.length + requiredSkills.length;
 
+            // Auto-complete if quest only requires verified skills (no social tasks)
+            const hasOnlySkillTasks = questTasks.length === 0 && requiredSkills.length > 0;
+            const autoComplete = hasOnlySkillTasks && (quest as any).requireVerified;
+
             const participation = await server.prisma.questParticipation.create({
-                data: { questId: id, userId, agentId: agentId ?? null, status: 'in_progress', tasksTotal: tasksTotal || 5 },
+                data: {
+                    questId: id,
+                    userId,
+                    agentId: agentId ?? null,
+                    status: autoComplete ? 'completed' : 'in_progress',
+                    tasksTotal: tasksTotal || 5,
+                    tasksCompleted: autoComplete ? requiredSkills.length : 0,
+                    completedAt: autoComplete ? new Date() : undefined,
+                },
             });
 
             const sideEffects: Promise<any>[] = [
@@ -1093,6 +1115,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     totalSlots: z.number().min(1).optional(),
                     tags: z.array(z.string()).optional(),
                     requiredSkills: z.array(z.string()).optional(),
+                    requireVerified: z.boolean().optional(),
                     tasks: z.array(QuestTaskSchema).optional(),
                     expiresAt: z.string().datetime().nullable().optional(),
                     network: z.string().optional(),

@@ -322,7 +322,7 @@ export async function agentsRoutes(app: FastifyInstance) {
     const SkillEntrySchema = z.object({
         name: z.string().min(1).max(500),         // e.g. "sponge-wallet" or full URL for custom skills
         version: z.string().max(20).optional(),    // e.g. "1.0.0"
-        source: z.enum(['clawhub', 'mcp', 'manual', 'custom']).default('clawhub'),
+        source: z.enum(['clawhub', 'mcp', 'manual', 'custom', 'openclaw', 'cloudage', 'agentforge', 'claude', 'claude_code']).default('clawhub'),
         publisher: z.string().max(100).optional(), // e.g. "paysponge"
         meta: z.record(z.unknown()).optional(),         // tool names, descriptions, etc.
     });
@@ -393,6 +393,88 @@ export async function agentsRoutes(app: FastifyInstance) {
         }
     );
 
+    // ── POST /agents/me/skills/scan — verified skill scan from scan tool ──────
+    const ScanBodySchema = z.object({
+        platform: z.enum(['openclaw', 'cloudage', 'agentforge', 'claude', 'claude_code']),
+        workspace: z.string().optional(),
+        skills: z.array(z.object({
+            name: z.string().min(1).max(500),
+            version: z.string().max(20).optional(),
+            path: z.string().optional(),
+        })).min(1).max(200),
+    });
+
+    server.post(
+        '/me/skills/scan',
+        {
+            schema: {
+                tags: ['Agents'],
+                summary: 'Report verified skills from scan tool (agent API key auth)',
+                security: [{ bearerAuth: [] }],
+                body: ScanBodySchema,
+                response: {
+                    200: z.object({
+                        synced: z.number(),
+                        verified: z.boolean(),
+                        platform: z.string(),
+                        scannedAt: z.string(),
+                        skills: z.array(z.object({
+                            name: z.string(),
+                            version: z.string().nullable(),
+                            verified: z.boolean(),
+                            platform: z.string(),
+                        })),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const ctx = await authenticateAgent(server, request, reply);
+            if (!ctx) return;
+
+            const { platform, skills } = request.body;
+            const now = new Date();
+
+            const results = await Promise.all(
+                skills.map(s =>
+                    server.prisma.agentSkill.upsert({
+                        where: { agentId_name: { agentId: ctx.agentId, name: s.name } },
+                        create: {
+                            agentId: ctx.agentId,
+                            name: s.name,
+                            version: s.version ?? null,
+                            source: platform,
+                            verified: true,
+                            platform,
+                            scannedAt: now,
+                            lastSeenAt: now,
+                        },
+                        update: {
+                            version: s.version ?? undefined,
+                            verified: true,
+                            platform,
+                            scannedAt: now,
+                            lastSeenAt: now,
+                        },
+                    })
+                )
+            );
+
+            return {
+                synced: results.length,
+                verified: true,
+                platform,
+                scannedAt: now.toISOString(),
+                skills: results.map(r => ({
+                    name: r.name,
+                    version: r.version,
+                    verified: r.verified,
+                    platform: r.platform!,
+                })),
+            };
+        }
+    );
+
     // ── GET /agents/me/skills — list agent's installed skills ─────────────────
     server.get(
         '/me/skills',
@@ -432,6 +514,51 @@ export async function agentsRoutes(app: FastifyInstance) {
                 lastSeenAt: s.lastSeenAt.toISOString(),
                 createdAt: s.createdAt.toISOString(),
             }));
+        }
+    );
+
+    // ── GET /agents/:agentId/skills — public skill list ─────────────────────
+    server.get(
+        '/:agentId/skills',
+        {
+            schema: {
+                tags: ['Agents'],
+                summary: 'Get agent skills (public)',
+                params: z.object({ agentId: z.string().uuid() }),
+                response: {
+                    200: z.object({
+                        skills: z.array(z.object({
+                            name: z.string(),
+                            version: z.string().nullable(),
+                            verified: z.boolean(),
+                            platform: z.string().nullable(),
+                            scannedAt: z.string().nullable(),
+                        })),
+                        lastScan: z.string().nullable(),
+                    }),
+                },
+            },
+        },
+        async (request) => {
+            const { agentId } = request.params as { agentId: string };
+            const skills = await server.prisma.agentSkill.findMany({
+                where: { agentId },
+                orderBy: { name: 'asc' },
+            });
+            const lastScan = skills.reduce((latest: Date | null, s) => {
+                if (s.scannedAt && (!latest || s.scannedAt > latest)) return s.scannedAt;
+                return latest;
+            }, null);
+            return {
+                skills: skills.map(s => ({
+                    name: s.name,
+                    version: s.version,
+                    verified: s.verified,
+                    platform: s.platform,
+                    scannedAt: s.scannedAt?.toISOString() ?? null,
+                })),
+                lastScan: lastScan?.toISOString() ?? null,
+            };
         }
     );
 

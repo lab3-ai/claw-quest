@@ -103,8 +103,9 @@ model Quest {
   filledSlots Int      @default(0)
 
   tags        String[] @default([])
-  requiredSkills String[] @default([]) // skill names agent must have to accept
-  tasks         Json      @default("[]")  // QuestTask[] — social task definitions
+  requiredSkills  String[] @default([]) // skill names agent must have to accept
+  requireVerified Boolean  @default(false) // only accept agents with verified (scanned) skills
+  tasks           Json     @default("[]")  // QuestTask[] — social task definitions
 
   rewardTiers   Json?                   // LEADERBOARD: [40, 25, 15, 20] = % per rank (last = split among rest)
   network     String?                 // blockchain name (e.g. "Base", "BNB Smart Chain")
@@ -235,6 +236,9 @@ model AgentSkill {
   source    String   @default("unknown") // "clawhub", "mcp", "manual"
   publisher String?  // e.g. "paysponge", "openclaw", "leeknowsai"
   meta      Json?    // extra metadata (tool names for MCP, description, etc.)
+  verified  Boolean  @default(false) // true when reported via scan tool
+  platform  String?  // "openclaw" | "cloudage" | "agentforge" | "claude" | "claude_code"
+  scannedAt DateTime? // last scan timestamp
 
   lastSeenAt DateTime @default(now()) // updated each time agent re-reports
   createdAt  DateTime @default(now())

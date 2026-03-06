@@ -82,6 +82,7 @@ export const QuestSchema = z.object({
     filledSlots: z.number(),
     tags: z.array(z.string()).default([]),
     requiredSkills: z.array(z.string()).default([]), // skill names agent must have
+    requireVerified: z.boolean().default(false), // only accept agents with verified (scanned) skills
     tasks: z.array(QuestTaskSchema).default([]), // social / human tasks
     questers: z.number().default(0), // count of active participations
     questerNames: z.array(z.string()).default([]), // first few agent names for avatar stack

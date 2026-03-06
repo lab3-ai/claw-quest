@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Link } from "@tanstack/react-router"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueries, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { QuestersPopup } from "@/components/QuestersPopup"
 import { PlatformIcon } from "@/components/PlatformIcon"
@@ -33,6 +33,14 @@ interface Agent {
         payoutAmount: number | null
         payoutStatus: string
     }[]
+}
+
+interface AgentSkillInfo {
+    name: string
+    version: string | null
+    verified: boolean
+    platform: string | null
+    scannedAt: string | null
 }
 
 type QuestFilter = "all" | "draft" | "live" | "scheduled" | "completed"
@@ -189,6 +197,24 @@ export function Dashboard() {
             return res.json()
         },
         enabled: !!session?.access_token,
+    })
+
+    // ── Agent skills (per agent) ─────────────────────────────────────────────
+    const activeAgents = agents.filter(a => !a.activationCode)
+    const agentSkillQueries = useQueries({
+        queries: activeAgents.map(agent => ({
+            queryKey: ["agent-skills", agent.id],
+            queryFn: async (): Promise<{ skills: AgentSkillInfo[]; lastScan: string | null }> => {
+                const res = await fetch(`${API_BASE}/agents/${agent.id}/skills`)
+                if (!res.ok) return { skills: [], lastScan: null }
+                return res.json()
+            },
+            staleTime: 60_000,
+        })),
+    })
+    const agentSkillsMap = new Map<string, { skills: AgentSkillInfo[]; lastScan: string | null }>()
+    activeAgents.forEach((agent, i) => {
+        if (agentSkillQueries[i]?.data) agentSkillsMap.set(agent.id, agentSkillQueries[i].data!)
     })
 
     // ── Publish handler ─────────────────────────────────────────────────────
@@ -954,7 +980,30 @@ export function Dashboard() {
                                                     )}
                                                 </td>
                                                 <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle min-w-[180px]">
-                                                    <span className="inline-block text-xs font-semibold px-1.5 py-0.5 rounded bg-(--skill-bg) text-(--skill-fg) font-mono mr-0.5 mb-0.5">clawquest</span>
+                                                    {(() => {
+                                                        const skillData = agentSkillsMap.get(agent.id)
+                                                        if (!skillData || skillData.skills.length === 0) {
+                                                            return <span className="text-xs text-muted-foreground">No skills</span>
+                                                        }
+                                                        return (
+                                                            <div className="flex flex-wrap gap-0.5">
+                                                                {skillData.skills.map(s => (
+                                                                    <span
+                                                                        key={s.name}
+                                                                        className={cn(
+                                                                            "inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded font-mono",
+                                                                            s.verified
+                                                                                ? "bg-emerald-500/15 text-emerald-400"
+                                                                                : "bg-(--skill-bg) text-(--skill-fg)"
+                                                                        )}
+                                                                    >
+                                                                        {s.verified && <span className="text-[10px]" title="Verified">✓</span>}
+                                                                        {s.name}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )
+                                                    })()}
                                                 </td>
                                                 <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[90px] text-center">
                                                     {agent.status === "questing" ? "1 active" : "0"}
@@ -1034,6 +1083,58 @@ export function Dashboard() {
                                                                     )}
                                                                 </div>
                                                             )}
+                                                            {/* My Skills section */}
+                                                            {!isPending && (() => {
+                                                                const skillData = agentSkillsMap.get(agent.id)
+                                                                const scanCmd = `npx @clawquest/scan --key <your-agent-api-key> --server ${API_BASE}`
+                                                                return (
+                                                                    <div className="mt-3.5">
+                                                                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">My Skills</div>
+                                                                        {(!skillData || skillData.skills.length === 0) ? (
+                                                                            <div>
+                                                                                <p className="text-sm text-muted-foreground mb-2">No skills scanned yet. Run Skill Scan to register your agent's skills.</p>
+                                                                                <div className="flex items-center gap-1.5">
+                                                                                    <code className="flex-1 bg-[#1e1e2e] text-[#cdd6f4] px-2.5 py-1.5 rounded font-mono text-[11px] select-all overflow-x-auto">{scanCmd}</code>
+                                                                                    <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-muted/80 text-[11px] font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
+                                                                                </div>
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div>
+                                                                                <div className="space-y-1 mb-2">
+                                                                                    {skillData.skills.map(s => (
+                                                                                        <div key={s.name} className="flex items-center gap-2 text-xs">
+                                                                                            <code className="font-mono text-xs bg-muted px-1 py-px rounded">{s.name}</code>
+                                                                                            {s.version && <span className="text-muted-foreground">{s.version}</span>}
+                                                                                            {s.verified ? (
+                                                                                                <span className="text-emerald-400 font-semibold">✓ Verified</span>
+                                                                                            ) : (
+                                                                                                <span className="text-muted-foreground">Unverified</span>
+                                                                                            )}
+                                                                                            {s.platform && <span className="text-muted-foreground">{s.platform}</span>}
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                                <div className="text-[11px] text-muted-foreground mb-1.5">
+                                                                                    {skillData.lastScan
+                                                                                        ? `Last scan: ${(() => {
+                                                                                            const diff = Date.now() - new Date(skillData.lastScan).getTime()
+                                                                                            const hours = Math.floor(diff / 3600000)
+                                                                                            if (hours < 1) return "just now"
+                                                                                            if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`
+                                                                                            const days = Math.floor(hours / 24)
+                                                                                            return `${days} day${days > 1 ? "s" : ""} ago`
+                                                                                        })()}`
+                                                                                        : "Never scanned"}
+                                                                                </div>
+                                                                                <div className="flex items-center gap-1.5">
+                                                                                    <code className="flex-1 bg-[#1e1e2e] text-[#cdd6f4] px-2.5 py-1.5 rounded font-mono text-[11px] select-all overflow-x-auto">{scanCmd}</code>
+                                                                                    <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-muted/80 text-[11px] font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )
+                                                            })()}
                                                         </div>
                                                     </td>
                                                 </tr>

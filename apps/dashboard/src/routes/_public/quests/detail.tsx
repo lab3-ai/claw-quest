@@ -158,6 +158,14 @@ interface QuestWithParticipation extends Quest {
     isSponsor?: boolean
 }
 
+interface AgentSkillInfo {
+    name: string
+    version: string | null
+    verified: boolean
+    platform: string | null
+    scannedAt: string | null
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function QuestDetail() {
@@ -188,6 +196,33 @@ export function QuestDetail() {
         },
         enabled: isAuthenticated && !!session?.access_token,
         staleTime: 60_000,
+    })
+
+    // Fetch user's first agent ID (for skill check on quest detail)
+    const { data: userAgents } = useQuery<{ id: string }[]>({
+        queryKey: ["agents"],
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/agents`, {
+                headers: { Authorization: `Bearer ${session?.access_token}` },
+            })
+            if (!res.ok) return []
+            return res.json()
+        },
+        enabled: isAuthenticated && !!session?.access_token,
+        staleTime: 60_000,
+    })
+    const firstAgentId = userAgents?.[0]?.id
+
+    // Fetch agent skills for required skills check
+    const { data: agentSkillsData } = useQuery<{ skills: AgentSkillInfo[]; lastScan: string | null }>({
+        queryKey: ["agent-skills", firstAgentId],
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/agents/${firstAgentId}/skills`)
+            if (!res.ok) return { skills: [], lastScan: null }
+            return res.json()
+        },
+        enabled: !!firstAgentId,
+        staleTime: 30_000,
     })
 
     // Fetch Stripe connect status for USD quest banner
@@ -437,6 +472,11 @@ export function QuestDetail() {
     const spotsPercent = quest.totalSlots > 0 ? Math.round((quest.filledSlots / quest.totalSlots) * 100) : 0
     const isLive = quest.status === "live"
     const isCompleted = quest.status === "completed"
+    const needsVerifiedScan = isAuthenticated && firstAgentId && quest.requireVerified &&
+        quest.requiredSkills?.some((sk: string) => {
+            const match = agentSkillsData?.skills?.find(s => s.name === sk)
+            return !match || !match.verified
+        })
 
     return (
         <div className="">
@@ -659,27 +699,78 @@ export function QuestDetail() {
                     )}
 
                     {/* Agent Tasks (from quest.requiredSkills) */}
-                    {quest.requiredSkills && quest.requiredSkills.length > 0 && (
-                        <div className="mb-6 pl-3.5 border-l-4 border-l-(--agent-fg)">
-                            <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
-                                Agent Tasks
-                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--agent-bg) text-(--agent-fg)">AGENT</span>
-                                <span className="font-normal text-xs text-muted-foreground ml-auto">Your AI agent handles these</span>
-                            </div>
-                            {quest.requiredSkills.map((skill: string, idx: number) => (
-                                <div key={idx} className="border border-border rounded mb-2.5 overflow-hidden last:mb-0">
-                                    <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
-                                        <TaskCheck status="pending" />
-                                        <span className="flex-1 font-medium">
-                                            Requires skill: <code className="font-mono text-xs bg-muted px-1 py-px rounded">{skill}</code>
-                                        </span>
-                                        <Badge variant="skill">Skill</Badge>
-                                        <TaskActionBtn status="pending" disabled label="Agent" />
-                                    </div>
+                    {quest.requiredSkills && quest.requiredSkills.length > 0 && (() => {
+                        const agentSkillMap = new Map(
+                            (agentSkillsData?.skills ?? []).map(s => [s.name, s])
+                        )
+
+                        return (
+                            <div className="mb-6 pl-3.5 border-l-4 border-l-(--agent-fg)">
+                                <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
+                                    Agent Tasks
+                                    <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--agent-bg) text-(--agent-fg)">AGENT</span>
+                                    {quest.requireVerified && (
+                                        <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-warning/15 text-warning">Verified Only</span>
+                                    )}
+                                    <span className="font-normal text-xs text-muted-foreground ml-auto">Your AI agent handles these</span>
                                 </div>
-                            ))}
-                        </div>
-                    )}
+                                {quest.requiredSkills.map((skill: string, idx: number) => {
+                                    const match = agentSkillMap.get(skill)
+                                    const status = !isAuthenticated || !firstAgentId ? "pending"
+                                        : match?.verified ? "done"
+                                        : match ? "verifying" // reported but not verified
+                                        : "pending" // missing
+
+                                    return (
+                                        <div key={idx} className="border border-border rounded mb-2.5 overflow-hidden last:mb-0">
+                                            <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
+                                                <TaskCheck status={status} />
+                                                <span className="flex-1 font-medium">
+                                                    Requires skill: <code className="font-mono text-xs bg-muted px-1 py-px rounded">{skill}</code>
+                                                </span>
+                                                {isAuthenticated && firstAgentId && (
+                                                    <span className={cn("text-[11px] font-semibold px-1.5 py-0.5 rounded",
+                                                        match?.verified ? "bg-green-100 text-success"
+                                                        : match ? "bg-amber-100 text-warning"
+                                                        : "bg-red-100 text-error"
+                                                    )}>
+                                                        {match?.verified ? "Verified" : match ? "Reported" : "Missing"}
+                                                    </span>
+                                                )}
+                                                <Badge variant="skill">Skill</Badge>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+
+                                {/* Scan guide when skills missing or unverified */}
+                                {needsVerifiedScan && (() => {
+                                    const scanCmd = `npx @clawquest/scan --key <your-agent-api-key> --server ${API_BASE}`
+                                    return (
+                                        <div className="mt-2 rounded border border-warning/30 bg-warning/10 px-3 py-2.5 text-xs">
+                                            <div className="font-semibold mb-1">Verify your skills to join this quest</div>
+                                            <div className="text-muted-foreground leading-relaxed mb-1.5">
+                                                Run this in your terminal:
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <code className="flex-1 bg-muted px-2 py-1.5 rounded font-mono text-[11px] select-all overflow-x-auto">
+                                                    {scanCmd}
+                                                </code>
+                                                <button
+                                                    type="button"
+                                                    className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-muted/80 text-[11px] font-medium transition-colors"
+                                                    onClick={() => { navigator.clipboard.writeText(scanCmd) }}
+                                                >
+                                                    Copy
+                                                </button>
+                                            </div>
+                                            <div className="text-muted-foreground mt-1.5">After scan, refresh this page.</div>
+                                        </div>
+                                    )
+                                })()}
+                            </div>
+                        )
+                    })()}
 
                     {/* No tasks fallback */}
                     {(!quest.tasks || quest.tasks.length === 0) && (!quest.requiredSkills || quest.requiredSkills.length === 0) && (
@@ -927,11 +1018,11 @@ export function QuestDetail() {
                                         <>
                                             <Button
                                                 className="w-full"
-                                                variant={!acceptMutation.isPending && slotsLeft > 0 ? "default" : "secondary"}
-                                                disabled={acceptMutation.isPending || slotsLeft <= 0}
+                                                variant={!acceptMutation.isPending && slotsLeft > 0 && !needsVerifiedScan ? "default" : "secondary"}
+                                                disabled={acceptMutation.isPending || slotsLeft <= 0 || !!needsVerifiedScan}
                                                 onClick={() => acceptMutation.mutate()}
                                             >
-                                                {acceptMutation.isPending ? "Accepting..." : slotsLeft <= 0 ? "Quest Full" : "Accept Quest"}
+                                                {acceptMutation.isPending ? "Accepting..." : slotsLeft <= 0 ? "Quest Full" : needsVerifiedScan ? "Verify Skills First" : "Accept Quest"}
                                             </Button>
                                             {acceptMsg && (
                                                 <div className={cn("mt-2 text-xs", acceptMsg.includes("accepted") ? "text-accent" : "text-error")}>

@@ -680,6 +680,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const [humanTasks, setHumanTasks] = useState<SocialEntry[]>([])
     const [expandedTask, setExpandedTask] = useState<number | null>(null)
     const [requiredSkills, setRequiredSkills] = useState<Pick<ClawHubSkill, "id" | "name" | "desc" | "agents" | "version">[]>([])
+    const [requireVerified, setRequireVerified] = useState(false)
     const { query: skillSearch, setQuery: setSkillSearch, results: skillSearchResults, isLoading: skillSearchLoading } = useSkillSearch()
     const [showSkillResults, setShowSkillResults] = useState(false)
     const [expandedDescs, setExpandedDescs] = useState<Set<string>>(new Set())
@@ -771,6 +772,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 id: s, name: s, desc: "", agents: 0, version: null,
             })))
         }
+        if (editQuest.requireVerified) setRequireVerified(true)
 
         // Track funding state for top-up logic
         setOriginalRewardAmount(editQuest.rewardAmount ?? 0)
@@ -887,6 +889,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 rewardAmount: total,
                 totalSlots: slots,
                 requiredSkills: requiredSkills.map(s => s.id),
+                requireVerified,
                 tasks,
                 expiresAt: form.endAt ? new Date(form.endAt).toISOString() : undefined,
                 startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
@@ -1116,6 +1119,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             SocialEntryBody={SocialEntryBody}
                             isSkillUrl={isSkillUrl}
                             fetchSkillFromUrl={fetchSkillFromUrl}
+                            requireVerified={requireVerified}
+                            onSetRequireVerified={setRequireVerified}
                         />
 
                         {/* ══ STEP 3: REWARD ══ */}

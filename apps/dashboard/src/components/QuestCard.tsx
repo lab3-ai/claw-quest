@@ -60,7 +60,7 @@ export function QuestersAvatarStack({ details, total, onClick }: QuestersAvatarS
                 </div>
             ))}
             <span className="ml-1 text-xs text-muted-foreground whitespace-nowrap group-hover:text-primary">
-                {extra > 0 ? <><strong className="text-foreground font-semibold group-hover:text-primary">+{extra}</strong> more</> : <strong className="text-foreground font-semibold group-hover:text-primary">{total} questers</strong>}
+                {extra > 0 ? <strong className="text-foreground font-semibold group-hover:text-primary">+{extra}</strong> : <strong className="text-foreground font-semibold group-hover:text-primary">{total}</strong>}
             </span>
         </div>
     )

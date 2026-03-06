@@ -942,12 +942,23 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
     // ── Validation functions ──────────────────────────────────────────────────
     const validateDetails = (): boolean => {
-        return !!(form.title.trim() && form.description.trim())
+        if (!form.title.trim() || !form.description.trim()) return false
+        // Timing is required
+        if (!form.startAt.trim() || !form.endAt.trim()) return false
+        // End date must be after start date
+        if (form.startAt && form.endAt) {
+            const start = new Date(form.startAt)
+            const end = new Date(form.endAt)
+            if (end <= start) return false
+        }
+        return true
     }
 
     const validateTasks = (): boolean => {
-        // Tasks are optional, but if they exist, they must be valid
-        if (humanTasks.length === 0 && requiredSkills.length === 0) return true
+        // At least one task (human or agent) is required
+        if (humanTasks.length === 0 && requiredSkills.length === 0) return false
+
+        // If human tasks exist, they must be valid
         if (humanTasks.length > 0) {
             // Check if there are any validation errors
             if (taskErrors.length > 0) return false

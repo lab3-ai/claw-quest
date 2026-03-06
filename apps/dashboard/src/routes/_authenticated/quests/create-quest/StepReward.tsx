@@ -272,10 +272,12 @@ export function StepReward({
                                 <div className="space-y-1.5 mb-3.5">
                                     <Label>Draw Time <span className="text-destructive">*</span></Label>
                                     <input
-                                        className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50", drawTimeError && "border-destructive focus-visible:ring-destructive")}
+                                        className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", drawTimeError && "border-destructive focus-visible:ring-destructive")}
                                         type="datetime-local"
                                         value={form.drawTime}
                                         onChange={e => onFieldChange("drawTime", e.target.value)}
+                                        onClick={(e) => e.currentTarget.showPicker?.()}
+                                        style={{ cursor: 'pointer' }}
                                     />
                                     {drawTimeError && <div className="text-xs text-destructive mt-0.5">Draw time is required for Lucky Draw</div>}
                                 </div>

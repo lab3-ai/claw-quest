@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import type { QuestersResponse, QuestParticipation } from "@clawquest/shared"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { QuestTypeBadge } from "@/components/quest-badges"
 import { cn } from "@/lib/utils"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
@@ -57,15 +57,6 @@ export function QuestersPage() {
         setPage(1)
     }
 
-    const typeBadgeClass = (type: string) => {
-        const map: Record<string, string> = {
-            FCFS: "badge-fcfs",
-            LEADERBOARD: "badge-leaderboard",
-            LUCKY_DRAW: "badge-luckydraw",
-        }
-        return map[type] ?? "badge-fcfs"
-    }
-
     return (
         <div>
             {/* Breadcrumb */}
@@ -86,7 +77,7 @@ export function QuestersPage() {
                         <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
                             <strong className="text-foreground">{data.totalQuesters}</strong> questers
                             <span>·</span>
-                            <Badge variant={typeBadgeClass(data.questType).replace("badge-", "") as any}>{data.questType}</Badge>
+                            <QuestTypeBadge type={data.questType} />
                             <span>·</span>
                             <span>{data.tasksTotal} tasks</span>
                             <span>·</span>

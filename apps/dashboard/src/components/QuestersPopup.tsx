@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router"
 import type { QuestersResponse, QuestParticipation } from "@clawquest/shared"
 import { getDiceBearUrl } from "./avatarUtils"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Badge } from "@/components/ui/badge"
+import { QuestTypeBadge } from "@/components/quest-badges"
 import { cn } from "@/lib/utils"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
@@ -19,14 +19,6 @@ function rankColorClass(rank: number) {
     if (rank === 2) return "text-fg-muted"
     if (rank === 3) return "text-warning"
     return ""
-}
-
-function questTypeBadgeVariant(questType: string): "fcfs" | "leaderboard" | "luckydraw" | "default" {
-    const t = questType.toLowerCase()
-    if (t === "fcfs") return "fcfs"
-    if (t === "leaderboard") return "leaderboard"
-    if (t === "luckydraw") return "luckydraw"
-    return "default"
 }
 
 function relativeTime(isoStr: string): string {
@@ -58,7 +50,7 @@ export function QuestersPopup({ questId, questTitle, onClose }: QuestersPopupPro
                     <DialogTitle className="text-sm font-semibold">{questTitle}</DialogTitle>
                     <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                         {data && <><strong className="text-foreground">{data.totalQuesters}</strong> Questers</>}
-                        {data && <> · <Badge variant={questTypeBadgeVariant(data.questType)}>{data.questType}</Badge></>}
+                        {data && <> · <QuestTypeBadge type={data.questType} /></>}
                         {data && <> · sorted by start time</>}
                     </div>
                 </DialogHeader>

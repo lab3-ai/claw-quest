@@ -1,0 +1,97 @@
+/* ═══════════════════════════════════════════════
+   THEME: Terminal (default) — monospace, flat, high-contrast
+   ═══════════════════════════════════════════════ */
+[data-theme="terminal"] {
+    --font: "Google Sans Code", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    --font-heading: "Google Sans Code", ui-monospace, "Cascadia Mono", monospace;
+    --font-mono: "Google Sans Code", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    --radius-base: 0px;
+    --radius-sm: 0px;
+    --radius-md: 0px;
+    --radius-lg: 0px;
+    --radius-xl: 0px;
+    --radius-button: 0px;
+    --shadow-xs: none;
+    --shadow-sm: none;
+    --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-accent: none;
+}
+
+[data-theme="terminal"].dark {
+    --shadow-xs: none;
+    --shadow-sm: none;
+    --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-accent: 0 0 8px rgba(255, 87, 75, 0.25);
+
+    --bg: #0a0a0a;
+    --bg-subtle: #1a1a1a;
+    --bg-muted: #262626;
+    --fg: #e0e0e0;
+    --fg-secondary: #a0a0a0;
+    --fg-muted: #666666;
+    --border: #333333;
+    --border-heavy: #555555;
+    --border-strong: #e0e0e0;
+
+    --surface-dark: #111111;
+    --surface-dark-subtle: #1a1a1a;
+    --surface-dark-fg: #ffffff;
+    --surface-dark-muted: #777777;
+
+    --accent: #FF6B61;
+    --accent-hover: #FF574B;
+    --accent-light: #3D1512;
+    --accent-border: #FF574B;
+    --accent-fg: #000000;
+
+    --primary: #FF6B61;
+    --primary-hover: #FF574B;
+    --primary-fg: #000000;
+
+    --link: #FF6B61;
+    --link-visited: #FF8A82;
+
+    --success: #22c55e;
+    --success-light: #052e16;
+    --success-border: #166534;
+    --error: #ef4444;
+    --error-light: #450a0a;
+    --error-border: #991b1b;
+    --warning: #eab308;
+    --warning-light: #422006;
+    --warning-border: #854d0e;
+    --info: #3b82f6;
+    --info-light: #172554;
+
+    --human-fg: #a0a0a0;
+    --human-bg: #1a1a1a;
+    --human-border: #333333;
+    --agent-fg: #FF6B61;
+    --agent-bg: #3D1512;
+    --agent-border: #FF574B;
+    --skill-fg: #a0a0a0;
+    --skill-bg: #1a1a1a;
+    --skill-border: #333333;
+    --social-fg: #a0a0a0;
+    --social-bg: #1a1a1a;
+
+    --tone-quest: #FF6B61;
+    --tone-quest-dark: #FF574B;
+    --tone-quest-bg: #3D1512;
+    --tone-agent: #FF6B61;
+    --tone-agent-dark: #FF574B;
+    --tone-agent-bg: #3D1512;
+
+    --green: #22c55e;
+    --green-bg: #052e16;
+    --red: #ef4444;
+    --red-bg: #450a0a;
+    --yellow: #eab308;
+    --yellow-bg: #422006;
+    --tag-bg: #262626;
+    --tag-fg: #a0a0a0;
+    --code-bg: #111111;
+    --sidebar-bg: #111111;
+}

@@ -7,6 +7,7 @@ import { PlatformIcon } from "@/components/PlatformIcon"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { QuestTypeBadge, QuestStatusBadge } from "@/components/quest-badges"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { PageTitle } from "@/components/page-title"
@@ -49,20 +50,6 @@ type MainTab = "quests" | "agents"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function typeBadgeClass(type: string) {
-    const map: Record<string, string> = {
-        FCFS: "badge-fcfs", LEADERBOARD: "badge-leaderboard", LUCKY_DRAW: "badge-luckydraw",
-    }
-    return map[type] ?? "badge-fcfs"
-}
-
-function statusBadgeClass(status: string) {
-    const map: Record<string, string> = {
-        live: "badge-live", completed: "badge-completed", draft: "badge-draft",
-        scheduled: "badge-scheduled", expired: "badge-expired", cancelled: "badge-cancelled",
-    }
-    return map[status] ?? ""
-}
 
 function getPublishErrors(quest: MineQuest): Record<string, string> {
     const errors: Record<string, string> = {}
@@ -384,7 +371,7 @@ export function Dashboard() {
                                         <div className="flex-1">
                                             <div className="text-xs font-semibold text-foreground mb-1">Claim your agent</div>
                                             <div className="text-xs text-muted-foreground leading-relaxed">
-                                                Visit the claim URL or find the agent in your <strong>My Agents</strong> list (status: <Badge variant="pending-claim">Pending Claim</Badge>). Enter the verification code and verify your email to complete the claim.
+                                                Visit the claim URL or find the agent in your <strong>My Agents</strong> list (status: <Badge variant="filled-warning">Pending Claim</Badge>). Enter the verification code and verify your email to complete the claim.
                                             </div>
                                         </div>
                                     </div>
@@ -429,7 +416,7 @@ export function Dashboard() {
                                             <div className="text-xs font-semibold text-foreground mb-1">Register &amp; claim your agent</div>
                                             <div className="text-xs text-muted-foreground leading-relaxed">
                                                 Ask Claude Code: <em>"Register me as a ClawQuest agent"</em>. Claude will call the MCP, receive a <code>claim_url</code> and <code>verification_code</code>, then guide you to complete the claim here in your{" "}
-                                                <strong>My Agents</strong> list (status: <Badge variant="pending-claim">Pending Claim</Badge>).
+                                                <strong>My Agents</strong> list (status: <Badge variant="filled-warning">Pending Claim</Badge>).
                                             </div>
                                         </div>
                                     </div>
@@ -667,13 +654,10 @@ export function Dashboard() {
                                             </div>
                                             <div className="text-xs text-muted-foreground leading-relaxed mb-2">{quest.description}</div>
                                             <div className="flex items-center gap-1.5 flex-wrap">
-                                                <Badge variant={typeBadgeClass(quest.type).replace("badge-", "") as any}>{quest.type}</Badge>
-                                                <Badge variant={statusBadgeClass(quest.status).replace("badge-", "") as any}>
-                                                    <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle ${quest.status === "live" ? "bg-(--green)" : quest.status === "completed" ? "bg-muted-foreground" : "bg-(--yellow)"}`} />
-                                                    {quest.status}
-                                                </Badge>
+                                                <QuestTypeBadge type={quest.type} />
+                                                <QuestStatusBadge status={quest.status} />
                                                 {quest.tags?.slice(0, 2).map(tag => (
-                                                    <span key={tag} className="tag">{tag}</span>
+                                                    <Badge key={tag} variant="pill">{tag}</Badge>
                                                 ))}
                                                 <span className="text-xs text-muted-foreground">by <strong>{quest.sponsor}</strong></span>
                                             </div>
@@ -771,7 +755,7 @@ export function Dashboard() {
                                                 <div className="text-xs text-muted-foreground">by <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
                                             </td>
                                             <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
-                                                <Badge variant={typeBadgeClass(quest.type).replace("badge-", "") as any}>{quest.type}</Badge>
+                                                <QuestTypeBadge type={quest.type} />
                                                 <div className="text-xs text-muted-foreground mt-0.5">{slotsLeft} slots left</div>
                                             </td>
                                             <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
@@ -839,10 +823,7 @@ export function Dashboard() {
                                                 )}
                                             </td>
                                             <td className="px-2 py-2.5 text-xs border-b border-border align-top w-[100px]">
-                                                <Badge variant={statusBadgeClass(quest.status).replace("badge-", "") as any}>
-                                                    <span className={`inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle ${quest.status === "live" ? "bg-(--green)" : quest.status === "completed" ? "bg-muted-foreground" : "bg-(--yellow)"}`} />
-                                                    {quest.status}
-                                                </Badge>
+                                                <QuestStatusBadge status={quest.status} />
                                             </td>
                                         </tr>
                                     )
@@ -964,7 +945,7 @@ export function Dashboard() {
                                                 </td>
                                                 <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
                                                     {isPending ? (
-                                                        <Badge variant="pending-claim">Pending Claim</Badge>
+                                                        <Badge variant="filled-warning">Pending Claim</Badge>
                                                     ) : agent.status === "questing" ? (
                                                         <span className="text-(--yellow) font-semibold text-xs">
                                                             <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-(--yellow)" /> Questing
@@ -1061,7 +1042,7 @@ export function Dashboard() {
                                                                                         </td>
                                                                                         <td className="px-2 py-1.5 text-xs border-b border-border/50">{p.tasksCompleted}/{p.tasksTotal}</td>
                                                                                         <td className="px-2 py-1.5 text-xs border-b border-border/50">
-                                                                                            <span className={`badge ${statusBadgeClass(p.status)}`}>{p.status}</span>
+                                                                                            <QuestStatusBadge status={p.status} />
                                                                                         </td>
                                                                                         <td className="px-2 py-1.5 text-xs border-b border-border/50">
                                                                                             {p.payoutStatus === "paid" ? (

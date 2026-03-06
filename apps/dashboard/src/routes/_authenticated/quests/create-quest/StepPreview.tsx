@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { QuestTypeBadge, QuestStatusBadge } from "@/components/quest-badges"
 import { cn } from "@/lib/utils"
 import { getTokenSymbol, calcLbPayouts } from "./constants"
 
@@ -109,15 +110,11 @@ export function StepPreview({
                 <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
                     {/* Header badges */}
                     <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap" style={{ marginBottom: 16 }}>
-                        <Badge variant="draft">draft</Badge>
+                        <QuestStatusBadge status="draft" />
                         <span>·</span>
-                        <Badge variant={form.type === "FCFS" ? "fcfs" : form.type === "LEADERBOARD" ? "leaderboard" : "luckydraw"}>
-                            {form.type === "LUCKY_DRAW" ? "Lucky Draw" : form.type === "LEADERBOARD" ? "Leaderboard" : "FCFS"}
-                        </Badge>
+                        <QuestTypeBadge type={form.type} />
                         <span>·</span>
-                        <span className={`badge ${form.rail === "fiat" ? "badge-fiat" : "badge-crypto"}`}>
-                            {tokenLabel}
-                        </span>
+                        <Badge variant="pill">{tokenLabel}</Badge>
                         <span>·</span>
                         <span>by <strong>you</strong></span>
                     </div>
@@ -177,7 +174,7 @@ export function StepPreview({
                                                 </span>
                                             )}
                                         </span>
-                                        <Badge variant="social">{task.platform}</Badge>
+                                        <Badge variant="pill">{task.platform}</Badge>
                                     </div>
                                 </div>
                             ))}
@@ -199,7 +196,7 @@ export function StepPreview({
                                         <span className="flex-1 font-medium">
                                             Requires skill: <code className="font-mono text-xs bg-muted px-1 py-px rounded">{skill.name}</code>
                                         </span>
-                                        <Badge variant="skill">Skill</Badge>
+                                        <Badge variant="pill">Skill</Badge>
                                     </div>
                                 </div>
                             ))}

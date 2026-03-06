@@ -3,39 +3,26 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-    "inline-flex items-center rounded border px-2 py-0.5 text-xs font-bold uppercase tracking-wide transition-colors focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2",
+    "inline-flex items-center gap-1 text-xs font-semibold transition-colors",
     {
         variants: {
             variant: {
-                default:
-                    "border-transparent bg-primary text-primary-foreground",
-                secondary:
-                    "border-transparent bg-secondary text-secondary-foreground",
-                destructive:
-                    "border-transparent bg-destructive text-destructive-foreground",
-                outline: "text-foreground",
-                /* Quest type variants */
-                fcfs: "border-accent bg-accent-light text-accent",
-                leaderboard: "border-info bg-info-light text-info",
-                luckydraw: "border-border-heavy bg-muted text-fg-secondary",
-                /* Reward variants */
-                reward: "border-success/20 bg-success-light text-success",
-                /* Payment/category variants */
-                crypto: "border-transparent bg-info-light text-link",
-                fiat: "border-transparent bg-(--stripe-bg) text-(--stripe-fg)",
-                skill: "border-transparent bg-skill-bg text-skill",
-                onchain: "border-transparent bg-muted text-fg-secondary",
-                social: "border-transparent bg-(--social-bg) text-fg-secondary",
-                network: "border-transparent bg-info-light text-link",
-                /* Status variants */
-                live: "border-transparent bg-success-light text-success",
-                completed: "border-transparent bg-muted text-muted-foreground",
-                draft: "border-border bg-muted text-muted-foreground",
-                pending: "border-transparent bg-warning-light text-warning",
-                scheduled: "border-transparent bg-muted text-fg-secondary",
-                rejected: "border-transparent bg-error-light text-error",
-                cancelled: "border-transparent bg-error-light text-error",
-                "pending-claim": "border-dashed border-warning bg-warning-light text-warning",
+                /* Semantic — colored text, no bg/border */
+                default: "text-foreground",
+                success: "text-success",
+                error: "text-error",
+                warning: "text-warning",
+                info: "text-info",
+                muted: "text-muted-foreground",
+                /* Pill — rounded, border, light bg (for tags, skills, categories) */
+                pill: "border border-border rounded-full px-2.5 py-0.5 text-fg-secondary",
+                /* Filled — solid bg (for status indicators) */
+                "filled-success": "rounded bg-success-light text-success px-2 py-0.5",
+                "filled-error": "rounded bg-error-light text-error px-2 py-0.5",
+                "filled-warning": "rounded bg-warning-light text-warning px-2 py-0.5",
+                "filled-muted": "rounded bg-muted text-muted-foreground px-2 py-0.5",
+                /* Outline — border only (for subtle labels) */
+                outline: "border border-border rounded px-2 py-0.5 text-foreground",
             },
         },
         defaultVariants: {

@@ -9,7 +9,7 @@ import '@rainbow-me/rainbowkit/styles.css'
 
 // Base styles (Tailwind + CSS variables) + theme overrides
 import './index.css'
-import './styles/themes.css'
+import './styles/themes/index.css'
 
 import { router } from './router'
 import { AuthProvider, useAuth } from '@/context/AuthContext'

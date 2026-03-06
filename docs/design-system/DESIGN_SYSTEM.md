@@ -441,7 +441,7 @@ Tailwind mapping in `apps/dashboard/tailwind.config.js`.
 
 - CSS variables + `[data-theme="x"]` selector on `<html>`
 - Dark mode via `.dark` class on `<html>`
-- Theme definitions: `src/styles/themes.css`
+- Theme definitions: `src/styles/themes/` (one file per theme: `terminal.css`, `glass.css`, `brutalist.css`, `minimal.css`, `bauhaus.css`)
 - Base tokens (Terminal light): `src/index.css` `:root`
 - Context: `src/context/ThemeContext.tsx` (localStorage + system preference)
 - Switcher UI: `src/components/theme-switcher.tsx`

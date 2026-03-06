@@ -8,38 +8,12 @@ import { SponsorLogo } from "@/components/sponsor-logo"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { useAccount } from "wagmi"
 import { Badge } from "@/components/ui/badge"
+import { QuestTypeBadge, QuestStatusBadge, RewardBadge } from "@/components/quest-badges"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 const REDIRECT_KEY = "clawquest_redirect_after_login"
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function typeBadgeClass(type: string) {
-    const map: Record<string, string> = {
-        FCFS: "badge-fcfs",
-        LEADERBOARD: "badge-leaderboard",
-        LUCKY_DRAW: "badge-luckydraw",
-    }
-    return map[type] ?? "badge-fcfs"
-}
-
-function statusBadgeClass(status: string) {
-    const map: Record<string, string> = {
-        live: "badge-live",
-        completed: "badge-completed",
-        draft: "badge-draft",
-        scheduled: "badge-scheduled",
-        expired: "badge-expired",
-        cancelled: "badge-cancelled",
-    }
-    return map[status] ?? "badge-live"
-}
-
-function rewardBadgeClass(type: string) {
-    return type?.toLowerCase() === "usdc" || type?.toLowerCase() === "usdt" ? "badge-crypto" : "badge-fiat"
-}
 
 function useCountdown(expiresAt: string | null) {
     const [timeLeft, setTimeLeft] = useState({ d: 0, h: 0, m: 0, s: 0, ended: false })
@@ -526,11 +500,11 @@ export function QuestDetail() {
                 <div>
                     <h1 className="text-3xl font-semibold text-foreground">{quest.title}</h1>
                     <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
-                        <Badge variant={statusBadgeClass(quest.status).replace("badge-", "") as any}>{quest.status}</Badge>
+                        <QuestStatusBadge status={quest.status} />
                         <span>·</span>
-                        <Badge variant={typeBadgeClass(quest.type).replace("badge-", "") as any}>{quest.type}</Badge>
+                        <QuestTypeBadge type={quest.type} />
                         <span>·</span>
-                        <Badge variant={rewardBadgeClass(quest.rewardType).replace("badge-", "") as any}>{quest.rewardType}</Badge>
+                        <RewardBadge type={quest.rewardType} amount={quest.rewardAmount} />
                         <span>·</span>
                         <span className="inline-flex items-center gap-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-foreground">{quest.sponsor}</strong></span>
                         {quest.sponsorNames && quest.sponsorNames.length > 0 && (
@@ -585,7 +559,7 @@ export function QuestDetail() {
                     {quest.tags && quest.tags.length > 0 && (
                         <div className="mb-5 flex gap-1.5 flex-wrap">
                             {quest.tags.map(tag => (
-                                <span key={tag} className="tag">{tag}</span>
+                                <Badge key={tag} variant="pill">{tag}</Badge>
                             ))}
                         </div>
                     )}
@@ -613,7 +587,7 @@ export function QuestDetail() {
                                         <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
                                             <TaskCheck status={taskStatus} />
                                             <span className="flex-1 font-medium">{task.label}</span>
-                                            <Badge variant="social">{platformLabel(task.platform)}</Badge>
+                                            <Badge variant="pill">{platformLabel(task.platform)}</Badge>
                                             <TaskActionBtn
                                                 status={taskStatus}
                                                 disabled={!hasAccepted}
@@ -737,7 +711,7 @@ export function QuestDetail() {
                                                         {match?.verified ? "Verified" : match ? "Reported" : "Missing"}
                                                     </span>
                                                 )}
-                                                <Badge variant="skill">Skill</Badge>
+                                                <Badge variant="pill">Skill</Badge>
                                             </div>
                                         </div>
                                     )
@@ -837,8 +811,8 @@ export function QuestDetail() {
                         <div className="px-3 py-4 text-center border-b border-border">
                             <div className="text-[28px] font-bold font-mono text-accent leading-tight">{quest.rewardAmount.toLocaleString()}</div>
                             <div className="flex justify-center gap-2 mt-2 text-xs">
-                                <Badge variant={rewardBadgeClass(quest.rewardType).replace("badge-", "") as any}>{quest.rewardType}</Badge>
-                                <Badge variant={typeBadgeClass(quest.type).replace("badge-", "") as any}>{quest.type}</Badge>
+                                <RewardBadge type={quest.rewardType} />
+                                <QuestTypeBadge type={quest.type} />
                             </div>
                             <div className="text-xs text-muted-foreground mt-0.5">total reward pool</div>
                         </div>
@@ -872,9 +846,7 @@ export function QuestDetail() {
                         )}
                         {isCompleted && (
                             <div className="px-3 py-2.5 border-b border-border text-center">
-                                <Badge variant="completed" className="text-base px-[10px] py-1">
-                                    Quest Completed
-                                </Badge>
+                                <QuestStatusBadge status="completed" />
                             </div>
                         )}
 

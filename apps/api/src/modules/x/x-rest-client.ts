@@ -179,6 +179,31 @@ export async function getTweet(
   }
 }
 
+/** Get tweet with text content — returns authorId, text, and optional quoted tweet ID. */
+export async function getTweetWithText(
+  token: string, tweetId: string,
+): Promise<{ authorId: string; text: string; quotedTweetId?: string } | null> {
+  try {
+    const res = await fetch(
+      `${X_API}/tweets/${tweetId}?tweet.fields=author_id,text,referenced_tweets`,
+      { headers: authHeaders(token), signal: AbortSignal.timeout(TIMEOUT_MS) },
+    )
+    if (!res.ok) return null
+    const data = await res.json() as {
+      data?: {
+        author_id: string
+        text: string
+        referenced_tweets?: Array<{ type: string; id: string }>
+      }
+    }
+    if (!data.data) return null
+    const quoted = data.data.referenced_tweets?.find(r => r.type === 'quoted')
+    return { authorId: data.data.author_id, text: data.data.text, quotedTweetId: quoted?.id }
+  } catch {
+    return null
+  }
+}
+
 /** Resolve @username to X user ID. */
 export async function lookupUserByUsername(
   token: string, username: string,

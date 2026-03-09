@@ -5,6 +5,7 @@
  */
 import { PrismaClient } from '@prisma/client'
 import { ensureFreshToken, checkFollowing, getLikingUsers, getRetweetedBy, getTweet, lookupUserByUsername } from '../x/x-rest-client'
+import { extractTweetId } from '../x/x-utils'
 import { getGuildMember, getUserGuildMember } from '../discord/discord-rest-client'
 import { validateSocialTarget, type SocialValidationResult } from './social-validator'
 
@@ -27,12 +28,6 @@ export interface VerificationContext {
   params?: Record<string, string>
   // Telegram bot token
   telegramBotToken?: string
-}
-
-/** Extract tweet ID from X URL: https://x.com/user/status/123456 → 123456 */
-function extractTweetId(url: string): string | null {
-  const match = url.match(/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/)
-  return match?.[1] ?? null
 }
 
 // ── X Verification ──────────────────────────────────────────────

@@ -22,9 +22,12 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
 interface Agent {
     id: string
-    name: string
+    agentname: string
     status: "idle" | "questing" | "offline"
     activationCode?: string
+    claimedAt?: string
+    claimedVia?: string
+    createdAt: string
     participations?: {
         id: string
         status: string
@@ -235,14 +238,14 @@ export function Dashboard() {
 
     const filteredQuests = questFilter === "all" ? quests
         : questFilter === "completed" ? quests.filter(q => q.status === "completed" || q.status === "expired" || q.status === "cancelled")
-        : quests.filter(q => q.status === questFilter)
+            : quests.filter(q => q.status === questFilter)
 
     // Agent filter counts
     const claimedAgents = agents.filter(a => !a.activationCode)
     const pendingAgents = agents.filter(a => !!a.activationCode)
     const filteredAgents = agentFilter === "all" ? agents
         : agentFilter === "claimed" ? claimedAgents
-        : pendingAgents
+            : pendingAgents
 
     const displayName = user?.user_metadata?.full_name as string | undefined
     const handle = displayName ?? user?.email?.split("@")[0] ?? "user"
@@ -291,10 +294,10 @@ export function Dashboard() {
                                 <Label>Agent Platform</Label>
                                 {(() => {
                                     const PLATFORMS = [
-                                        { id: "openclaw", label: "OpenClaw",    available: true  },
-                                        { id: "claude",   label: "Claude Code", available: true  },
-                                        { id: "chatgpt",  label: "ChatGPT",     available: false },
-                                        { id: "cursor",   label: "Cursor",      available: false },
+                                        { id: "openclaw", label: "OpenClaw", available: true },
+                                        { id: "claude", label: "Claude Code", available: true },
+                                        { id: "chatgpt", label: "ChatGPT", available: false },
+                                        { id: "cursor", label: "Cursor", available: false },
                                     ]
                                     const selected = PLATFORMS.find(p => p.id === activePlatform) ?? PLATFORMS[0]
                                     return (
@@ -535,10 +538,10 @@ export function Dashboard() {
                                 title="Card view"
                             >
                                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                    <rect x="0" y="0" width="6" height="6" rx="1" fill="currentColor"/>
-                                    <rect x="8" y="0" width="6" height="6" rx="1" fill="currentColor"/>
-                                    <rect x="0" y="8" width="6" height="6" rx="1" fill="currentColor"/>
-                                    <rect x="8" y="8" width="6" height="6" rx="1" fill="currentColor"/>
+                                    <rect x="0" y="0" width="6" height="6" rx="1" fill="currentColor" />
+                                    <rect x="8" y="0" width="6" height="6" rx="1" fill="currentColor" />
+                                    <rect x="0" y="8" width="6" height="6" rx="1" fill="currentColor" />
+                                    <rect x="8" y="8" width="6" height="6" rx="1" fill="currentColor" />
                                 </svg>
                             </button>
                             <button
@@ -550,9 +553,9 @@ export function Dashboard() {
                                 title="List view"
                             >
                                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                    <rect x="0" y="1" width="14" height="2" rx="1" fill="currentColor"/>
-                                    <rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/>
-                                    <rect x="0" y="11" width="14" height="2" rx="1" fill="currentColor"/>
+                                    <rect x="0" y="1" width="14" height="2" rx="1" fill="currentColor" />
+                                    <rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor" />
+                                    <rect x="0" y="11" width="14" height="2" rx="1" fill="currentColor" />
                                 </svg>
                             </button>
                         </div>
@@ -942,7 +945,12 @@ export function Dashboard() {
                                                     )}>▸</span>
                                                 </td>
                                                 <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle min-w-[180px]">
-                                                    <div className="font-mono text-xs font-semibold text-foreground">{agent.name}</div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="font-mono text-xs font-semibold text-foreground">{agent.agentname}</span>
+                                                        {agent.claimedVia === "x" && (
+                                                            <span className="inline-flex items-center text-[10px] font-semibold px-1 py-0.5 rounded bg-sky-500/15 text-sky-400">𝕏</span>
+                                                        )}
+                                                    </div>
                                                     <div className="text-xs text-muted-foreground">id: {agent.id.slice(0, 8)}…</div>
                                                 </td>
                                                 <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
@@ -992,7 +1000,14 @@ export function Dashboard() {
                                                     {agent.status === "questing" ? "1 active" : "0"}
                                                 </td>
                                                 <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
-                                                    <span className="text-xs text-muted-foreground">—</span>
+                                                    <div className="text-xs text-muted-foreground" title={agent.createdAt}>
+                                                        {new Date(agent.createdAt).toLocaleDateString()}
+                                                    </div>
+                                                    {agent.claimedAt && (
+                                                        <div className="text-[10px] text-accent" title={`Claimed: ${agent.claimedAt}`}>
+                                                            claimed {new Date(agent.claimedAt).toLocaleDateString()}
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                             {isExpanded && (

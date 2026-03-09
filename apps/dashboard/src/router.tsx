@@ -171,6 +171,9 @@ const createQuestRoute = createRoute({
 const verifyRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/verify',
+    validateSearch: (search: Record<string, unknown>): { token?: string } => {
+        return { token: typeof search.token === 'string' ? search.token : undefined }
+    },
     beforeLoad: ({ context }) => {
         if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
     },

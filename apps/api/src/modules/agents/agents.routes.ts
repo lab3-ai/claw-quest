@@ -3,6 +3,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { CreateAgentSchema, AgentSchema } from '@clawquest/shared';
 import { z } from 'zod';
 import { randomBytes } from 'crypto';
+import { verifyTweet } from '../x/x-rapidapi-client';
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
 
@@ -670,6 +671,58 @@ export async function agentsRoutes(app: FastifyInstance) {
         }
     );
 
+    // ── GET /agents/verify/:token — get agent info by verification token (public) ─────
+    server.get(
+        '/verify/:token',
+        {
+            schema: {
+                tags: ['Agents'],
+                summary: 'Get agent info by verification token (public)',
+                params: z.object({
+                    token: z.string().min(1),
+                }),
+                response: {
+                    200: z.object({
+                        display_name: z.string(),
+                        verification_code: z.string(),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const { token } = request.params;
+
+            const agent = await server.prisma.agent.findUnique({
+                where: { verificationToken: token },
+                select: {
+                    agentname: true,
+                    verificationToken: true,
+                    verificationExpiresAt: true,
+                    ownerId: true,
+                },
+            });
+
+            if (!agent) {
+                return reply.status(404).send({ error: 'Invalid verification token' } as any);
+            }
+
+            if (agent.ownerId) {
+                return reply.status(400).send({ error: 'Agent already claimed' } as any);
+            }
+
+            if (agent.verificationExpiresAt && agent.verificationExpiresAt < new Date()) {
+                return reply.status(410).send({ error: 'Verification token expired' } as any);
+            }
+
+            const verificationCode = agent.verificationToken?.slice(0, 8) || '';
+
+            return {
+                display_name: agent.agentname,
+                verification_code: verificationCode,
+            };
+        }
+    );
+
     // ── POST /agents/verify — human claims an agent (human JWT) ─────────────
     server.post(
         '/verify',
@@ -681,6 +734,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 security: [{ bearerAuth: [] }],
                 body: z.object({
                     verificationToken: z.string().min(1),
+                    verify_tweet_url: z.string().url().optional(),
                 }),
                 response: {
                     200: z.object({
@@ -692,7 +746,7 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const { verificationToken } = request.body;
+            const { verificationToken, verify_tweet_url } = request.body;
 
             const agent = await server.prisma.agent.findUnique({
                 where: { verificationToken },
@@ -709,6 +763,23 @@ export async function agentsRoutes(app: FastifyInstance) {
             if (agent.verificationExpiresAt && agent.verificationExpiresAt < new Date()) {
                 return reply.status(410).send({ error: 'Verification token expired' } as any);
             }
+            console.log("verify_tweet_url", verify_tweet_url);
+            console.log("verificationToken", verificationToken);
+            console.log("agent", agent);
+
+            // If verify_tweet_url is provided, verify via X (RapidAPI — no OAuth tokens needed)
+            if (verify_tweet_url) {
+                const verificationCode = verificationToken.slice(0, 8);
+
+                const result = await verifyTweet(verify_tweet_url, { verificationCode });
+
+                if (!result.verified) {
+                    const status = result.reason === 'Tweet not found' ? 404
+                        : result.reason?.includes('Rate limit') ? 429
+                            : 400;
+                    return reply.status(status).send({ error: result.reason } as any);
+                }
+            }
 
             const updated = await server.prisma.agent.update({
                 where: { id: agent.id },
@@ -716,6 +787,8 @@ export async function agentsRoutes(app: FastifyInstance) {
                     ownerId: request.user.id,
                     verificationToken: null,
                     verificationExpiresAt: null,
+                    claimedAt: new Date(),
+                    claimedVia: verify_tweet_url ? 'x' : 'supabase',
                 },
             });
 
@@ -723,8 +796,12 @@ export async function agentsRoutes(app: FastifyInstance) {
                 data: {
                     agentId: agent.id,
                     type: 'INFO',
-                    message: `Agent claimed by ${request.user.email}`,
-                    meta: { method: 'verification', userId: request.user.id },
+                    message: `Agent claimed by ${request.user.email}${verify_tweet_url ? ' via X verification' : ''}`,
+                    meta: {
+                        method: verify_tweet_url ? 'x_verification' : 'verification',
+                        userId: request.user.id,
+                        verify_tweet_url: verify_tweet_url || undefined,
+                    },
                 },
             });
 

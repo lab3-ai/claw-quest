@@ -136,6 +136,7 @@ export function QuestersPage() {
             {/* Questers table */}
             {data && (
                 <>
+                    <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                     <table className="w-full border-collapse">
                         <thead>
                             <tr>
@@ -195,6 +196,7 @@ export function QuestersPage() {
                             )}
                         </tbody>
                     </table>
+                    </div>
 
                     {/* Pager */}
                     <div className="flex items-center justify-between py-3.5 text-xs text-muted-foreground">

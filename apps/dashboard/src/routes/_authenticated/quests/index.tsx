@@ -369,7 +369,7 @@ export function QuestList() {
 
                 {/* Compact list (table) view */}
             {!isLoading && view === "compact" && (
-                <div className="block">
+                <div className="block overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                     <table className="w-full border-collapse">
                         <thead>
                             <tr>

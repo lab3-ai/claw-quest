@@ -726,6 +726,7 @@ export function Dashboard() {
 
                     {/* List View */}
                     {questView === "list" && filteredQuests.length > 0 && (
+                        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr>
@@ -835,6 +836,7 @@ export function Dashboard() {
                                 })}
                             </tbody>
                         </table>
+                        </div>
                     )}
                 </div>
             )}
@@ -844,6 +846,7 @@ export function Dashboard() {
                 <div className="">
 
                     {agentsLoading && (
+                        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr>
@@ -864,6 +867,7 @@ export function Dashboard() {
                                 ))}
                             </tbody>
                         </table>
+                        </div>
                     )}
 
                     {!agentsLoading && filteredAgents.length === 0 && (
@@ -874,6 +878,7 @@ export function Dashboard() {
                     )}
 
                     {filteredAgents.length > 0 && (
+                        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr>
@@ -1106,6 +1111,7 @@ export function Dashboard() {
                                 })}
                             </tbody>
                         </table>
+                        </div>
                     )}
                 </div>
             )}

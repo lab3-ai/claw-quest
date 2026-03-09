@@ -55,7 +55,7 @@ function formatDate(iso: string) {
 const LINK_PROVIDERS = [
     { key: "google", label: "Google", icon: "G", supabaseProvider: "google" },
     { key: "telegram", label: "Telegram", icon: "TG", supabaseProvider: null },
-    { key: "twitter", label: "X (Twitter)", icon: "X", supabaseProvider: "twitter" },
+    { key: "x", label: "X (Twitter)", icon: "X", supabaseProvider: "x" },
     { key: "discord", label: "Discord", icon: "DC", supabaseProvider: "discord" },
 ]
 
@@ -227,6 +227,8 @@ export function Account() {
     // OAuth identities from Supabase session
     const identities = supabaseUser?.identities ?? []
     const linkedProviders = new Set(identities.map(i => i.provider))
+    // User can unlink if they have >=2 Supabase identities OR Telegram is linked (separate auth path)
+    const canUnlinkOAuth = identities.length > 1 || !!profile?.telegramId
 
     // Find connected identities not in LINK_PROVIDERS (e.g. GitHub after disabling)
     const linkProviderKeys = new Set(LINK_PROVIDERS.map(p => p.key))
@@ -261,26 +263,36 @@ export function Account() {
     async function handleUnlinkProvider(providerKey: string) {
         setUnlinkError("")
         setLinkError("")
-
-        // Lockout prevention: need at least 1 identity remaining after unlink
-        const totalIdentities = identities.length
-        const hasTelegram = !!profile?.telegramId
-        if (!hasTelegram && totalIdentities <= 1) {
-            setUnlinkError("Cannot unlink — this is your only sign-in method.")
-            return
-        }
-
-        const identity = identities.find(i => i.provider === providerKey)
-        if (!identity) return
-
         setUnlinkPending(providerKey)
+
         try {
+            // Fetch fresh identity list from Supabase to avoid stale cached session data
+            const { data: freshData, error: idError } = await supabase.auth.getUserIdentities()
+            if (idError) throw idError
+
+            const freshIdentities = freshData?.identities ?? []
+            const hasTelegram = !!profile?.telegramId
+
+            // Lockout prevention: need at least 1 identity remaining after unlink
+            if (!hasTelegram && freshIdentities.length <= 1) {
+                setUnlinkError("Cannot unlink — this is your only sign-in method.")
+                return
+            }
+
+            const identity = freshIdentities.find(i => i.provider === providerKey)
+            if (!identity) {
+                setUnlinkError("Identity not found. Please refresh and try again.")
+                return
+            }
+
             const { error } = await supabase.auth.unlinkIdentity(identity)
             if (error) throw error
 
             // Clear Prisma fields for Twitter/Discord only
-            if (providerKey === "twitter" || providerKey === "discord") {
-                const res = await fetch(`${API_BASE}/auth/social/${providerKey}`, {
+            // API uses "twitter" not "x" (Supabase's key for X/Twitter)
+            if (providerKey === "x" || providerKey === "discord") {
+                const apiProvider = providerKey === "x" ? "twitter" : providerKey
+                const res = await fetch(`${API_BASE}/auth/social/${apiProvider}`, {
                     method: "DELETE",
                     headers: { Authorization: `Bearer ${token}` },
                 })
@@ -290,6 +302,8 @@ export function Account() {
                 }
             }
 
+            // Refresh session so onAuthStateChange fires with updated user.identities
+            await supabase.auth.refreshSession()
             queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : "Failed to unlink provider"
@@ -470,7 +484,7 @@ export function Account() {
 
                         // Build handle/email detail text
                         let detail = ""
-                        if (p.key === "twitter" && profile?.xHandle) detail = `@${profile.xHandle}`
+                        if (p.key === "x" && profile?.xHandle) detail = `@${profile.xHandle}`
                         else if (p.key === "discord" && profile?.discordHandle) detail = `@${profile.discordHandle}`
                         else if (identity?.identity_data?.email) detail = identity.identity_data.email as string
                         else if (identity?.identity_data?.user_name) detail = identity.identity_data.user_name as string
@@ -518,7 +532,7 @@ export function Account() {
                                             <span className="text-success text-xs font-semibold">Connected</span>
                                             {detail && <span className="text-muted-foreground text-xs">{detail}</span>}
                                             {/* X read access button: show when X linked but no read token yet */}
-                                            {p.key === "twitter" && profile?.xId && !profile?.hasXToken && (
+                                            {p.key === "x" && profile?.xId && !profile?.hasXToken && (
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
@@ -534,7 +548,7 @@ export function Account() {
                                             variant="outline"
                                             size="sm"
                                             className="text-[12px] px-[10px] py-1 min-w-[70px]"
-                                            disabled={unlinkPending === p.key}
+                                            disabled={!canUnlinkOAuth || unlinkPending === p.key}
                                             onClick={() => handleUnlinkProvider(p.key)}
                                         >
                                             {unlinkPending === p.key ? "Unlinking…" : "Unlink"}
@@ -574,7 +588,7 @@ export function Account() {
                                     variant="outline"
                                     size="sm"
                                     className="text-[12px] px-[10px] py-1 min-w-[70px]"
-                                    disabled={unlinkPending === identity.provider}
+                                    disabled={!canUnlinkOAuth || unlinkPending === identity.provider}
                                     onClick={() => handleUnlinkProvider(identity.provider)}
                                 >
                                     {unlinkPending === identity.provider ? "Unlinking…" : "Unlink"}

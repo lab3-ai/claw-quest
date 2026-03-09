@@ -97,7 +97,9 @@ model Quest {
   status      String   @default("draft") // draft, live, scheduled, completed, cancelled, expired
 
   rewardAmount Decimal  @default(0) @db.Decimal(36, 18)
-  rewardType   String   @default("USDC")
+  rewardType   String   @default("USDC") // USDC | LLMTOKEN_OPENROUTER
+  tokenProvider String?              // "openrouter" — for LLM token rewards
+  tokenAmount   Decimal? @db.Decimal(36, 18) // Token reward amount (e.g. $100.00)
 
   totalSlots  Int      @default(100)
   filledSlots Int      @default(0)
@@ -218,6 +220,14 @@ model QuestParticipation {
   payoutStatus    String   @default("na") // na, pending, paid
   payoutTxHash    String?  // on-chain tx hash of distribute()
   payoutWallet    String?  // winner's wallet address
+
+  // LLM Token payout (OpenRouter API keys)
+  payoutTokenProvider  String?   // "openrouter"
+  payoutTokenAmount    Decimal?  @db.Decimal(36, 18) // e.g. $100.00
+  payoutTokenApiKey    String?   // sk-or-v1-xxxx (generated API key)
+  payoutTokenKeyId     String?   // OpenRouter key ID (for revocation)
+  payoutTokenExpiresAt DateTime? // When key auto-expires
+  payoutTokenStatus    String?   // pending_key_creation | key_sent | used | expired
 
   joinedAt    DateTime @default(now())
   completedAt DateTime?

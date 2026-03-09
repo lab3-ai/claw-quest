@@ -37,6 +37,12 @@
 - tests/**/* (read-only on implementation files)
 - QA reports
 
+## Thomas (Dev)
+- apps/api/src/modules/escrow/*
+- apps/api/src/modules/chains/*
+- contracts/*
+- Dockerfile, deployment configs
+
 ## Shared files (BAO TEAM TRUOC KHI SUA)
 - packages/shared/*
 - apps/api/prisma/schema.prisma

@@ -164,6 +164,15 @@ See `.env.example`. Key vars:
 - Check `.team/rules.md` for team workflow rules
 - After completing work, remind user to update session log in `.team/sessions/`
 
+### AI Session Checklist (MANDATORY before coding)
+1. Read `docs/CHANGELOG.md` → know current version and what's been done
+2. Read `.team/ACTIVE.md` → check who is working on what
+3. After implementation:
+   - Update `docs/CHANGELOG.md` with changes (MANDATORY)
+   - Update relevant `docs/` files if architecture, API, or schema changed
+   - Plans in `plans/` are optional — use locally then discard if preferred
+4. Create session log in `.team/sessions/{name}-{date}.md`
+
 ### Team
 | Name | Role | Focus |
 |------|------|-------|

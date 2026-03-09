@@ -497,7 +497,7 @@ export function Account() {
                                 {isTelegram ? (
                                     telegramLinked ? (
                                         <>
-                                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                                            <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
                                                 <span className="text-success text-xs font-semibold">Connected</span>
                                                 <span className="text-muted-foreground text-xs">
                                                     {profile?.telegramUsername ? `@${profile.telegramUsername}` : ""}

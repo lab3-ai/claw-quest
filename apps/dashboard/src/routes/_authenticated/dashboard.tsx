@@ -121,7 +121,7 @@ export function Dashboard() {
     const [mainTab, setMainTab] = useState<MainTab>("quests")
     const [questFilter, setQuestFilter] = useState<QuestFilter>("all")
     const [questView, setQuestView] = useState<"card" | "list">("card")
-    const [agentFilter, setAgentFilter] = useState<AgentFilter>("all")
+    const [agentFilter] = useState<AgentFilter>("all")
     const [expandedAgent, setExpandedAgent] = useState<string | null>(null)
     const [popupQuest, setPopupQuest] = useState<{ id: string; title: string } | null>(null)
     const [showRegisterModal, setShowRegisterModal] = useState(false)

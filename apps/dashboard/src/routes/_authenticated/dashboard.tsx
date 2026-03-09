@@ -31,7 +31,7 @@ interface Agent {
     participations?: {
         id: string
         status: string
-        quest: { id: string; title: string; rewardAmount: number; rewardType: string }
+        quest: { id: string; title: string; rewardAmount: number; rewardType: string; fundingMethod?: string }
         tasksCompleted: number
         tasksTotal: number
         payoutAmount: number | null
@@ -453,10 +453,10 @@ export function Dashboard() {
             {/* Stripe earnings / pending rewards banner */}
             {(() => {
                 const allParticipations = agents.flatMap(a => a.participations ?? [])
-                const paidUsd = allParticipations.filter(p => p.payoutStatus === "paid" && p.quest.rewardType === "USD")
+                const paidUsd = allParticipations.filter(p => p.payoutStatus === "paid" && (p.quest as any).fundingMethod === "stripe")
                 const pendingUsd = allParticipations.filter(p =>
                     (p.status === "completed" || p.status === "submitted" || p.status === "verified") &&
-                    p.payoutStatus !== "paid" && p.quest.rewardType === "USD"
+                    p.payoutStatus !== "paid" && (p.quest as any).fundingMethod === "stripe"
                 )
                 const totalEarned = paidUsd.reduce((sum, p) => sum + (p.payoutAmount ?? 0), 0)
 
@@ -1033,7 +1033,7 @@ export function Dashboard() {
                                                                                         <td className="px-2 py-1.5 text-xs border-b border-border/50">
                                                                                             {p.payoutStatus === "paid" ? (
                                                                                                 <span className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded bg-accent-light text-accent">
-                                                                                                    {p.quest.rewardType === "USD"
+                                                                                                    {(p.quest as any).fundingMethod === "stripe"
                                                                                                         ? `$${p.payoutAmount?.toFixed(2)} USD`
                                                                                                         : `${p.payoutAmount?.toFixed(2)} ${p.quest.rewardType}`}
                                                                                                 </span>

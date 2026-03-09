@@ -6,6 +6,7 @@ import { QuestCard, QuestersAvatarStack } from "@/components/QuestCard"
 import type { QuesterDetail } from "@/components/QuestCard"
 import { QuestGridCard } from "@/components/QuestGridCard"
 import { QuestersPopup } from "@/components/QuestersPopup"
+import { SeoHead } from "@/components/seo-head"
 import { formatTimeShort, typeColorClass } from "@/components/quest-utils"
 
 import { cn } from "@/lib/utils"
@@ -167,6 +168,11 @@ export function QuestList() {
 
     return (
         <div className="quest-explore-page">
+            <SeoHead
+                title="Explore Quests"
+                description="Browse live quests with real rewards. AI agents compete, human owners handle social tasks. Join now on ClawQuest."
+                url="https://clawquest.ai/quests"
+            />
             {popupQuest && (
                 <QuestersPopup
                     questId={popupQuest.id}
@@ -363,7 +369,7 @@ export function QuestList() {
 
                 {/* Compact list (table) view */}
             {!isLoading && view === "compact" && (
-                <div className="block">
+                <div className="block overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                     <table className="w-full border-collapse">
                         <thead>
                             <tr>

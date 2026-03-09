@@ -19,6 +19,7 @@ import {
     QuestNotEditableError,
     QuestForbiddenError,
 } from './quests.service';
+import { openRouterService } from './openrouter.service';
 import { validatePublishRequirements } from './quests.publish-validator';
 import { validateSocialTarget } from './social-validator';
 import { verifySocialAction, VerificationContext } from './social-action-verifier';
@@ -37,6 +38,9 @@ const CreateQuestSchema = QuestSchema.omit({
     sponsor: z.string().default('System'),
     status: z.nativeEnum(QUEST_STATUS).default(QUEST_STATUS.DRAFT),
     rewardAmount: z.number().default(0),
+    rewardType: z.enum(['USDC', 'LLMTOKEN_OPENROUTER']).default('USDC'),
+    tokenProvider: z.string().optional(),
+    tokenAmount: z.number().optional(),
     startAt: z.string().datetime().optional(),
     expiresAt: z.string().datetime().optional(),
     tags: z.array(z.string()).default([]),
@@ -45,7 +49,18 @@ const CreateQuestSchema = QuestSchema.omit({
     network: z.string().optional(),
     drawTime: z.string().datetime().optional(),
     fundingMethod: z.enum(['crypto', 'stripe']).optional(),
-});
+}).refine(
+    (data) => {
+        // If rewardType is LLMTOKEN_OPENROUTER, tokenProvider and tokenAmount are required
+        if (data.rewardType === 'LLMTOKEN_OPENROUTER') {
+            return data.tokenProvider && data.tokenAmount && data.tokenAmount > 0;
+        }
+        return true;
+    },
+    {
+        message: 'tokenProvider and tokenAmount are required when rewardType is LLMTOKEN_OPENROUTER',
+    }
+);
 
 export async function questsRoutes(server: FastifyInstance) {
     // List Quests
@@ -1941,6 +1956,166 @@ export async function questsRoutes(server: FastifyInstance) {
                 })),
                 statusCounts,
                 totalParticipations: participations.length,
+            };
+        }
+    );
+
+    // ── POST /quests/:id/distribute-payouts — Distribute LLM token payouts ───
+    server.post(
+        '/:id/distribute-payouts',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Distribute LLM token payouts to quest winners',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                response: {
+                    200: z.object({
+                        distributed: z.number(),
+                        failed: z.number(),
+                        results: z.array(z.object({
+                            participationId: z.string(),
+                            success: z.boolean(),
+                            apiKey: z.string().optional(),
+                            error: z.string().optional(),
+                        })),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id: questId } = request.params as any;
+            const userId = request.user.id;
+            const userRole = request.user.role ?? 'user';
+
+            // Verify quest exists and check permissions
+            const quest = await server.prisma.quest.findUnique({ where: { id: questId } });
+            if (!quest) {
+                return reply.status(404).send({ message: 'Quest not found' } as any);
+            }
+
+            const { allowed } = await isQuestCreatorOrAdmin(server.prisma, questId, userId, userRole);
+            if (!allowed) {
+                return reply.status(403).send({
+                    message: 'Only quest creator or admin can distribute payouts'
+                } as any);
+            }
+
+            // Verify this is an LLM token reward quest
+            if (quest.rewardType !== 'LLMTOKEN_OPENROUTER') {
+                return reply.status(400).send({
+                    message: 'This endpoint is only for LLMTOKEN_OPENROUTER reward type'
+                } as any);
+            }
+
+            if (!quest.tokenProvider || !quest.tokenAmount) {
+                return reply.status(400).send({
+                    message: 'Quest missing tokenProvider or tokenAmount configuration'
+                } as any);
+            }
+
+            // Get completed participations without token payouts
+            const participations = await server.prisma.questParticipation.findMany({
+                where: {
+                    questId,
+                    status: 'completed',
+                    OR: [
+                        { payoutTokenStatus: null },
+                        { payoutTokenStatus: 'pending_key_creation' },
+                    ],
+                },
+                include: {
+                    user: { select: { id: true, email: true, username: true } },
+                    agent: { select: { id: true, agentname: true } },
+                },
+            });
+
+            if (participations.length === 0) {
+                return reply.status(200).send({
+                    distributed: 0,
+                    failed: 0,
+                    results: [],
+                    message: 'No pending payouts to distribute',
+                } as any);
+            }
+
+            const results: Array<{
+                participationId: string;
+                success: boolean;
+                apiKey?: string;
+                error?: string;
+            }> = [];
+
+            let distributed = 0;
+            let failed = 0;
+
+            // Process each participation
+            for (const participation of participations) {
+                try {
+                    // Generate unique key name
+                    const timestamp = Date.now();
+                    const identifier = participation.user?.username ||
+                                     participation.agent?.agentname ||
+                                     participation.id.substring(0, 8);
+                    const keyName = `quest_${questId.substring(0, 8)}_${identifier}_${timestamp}`;
+
+                    // Set expiry to 30 days from now
+                    const expiresAt = new Date();
+                    expiresAt.setDate(expiresAt.getDate() + 30);
+
+                    // Create API key via OpenRouter
+                    const keyResponse = await openRouterService.createApiKey({
+                        name: keyName,
+                        limit: Number(quest.tokenAmount),
+                        expiresAt: expiresAt.toISOString(),
+                    });
+
+                    // Update participation with key details
+                    await server.prisma.questParticipation.update({
+                        where: { id: participation.id },
+                        data: {
+                            payoutTokenProvider: quest.tokenProvider,
+                            payoutTokenAmount: quest.tokenAmount,
+                            payoutTokenApiKey: keyResponse.key,
+                            payoutTokenKeyId: keyResponse.id,
+                            payoutTokenExpiresAt: expiresAt,
+                            payoutTokenStatus: 'key_sent',
+                        },
+                    });
+
+                    results.push({
+                        participationId: participation.id,
+                        success: true,
+                        apiKey: keyResponse.key,
+                    });
+
+                    distributed++;
+                } catch (error: any) {
+                    console.error(`[Payout] Failed to create key for participation ${participation.id}:`, error);
+
+                    // Update status to track failure
+                    await server.prisma.questParticipation.update({
+                        where: { id: participation.id },
+                        data: {
+                            payoutTokenStatus: 'pending_key_creation',
+                        },
+                    });
+
+                    results.push({
+                        participationId: participation.id,
+                        success: false,
+                        error: error.message || 'Failed to create API key',
+                    });
+
+                    failed++;
+                }
+            }
+
+            return {
+                distributed,
+                failed,
+                results,
             };
         }
     );

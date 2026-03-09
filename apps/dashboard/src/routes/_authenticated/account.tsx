@@ -395,18 +395,18 @@ export function Account() {
                         </div>
                     ) : (
                         <>
-                            <div className="flex items-baseline py-1.5 text-sm justify-between">
-                                <span className="w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Display Name</span>
-                                <span className="text-foreground">
+                            <div className="flex items-baseline py-1.5 text-sm justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
+                                <span className="sm:w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Display Name</span>
+                                <span className="text-foreground w-full sm:w-auto">
                                     {editingField === "displayName" ? (
-                                        <span className="flex gap-1.5 items-center">
+                                        <span className="flex gap-1.5 items-center flex-wrap">
                                             <input
                                                 type="text"
                                                 value={editValue}
                                                 onChange={e => setEditValue(e.target.value)}
                                                 maxLength={50}
                                                 placeholder="Your display name"
-                                                className="text-base px-2 py-0.5 w-[180px] border border-input rounded bg-background text-foreground outline-hidden focus:border-accent"
+                                                className="text-base px-2 py-0.5 w-full sm:w-[180px] border border-input rounded bg-background text-foreground outline-hidden focus:border-accent"
                                                 autoFocus
                                                 onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); if (e.key === "Escape") setEditingField(null) }}
                                             />
@@ -423,18 +423,18 @@ export function Account() {
                                     )}
                                 </span>
                             </div>
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5 justify-between">
-                                <span className="w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Username</span>
-                                <span className="text-foreground">
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
+                                <span className="sm:w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Username</span>
+                                <span className="text-foreground w-full sm:w-auto">
                                     {editingField === "username" ? (
-                                        <span className="flex gap-1.5 items-center flex-wrap justify-end">
+                                        <span className="flex gap-1.5 items-center flex-wrap max-sm:justify-start sm:justify-end">
                                             <input
                                                 type="text"
                                                 value={editValue}
                                                 onChange={e => setEditValue(e.target.value.toLowerCase())}
                                                 maxLength={20}
                                                 placeholder="username"
-                                                className="text-base px-2 py-0.5 w-[180px] border border-input rounded bg-background text-foreground outline-hidden focus:border-accent"
+                                                className="text-base px-2 py-0.5 w-full sm:w-[180px] border border-input rounded bg-background text-foreground outline-hidden focus:border-accent"
                                                 autoFocus
                                                 onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); if (e.key === "Escape") setEditingField(null) }}
                                             />
@@ -453,16 +453,16 @@ export function Account() {
                                 </span>
                             </div>
                             {editError && <div className="text-xs text-destructive py-3 flex items-center gap-2 mt-1">{editError}</div>}
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5 justify-between">
-                                <span className="w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Email</span>
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
+                                <span className="sm:w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Email</span>
                                 <span className="text-foreground">
                                     {profile?.email?.match(/^tg_\d+@tg\.clawquest\.ai$/)
                                         ? <span className="text-muted-foreground italic">No email linked</span>
                                         : (profile?.email ?? supabaseUser?.email ?? "—")}
                                 </span>
                             </div>
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5 justify-between">
-                                <span className="w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Member since</span>
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
+                                <span className="sm:w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Member since</span>
                                 <span className="text-foreground">
                                     {profile?.createdAt ? formatDate(profile.createdAt) : "—"}
                                 </span>
@@ -497,7 +497,7 @@ export function Account() {
                                 {isTelegram ? (
                                     telegramLinked ? (
                                         <>
-                                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                                            <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
                                                 <span className="text-success text-xs font-semibold">Connected</span>
                                                 <span className="text-muted-foreground text-xs">
                                                     {profile?.telegramUsername ? `@${profile.telegramUsername}` : ""}

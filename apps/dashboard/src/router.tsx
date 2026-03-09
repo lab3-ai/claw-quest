@@ -18,6 +18,7 @@ import { FundSuccess } from './routes/_authenticated/quests/$questId/fund-succes
 import { FundCancel } from './routes/_authenticated/quests/$questId/fund-cancel'
 import { EditQuest } from './routes/_authenticated/quests/$questId/edit'
 import { ManageQuest } from './routes/_authenticated/quests/$questId/manage'
+import { QuestCompletePage } from './routes/_authenticated/quests/$questId/complete'
 import { Account } from './routes/_authenticated/account'
 import { StripeConnect } from './routes/_authenticated/stripe-connect'
 import { QuestJoin } from './routes/_public/quests/join'
@@ -178,6 +179,9 @@ const createQuestRoute = createRoute({
 const verifyRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/verify',
+    validateSearch: (search: Record<string, unknown>): { token?: string } => {
+        return { token: typeof search.token === 'string' ? search.token : undefined }
+    },
     beforeLoad: ({ context }) => {
         if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
     },
@@ -251,6 +255,15 @@ const manageQuestRoute = createRoute({
     component: ManageQuest,
 })
 
+const questCompleteRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/quests/$questId/complete',
+    beforeLoad: ({ context }) => {
+        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
+    },
+    component: QuestCompletePage,
+})
+
 const accountRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/account',
@@ -289,6 +302,7 @@ const routeTree = rootRoute.addChildren([
         fundCancelRoute,
         editQuestRoute,
         manageQuestRoute,
+        questCompleteRoute,
         questersRoute,
         questJoinRoute,
         dashboardRoute,

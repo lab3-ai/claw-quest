@@ -290,23 +290,21 @@ export function StepPreview({
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <Button variant="secondary" onClick={onPrevious}>{"\u2190"} Reward</Button>
                         <div className="flex gap-2">
-                            {isFunded ? (
+                            {mutation.isPending ? (
+                                <Button disabled>Saving…</Button>
+                            ) : isFunded ? (
                                 <>
                                     <Button
                                         variant={rewardIncreased ? "secondary" : "default"}
-                                        disabled={mutation.isPending}
                                         onClick={onUpdate}
                                     >
-                                        {mutation.isPending ? "Saving…" : "Update Quest"}
+                                        Update Quest
                                     </Button>
                                     {rewardIncreased && form.rail === "crypto" && (
                                         <Button
-                                            disabled={mutation.isPending}
                                             onClick={onUpdateAndFund}
                                         >
-                                            {mutation.isPending
-                                                ? "Saving…"
-                                                : `Update & Fund Difference (+${topUpAmount.toFixed(2)} ${tokenLabel}) →`}
+                                            {`Update & Fund Difference (+${topUpAmount.toFixed(2)} ${tokenLabel}) →`}
                                         </Button>
                                     )}
                                 </>
@@ -314,32 +312,23 @@ export function StepPreview({
                                 <>
                                     <Button
                                         variant={form.rail === "crypto" ? "secondary" : "default"}
-                                        disabled={mutation.isPending}
                                         onClick={onSaveDraft}
                                     >
-                                        {mutation.isPending
-                                            ? "Saving…"
-                                            : isEditMode ? (isScheduled ? "Update Quest" : "Update Draft") : "Save Draft"}
+                                        {isEditMode ? (isScheduled ? "Update Quest" : "Update Draft") : "Save Draft"}
                                     </Button>
                                     {form.rail === "crypto" && (
                                         <Button
-                                            disabled={mutation.isPending}
                                             onClick={onSaveAndFund}
                                         >
-                                            {mutation.isPending
-                                                ? "Saving…"
-                                                : isEditMode ? "Update & Fund Now →" : "Save & Fund Now →"}
+                                            {isEditMode ? "Update & Fund Now →" : "Save & Fund Now →"}
                                         </Button>
                                     )}
                                     {form.rail === "fiat" && (
                                         <Button
                                             className="bg-(--stripe-fg) hover:bg-(--stripe-fg)/90 text-white"
-                                            disabled={mutation.isPending}
                                             onClick={onSaveAndFund}
                                         >
-                                            {mutation.isPending
-                                                ? "Saving…"
-                                                : isEditMode ? "Update & Pay with Card →" : "Save & Pay with Card →"}
+                                            {isEditMode ? "Update & Pay with Card →" : "Save & Pay with Card →"}
                                         </Button>
                                     )}
                                 </>

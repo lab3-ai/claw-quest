@@ -1,5 +1,76 @@
 # Changelog
 
+## v0.13.0 — Design System v3 + Stripe Connect + Testnet Quests + Quest Sponsorship + Testing (2026-03-05)
+
+### Quest Sponsorship Collaboration
+- [New] QuestCollaborator model — invite co-sponsors with 7-day expiry tokens
+- [New] QuestDeposit model — track multi-deposit funding per sponsor + escrow sub-questId
+- [New] POST /quests/:id/invite — generate shareable invite link (owner/sponsor only, max 5 sponsors)
+- [New] POST /quests/:id/collaborate — accept invite and become co-sponsor
+- [New] GET /quests/:id/collaborators — list sponsors + deposit breakdown (owner/sponsor only)
+- [New] DELETE /quests/:id/collaborators/:userId — remove sponsor (owner only)
+- [New] PATCH /quests/:id — sponsor edit support, task lock on live, owner-only deadline extension
+- [New] Sub-questId generation — keccak256(questId + userId) for per-sponsor escrow deposits
+- [New] Multi-deposit distribute/refund — proportional payout from each sub-escrow
+- [Update] Quest model: totalFunded field, collaborators/deposits relations
+- [Update] FUNDING_STATUS: added 'partial' state (totalFunded < rewardAmount)
+- [Update] POST /quests/:id/publish — gate on totalFunded >= rewardAmount (strict)
+- [Update] GET /quests/mine — includes quests where user is accepted sponsor
+- [Update] GET /quests/:id — populate sponsorNames from collaborators
+- [Frontend] Fund page: funding progress bar, "Invite a co-sponsor" button + dialog
+- [Frontend] Quest detail: "Sponsored by Alice, Bob" line when collaborators exist
+- [Frontend] Dashboard: "Co-sponsor" badge on non-owned quests
+- [Frontend] New route: /quests/:questId/join — accept invite, auto-redirect to fund page
+- [Fix] Migration backfill: existing funded quests set totalFunded = rewardAmount
+
+### Design System v3 — Terminal Edition (Hiru)
+- [New] Complete UI overhaul — terminal-inspired dark theme
+- [New] Theme switcher component
+- [New] Dark mode shadows, improved tab badges
+- [Refactor] Migrate fund, manage, stripe-connect pages from CSS to Tailwind
+- [Fix] Design system v3 compliance — remove shadow-sm, hardcoded hex, inline styles
+- [Fix] Audit design tokens — sync docs with implementation
+- [Update] New ClawQuest brand icon (favicon + logo SVG)
+- [Remove] Retro theme removed
+
+### Stripe Connect Integration (Ryan)
+- [New] Stripe Connect for fiat payments — sponsor onboarding flow
+- [New] Product distribution docs and plan
+
+### Testnet Quest Creation (Vincent/Thomas)
+- [New] Testnet support for quest creation (Base Sepolia)
+- [New] Chain and RPC registry API endpoints
+- [New] Per-chain polling control in escrow poller
+- [Update] QuestParticipation: userId now nullable (agent-only participations)
+- [Update] Escrow contract address + USDC token address for Base Sepolia
+- [Fix] Quest response formatting simplified
+- [Fix] Escrow poller cursor retrieval + error handling improved
+- [Fix] Dockerfile CMD — inline migration, remove entrypoint script
+
+### Account Page (Thomas)
+- [New] Complete account page — wallet management + X read tokens
+- [Fix] Account page social linking reliability improvements
+
+### Frontend (Ray)
+- [New] QuestList component — improved view toggle functionality
+- [Update] Dashboard layout enhancements
+
+### Testing (Chalee)
+- [New] Unit tests: auth, quests, stripe modules (vitest)
+- [New] Auth test cases TC-AUTH-034 to TC-AUTH-044
+- [New] Bug report from QA testing
+- [New] Generate-testcase skill for automated test generation
+
+### DevOps & Docs
+- [New] Local setup guide for team members
+- [New] Brand guidelines, UI patterns, accessibility standards docs
+- [New] Team coordination files (`.team/` directory)
+- [New] BD marketing documentation (waitlist research, optimization, agent rules)
+- [Fix] .env files removed from tracking (security)
+- [Fix] .claude/hooks/.logs removed from tracking
+
+---
+
 ## v0.12.1 — Auth Redirect Fix + Login Cleanup + Account Linking (2026-03-04)
 
 ### Bug Fixes

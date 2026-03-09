@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { HelmetProvider } from 'react-helmet-async'
 import { WagmiProvider } from 'wagmi'
 import { RainbowKitProvider, lightTheme } from '@rainbow-me/rainbowkit'
 import { wagmiConfig } from '@/lib/wagmi'
@@ -33,21 +34,23 @@ function InnerApp() {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-        <WagmiProvider config={wagmiConfig}>
-            <QueryClientProvider client={queryClient}>
-                <RainbowKitProvider theme={lightTheme({
-                    accentColor: '#f48024',
-                    accentColorForeground: '#fff',
-                    borderRadius: 'small',
-                    fontStack: 'system',
-                })}>
-                    <ThemeProvider>
-                        <AuthProvider>
-                            <InnerApp />
-                        </AuthProvider>
-                    </ThemeProvider>
-                </RainbowKitProvider>
-            </QueryClientProvider>
-        </WagmiProvider>
+        <HelmetProvider>
+            <WagmiProvider config={wagmiConfig}>
+                <QueryClientProvider client={queryClient}>
+                    <RainbowKitProvider theme={lightTheme({
+                        accentColor: '#f48024',
+                        accentColorForeground: '#fff',
+                        borderRadius: 'small',
+                        fontStack: 'system',
+                    })}>
+                        <ThemeProvider>
+                            <AuthProvider>
+                                <InnerApp />
+                            </AuthProvider>
+                        </ThemeProvider>
+                    </RainbowKitProvider>
+                </QueryClientProvider>
+            </WagmiProvider>
+        </HelmetProvider>
     </React.StrictMode>,
 )

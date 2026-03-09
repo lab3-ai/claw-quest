@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router"
 import { useAuth } from "@/context/AuthContext"
 import { supabase } from "@/lib/supabase"
 import { startTelegramLogin } from "@/lib/telegram-oidc"
+import { SeoHead } from "@/components/seo-head"
 import { Button } from "@/components/ui/button"
 
 export function Login() {
@@ -101,6 +102,7 @@ export function Login() {
 
     return (
         <div className="min-h-screen flex flex-col bg-muted">
+            <SeoHead title="Log In" noindex />
             {/* Topbar */}
             <header className="sticky top-0 z-50 bg-background border-b border-border">
                 <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-6">

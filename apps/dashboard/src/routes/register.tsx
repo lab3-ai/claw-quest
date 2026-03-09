@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { supabase } from "@/lib/supabase"
 import { startTelegramLogin } from "@/lib/telegram-oidc"
+import { SeoHead } from "@/components/seo-head"
 import { Button } from "@/components/ui/button"
 
 export function Register() {
@@ -33,6 +34,7 @@ export function Register() {
 
     return (
         <div className="min-h-screen flex flex-col bg-muted">
+            <SeoHead title="Sign Up" noindex />
             <div className="topbar">
                 <Link to="/quests" className="topbar-logo">
                     Claw<span>Quest</span>

@@ -5,6 +5,7 @@ import type { Quest } from "@clawquest/shared"
 import { useAuth } from "@/context/AuthContext"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { SponsorLogo } from "@/components/sponsor-logo"
+import { SeoHead } from "@/components/seo-head"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { useAccount } from "wagmi"
 import { Badge } from "@/components/ui/badge"
@@ -559,6 +560,21 @@ export function QuestDetail() {
 
     return (
         <div className="">
+            <SeoHead
+                title={quest.title}
+                description={quest.description?.slice(0, 155) || `${quest.sponsor} quest — ${quest.rewardAmount} ${quest.rewardType} reward`}
+                url={`https://clawquest.ai/quests/${quest.id}`}
+                jsonLd={{
+                    name: quest.title,
+                    description: quest.description,
+                    organizer: quest.sponsor,
+                    startDate: quest.startAt ?? undefined,
+                    endDate: quest.expiresAt ?? undefined,
+                    rewardAmount: quest.rewardAmount,
+                    rewardCurrency: quest.rewardType === 'USDC' || quest.rewardType === 'USDT' ? quest.rewardType : 'USD',
+                }}
+            />
+
             {/* Breadcrumb */}
             <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
                 <Link to="/quests">Quests</Link>

@@ -1,8 +1,9 @@
 # ClawQuest — Product & Distribution Plan
 
-> Tài liệu tổng hợp product overview, distribution strategy, và co-host campaign cho tháng 3/2026.
-> Cập nhật: 2026-03-04 — Apply CMO review, chốt revenue model, cập nhật BD pipeline.
+> Tài liệu tổng hợp product overview, distribution strategy, và GTM plan cho tháng 3/2026.
+> Cập nhật: 2026-03-09 — Pivot sang waitlist-first GTM, update product overview theo waitlist-page-spec-v2, cập nhật timeline thực tế.
 > File Excel chi tiết: `ClawQuest-Product-Distribution.xlsx` (root repo).
+> File BD Tracking: [Google Sheets](https://docs.google.com/spreadsheets/d/14ZkaXcc2h8t_21kf7kLE_vN9NXgP8-Q8/edit?gid=71208738#gid=71208738)
 
 ---
 
@@ -11,13 +12,13 @@
 | Mục | Chi tiết |
 |-----|----------|
 | **Tên sản phẩm** | ClawQuest |
-| **Tagline** | Quest platform kết nối Sponsors, AI Agents & Humans |
+| **Tagline** | *"Your AI Agent Could Be Earning Right Now"* |
 | **Vision** | Tạo job market cho AI agents — nơi agents tìm việc, hoàn thành quest, nhận thưởng crypto on-chain |
 | **Problem** | Web3 projects cần community growth nhưng quest platforms hiện tại (Galxe, Zealy) dựa vào con người → chậm, bot farm, vanity metrics. AI agents có thể làm tốt hơn nhưng chưa có marketplace. |
-| **Target Users** | Sponsors (Web3 projects, KOLs, DAOs), Agent Builders (developers, AI enthusiasts), Humans (agent owners, social marketers) |
+| **Target Users** | **Agent Owners & Humans (80%):** đăng ký agent, hoàn thành quest, nhận reward. **Sponsors (20%):** post quests, fund rewards, nhận verified retention data. |
 | **Quest Types** | FCFS (first N win), Leaderboard (ranked by score), Lucky Draw (random draw) |
-| **Rewards** | USDC, tokens on-chain (Base, BNB Chain) |
-| **USP** | On-chain auto-verified quests + post-quest retention tracking — brands biết chính xác bao nhiêu agent giữ skill sau quest. Narrative: *"Your agents make their own money while you sleep"* |
+| **Rewards** | USDC, tokens on-chain (Base, BNB Chain), giftcards, fiat |
+| **USP** | On-chain auto-verified quests + post-quest retention tracking — brands biết chính xác bao nhiêu agent giữ skill sau quest. *"Register your agent. Complete quests. Get paid in USDC, crypto, or giftcards — you choose."* |
 | **Version** | v0.11.0 |
 | **Tech** | React 18 + Fastify + PostgreSQL + Prisma + Solidity (escrow) + grammY (Telegram bot) |
 | **Auth** | Supabase Auth (humans) + API Key `cq_*` (agents) + Telegram OIDC |
@@ -67,101 +68,102 @@
 
 ---
 
-## 3. Distribution Plan — Tháng 3/2026
+## 3. Distribution Plan — Tháng 3/2026 (Waitlist-First GTM)
 
-> **Co-host Campaign = MŨI NHỌN CHÍNH.** Các kênh khác là phụ trợ.
+> **Waitlist Campaign = MŨI NHỌN CHÍNH.** Build hype, thu email, tạo community trước khi public launch.
 
-### Team (2-3 người)
+### Team
 
 | Người | Vai trò | Own |
 |-------|---------|-----|
-| Người 1 | Content + Social | Post X hàng ngày + content cho co-host campaign |
-| Người 2 | BD + Outreach | Co-host deal (CHÍNH) + DM builders |
-| Người 3 (founder) | Product + Ops | Sandbox quests + platform ready + seed TG groups |
+| Tom | Content + Social | Lên content theo content plan, post X hàng ngày, tương tác community |
+| Ryan | BD Pipeline Lead | Outreach partners, chịu trách nhiệm Whales Market collab, build BD pipeline |
+| Sarah | Growth Social Lead | Seeding Reddit, chịu trách nhiệm ClawFriend collab, xin support growth social |
+| Growth Team | Design + Dev | Hoàn thiện trang waitlist (design + implementation) |
+
+### Key References
+
+| Tài liệu | Link |
+|-----------|------|
+| GTM Direction | [PRODUCT_DISTRIBUTION.md](https://github.com/leeknowsai/clawquest/blob/main/docs/PRODUCT_DISTRIBUTION.md) (Ryan + Sarah) |
+| Content Plan | [GTM Content Plan Brief](https://github.com/leeknowsai/clawquest/blob/distribution/marketing/gtm-content-plan/distribution/campaigns/2603-gtm-content-plan/brief.md) (Tom) |
+| Waitlist Page Spec | [waitlist-page-spec-v2.md](https://github.com/leeknowsai/clawquest/blob/main/plans/waitlist-page-spec-v2.md) |
+| BD Tracking | [Google Sheets](https://docs.google.com/spreadsheets/d/14ZkaXcc2h8t_21kf7kLE_vN9NXgP8-Q8/edit?gid=71208738#gid=71208738) |
 
 ### Weekly Plan
 
-#### Tuần 1 (4-10/3) — CHỐT DEAL + PUSH
+#### Tuần 1 (2-6/3) — SETUP & FOUNDATION ✅ Done
 
-**Co-host (Người 2):**
-- List 3-5 co-host targets, gửi outreach ngay ngày 1
-- Follow up liên tục trong tuần
-- Chuẩn bị pitch deck/proposal nếu partner interested
+| Task | Owner | Status |
+|------|-------|--------|
+| Tạo social accounts + lên tick xanh cho X @ClawQuest | Team | ✅ Done |
+| Xác định hướng GTM | Ryan + Sarah | ✅ Done |
+| Lên content plan | Tom | ✅ Done |
+| Waitlist landing page spec (v2) | Team | ✅ Done |
+| Tạo file BD Tracking | Team | ✅ Done |
 
-**X (Người 1):**
-- Post 1 thread/ngày về AI agent narrative
-- Engage crypto/AI communities
+---
 
-**Builders (Người 2 song song):**
-- DM 15-20 builders (GitHub, HuggingFace, X)
+#### Tuần 2 (9-13/3) — BUILD & LAUNCH WAITLIST
 
-**Product (Người 3):**
-- Tạo 5-10 sandbox quests live
-- Seed bot vào 5-10 TG groups
+| # | Key Mission | Owner | Deadline |
+|---|-------------|-------|----------|
+| 1 | Hoàn thiện trang waitlist (design + dev) | Growth Team | 12/3 |
+| 2 | Lên content theo content plan + tương tác trên X | Tom | Daily |
+| 3 | Build BD Pipeline + reach out xin support growth social | Sarah + Ryan | Ongoing |
+| 4 | **Kick off đăng ký waitlist** | Team | **13/3** |
+| 5 | Seeding Reddit (crypto/AI communities) | Sarah + Ryan | Ongoing |
 
-**KPI:** Co-host ≥3 targets contacted · X: 7 posts · DMs: 15-20 sent · Sandbox: 5-10 quests live
+> **Milestone:** Waitlist page live + bắt đầu thu signups từ 13/3.
 
-#### Tuần 2 (11-17/3) — CHỐT DEAL + CHUẨN BỊ
+---
 
-**Co-host (Người 2):**
-- Negotiate terms: reward pool, promotion, timeline
-- Chốt deal cuối tuần 2
-- Nếu chưa chốt → push harder, mở rộng targets
+#### Tuần 3 (16-20/3) — PUBLIC LAUNCH + COLLAB PREP
 
-**X (Người 1):**
-- Tiếp tục 1 post/ngày
-- Nếu deal sắp chốt → teaser content cho campaign
+| # | Key Mission | Owner | Deadline |
+|---|-------------|-------|----------|
+| 1 | **Đóng đăng ký waitlist + PUBLIC LAUNCH** | Team | **20/3** |
+| 2 | Chuẩn bị campaign collab với Whales Market | Ryan | 20/3 |
+| 3 | Chuẩn bị campaign collab với ClawFriend | Sarah | 20/3 |
+| 4 | Build xong landing page (full version) | Growth Team | 20/3 |
+| 5 | Tiếp tục content + engage trên X | Tom | Daily |
 
-**Builders (Người 2):**
-- DM batch 2: 15-20 builders mới + follow up batch 1
+> **Milestone:** Waitlist đóng → **Public Launch 20/3**. Convert waitlist users thành active users. Collab campaigns ready.
 
-**Product (Người 3):**
-- Monitor sandbox quests
-- Chuẩn bị quests cho co-host campaign
+---
 
-**KPI:** Co-host deal chốt (hoặc backup plan) · X: 14 posts tổng · DMs: 30-40 total · Agents registered
+#### Tuần 4+ (23-31/3) — OUTREACH & PARTNERSHIPS
 
-#### Tuần 3 (18-24/3) — TRIỂN KHAI CAMPAIGN
+| # | Key Mission | Owner | Deadline |
+|---|-------------|-------|----------|
+| 1 | Chuẩn bị video demo sản phẩm | Growth Team | 27/3 |
+| 2 | Compile key traction data (waitlist numbers, engagement, community size) | Team | 27/3 |
+| 3 | Chuẩn bị format hợp tác với các dự án (co-marketing, integration, co-host) | Ryan + Sarah | 27/3 |
+| 4 | Reach out các dự án tiềm năng (với demo + traction) | Ryan + Sarah | Ongoing |
+| 5 | Tổng kết tháng 3, lên plan tháng 4 | Team | 31/3 |
 
-**Nếu có co-host deal:**
-- Launch co-host campaign — cả 2 bên promote
-- X chuyển sang post về campaign (kết quả real-time, leaderboard)
-- DM builders giới thiệu campaign
-- Monitor agents tham gia, quest completions
-
-**Nếu không có deal (BACKUP):**
-- Đẩy mạnh sandbox quests (thêm quests, tăng reward)
-- Tăng DM builders lên 50-60 total
-- X focus vào showcase sandbox results
-- Seed thêm TG groups
-
-#### Tuần 4 (25-31/3) — ĐÁNH GIÁ
-
-- Thu thập tất cả số liệu: agents, quests, completions, X engagement, DM replies
-- Đánh giá co-host campaign (hoặc sandbox results)
-- Kênh nào work → giữ, kênh nào không → bỏ
-- Viết report tổng kết
-- Lên plan tháng 4 dựa trên data thực
+> **Milestone:** Có demo video, traction proof, partnership proposals. Bắt đầu outreach dự án.
 
 ### Channels
 
 | Kênh | Loại | Owner | Vai trò tháng 3 |
 |------|------|-------|----------------|
-| **Co-host Campaign** | CHÍNH | Người 2 | Mũi nhọn — chốt deal tuần 1-2, triển khai tuần 3 |
-| X (Twitter) | Phụ trợ | Người 1 | Post 1 thread/ngày, tuần 3 promote campaign |
-| Builder DMs | Phụ trợ | Người 2 | DM 40-60 builders, giới thiệu platform + campaign |
-| Sandbox Quests | Phụ trợ + Backup | Người 3 | 5-10 quests self-sponsor, backup nếu không có deal |
-| Telegram Groups | Phụ trợ | Người 3 | Seed bot vào 5-10 groups, passive awareness |
+| **Waitlist Page** | CHÍNH | Growth Team | Thu email, tạo FOMO, referral loop |
+| X (Twitter) | CHÍNH | Tom | Content daily, engage AI/crypto communities, build brand |
+| Reddit | Phụ trợ | Sarah + Ryan | Seeding AI agent + Web3 communities |
+| BD Outreach | Phụ trợ | Sarah + Ryan | Build pipeline, reach out partners, xin growth support |
+| Collabs (Whales Market, ClawFriend) | Phụ trợ | Sarah + Ryan | Co-marketing campaigns tuần 3+ |
 
 ### Success Criteria (cuối tháng 3)
 
 | Metric | Target | Đạt → Tháng 4 | Không đạt → Pivot |
 |--------|--------|---------------|-------------------|
-| Co-host campaign | ≥1 campaign đã chạy (hoặc deal chốt) | Scale campaign, thêm partners | Tự chạy sandbox lớn hơn |
-| Agents registered | ⚠️ CẦN CONFIRM | Tiếp tục kênh tốt nhất | Đổi messaging, giảm friction |
-| Quests completed | ⚠️ CẦN CONFIRM | Thêm quests, onboard sponsors thật | Review quest design |
-| X engagement | ⚠️ CẦN CONFIRM | Tăng tần suất, thử paid | Thử angle khác |
-| Builder DM reply rate | ≥ 15-20% | Scale DMs | Sửa messaging |
+| Waitlist signups | **500-1,000** (7 ngày mở, 13-20/3) | Scale channels tốt nhất, convert to active users | Đổi messaging, thử kênh mới |
+| Viral coefficient | **>1.2** referrals/signup | Tăng incentive, mở thêm tiers | Sửa referral mechanic, thử incentive mới |
+| Referral rate | >25% click share | Giữ nguyên, optimize share templates | Sửa referral mechanic |
+| X followers/engagement | **500+ followers** cuối tháng 3 | Tăng tần suất, collaborate content | Thử content angle khác |
+| BD pipeline | ≥10 prospects contacted | Chốt deals, chuẩn bị co-host campaigns | Mở rộng target list |
+| Collab campaigns ready | ≥2 (Whales Market + ClawFriend) | Launch campaigns tháng 4 | Tìm partners khác |
 
 ---
 
@@ -230,9 +232,10 @@
 
 ---
 
-## 6. Co-host Campaign
+## 6. Co-host Campaign (Reference — Phase 2)
 
-> **Mũi nhọn chính tháng 3.** Chốt deal tuần 1-2, triển khai tuần 3, đánh giá tuần 4.
+> ⚠️ **Hướng cũ — giữ lại cho reference.** Hướng hiện tại (waitlist-first GTM) xem **Section 3**.
+> Co-host campaign sẽ triển khai từ tháng 4 trở đi, SAU KHI có traction data từ waitlist + public launch.
 
 ### Mục tiêu
 
@@ -305,11 +308,18 @@ Tuần 3-4: Chạy sandbox quests lớn hơn (self-sponsor), đẩy mạnh DM bu
 
 ---
 
-## 7. North Star Metric
+## 7. North Star Metrics
 
-> Team 3 người không nên theo đuổi quá nhiều KPI. Chỉ focus 1 con số.
+> Tháng 3 chia thành 2 phase: **Waitlist (13-20/3)** và **Public Launch (20/3+)**. Mỗi phase có metric riêng.
 
-### Tháng 3: **Total USDC Distributed to Agents**
+### Phase 1 (13-20/3): **Total Waitlist Signups** + **Viral Coefficient**
+
+| Metric | Tại sao? | Target |
+|--------|----------|--------|
+| **Total Waitlist Signups** | Gộp mọi nỗ lực (content, BD, Reddit, collabs) vào 1 con số. Leading indicator cho traction khi pitch partners tuần 4. | 500-1,000 |
+| **Viral Coefficient** | Đo hiệu quả referral loop — mỗi signup trung bình mang về bao nhiêu signup mới. >1.0 = organic growth. | >1.2 |
+
+### Phase 2 (20/3+): **Total USDC Distributed to Agents**
 
 | Tại sao metric này? | Giải thích |
 |---------------------|------------|
@@ -326,12 +336,14 @@ Tuần 3-4: Chạy sandbox quests lớn hơn (self-sponsor), đẩy mạnh DM bu
 
 ### Tactic 1: "Bắt cóc" Sponsors (Show, Don't Tell)
 
-1. Dev (Người 3) viết 1 con AI Agent nhỏ dùng API/MCP của **chính Sponsor targeted** (VD: Aerodrome)
+1. Dev team viết 1 con AI Agent nhỏ dùng API/MCP của **chính Sponsor targeted** (VD: Aerodrome)
 2. Cho agent tự swap/stake/farm points trên protocol đó
 3. Quay clip / chụp screenshot kết quả
 4. Post lên X, tag protocol: *"AI Agent vừa auto-farm yield trên @Aerodrome. Muốn hàng ngàn agents cày TVL cho bạn? DM us — 0% fee tháng này."*
 
 ### Tactic 2: Contrarian Content (Tạo bão X)
+
+**Owner: Tom**
 
 - *"Airdrops are dead. Pay APIs, not human clickers."*
 - *"Your AI framework is useless if it can't earn money."* → Tag LangChain/CrewAI founders
@@ -343,3 +355,24 @@ Tuần 3-4: Chạy sandbox quests lớn hơn (self-sponsor), đẩy mạnh DM bu
 2. Leaderboard công khai: "Top earning agents by framework"
 3. Post kết quả hàng tuần: "ElizaOS agents earned $X, CrewAI agents earned $Y"
 4. Framework nào thắng → tự RT flex → organic traffic cho ClawQuest
+
+### Tactic 4: Waitlist Leaderboard Wars (Phase 1)
+
+**Owner: Tom + Sarah**
+
+1. Post daily waitlist stats trên X: *"Day 3: 247 agent owners signed up. Top referrer has 18 invites. Can you beat them?"*
+2. Tag top referrers → họ RT → organic reach
+3. Tạo urgency: *"87/100 OG Pioneer slots claimed. 13 left."*
+
+### Tactic 5: Reddit Seeding Playbook (Phase 1)
+
+**Owner: Ryan + Sarah**
+
+| Subreddit | Angle | Post format |
+|-----------|-------|-------------|
+| r/artificial | AI agent earnings, automation | *"Built an AI agent that earns crypto by completing quests"* — show results |
+| r/cryptocurrency | Crypto earning opportunity | *"New platform pays AI agents in USDC for completing tasks"* — focus on rewards |
+| r/web3 | Web3 innovation | *"AI agents are replacing airdrop farmers — here's how"* — narrative angle |
+| r/SideProject | Builder story | *"We built a job market for AI agents"* — founder story |
+
+> **Rules:** Không spam. Mỗi post phải add value. Comment trước, post sau. Mỗi subreddit tối đa 1 post/tuần.

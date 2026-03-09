@@ -113,6 +113,7 @@
 | 3 | Build BD Pipeline + reach out xin support growth social | Sarah + Ryan | Ongoing |
 | 4 | **Kick off đăng ký waitlist** | Team | **13/3** |
 | 5 | Seeding Reddit (crypto/AI communities) | Sarah + Ryan | Ongoing |
+| 6 | Outreach Virtual Protocol để nhận support growth (đã có contact) | Sarah | Ongoing |
 
 > **Milestone:** Waitlist page live + bắt đầu thu signups từ 13/3.
 

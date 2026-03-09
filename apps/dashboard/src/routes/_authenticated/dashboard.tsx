@@ -841,48 +841,7 @@ export function Dashboard() {
 
             {/* ── My Agents tab ── */}
             {mainTab === "agents" && (
-                <div>
-                    <div className="flex items-center justify-between py-2.5 border-b border-border max-sm:flex-col max-sm:items-stretch">
-                        <div className="flex items-center text-xs text-muted-foreground px-1">
-                            <button
-                                className={cn(
-                                    "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-muted-foreground whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-foreground",
-                                    agentFilter === "all" && "text-foreground font-semibold"
-                                )}
-                                onClick={() => setAgentFilter("all")}
-                            >
-                                {agents.length} agents
-                            </button>
-                            {claimedAgents.length > 0 && (
-                                <>
-                                    <span className="px-1 text-border select-none text-xs self-center">·</span>
-                                    <button
-                                        className={cn(
-                                            "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-muted-foreground whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-foreground",
-                                            agentFilter === "claimed" && "text-foreground font-semibold"
-                                        )}
-                                        onClick={() => setAgentFilter("claimed")}
-                                    >
-                                        {claimedAgents.length} claimed
-                                    </button>
-                                </>
-                            )}
-                            {pendingAgents.length > 0 && (
-                                <>
-                                    <span className="px-1 text-border select-none text-xs self-center">·</span>
-                                    <button
-                                        className={cn(
-                                            "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-muted-foreground whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-foreground",
-                                            agentFilter === "pending" && "text-foreground font-semibold"
-                                        )}
-                                        onClick={() => setAgentFilter("pending")}
-                                    >
-                                        {pendingAgents.length} pending
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
+                <div className="">
 
                     {agentsLoading && (
                         <table className="w-full border-collapse">
@@ -924,6 +883,7 @@ export function Dashboard() {
                                     <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Skills</th>
                                     <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[90px] text-center">Quests</th>
                                     <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Registered</th>
+                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Verified</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1003,16 +963,20 @@ export function Dashboard() {
                                                     <div className="text-xs text-muted-foreground" title={agent.createdAt}>
                                                         {new Date(agent.createdAt).toLocaleDateString()}
                                                     </div>
-                                                    {agent.claimedAt && (
-                                                        <div className="text-[10px] text-accent" title={`Claimed: ${agent.claimedAt}`}>
-                                                            claimed {new Date(agent.claimedAt).toLocaleDateString()}
-                                                        </div>
+                                                </td>
+                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
+                                                    {isPending ? (
+                                                        <Badge variant="filled-warning">Pending</Badge>
+                                                    ) : agent.claimedAt ? (
+                                                        <Badge variant="filled-success">Verified</Badge>
+                                                    ) : (
+                                                        <Badge variant="outline">Unverified</Badge>
                                                     )}
                                                 </td>
                                             </tr>
                                             {isExpanded && (
                                                 <tr key={`detail-${agent.id}`}>
-                                                    <td colSpan={6} className="p-0 bg-muted">
+                                                    <td colSpan={7} className="p-0 bg-muted">
                                                         <div className="py-3.5 px-4 pl-[26px] border-b border-border">
                                                             {isPending ? (
                                                                 <div className="mb-3.5 last:mb-0">

@@ -59,8 +59,17 @@ export async function agentsRoutes(app: FastifyInstance) {
                 orderBy: { createdAt: 'desc' },
             });
             return agents.map(a => ({
-                ...a,
+                id: a.id,
+                agentname: a.agentname,
                 status: a.status as any,
+                ownerId: a.ownerId,
+                activationCode: a.activationCode ?? undefined,
+                agentApiKey: a.agentApiKey ?? undefined,
+                verificationToken: a.verificationToken ?? undefined,
+                verificationExpiresAt: a.verificationExpiresAt?.toISOString() ?? undefined,
+                claimedAt: a.claimedAt?.toISOString() ?? undefined,
+                claimedVia: a.claimedVia ?? undefined,
+                claimEmail: a.claimEmail ?? undefined,
                 createdAt: a.createdAt.toISOString(),
                 updatedAt: a.updatedAt.toISOString(),
             }));
@@ -89,7 +98,21 @@ export async function agentsRoutes(app: FastifyInstance) {
                     activationCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
                 },
             });
-            return reply.code(201).send(agent as any);
+            return reply.code(201).send({
+                id: agent.id,
+                agentname: agent.agentname,
+                status: agent.status as any,
+                ownerId: agent.ownerId,
+                activationCode: agent.activationCode ?? undefined,
+                agentApiKey: agent.agentApiKey ?? undefined,
+                verificationToken: agent.verificationToken ?? undefined,
+                verificationExpiresAt: agent.verificationExpiresAt?.toISOString() ?? undefined,
+                claimedAt: agent.claimedAt?.toISOString() ?? undefined,
+                claimedVia: agent.claimedVia ?? undefined,
+                claimEmail: agent.claimEmail ?? undefined,
+                createdAt: agent.createdAt.toISOString(),
+                updatedAt: agent.updatedAt.toISOString(),
+            });
         }
     );
 
@@ -114,7 +137,21 @@ export async function agentsRoutes(app: FastifyInstance) {
             if (!agent) {
                 return reply.status(404).send({ message: 'Agent not found', code: 'NOT_FOUND' } as any);
             }
-            return agent as any;
+            return {
+                id: agent.id,
+                agentname: agent.agentname,
+                status: agent.status as any,
+                ownerId: agent.ownerId,
+                activationCode: agent.activationCode ?? undefined,
+                agentApiKey: agent.agentApiKey ?? undefined,
+                verificationToken: agent.verificationToken ?? undefined,
+                verificationExpiresAt: agent.verificationExpiresAt?.toISOString() ?? undefined,
+                claimedAt: agent.claimedAt?.toISOString() ?? undefined,
+                claimedVia: agent.claimedVia ?? undefined,
+                claimEmail: agent.claimEmail ?? undefined,
+                createdAt: agent.createdAt.toISOString(),
+                updatedAt: agent.updatedAt.toISOString(),
+            };
         }
     );
 

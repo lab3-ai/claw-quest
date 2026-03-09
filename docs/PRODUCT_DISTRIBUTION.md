@@ -110,7 +110,7 @@
 |---|-------------|-------|----------|
 | 1 | Hoàn thiện trang waitlist (design + dev) | Growth Team | 12/3 |
 | 2 | Lên content theo content plan + tương tác trên X | Tom | Daily |
-| 3 | Build BD Pipeline + reach out xin support growth social | Sarah + Ryan | Ongoing |
+| 3 | Build BD Pipeline + reach out để nhận support growth social | Sarah + Ryan | Ongoing |
 | 4 | **Kick off đăng ký waitlist** | Team | **13/3** |
 | 5 | Seeding Reddit (crypto/AI communities) | Sarah + Ryan | Ongoing |
 | 6 | Outreach Virtual Protocol để nhận support growth (đã có contact) | Sarah | Ongoing |

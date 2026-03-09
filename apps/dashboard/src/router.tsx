@@ -25,6 +25,7 @@ import { QuestJoin } from './routes/_public/quests/join'
 import { Privacy } from './routes/privacy'
 import { Terms } from './routes/terms'
 import { Waitlist } from './routes/waitlist'
+import { AgentDetail } from './routes/_authenticated/agents/$agentId'
 
 // Root route
 interface RouterContext {
@@ -156,6 +157,18 @@ const agentListRoute = createRoute({
     path: '/agents',
     beforeLoad: () => {
         throw redirect({ to: '/dashboard' })
+    },
+})
+
+const agentDetailRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/agents/$agentId',
+    beforeLoad: ({ context }) => {
+        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
+    },
+    component: function AgentDetailPage() {
+        const { agentId } = agentDetailRoute.useParams()
+        return <AgentDetail agentId={agentId} />
     },
 })
 
@@ -307,6 +320,7 @@ const routeTree = rootRoute.addChildren([
         questJoinRoute,
         dashboardRoute,
         agentListRoute,
+        agentDetailRoute,
         createAgentRoute,
         createQuestRoute,
         verifyRoute,

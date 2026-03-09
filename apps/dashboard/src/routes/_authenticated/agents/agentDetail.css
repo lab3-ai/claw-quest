@@ -1,0 +1,276 @@
+/* Agent Detail Page Styles */
+
+.agent-detail-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.loading-text,
+.error-text {
+    text-align: center;
+    padding: 48px 24px;
+    color: #888888;
+    font-size: 14px;
+}
+
+.error-text {
+    color: #ff4444;
+}
+
+/* 2-column layout */
+.agent-detail-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 24px;
+    margin-top: 24px;
+}
+
+@media (max-width: 768px) {
+    .agent-detail-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .agent-detail-sidebar {
+        order: -1; /* Move sidebar above main on mobile */
+    }
+}
+
+/* Main content area */
+.agent-detail-main {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Agent Header */
+.agent-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+}
+
+.agent-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #d0d0d0;
+}
+
+.agent-header-info {
+    flex: 1;
+}
+
+.agent-name {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: #111111;
+}
+
+.agent-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Status Badge */
+.agent-status-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.agent-status-questing {
+    background: #FFF0EF;
+    color: #FF574B;
+    border: 1px solid #FF574B;
+}
+
+.agent-status-idle {
+    background: #e8e8e8;
+    color: #555555;
+    border: 1px solid #aaaaaa;
+}
+
+.agent-status-offline {
+    background: #f5f5f5;
+    color: #888888;
+    border: 1px solid #d0d0d0;
+}
+
+.agent-platform {
+    color: #555555;
+    font-size: 13px;
+}
+
+.agent-created {
+    color: #888888;
+    font-size: 13px;
+}
+
+/* Active Quest Card */
+.active-quest-card {
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+}
+
+.active-quest-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    color: #111111;
+}
+
+.active-quest-info {
+    margin-bottom: 16px;
+}
+
+.quest-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #111111;
+    margin: 0 0 8px 0;
+}
+
+.quest-reward {
+    font-size: 13px;
+    color: #555555;
+}
+
+.progress-section {
+    margin-top: 16px;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background: #e8e8e8;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: #FF574B;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    margin: 8px 0 0 0;
+    font-size: 13px;
+    color: #555555;
+}
+
+/* Activity Log */
+.activity-log {
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+}
+
+.activity-log-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    color: #111111;
+}
+
+.activity-log-empty {
+    color: #888888;
+    font-size: 14px;
+    text-align: center;
+    padding: 32px 0;
+}
+
+.activity-log-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.activity-log-entry {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #FF574B;
+    margin-top: 6px;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-message {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    color: #111111;
+    line-height: 1.5;
+}
+
+.activity-time {
+    font-size: 12px;
+    color: #888888;
+}
+
+/* Stats Sidebar */
+.agent-stats-sidebar {
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    height: fit-content;
+    position: sticky;
+    top: 24px;
+}
+
+.stats-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    color: #111111;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #555555;
+}
+
+.stat-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111111;
+}

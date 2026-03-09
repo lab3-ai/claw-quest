@@ -156,6 +156,59 @@ export async function agentsRoutes(app: FastifyInstance) {
         }
     );
 
+    // ── GET /agents/:id/logs — get agent logs (human JWT) ─────────────────────
+    server.get(
+        '/:id/logs',
+        {
+            onRequest: [app.authenticate],
+            schema: {
+                tags: ['Agents'],
+                summary: 'Get agent activity logs (human JWT auth)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                querystring: z.object({ limit: z.coerce.number().min(1).max(100).default(50) }),
+                response: {
+                    200: z.array(z.object({
+                        id: z.string(),
+                        type: z.string(),
+                        message: z.string(),
+                        meta: z.record(z.unknown()).nullable(),
+                        createdAt: z.string(),
+                    })),
+                },
+            },
+        },
+        async (request, reply) => {
+            const { id } = request.params;
+            const { limit } = request.query as { limit: number };
+
+            // Verify agent ownership
+            const agent = await server.prisma.agent.findFirst({
+                where: { id, ownerId: request.user.id },
+                select: { id: true },
+            });
+
+            if (!agent) {
+                return reply.status(403).send({ error: 'Forbidden: You do not own this agent' } as any);
+            }
+
+            // Fetch logs
+            const logs = await server.prisma.agentLog.findMany({
+                where: { agentId: id },
+                orderBy: { createdAt: 'desc' },
+                take: limit,
+            });
+
+            return logs.map(l => ({
+                id: l.id,
+                type: l.type,
+                message: l.message,
+                meta: l.meta ?? null,
+                createdAt: l.createdAt.toISOString(),
+            }));
+        }
+    );
+
     // ── POST /agents/register — agent exchanges activationCode for agentApiKey ─
     // No auth required. The activationCode IS the one-time credential.
     // Human creates agent on Dashboard → copies activationCode → gives to their agent.

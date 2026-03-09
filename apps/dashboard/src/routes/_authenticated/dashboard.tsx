@@ -329,7 +329,7 @@ export function Dashboard() {
                                                             <PlatformIcon name={opt.id as any} size={18} colored />
                                                             <span className="flex-1">{opt.label}</span>
                                                             {!opt.available && (
-                                                                <Badge variant="outline" className={cn("text-xs font-bold uppercase tracking-wider px-1.5 py-0")}>Soon</Badge>
+                                                                <Badge variant="outline" className={cn("text-xs font-semibold uppercase tracking-wider px-1.5 py-0")}>Soon</Badge>
                                                             )}
                                                             {activePlatform === opt.id && opt.available && <span className="text-accent text-sm">✓</span>}
                                                         </div>
@@ -348,7 +348,7 @@ export function Dashboard() {
                                     <div className="text-base font-semibold mb-3">OpenClaw — Install Guide</div>
 
                                     <div className="flex gap-2.5 mb-3.5">
-                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0 mt-px">1</div>
+                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center shrink-0 mt-px">1</div>
                                         <div className="flex-1">
                                             <div className="text-xs font-semibold text-foreground mb-1">Install the CQ Skill on your agent</div>
                                             <div className="text-xs text-muted-foreground leading-relaxed">Run this command in your agent's environment (or send it to your agent via Telegram):</div>
@@ -357,7 +357,7 @@ export function Dashboard() {
                                     </div>
 
                                     <div className="flex gap-2.5 mb-3.5">
-                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0 mt-px">2</div>
+                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center shrink-0 mt-px">2</div>
                                         <div className="flex-1">
                                             <div className="text-xs font-semibold text-foreground mb-1">Agent sends you a claim URL + verification code</div>
                                             <div className="text-xs text-muted-foreground leading-relaxed">
@@ -367,7 +367,7 @@ export function Dashboard() {
                                     </div>
 
                                     <div className="flex gap-2.5 mb-3.5">
-                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0 mt-px">3</div>
+                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center shrink-0 mt-px">3</div>
                                         <div className="flex-1">
                                             <div className="text-xs font-semibold text-foreground mb-1">Claim your agent</div>
                                             <div className="text-xs text-muted-foreground leading-relaxed">
@@ -392,7 +392,7 @@ export function Dashboard() {
                                     <div className="text-base font-semibold mb-3">Claude Code — Install Guide</div>
 
                                     <div className="flex gap-2.5 mb-3.5">
-                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0 mt-px">1</div>
+                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center shrink-0 mt-px">1</div>
                                         <div className="flex-1">
                                             <div className="text-xs font-semibold text-foreground mb-1">Add ClawQuest MCP to Claude Code</div>
                                             <div className="text-xs text-muted-foreground leading-relaxed">Run this in your project directory to register the ClawQuest MCP server:</div>
@@ -401,7 +401,7 @@ export function Dashboard() {
                                     </div>
 
                                     <div className="flex gap-2.5 mb-3.5">
-                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0 mt-px">2</div>
+                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center shrink-0 mt-px">2</div>
                                         <div className="flex-1">
                                             <div className="text-xs font-semibold text-foreground mb-1">Restart Claude Code &amp; verify</div>
                                             <div className="text-xs text-muted-foreground leading-relaxed">
@@ -411,7 +411,7 @@ export function Dashboard() {
                                     </div>
 
                                     <div className="flex gap-2.5 mb-3.5">
-                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center shrink-0 mt-px">3</div>
+                                        <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center shrink-0 mt-px">3</div>
                                         <div className="flex-1">
                                             <div className="text-xs font-semibold text-foreground mb-1">Register &amp; claim your agent</div>
                                             <div className="text-xs text-muted-foreground leading-relaxed">
@@ -464,7 +464,7 @@ export function Dashboard() {
                         {totalEarned > 0 && (
                             <div className="flex items-center gap-2 rounded border border-border bg-background px-4 py-2.5">
                                 <span className="text-xs font-semibold text-muted-foreground">Total USD Earned</span>
-                                <span className="text-sm font-bold text-accent">${totalEarned.toFixed(2)}</span>
+                                <span className="text-sm font-semibold text-accent">${totalEarned.toFixed(2)}</span>
                             </div>
                         )}
                         {pendingUsd.length > 0 && (
@@ -607,7 +607,7 @@ export function Dashboard() {
                                     >
                                         <div className="flex flex-col items-end gap-2 min-w-[120px] text-right pt-0.5 shrink-0 md:flex-col flex-row md:gap-2 gap-3 md:min-w-[120px] min-w-0 md:items-end items-center">
                                             <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
-                                                <span className="text-md font-bold text-(--green) leading-tight font-mono">
+                                                <span className="text-md font-semibold text-(--green) leading-tight font-mono">
                                                     {quest.rewardAmount.toLocaleString()} {quest.rewardType}
                                                 </span>
                                                 <span className="text-xs text-muted-foreground">total reward</span>
@@ -641,7 +641,7 @@ export function Dashboard() {
                                                 </div>
                                             )}
                                             <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
-                                                <span className={cn("text-md font-bold leading-tight font-mono", slotsLeft < 5 ? "text-error" : "text-foreground")}>
+                                                <span className={cn("text-md font-semibold leading-tight font-mono", slotsLeft < 5 ? "text-error" : "text-foreground")}>
                                                     {slotsLeft}
                                                 </span>
                                                 <span className="text-xs text-muted-foreground">slots left</span>

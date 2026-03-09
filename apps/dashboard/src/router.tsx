@@ -23,6 +23,7 @@ import { StripeConnect } from './routes/_authenticated/stripe-connect'
 import { QuestJoin } from './routes/_public/quests/join'
 import { Privacy } from './routes/privacy'
 import { Terms } from './routes/terms'
+import { Waitlist } from './routes/waitlist'
 
 // Root route
 interface RouterContext {
@@ -74,6 +75,12 @@ const termsRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/terms',
     component: Terms,
+})
+
+const waitlistRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/waitlist',
+    component: Waitlist,
 })
 
 // Single app layout (topbar + footer, handles both public & authenticated pages)
@@ -270,6 +277,7 @@ const routeTree = rootRoute.addChildren([
     xCallbackRoute,
     privacyRoute,
     termsRoute,
+    waitlistRoute,
     appLayoutRoute.addChildren([
         indexRoute,
         questsRoute,

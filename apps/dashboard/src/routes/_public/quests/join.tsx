@@ -67,7 +67,7 @@ export function QuestJoin({ questId, token }: { questId: string; token: string }
     if (status === 'success') {
         return (
             <div className="max-w-md mx-auto py-16 px-4 text-center">
-                <div className="w-10 h-10 rounded-full bg-success/10 text-success inline-flex items-center justify-center text-lg font-bold mb-3">
+                <div className="w-10 h-10 rounded-full bg-success/10 text-success inline-flex items-center justify-center text-lg font-semibold mb-3">
                     ✓
                 </div>
                 <h3 className="text-base font-semibold text-foreground m-0 mb-2">

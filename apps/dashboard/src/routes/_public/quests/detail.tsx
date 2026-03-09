@@ -672,7 +672,7 @@ export function QuestDetail() {
                         <div className="mb-6 pl-3.5 border-l-4 border-l-(--human-fg)">
                             <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                 Human Tasks
-                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--human-bg) text-(--human-fg)">HUMAN</span>
+                                <span className="text-xs font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--human-bg) text-(--human-fg)">HUMAN</span>
                                 <span className="font-normal text-xs text-muted-foreground ml-auto">Complete these yourself</span>
                             </div>
                             {quest.tasks.map((task: any, idx: number) => {
@@ -785,9 +785,9 @@ export function QuestDetail() {
                             <div className="mb-6 pl-3.5 border-l-4 border-l-(--agent-fg)">
                                 <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                     Agent Tasks
-                                    <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--agent-bg) text-(--agent-fg)">AGENT</span>
+                                    <span className="text-xs font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--agent-bg) text-(--agent-fg)">AGENT</span>
                                     {quest.requireVerified && (
-                                        <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-warning/15 text-warning">Verified Only</span>
+                                        <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-warning/15 text-warning">Verified Only</span>
                                     )}
                                     <span className="font-normal text-xs text-muted-foreground ml-auto">Your AI agent handles these</span>
                                 </div>
@@ -885,7 +885,7 @@ export function QuestDetail() {
                                     </div>
                                 ))}
                                 {quest.questers > 8 && (
-                                    <div className="w-7 h-7 -ml-2 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground cursor-pointer shrink-0 hover:bg-accent/10 hover:text-accent-foreground">
+                                    <div className="w-7 h-7 -ml-2 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-semibold text-muted-foreground cursor-pointer shrink-0 hover:bg-accent/10 hover:text-accent-foreground">
                                         +{quest.questers - 8}
                                     </div>
                                 )}
@@ -912,7 +912,7 @@ export function QuestDetail() {
                     <div className="border border-border rounded mb-3.5 sticky top-[55px]">
                         {/* Reward hero */}
                         <div className="px-3 py-4 text-center border-b border-border">
-                            <div className="text-[28px] font-bold font-mono text-accent leading-tight">{quest.rewardAmount.toLocaleString()}</div>
+                            <div className="text-[28px] font-semibold font-mono text-accent leading-tight">{quest.rewardAmount.toLocaleString()}</div>
                             <div className="flex justify-center gap-2 mt-2 text-xs">
                                 <RewardBadge type={quest.rewardType} />
                                 <QuestTypeBadge type={quest.type} />
@@ -926,22 +926,22 @@ export function QuestDetail() {
                                 <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Time remaining</div>
                                 <div className="flex justify-center gap-1 font-mono">
                                     <div className="flex flex-col items-center min-w-[40px]">
-                                        <span className={cn("text-xl font-bold leading-tight", liveCountdown.d === 0 && liveCountdown.h < 6 ? "text-error" : "text-foreground")}>{String(liveCountdown.d).padStart(2, "0")}</span>
+                                        <span className={cn("text-xl font-semibold leading-tight", liveCountdown.d === 0 && liveCountdown.h < 6 ? "text-error" : "text-foreground")}>{String(liveCountdown.d).padStart(2, "0")}</span>
                                         <span className="text-xs text-muted-foreground uppercase tracking-wide">d</span>
                                     </div>
                                     <span className="text-lg text-input pt-0.5">:</span>
                                     <div className="flex flex-col items-center min-w-[40px]">
-                                        <span className={cn("text-xl font-bold leading-tight", liveCountdown.d === 0 && liveCountdown.h < 6 ? "text-error" : "text-foreground")}>{String(liveCountdown.h).padStart(2, "0")}</span>
+                                        <span className={cn("text-xl font-semibold leading-tight", liveCountdown.d === 0 && liveCountdown.h < 6 ? "text-error" : "text-foreground")}>{String(liveCountdown.h).padStart(2, "0")}</span>
                                         <span className="text-xs text-muted-foreground uppercase tracking-wide">h</span>
                                     </div>
                                     <span className="text-lg text-input pt-0.5">:</span>
                                     <div className="flex flex-col items-center min-w-[40px]">
-                                        <span className="text-xl font-bold text-foreground leading-tight">{String(liveCountdown.m).padStart(2, "0")}</span>
+                                        <span className="text-xl font-semibold text-foreground leading-tight">{String(liveCountdown.m).padStart(2, "0")}</span>
                                         <span className="text-xs text-muted-foreground uppercase tracking-wide">m</span>
                                     </div>
                                     <span className="text-lg text-input pt-0.5">:</span>
                                     <div className="flex flex-col items-center min-w-[40px]">
-                                        <span className="text-xl font-bold text-foreground leading-tight">{String(liveCountdown.s).padStart(2, "0")}</span>
+                                        <span className="text-xl font-semibold text-foreground leading-tight">{String(liveCountdown.s).padStart(2, "0")}</span>
                                         <span className="text-xs text-muted-foreground uppercase tracking-wide">s</span>
                                     </div>
                                 </div>
@@ -959,12 +959,12 @@ export function QuestDetail() {
                                 {isLuckyDraw ? (
                                     <>
                                         <span className="text-muted-foreground font-semibold">{quest.filledSlots} entered</span>
-                                        <span className="font-mono font-bold">{quest.totalSlots} winners drawn</span>
+                                        <span className="font-mono font-semibold">{quest.totalSlots} winners drawn</span>
                                     </>
                                 ) : (
                                     <>
                                         <span className="text-muted-foreground font-semibold">{quest.filledSlots} / {quest.totalSlots} spots filled</span>
-                                        <span className={cn("font-mono font-bold", slotsLeft < 5 ? "text-error" : "text-foreground")}>
+                                        <span className={cn("font-mono font-semibold", slotsLeft < 5 ? "text-error" : "text-foreground")}>
                                             {slotsLeft} left
                                         </span>
                                     </>

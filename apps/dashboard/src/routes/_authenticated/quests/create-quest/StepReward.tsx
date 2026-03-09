@@ -71,7 +71,7 @@ export function StepReward({
         )}>
             <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
                 <span className={cn(
-                    "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white border-2 border-background",
+                    "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
                     isDone ? "bg-success shadow-[0_0_0_2px_var(--color-green-500)]"
                         : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
                             : "bg-gray-300 shadow-[0_0_0_2px_var(--color-gray-300)]"
@@ -145,7 +145,7 @@ export function StepReward({
                                 </div>
                             </div>
                             <div className="flex items-center gap-2.5 p-2 px-3 border border-border rounded bg-muted" style={{ marginTop: 8 }}>
-                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: tokenIconColor }}>
+                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0" style={{ background: tokenIconColor }}>
                                     {tokenIconChar}
                                 </div>
                                 <div className="flex-1">
@@ -165,7 +165,7 @@ export function StepReward({
                                 <span>Sponsor pays via <strong>Stripe</strong> (charged upfront at quest creation). Winners withdraw rewards as crypto.</span>
                             </div>
                             <div className="flex items-center gap-2.5 p-2 px-3 border border-border rounded bg-muted" style={{ marginTop: 10 }}>
-                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 bg-(--stripe-fg)">S</div>
+                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 bg-(--stripe-fg)">S</div>
                                 <div className="flex-1">
                                     <div className="text-sm font-semibold text-foreground">USD via Stripe</div>
                                     <div className="text-xs text-muted-foreground font-mono">

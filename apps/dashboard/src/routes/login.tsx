@@ -128,7 +128,7 @@ export function Login() {
             {/* Centered login card */}
             <div className="flex-1 flex items-center justify-center px-4 py-10">
                 <div className="bg-background rounded border border-border w-[380px] p-7 text-center relative">
-                    <div className="text-xl font-bold tracking-tight mb-1 text-foreground">
+                    <div className="text-xl font-semibold tracking-tight mb-1 text-foreground">
                         Claw<span className="text-accent">Quest</span>
                     </div>
                     <div className="text-xs text-muted-foreground mb-6">Sign in to your account</div>

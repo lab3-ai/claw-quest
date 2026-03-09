@@ -68,6 +68,16 @@ Principles:
 | `--text-2xl` | 24px | Page titles |
 | `--text-3xl` | 28px | Hero headings |
 
+### Font weights
+
+| Weight | Tailwind | Use |
+|--------|----------|-----|
+| 400 | `font-normal` | Body text, descriptions |
+| 500 | `font-medium` | Labels, badges, nav items |
+| 600 | `font-semibold` | Headings, titles, buttons, emphasis |
+
+**Max weight is `font-semibold` (600).** Do not use `font-bold` (700) or `font-extrabold` (800) anywhere in the UI.
+
 ### Line heights
 
 - Body text: `1.6`

@@ -293,7 +293,7 @@ export function ManageQuest() {
                 <div className="flex-1 min-w-0">
                     {/* Participants */}
                     <div className="bg-background border border-border rounded-lg overflow-hidden mb-4">
-                        <h3 className="text-[13px] font-bold text-muted-foreground uppercase tracking-[0.05em] m-0 px-5 py-4 border-b border-border">
+                        <h3 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.05em] m-0 px-5 py-4 border-b border-border">
                             Participants
                         </h3>
                         {/* Status counts */}
@@ -402,10 +402,10 @@ export function ManageQuest() {
                 <div className="w-full md:min-w-2xs md:max-w-xs shrink-0">
                     {/* Quest overview */}
                     <div className="bg-background border border-border rounded-lg p-5 mb-4">
-                        <h3 className="text-[13px] font-bold text-muted-foreground uppercase tracking-[0.05em] m-0 mb-3">
+                        <h3 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.05em] m-0 mb-3">
                             Quest Info
                         </h3>
-                        <div className="text-[1.1rem] font-bold text-foreground mb-2">{quest.title}</div>
+                        <div className="text-[1.1rem] font-semibold text-foreground mb-2">{quest.title}</div>
                         <div className="flex flex-wrap gap-[6px] items-center mb-3">
                             <span className={statusBadgeClass(quest.status)}>{quest.status}</span>
                             <span className="text-[11px] font-medium rounded-sm px-[7px] py-[2px] bg-muted text-muted-foreground">{quest.type}</span>
@@ -430,7 +430,7 @@ export function ManageQuest() {
 
                     {/* Escrow / Payment status */}
                     <div className="bg-background border border-border rounded-lg p-5 mb-4">
-                        <h3 className="text-[13px] font-bold text-muted-foreground uppercase tracking-[0.05em] m-0 mb-3">
+                        <h3 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.05em] m-0 mb-3">
                             {isFiatFunded ? 'Stripe Payment' : 'Escrow'}
                         </h3>
                         {isFiatFunded ? (

@@ -123,7 +123,7 @@ export function QuestCard({ quest }: QuestCardProps) {
             {/* Body */}
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 text-xs">
-                    <span className={cn("inline-flex items-center gap-1 font-bold uppercase", typeColorClass(quest.type))}>
+                    <span className={cn("inline-flex items-center gap-1 font-semibold uppercase", typeColorClass(quest.type))}>
                         {TYPE_ICON[quest.type] && (() => { const Icon = TYPE_ICON[quest.type]; return <Icon size={14} /> })()}
                         {quest.type}
                     </span>

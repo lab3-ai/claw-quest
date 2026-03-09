@@ -17,7 +17,7 @@ export function FundStepIndicator({ step, isNative }: FundStepIndicatorProps) {
                 step !== 'connect' && 'opacity-100! text-accent!'
             )}>
                 <span className={cn(
-                    'inline-flex items-center justify-center size-[22px] rounded-full border-2 border-current text-xs font-bold',
+                    'inline-flex items-center justify-center size-[22px] rounded-full border-2 border-current text-xs font-semibold',
                     step !== 'connect' && 'bg-success! border-success! text-primary-foreground!'
                 )}>1</span>
                 <span>Connect</span>
@@ -29,7 +29,7 @@ export function FundStepIndicator({ step, isNative }: FundStepIndicatorProps) {
                     afterApprove.includes(step) && 'opacity-100! text-accent!'
                 )}>
                     <span className={cn(
-                        'inline-flex items-center justify-center size-[22px] rounded-full border-2 border-current text-xs font-bold',
+                        'inline-flex items-center justify-center size-[22px] rounded-full border-2 border-current text-xs font-semibold',
                         step === 'approve' && 'bg-accent! border-accent! text-accent-foreground!',
                         afterApprove.includes(step) && 'bg-success! border-success! text-primary-foreground!'
                     )}>2</span>
@@ -42,7 +42,7 @@ export function FundStepIndicator({ step, isNative }: FundStepIndicatorProps) {
                 afterDeposit.includes(step) && 'opacity-100! text-accent!'
             )}>
                 <span className={cn(
-                    'inline-flex items-center justify-center size-[22px] rounded-full border-2 border-current text-xs font-bold',
+                    'inline-flex items-center justify-center size-[22px] rounded-full border-2 border-current text-xs font-semibold',
                     step === 'deposit' && 'bg-accent! border-accent! text-accent-foreground!',
                     afterDeposit.includes(step) && 'bg-success! border-success! text-primary-foreground!'
                 )}>{isNative ? 2 : 3}</span>
@@ -54,7 +54,7 @@ export function FundStepIndicator({ step, isNative }: FundStepIndicatorProps) {
                 step === 'success' && 'opacity-100! text-accent!'
             )}>
                 <span className={cn(
-                    'inline-flex items-center justify-center size-[22px] rounded-full border-2 border-current text-xs font-bold',
+                    'inline-flex items-center justify-center size-[22px] rounded-full border-2 border-current text-xs font-semibold',
                     step === 'confirming' && 'bg-accent! border-accent! text-accent-foreground!',
                     step === 'success' && 'bg-success! border-success! text-primary-foreground!'
                 )}>{isNative ? 3 : 4}</span>

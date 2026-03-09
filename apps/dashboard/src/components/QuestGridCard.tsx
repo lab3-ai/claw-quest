@@ -29,7 +29,7 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
         >
             {/* Top row: type badge + time */}
             <div className="flex justify-between items-center mb-3">
-                <span className={cn("inline-flex items-center gap-1 text-xs font-bold uppercase", typeColorClass(quest.type))}>
+                <span className={cn("inline-flex items-center gap-1 text-xs font-semibold uppercase", typeColorClass(quest.type))}>
                     {TYPE_ICON[quest.type] && (() => { const Icon = TYPE_ICON[quest.type]; return <Icon size={14} /> })()}
                     {quest.type}
                 </span>

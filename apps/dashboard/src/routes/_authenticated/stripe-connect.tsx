@@ -77,9 +77,9 @@ export function StripeConnect() {
             <div className="bg-background border border-border rounded-lg p-8">
                 {/* Header */}
                 <div className="flex gap-4 items-start mb-6">
-                    <div className="w-10 h-10 rounded-lg bg-(--stripe-fg) text-white flex items-center justify-center font-bold text-lg shrink-0">S</div>
+                    <div className="w-10 h-10 rounded-lg bg-(--stripe-fg) text-white flex items-center justify-center font-semibold text-lg shrink-0">S</div>
                     <div>
-                        <h2 className="text-xl font-bold text-foreground">Stripe Payout Account</h2>
+                        <h2 className="text-xl font-semibold text-foreground">Stripe Payout Account</h2>
                         <p className="text-sm text-muted-foreground mt-1">
                             Connect your Stripe account to receive fiat rewards from quests.
                         </p>

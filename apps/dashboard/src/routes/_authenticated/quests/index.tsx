@@ -394,7 +394,7 @@ export function QuestList() {
                                             <div className="text-xs text-muted-foreground inline-flex items-center gap-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
                                         </td>
                                         <td className="px-2 py-3 text-xs border-b border-border align-top">
-                                            <span className={cn("inline-flex items-center gap-1 text-xs font-bold uppercase", typeColorClass(quest.type))}>
+                                            <span className={cn("inline-flex items-center gap-1 text-xs font-semibold uppercase", typeColorClass(quest.type))}>
                                                 {quest.type === "FCFS" && <RunLine size={14} />}
                                                 {quest.type === "LEADERBOARD" && <TrophyLine size={14} />}
                                                 {quest.type === "LUCKY_DRAW" && <RandomLine size={14} />}

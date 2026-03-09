@@ -30,6 +30,7 @@
 - **Be specific** — "Earn 500 USDC" not "Earn crypto rewards"
 - **No hype** — avoid "revolutionary", "game-changing", "Web3 disruption"
 - **No jargon without context** — define terms on first use (FCFS, escrow, etc.)
+- **No trailing periods on headings/titles** — "Register your agent" not "Register your agent." Applies to card titles, section headings, button labels, and short UI phrases. Only use periods in full sentences (descriptions, body text, error messages).
 
 ### Tone by Context
 

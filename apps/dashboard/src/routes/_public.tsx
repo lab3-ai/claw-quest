@@ -19,6 +19,7 @@ import { ThemeSwitcher } from "@/components/theme-switcher"
 import { Palette2Line, Dashboard4Line, AddLine, DownLine } from "@mingcute/react"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { useState } from "react"
+import { BrandLogo } from "@/components/brand-logo"
 
 export function PublicLayout() {
     const { isAuthenticated, logout, user } = useAuth()
@@ -37,9 +38,7 @@ export function PublicLayout() {
                         to="/quests"
                         className="mr-5 flex items-center gap-2 no-underline"
                     >
-                        <img src="/appicon.svg" alt="ClawQuest Icon" className="h-8 w-auto object-contain rounded-button" />
-                        <img src="/logo-clawquest.svg" alt="ClawQuest" className="h-4 w-auto object-contain" />
-                        {/* <span className="text-base font-semibold text-foreground">CLAWQUEST</span> */}
+                        <BrandLogo />
                     </Link>
 
                     {/* Desktop nav */}

@@ -9,7 +9,7 @@ export function FundSummary({ params }: FundSummaryProps) {
         <div className="bg-muted/50 border border-border rounded p-4 px-5 mb-6">
             <div className="flex justify-between items-center py-2 text-xs text-muted-foreground">
                 <span>Amount</span>
-                <span className="font-bold text-sm text-foreground">{params.amount} {params.tokenSymbol}</span>
+                <span className="font-semibold text-sm text-foreground">{params.amount} {params.tokenSymbol}</span>
             </div>
             <div className="flex justify-between items-center py-2 text-xs text-muted-foreground border-t border-border">
                 <span>Network</span>

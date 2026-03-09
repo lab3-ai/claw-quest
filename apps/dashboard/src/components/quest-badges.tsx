@@ -15,7 +15,7 @@ const TYPE_ICON: Record<string, React.ElementType> = {
 export function QuestTypeBadge({ type, size = 14 }: { type: string; size?: number }) {
     const Icon = TYPE_ICON[type]
     return (
-        <span className={cn("inline-flex items-center gap-1 text-xs font-bold uppercase", typeColorClass(type))}>
+        <span className={cn("inline-flex items-center gap-1 text-xs font-semibold uppercase", typeColorClass(type))}>
             {Icon && <Icon size={size} />}
             {type.replace("_", " ")}
         </span>

@@ -89,7 +89,7 @@ export function StepPreview({
         <div className="relative mb-0 border-none rounded-none">
             <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
                 <span className={cn(
-                    "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white border-2 border-background",
+                    "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
                     isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
                         : "bg-gray-300 shadow-[0_0_0_2px_var(--color-gray-300)]"
                 )}>4</span>
@@ -158,7 +158,7 @@ export function StepPreview({
                         <div className="mb-6 pl-3.5 border-l-4 border-l-(--human-fg) mt-4">
                             <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                 Human Tasks
-                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--human-bg) text-(--human-fg)">HUMAN</span>
+                                <span className="text-xs font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--human-bg) text-(--human-fg)">HUMAN</span>
                                 <span className="font-normal text-xs text-muted-foreground ml-auto">Complete these yourself</span>
                             </div>
                             {humanTasks.map((task, i) => (
@@ -186,7 +186,7 @@ export function StepPreview({
                         <div className={cn("mb-6 pl-3.5 border-l-4 border-l-(--agent-fg)", humanTasks.length > 0 ? "mt-2.5" : "mt-4")}>
                             <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                 Agent Tasks
-                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--agent-bg) text-(--agent-fg)">AGENT</span>
+                                <span className="text-xs font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--agent-bg) text-(--agent-fg)">AGENT</span>
                                 <span className="font-normal text-xs text-muted-foreground ml-auto">Your AI agent handles these</span>
                             </div>
                             {requiredSkills.map((skill) => (
@@ -242,7 +242,7 @@ export function StepPreview({
                                         : `${perWinner} ${tokenLabel}`}
                                 </span>
                             </div>
-                            <div className="border-t-2 border-border mt-2 pt-2 flex justify-between text-sm font-bold">
+                            <div className="border-t-2 border-border mt-2 pt-2 flex justify-between text-sm font-semibold">
                                 <span>Total Fund</span>
                                 <span className="text-accent">
                                     {activeTotal > 0 ? `${activeTotal.toFixed(2)} ${tokenLabel}` : "\u2014"}
@@ -253,7 +253,7 @@ export function StepPreview({
 
                     {/* Pay With */}
                     <div className="mt-4">
-                        <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2.5">Pay with</div>
+                        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2.5">Pay with</div>
                         {form.rail === "crypto" ? (
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-xl">{"\uD83D\uDD17"}</span>
@@ -267,7 +267,7 @@ export function StepPreview({
                         ) : (
                             <>
                                 <div className="flex items-center gap-2.5 p-2 px-3 border border-border rounded bg-muted" style={{ marginBottom: 8 }}>
-                                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 bg-(--stripe-fg)">S</div>
+                                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 bg-(--stripe-fg)">S</div>
                                     <div className="flex-1">
                                         <div className="text-sm font-semibold text-foreground">Pay via Stripe</div>
                                         <div className="text-xs text-muted-foreground font-mono">

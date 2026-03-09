@@ -18,6 +18,7 @@ import {
 import { useState } from "react"
 import { BankCardLine, Dashboard4Line, AddLine, DownLine } from "@mingcute/react"
 import { getDiceBearUrl } from "@/components/avatarUtils"
+import { BrandLogo } from "@/components/brand-logo"
 
 export function AuthenticatedLayout() {
     const { isAuthenticated, isLoading, logout, user } = useAuth()
@@ -52,8 +53,7 @@ export function AuthenticatedLayout() {
                         to="/quests"
                         className="mr-5 flex items-center gap-1.5 no-underline"
                     >
-                        <img src="/logo-clawquest.png" alt="ClawQuest" className="h-10 w-10 object-contain" />
-                        {/* <span className="text-md font-semibold tracking-tight text-foreground">ClawQuest</span> */}
+                        <BrandLogo size="lg" />
                     </Link>
 
                     {/* Desktop nav */}

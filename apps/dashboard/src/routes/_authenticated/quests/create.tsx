@@ -323,8 +323,8 @@ function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, 
                                 {status === "pending"
                                     ? <span className="inline-block size-2.5 border-[1.5px] border-border border-t-muted-foreground rounded-full animate-spin" />
                                     : status === "invalid"
-                                        ? <span className="text-warning text-xs font-bold">⚠</span>
-                                        : <span className="text-success text-xs font-bold">✓</span>}
+                                        ? <span className="text-warning text-xs font-semibold">⚠</span>
+                                        : <span className="text-success text-xs font-semibold">✓</span>}
                                 <span className="font-mono text-xs">{formatChip ? formatChip(chip) : chip}</span>
                                 <button className="bg-transparent border-none text-muted-foreground text-base cursor-pointer px-px leading-none ml-0.5 hover:text-destructive" onClick={() => onRemove(i)}>×</button>
                             </span>

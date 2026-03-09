@@ -53,7 +53,7 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
     if (quest?.fundingStatus === 'confirmed' || quest?.status === 'live' || quest?.status === 'scheduled') {
         return (
             <div className="text-center py-8">
-                <div className="w-12 h-12 rounded-full bg-success text-white inline-flex items-center justify-center text-2xl font-bold mb-4">
+                <div className="w-12 h-12 rounded-full bg-success text-white inline-flex items-center justify-center text-2xl font-semibold mb-4">
                     ✓
                 </div>
                 <h3 className="text-base font-semibold text-foreground m-0 mb-2">Quest Funded</h3>
@@ -87,7 +87,7 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
         <div className="py-2">
             <div className="mb-5">
                 <div className="inline-flex items-center gap-1 px-[0.6rem] py-[0.3rem] rounded-md bg-[#f3f0ff] text-[#635bff] text-xs font-semibold mb-2">
-                    <span className="w-5 h-5 rounded-md bg-[#635bff] text-white inline-flex items-center justify-center font-bold text-[11px]">
+                    <span className="w-5 h-5 rounded-md bg-[#635bff] text-white inline-flex items-center justify-center font-semibold text-[11px]">
                         S
                     </span>
                     <span>Stripe Checkout</span>
@@ -100,7 +100,7 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
             <div className="bg-bg-subtle border border-border rounded-md px-5 py-4 mb-5">
                 <div className="flex justify-between items-center py-2 text-xs text-fg-muted">
                     <span>Amount</span>
-                    <span className="font-bold text-sm text-foreground">
+                    <span className="font-semibold text-sm text-foreground">
                         ${Math.max(0, (quest?.rewardAmount ?? 0) - (quest?.totalFunded ?? 0)).toLocaleString()} USD
                     </span>
                 </div>
@@ -291,7 +291,7 @@ export function FundQuest() {
             </nav>
 
             <div className="bg-background border border-border rounded-lg p-8">
-                <h2 className="text-xl font-bold text-foreground m-0 mb-1">Fund Quest</h2>
+                <h2 className="text-xl font-semibold text-foreground m-0 mb-1">Fund Quest</h2>
                 {quest && <p className="text-fg-muted text-xs m-0 mb-6">{quest.title}</p>}
 
                 {/* Funding progress — shared across both methods */}

@@ -369,6 +369,18 @@ summary {
     visibility: hidden;
 }
 
+/* Waitlist mascot card animation (PNG fallback) */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+/* Remove browser default :invalid styling on waitlist inputs */
+.waitlist-page input:invalid {
+    box-shadow: none;
+    outline: none;
+}
+
 @keyframes skeleton-pulse {
     0% {
         background-position: 200% 0;

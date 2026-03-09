@@ -166,7 +166,7 @@ export function StepTasks({
         )}>
             <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
                 <span className={cn(
-                    "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-bold text-white border-2 border-background",
+                    "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
                     isDone ? "bg-success shadow-[0_0_0_2px_var(--color-green-500)]"
                         : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
                             : "bg-gray-300 shadow-[0_0_0_2px_var(--color-gray-300)]"
@@ -207,7 +207,7 @@ export function StepTasks({
                         <div className="mb-6 pl-3.5 border-l-4 border-l-(--human-fg)">
                             <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                 <span>👤</span> Human Tasks
-                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--human-bg) text-(--human-fg)">Social</span>
+                                <span className="text-xs font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--human-bg) text-(--human-fg)">Social</span>
                                 <span className="font-normal text-xs text-muted-foreground ml-auto">Actions performed by the operator</span>
                             </div>
 
@@ -262,7 +262,7 @@ export function StepTasks({
                                                 <span className="text-sm"><PlatformBtnIcon platform={task.platform} /></span>
                                                 <span className="font-semibold text-foreground flex-1">{task.action}</span>
                                                 {task.chips.length > 0 && (
-                                                    <span className="inline-flex items-center justify-center min-w-4 h-4 rounded-full text-xs font-bold bg-accent-light0 text-white px-1">{task.chips.length}</span>
+                                                    <span className="inline-flex items-center justify-center min-w-4 h-4 rounded-full text-xs font-semibold bg-accent-light0 text-white px-1">{task.chips.length}</span>
                                                 )}
                                                 <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-(--social-bg) text-(--social-fg) uppercase">{task.platform}</span>
                                                 <button
@@ -311,7 +311,7 @@ export function StepTasks({
                         <div className="mb-6 pl-3.5 border-l-4 border-l-(--agent-fg)">
                             <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                 <span>🤖</span> Agent Tasks
-                                <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--agent-bg) text-(--agent-fg)">Skill</span>
+                                <span className="text-xs font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--agent-bg) text-(--agent-fg)">Skill</span>
                                 <span className="font-normal text-xs text-muted-foreground ml-auto">Required skills from ClawHub</span>
                             </div>
 
@@ -423,7 +423,7 @@ export function StepTasks({
                                                 <div className={cn("flex items-start gap-2.5 px-2.5 py-2 border-b border-border/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-muted/50", isAdded && "opacity-50 cursor-default bg-muted/50")} onClick={() => !isAdded && onAddSkill(urlPreview)}>
                                                     <div className="flex-1 min-w-0 overflow-hidden">
                                                         <div className="text-xs font-semibold text-primary flex items-center gap-1.5 truncate">
-                                                            <span className="inline-flex items-center justify-center text-xs font-bold uppercase px-1.5 py-px rounded bg-blue-100 text-info mr-1 tracking-wide shrink-0">URL</span>
+                                                            <span className="inline-flex items-center justify-center text-xs font-semibold uppercase px-1.5 py-px rounded bg-blue-100 text-info mr-1 tracking-wide shrink-0">URL</span>
                                                             <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{urlPreview.name}</span>
                                                         </div>
                                                         <div className="text-xs text-muted-foreground leading-snug mt-0.5 wrap-break-word">{onTruncateDesc(urlPreview.desc, urlPreview.id)}</div>
@@ -463,7 +463,7 @@ export function StepTasks({
                                                             {s.ownerImage ? (
                                                                 <img src={s.ownerImage} alt={s.ownerDisplayName ?? s.ownerHandle} className="w-4 h-4 rounded-full shrink-0 object-cover" />
                                                             ) : (
-                                                                <span className="w-4 h-4 rounded-full shrink-0 bg-muted flex items-center justify-center text-[9px] font-bold text-muted-foreground uppercase">
+                                                                <span className="w-4 h-4 rounded-full shrink-0 bg-muted flex items-center justify-center text-[9px] font-semibold text-muted-foreground uppercase">
                                                                     {(s.ownerDisplayName ?? s.ownerHandle).charAt(0)}
                                                                 </span>
                                                             )}

@@ -80,7 +80,7 @@ export function FundSuccess() {
                             className="w-12 h-12 rounded-full border-[3px] border-border border-t-[#635bff] animate-spin mx-auto mb-4"
                             style={{ borderTopColor: '#635bff' }}
                         />
-                        <h2 className="text-xl font-bold text-foreground m-0 mb-2">Verifying Payment</h2>
+                        <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Verifying Payment</h2>
                         <p className="text-sm text-fg-muted m-0">
                             Please wait while we confirm your payment...
                         </p>
@@ -93,7 +93,7 @@ export function FundSuccess() {
                             className="w-12 h-12 rounded-full border-[3px] border-border border-t-[#635bff] animate-spin mx-auto mb-4"
                             style={{ borderTopColor: '#635bff' }}
                         />
-                        <h2 className="text-xl font-bold text-foreground m-0 mb-2">Waiting for Payment Confirmation</h2>
+                        <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Waiting for Payment Confirmation</h2>
                         <p className="text-sm text-fg-muted m-0 mb-4">
                             Your payment has been received and is being processed by our payment provider.
                         </p>
@@ -110,10 +110,10 @@ export function FundSuccess() {
 
                 {status === 'success' && (
                     <>
-                        <div className="w-16 h-16 rounded-full bg-success text-white inline-flex items-center justify-center text-3xl font-bold mb-4">
+                        <div className="w-16 h-16 rounded-full bg-success text-white inline-flex items-center justify-center text-3xl font-semibold mb-4">
                             ✓
                         </div>
-                        <h2 className="text-xl font-bold text-foreground m-0 mb-2">Payment Successful!</h2>
+                        <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Payment Successful!</h2>
                         <p className="text-sm text-fg-muted m-0 mb-6">
                             Your quest has been funded successfully and is now {quest?.status === 'scheduled' ? 'scheduled' : 'live'}.
                         </p>
@@ -130,10 +130,10 @@ export function FundSuccess() {
 
                 {status === 'error' && (
                     <>
-                        <div className="w-16 h-16 rounded-full bg-error text-white inline-flex items-center justify-center text-3xl font-bold mb-4">
+                        <div className="w-16 h-16 rounded-full bg-error text-white inline-flex items-center justify-center text-3xl font-semibold mb-4">
                             ✕
                         </div>
-                        <h2 className="text-xl font-bold text-foreground m-0 mb-2">Payment Not Confirmed</h2>
+                        <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Payment Not Confirmed</h2>
                         <p className="text-sm text-fg-muted m-0 mb-6">
                             We couldn't confirm your payment. This might be because:
                         </p>

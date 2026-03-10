@@ -20,6 +20,7 @@ import {
     QuestForbiddenError,
 } from './quests.service';
 import { openRouterService } from './openrouter.service';
+import { issueLlmKeysForQuest } from './llm-key-reward.service';
 import { validatePublishRequirements } from './quests.publish-validator';
 import { validateSocialTarget } from './social-validator';
 import { verifySocialAction, VerificationContext } from './social-action-verifier';
@@ -38,7 +39,7 @@ const CreateQuestSchema = QuestSchema.omit({
     sponsor: z.string().default('System'),
     status: z.nativeEnum(QUEST_STATUS).default(QUEST_STATUS.DRAFT),
     rewardAmount: z.number().default(0),
-    rewardType: z.enum(['USDC', 'LLMTOKEN_OPENROUTER']).default('USDC'),
+    rewardType: z.enum(['USDC', 'LLMTOKEN_OPENROUTER', 'LLM_KEY']).default('USDC'),
     tokenProvider: z.string().optional(),
     tokenAmount: z.number().optional(),
     startAt: z.string().datetime().optional(),
@@ -49,6 +50,8 @@ const CreateQuestSchema = QuestSchema.omit({
     network: z.string().optional(),
     drawTime: z.string().datetime().optional(),
     fundingMethod: z.enum(['crypto', 'stripe']).optional(),
+    llmKeyRewardEnabled: z.boolean().default(false),
+    llmKeyTokenLimit: z.number().int().positive().optional(),
 }).refine(
     (data) => {
         // If rewardType is LLMTOKEN_OPENROUTER, tokenProvider and tokenAmount are required
@@ -145,6 +148,11 @@ export async function questsRoutes(server: FastifyInstance) {
                             tasksCompleted: z.number().optional(),
                             tasksTotal: z.number().optional(),
                             proof: z.any().optional(),
+                            llmRewardApiKey: z.string().nullable().optional(),
+                            llmRewardIssuedAt: z.string().datetime().nullable().optional(),
+                            payoutTokenApiKey: z.string().nullable().optional(),
+                            payoutTokenStatus: z.string().nullable().optional(),
+                            payoutTokenExpiresAt: z.string().datetime().nullable().optional(),
                         }).optional(),
                     }),
                 },
@@ -304,6 +312,11 @@ export async function questsRoutes(server: FastifyInstance) {
                                 tasksCompleted: myParticipation.tasksCompleted,
                                 tasksTotal: myParticipation.tasksTotal,
                                 proof: myParticipation.proof,
+                                llmRewardApiKey: myParticipation.llmRewardApiKey ?? null,
+                                llmRewardIssuedAt: myParticipation.llmRewardIssuedAt?.toISOString() ?? null,
+                                payoutTokenApiKey: myParticipation.payoutTokenApiKey ?? null,
+                                payoutTokenStatus: myParticipation.payoutTokenStatus ?? null,
+                                payoutTokenExpiresAt: myParticipation.payoutTokenExpiresAt?.toISOString() ?? null,
                             };
                         }
                     }
@@ -2118,5 +2131,36 @@ export async function questsRoutes(server: FastifyInstance) {
                 results,
             };
         }
+    );
+
+    // ── POST /quests/:id/issue-llm-keys — Manual trigger for LLM key reward ───
+    server.post(
+        '/:id/issue-llm-keys',
+        {
+            preHandler: [server.authenticate],
+            schema: {
+                params: z.object({ id: z.string().uuid() }),
+                response: {
+                    200: z.object({ issued: z.number(), failed: z.number() }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const { id: questId } = request.params as { id: string };
+
+            const quest = await server.prisma.quest.findUnique({
+                where: { id: questId },
+                select: { llmKeyRewardEnabled: true, creatorUserId: true, creatorAgentId: true },
+            });
+            if (!quest) return reply.code(404).send({ error: { message: 'Quest not found', code: 'QUEST_NOT_FOUND' } });
+            if (!quest.llmKeyRewardEnabled) return reply.code(400).send({ error: { message: 'LLM key reward not enabled for this quest', code: 'LLM_REWARD_DISABLED' } });
+
+            const userId = (request.user as { id?: string })?.id;
+            const isOwner = userId && quest.creatorUserId === userId;
+            if (!isOwner) return reply.code(403).send({ error: { message: 'Forbidden', code: 'FORBIDDEN' } });
+
+            const result = await issueLlmKeysForQuest(server.prisma, questId);
+            return result;
+        },
     );
 }

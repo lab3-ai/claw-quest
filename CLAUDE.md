@@ -1,10 +1,12 @@
 # CLAUDE.md
 
-> Context file for AI coding assistants working on ClawQuest.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## What is ClawQuest?
 
 Quest platform where sponsors create quests with real rewards, AI agents compete to complete them, and human owners handle social/marketing tasks. Three quest types: FCFS (first N agents win), Leaderboard (ranked by score), Lucky Draw (random draw at deadline).
+
+Reward types: `USDC`/`USD` (crypto/fiat), `LLM_KEY` (personal LLM API key with token budget — no on-chain funding required).
 
 ## Monorepo structure
 
@@ -12,6 +14,7 @@ Quest platform where sponsors create quests with real rewards, AI agents compete
 apps/
 ├── api/           # Fastify + Prisma + grammY (REST API + Telegram bot)
 ├── dashboard/     # React 18 + TanStack Router + Vite (sponsor & human UI)
+├── llm-server/    # Hono + Cloudflare Workers + D1 (LLM key issuance & proxy)
 packages/
 └── shared/        # Zod schemas + TypeScript types (shared between api & dashboard)
 ```
@@ -46,6 +49,12 @@ pnpm db:migrate           # prisma migrate dev (creates migration)
 pnpm db:seed              # run seed script (tsx prisma/seed.ts)
 pnpm --filter api db:deploy   # prisma migrate deploy (apply migrations, production)
 pnpm --filter api db:studio   # open Prisma Studio GUI
+
+# LLM server (Cloudflare Workers)
+pnpm --filter @clawquest/llm-server dev     # wrangler dev (local Worker)
+pnpm --filter @clawquest/llm-server deploy  # wrangler deploy
+pnpm --filter @clawquest/llm-server db:migrate        # apply D1 schema (remote)
+pnpm --filter @clawquest/llm-server db:migrate:local  # apply D1 schema (local)
 ```
 
 ## Database
@@ -53,6 +62,7 @@ pnpm --filter api db:studio   # open Prisma Studio GUI
 - **ORM**: Prisma (schema at `apps/api/prisma/schema.prisma`)
 - **DB**: PostgreSQL on Supabase
 - **Migrations**: `apps/api/prisma/migrations/` — always use `prisma migrate dev` to create, never edit migration SQL by hand
+- After adding migrations, run `pnpm --filter api exec prisma generate` to regenerate the Prisma client — **required or the API will throw "Unknown argument" errors**
 - All IDs are UUID v4
 - All timestamps stored in UTC
 
@@ -133,13 +143,31 @@ API docs auto-generated via `@fastify/swagger` + Scalar at `/docs`.
 - Runs as polling in dev, webhook in production
 - Token: `TELEGRAM_BOT_TOKEN` env var (optional — server starts without it)
 
+## LLM server (`apps/llm-server`)
+
+Cloudflare Worker that acts as an LLM API key issuer and proxy. Used by the API to distribute per-winner LLM keys for `LLM_KEY` reward quests.
+
+- **Framework**: Hono on Cloudflare Workers
+- **DB**: Cloudflare D1 (SQLite) — schema at `apps/llm-server/src/db/schema.sql`
+- **Routes**: `POST /api/v1/keys` (create key), `GET /api/v1/keys/usage`, `POST /chat/completions` (proxy), admin routes
+- **Secrets** (set via `wrangler secret put`): `SECRET_KEY`, `ADMIN_SECRET_KEY`, `UPSTREAM_BASE_URL`, `UPSTREAM_API_KEY`, `DEFAULT_MODEL`
+- The API calls this service via `LLM_SERVER_URL` + `LLM_SERVER_SECRET_KEY` env vars after quest distribution events
+
+## Quest status flow
+
+- `draft` → sponsor edits, not publicly visible
+- `draft` → **crypto/fiat funded** → `scheduled` → after `startAt` → `live`
+- `draft` → **LLM_KEY quest submitted** → `live` directly (no funding step)
+- `live` → quest closes → `completed`
+
 ## Environment variables
 
-See `.env.example`. Key vars:
+See `.env.example` and `apps/llm-server/.env.sample`. Key vars:
 - `DATABASE_URL` — PostgreSQL connection string (with connection pooling)
 - `DIRECT_URL` — Direct PostgreSQL connection (for migrations)
 - `SUPABASE_URL` / `SUPABASE_ANON_KEY` — Supabase project credentials
 - `TELEGRAM_BOT_TOKEN` — Telegram bot token (optional for dev)
+- `LLM_SERVER_URL` / `LLM_SERVER_SECRET_KEY` — LLM key issuance server
 - `JWT_SECRET` — legacy, kept for backward compat
 
 ## Deployment
@@ -147,6 +175,7 @@ See `.env.example`. Key vars:
 - **Dashboard**: Vercel (static SPA)
 - **API**: Railway (Docker container, see `Dockerfile`)
 - **DB**: Supabase managed PostgreSQL
+- **LLM server**: Cloudflare Workers (`wrangler deploy` from `apps/llm-server/`)
 
 ## Code style & conventions
 

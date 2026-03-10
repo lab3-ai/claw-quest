@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { getTokenSymbol, calcLbPayouts } from "./constants"
 
 type QuestType = "FCFS" | "LEADERBOARD" | "LUCKY_DRAW"
-type PaymentRail = "crypto" | "fiat"
+type PaymentRail = "crypto" | "fiat" | "llm"
 
 interface SocialEntry {
     platform: string
@@ -40,6 +40,7 @@ interface StepPreviewProps {
     isFunded?: boolean
     rewardIncreased?: boolean
     topUpAmount?: number
+    llmKeyTokenLimit?: number
     mutation: {
         isPending: boolean
         isError: boolean
@@ -51,6 +52,7 @@ interface StepPreviewProps {
     onSaveAndFund: () => void
     onUpdate: () => void
     onUpdateAndFund: () => void
+    onSubmitLlm: () => void
 }
 
 export function StepPreview({
@@ -64,6 +66,7 @@ export function StepPreview({
     isFunded = false,
     rewardIncreased = false,
     topUpAmount = 0,
+    llmKeyTokenLimit = 1000000,
     mutation,
     onToggle,
     onPrevious,
@@ -71,12 +74,13 @@ export function StepPreview({
     onSaveAndFund,
     onUpdate,
     onUpdateAndFund,
+    onSubmitLlm,
 }: StepPreviewProps) {
     const activeTotal = parseFloat(form.total) || 0
     const activeWinners = parseInt(form.winners) || 1
     const perWinner = activeWinners > 0 ? (activeTotal / activeWinners).toFixed(2) : "0.00"
 
-    const tokenLabel = getTokenSymbol(form.rail, form.token, form.network)
+    const tokenLabel = getTokenSymbol(form.rail === "llm" ? "crypto" : form.rail, form.token, form.network)
 
     const lbWinnersNum = Math.min(Math.max(activeWinners, 2), 100)
     const lbPayouts = calcLbPayouts(activeTotal, lbWinnersNum)
@@ -130,7 +134,9 @@ export function StepPreview({
                         <div className="px-3 py-2.5 border border-border rounded bg-muted">
                             <div className="text-xs text-muted-foreground mb-0.5">total reward</div>
                             <div className="text-sm font-semibold text-accent font-mono">
-                                {activeTotal > 0 ? activeTotal.toLocaleString() : "—"} {tokenLabel}
+                                {form.rail === "llm"
+                                    ? "LLM Keys"
+                                    : activeTotal > 0 ? `${activeTotal.toLocaleString()} ${tokenLabel}` : "—"}
                             </div>
                         </div>
                         <div className="px-3 py-2.5 border border-border rounded bg-muted">
@@ -140,9 +146,11 @@ export function StepPreview({
                         <div className="px-3 py-2.5 border border-border rounded bg-muted">
                             <div className="text-xs text-muted-foreground mb-0.5">per winner</div>
                             <div className="text-sm font-semibold text-accent font-mono">
-                                {form.type === "LEADERBOARD"
-                                    ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
-                                    : `${perWinner} ${tokenLabel}`}
+                                {form.rail === "llm"
+                                    ? `${llmKeyTokenLimit.toLocaleString()} tokens`
+                                    : form.type === "LEADERBOARD"
+                                        ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
+                                        : `${perWinner} ${tokenLabel}`}
                             </div>
                         </div>
                         <div className="px-3 py-2.5 border border-border rounded bg-muted">
@@ -210,75 +218,90 @@ export function StepPreview({
                         </div>
                     )}
 
-                    {/* Payment Summary */}
-                    <div className="border border-border rounded mt-4 overflow-hidden">
-                        <div className="bg-muted/50 px-3.5 py-2.5 font-semibold text-base border-b border-border">Payment Summary</div>
-                        <div className="px-3.5 py-3">
-                            <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
-                                <span className="text-muted-foreground">Payment</span>
-                                <span className="font-semibold text-right">{form.rail === "crypto" ? "Crypto" : "Fiat (Stripe)"}</span>
-                            </div>
-                            {form.rail === "crypto" && (
+                    {/* Payment Summary — hidden for LLM rail */}
+                    {form.rail !== "llm" && (
+                        <div className="border border-border rounded mt-4 overflow-hidden">
+                            <div className="bg-muted/50 px-3.5 py-2.5 font-semibold text-base border-b border-border">Payment Summary</div>
+                            <div className="px-3.5 py-3">
                                 <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
-                                    <span className="text-muted-foreground">Network</span>
-                                    <span className="font-semibold text-right">{form.network}</span>
+                                    <span className="text-muted-foreground">Payment</span>
+                                    <span className="font-semibold text-right">{form.rail === "crypto" ? "Crypto" : "Fiat (Stripe)"}</span>
                                 </div>
-                            )}
-                            <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
-                                <span className="text-muted-foreground">Token</span>
-                                <span className="font-semibold text-right">{tokenLabel}</span>
-                            </div>
-                            <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
-                                <span className="text-muted-foreground">Winners</span>
-                                <span className="font-semibold text-right">
-                                    {form.type === "LEADERBOARD" ? `${lbWinnersNum} spots` : activeWinners}
-                                </span>
-                            </div>
-                            <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
-                                <span className="text-muted-foreground">Per winner</span>
-                                <span className="font-semibold text-right text-accent">
-                                    {form.type === "LEADERBOARD"
-                                        ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
-                                        : `${perWinner} ${tokenLabel}`}
-                                </span>
-                            </div>
-                            <div className="border-t-2 border-border mt-2 pt-2 flex justify-between text-sm font-semibold">
-                                <span>Total Fund</span>
-                                <span className="text-accent">
-                                    {activeTotal > 0 ? `${activeTotal.toFixed(2)} ${tokenLabel}` : "\u2014"}
-                                </span>
+                                {form.rail === "crypto" && (
+                                    <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
+                                        <span className="text-muted-foreground">Network</span>
+                                        <span className="font-semibold text-right">{form.network}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
+                                    <span className="text-muted-foreground">Token</span>
+                                    <span className="font-semibold text-right">{tokenLabel}</span>
+                                </div>
+                                <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
+                                    <span className="text-muted-foreground">Winners</span>
+                                    <span className="font-semibold text-right">
+                                        {form.type === "LEADERBOARD" ? `${lbWinnersNum} spots` : activeWinners}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between py-1.5 text-xs border-b border-border/30 last:border-b-0">
+                                    <span className="text-muted-foreground">Per winner</span>
+                                    <span className="font-semibold text-right text-accent">
+                                        {form.type === "LEADERBOARD"
+                                            ? `${lbPayouts[0]?.toFixed(2) ?? "0.00"} ${tokenLabel} (#1)`
+                                            : `${perWinner} ${tokenLabel}`}
+                                    </span>
+                                </div>
+                                <div className="border-t-2 border-border mt-2 pt-2 flex justify-between text-sm font-semibold">
+                                    <span>Total Fund</span>
+                                    <span className="text-accent">
+                                        {activeTotal > 0 ? `${activeTotal.toFixed(2)} ${tokenLabel}` : "\u2014"}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* Pay With */}
-                    <div className="mt-4">
-                        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2.5">Pay with</div>
-                        {form.rail === "crypto" ? (
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="text-xl">{"\uD83D\uDD17"}</span>
-                                <div>
-                                    <div className="text-xs font-semibold">Smart Contract Escrow</div>
-                                    <div className="text-xs text-muted-foreground">
-                                        {form.network} {"\u00b7"} {tokenLabel}
-                                    </div>
-                                </div>
+                    {/* LLM Key Reward info — shown instead of Payment Summary */}
+                    {form.rail === "llm" && (
+                        <div className="mt-4 p-3.5 border border-border rounded bg-muted">
+                            <div className="text-sm font-semibold mb-1">LLM Key Reward</div>
+                            <div className="text-xs text-muted-foreground">
+                                Each winner receives a personal LLM API key with {llmKeyTokenLimit.toLocaleString()} tokens.
+                                Keys are distributed automatically upon quest completion.
                             </div>
-                        ) : (
-                            <>
-                                <div className="flex items-center gap-2.5 p-2 px-3 border border-border rounded bg-muted" style={{ marginBottom: 8 }}>
-                                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 bg-(--stripe-fg)">S</div>
-                                    <div className="flex-1">
-                                        <div className="text-sm font-semibold text-foreground">Pay via Stripe</div>
-                                        <div className="text-xs text-muted-foreground font-mono">
-                                            Card {"\u00b7"} Apple Pay {"\u00b7"} Google Pay
+                        </div>
+                    )}
+
+                    {/* Pay With — hidden for LLM rail */}
+                    {form.rail !== "llm" && (
+                        <div className="mt-4">
+                            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2.5">Pay with</div>
+                            {form.rail === "crypto" ? (
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-xl">{"\uD83D\uDD17"}</span>
+                                    <div>
+                                        <div className="text-xs font-semibold">Smart Contract Escrow</div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {form.network} {"\u00b7"} {tokenLabel}
                                         </div>
                                     </div>
                                 </div>
-                                <div className="text-xs text-muted-foreground text-center mt-1.5 italic">Stripe integration coming soon</div>
-                            </>
-                        )}
-                    </div>
+                            ) : (
+                                <>
+                                    <div className="flex items-center gap-2.5 p-2 px-3 border border-border rounded bg-muted" style={{ marginBottom: 8 }}>
+                                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 bg-(--stripe-fg)">S</div>
+                                        <div className="flex-1">
+                                            <div className="text-sm font-semibold text-foreground">Pay via Stripe</div>
+                                            <div className="text-xs text-muted-foreground font-mono">
+                                                Card {"\u00b7"} Apple Pay {"\u00b7"} Google Pay
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="text-xs text-muted-foreground text-center mt-1.5 italic">Stripe integration coming soon</div>
+                                </>
+                            )}
+                        </div>
+                    )}
 
                     {/* Mutation error */}
                     {mutation.isError && (
@@ -291,7 +314,11 @@ export function StepPreview({
                         <Button variant="secondary" onClick={onPrevious}>{"\u2190"} Reward</Button>
                         <div className="flex gap-2">
                             {mutation.isPending ? (
-                                <Button disabled>Saving…</Button>
+                                <Button disabled>{form.rail === "llm" ? "Submitting…" : "Saving…"}</Button>
+                            ) : form.rail === "llm" ? (
+                                <Button onClick={onSubmitLlm}>
+                                    {isEditMode ? "Update Quest →" : "Submit Quest →"}
+                                </Button>
                             ) : isFunded ? (
                                 <>
                                     <Button
@@ -336,15 +363,17 @@ export function StepPreview({
                         </div>
                     </div>
                     <div className="text-xs text-muted-foreground leading-relaxed mt-3">
-                        {isFunded && rewardIncreased
-                            ? `Top-up: +${topUpAmount.toFixed(2)} ${tokenLabel} will be deposited to escrow.`
-                            : isFunded
-                                ? "Quest is funded. Changes will be saved without additional deposit."
-                                : form.rail === "crypto"
-                                    ? "Funds held in escrow. Skill tasks verified via CQ Skill proof. Social tasks verified via platform API."
-                                    : isEditMode
-                                        ? "Quest updated as draft. Fund later to go live."
-                                        : "Quest saved as draft. Fund later to go live."}
+                        {form.rail === "llm"
+                            ? "Quest will go live immediately. LLM API keys distributed to winners upon completion."
+                            : isFunded && rewardIncreased
+                                ? `Top-up: +${topUpAmount.toFixed(2)} ${tokenLabel} will be deposited to escrow.`
+                                : isFunded
+                                    ? "Quest is funded. Changes will be saved without additional deposit."
+                                    : form.rail === "crypto"
+                                        ? "Funds held in escrow. Skill tasks verified via CQ Skill proof. Social tasks verified via platform API."
+                                        : isEditMode
+                                            ? "Quest updated as draft. Fund later to go live."
+                                            : "Quest saved as draft. Fund later to go live."}
                     </div>
                 </div></div>
             )}

@@ -1,0 +1,776 @@
+{
+  "info": {
+    "name": "ClawQuest API",
+    "_postman_id": "clawquest-api-collection",
+    "description": "Full API collection for ClawQuest — apps/api (Fastify) + apps/llm-server (CF Worker)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "description": "apps/api base URL" },
+    { "key": "llmUrl", "value": "http://localhost:8787", "description": "apps/llm-server base URL (wrangler dev)" },
+    { "key": "jwtToken", "value": "", "description": "Supabase JWT — from /auth/me after login" },
+    { "key": "agentApiKey", "value": "", "description": "Agent API key — cq_xxx from POST /agents/register" },
+    { "key": "llmApiKey", "value": "", "description": "LLM API key — sk-xxx from POST /api/v1/keys" },
+    { "key": "llmSecretKey", "value": "", "description": "LLM_SERVER_SECRET_KEY (to create new LLM keys)" },
+    { "key": "llmAdminKey", "value": "", "description": "ADMIN_SECRET_KEY (for upstream URL management)" },
+    { "key": "questId", "value": "", "description": "Quest UUID" },
+    { "key": "agentId", "value": "", "description": "Agent UUID" }
+  ],
+  "item": [
+    {
+      "name": "🔑 Auth",
+      "item": [
+        {
+          "name": "Get current user",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/me",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Update profile",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/auth/me",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"displayName\": \"My Name\",\n  \"username\": \"myusername\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login via Telegram",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/telegram",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 123456789,\n  \"first_name\": \"John\",\n  \"username\": \"john\",\n  \"hash\": \"...\",\n  \"auth_date\": 1700000000\n}"
+            }
+          }
+        },
+        {
+          "name": "Link Telegram to account",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/telegram/link",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 123456789,\n  \"first_name\": \"John\",\n  \"username\": \"john\",\n  \"hash\": \"...\",\n  \"auth_date\": 1700000000\n}"
+            }
+          }
+        },
+        {
+          "name": "Sync social identity",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/social/sync",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"twitter\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Unlink social provider",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/auth/social/twitter",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Get X OAuth authorize URL",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/x/authorize",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "X OAuth callback",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/x/callback",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"oauth_code\",\n  \"state\": \"oauth_state\",\n  \"codeVerifier\": \"pkce_verifier\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🤖 Agents",
+      "item": [
+        {
+          "name": "List my agents",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/agents",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Create agent",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/agents",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Agent\",\n  \"description\": \"Agent description\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get agent by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/agents/{{agentId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Get agent logs (jwt)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/agents/{{agentId}}/logs?limit=50&offset=0",
+              "query": [
+                { "key": "limit", "value": "50" },
+                { "key": "offset", "value": "0" }
+              ]
+            },
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Register agent (exchange activation code)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/agents/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activationCode\": \"ACT-XXXXXX\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Self-register agent",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/agents/self-register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Agent\",\n  \"description\": \"Agent description\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get agent verify token info",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/agents/verify/TOKEN_HERE"
+          }
+        },
+        {
+          "name": "Claim self-registered agent (jwt)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/agents/verify",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"verify_token_here\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get agent skills (public)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/agents/{{agentId}}/skills"
+          }
+        },
+        {
+          "name": "[Agent] Get my info",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/agents/me",
+            "header": [{ "key": "Authorization", "value": "Bearer {{agentApiKey}}" }]
+          }
+        },
+        {
+          "name": "[Agent] Get my logs",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/agents/logs",
+            "header": [{ "key": "Authorization", "value": "Bearer {{agentApiKey}}" }]
+          }
+        },
+        {
+          "name": "[Agent] Write log entry",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/agents/me/log",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{agentApiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Log entry\",\n  \"level\": \"info\"\n}"
+            }
+          }
+        },
+        {
+          "name": "[Agent] Report skills",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/agents/me/skills",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{agentApiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skills\": [\"skill-name-1\", \"skill-name-2\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "[Agent] Report verified skills (scan)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/agents/me/skills/scan",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{agentApiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skills\": [\"skill-name-1\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "[Agent] Get my skills",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/agents/me/skills",
+            "header": [{ "key": "Authorization", "value": "Bearer {{agentApiKey}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎯 Quests",
+      "item": [
+        {
+          "name": "List quests",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/quests?status=active&type=FCFS&page=1&limit=20",
+              "query": [
+                { "key": "status", "value": "active" },
+                { "key": "type", "value": "FCFS" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create quest",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/quests",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"My Quest\",\n  \"description\": \"Quest description\",\n  \"type\": \"FCFS\",\n  \"maxParticipants\": 10,\n  \"rewardPerWinner\": 100,\n  \"currency\": \"USD\",\n  \"deadline\": \"2026-12-31T23:59:59Z\",\n  \"llmKeyRewardEnabled\": false,\n  \"tasks\": []\n}"
+            }
+          }
+        },
+        {
+          "name": "Get quest detail",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/quests/{{questId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}", "description": "Optional — for myParticipation field" }]
+          }
+        },
+        {
+          "name": "Update quest",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/quests/{{questId}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated title\",\n  \"description\": \"Updated description\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Publish quest",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/quests/{{questId}}/publish",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Cancel quest",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/quests/{{questId}}/cancel",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Delete quest",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/quests/{{questId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Get questers list",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/quests/{{questId}}/questers"
+          }
+        },
+        {
+          "name": "Get collaborators",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/quests/{{questId}}/collaborators",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Add collaborator",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/quests/{{questId}}/collaborators",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user-uuid\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get quest results",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/quests/{{questId}}/results"
+          }
+        },
+        {
+          "name": "Get quest proof",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/quests/{{questId}}/proof",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Claim quest ownership",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/quests/claim",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"claim_token_here\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Validate social task target",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/quests/validate-social?platform=twitter&target=username",
+              "query": [
+                { "key": "platform", "value": "twitter" },
+                { "key": "target", "value": "username" }
+              ]
+            },
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Check auto-verifiable tasks",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/quests/{{questId}}/check-tasks",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Verify social tasks & save progress",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/quests/{{questId}}/tasks/verify",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "Verify submission (sponsor)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/quests/{{questId}}/verify-submission",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participationId\": \"participation-uuid\",\n  \"approved\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Verify AI proof",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/quests/{{questId}}/proof/verify-ai",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participationId\": \"participation-uuid\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Verify social proof",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/quests/{{questId}}/proof/verify-social",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participationId\": \"participation-uuid\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Verify manual proof",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/quests/{{questId}}/proof/verify-manual",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participationId\": \"participation-uuid\",\n  \"approved\": true,\n  \"note\": \"Looks good\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reject proof",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/quests/{{questId}}/reject-proof",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participationId\": \"participation-uuid\",\n  \"reason\": \"Does not meet requirements\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Issue LLM keys to winners",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/quests/{{questId}}/issue-llm-keys",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }],
+            "description": "Trigger LLM API key reward for all eligible winners. Quest must have llmKeyRewardEnabled=true. Idempotent — safe to call multiple times."
+          }
+        },
+        {
+          "name": "Search skills catalog",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/quests/skills/search?q=browser&limit=10",
+              "query": [
+                { "key": "q", "value": "browser" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Preview skill from URL",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/quests/skill-preview?url=https://example.com/SKILL.md",
+              "query": [{ "key": "url", "value": "https://example.com/SKILL.md" }]
+            }
+          }
+        },
+        {
+          "name": "[Agent] Join quest",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/quests/{{questId}}/join",
+            "header": [{ "key": "Authorization", "value": "Bearer {{agentApiKey}}" }]
+          }
+        },
+        {
+          "name": "[Agent] Submit quest completion",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/quests/{{questId}}/submit",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{agentApiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proof\": \"https://github.com/my-repo/pull/1\",\n  \"notes\": \"Completed all tasks\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "💳 Stripe",
+      "item": [
+        {
+          "name": "Create checkout session",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/stripe/checkout/{{questId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Get checkout session status",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/stripe/checkout/session/SESSION_ID",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Reset funding status",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/stripe/reset-funding/{{questId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Distribute rewards",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/stripe/distribute/{{questId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Refund quest funding",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/stripe/refund/{{questId}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Start Stripe Connect onboarding",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/stripe/connect/onboard",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Get Stripe Connect status",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/stripe/connect/status",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        },
+        {
+          "name": "Get Stripe dashboard link",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/stripe/connect/dashboard",
+            "header": [{ "key": "Authorization", "value": "Bearer {{jwtToken}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🤖 LLM Server",
+      "item": [
+        {
+          "name": "Keys",
+          "item": [
+            {
+              "name": "Create LLM API key",
+              "request": {
+                "method": "POST",
+                "url": "{{llmUrl}}/api/v1/keys",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"secret_key\": \"{{llmSecretKey}}\",\n  \"name\": \"my-key-label\"\n}"
+                },
+                "description": "Requires SECRET_KEY. Returns sk-xxx only once — save it immediately."
+              }
+            },
+            {
+              "name": "Get key usage",
+              "request": {
+                "method": "GET",
+                "url": "{{llmUrl}}/api/v1/keys/usage",
+                "header": [{ "key": "Authorization", "value": "Bearer {{llmApiKey}}" }],
+                "description": "Returns token usage stats for the authenticated sk-xxx key."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Chat",
+          "item": [
+            {
+              "name": "Chat completions (non-streaming)",
+              "request": {
+                "method": "POST",
+                "url": "{{llmUrl}}/v1/chat/completions",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{llmApiKey}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"model\": \"openai/gpt-4o\",\n  \"messages\": [\n    { \"role\": \"user\", \"content\": \"Hello!\" }\n  ],\n  \"stream\": false\n}"
+                },
+                "description": "OpenAI-compatible. Proxies to highest-priority active upstream with failover."
+              }
+            },
+            {
+              "name": "Chat completions (streaming)",
+              "request": {
+                "method": "POST",
+                "url": "{{llmUrl}}/v1/chat/completions",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{llmApiKey}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"model\": \"openai/gpt-4o\",\n  \"messages\": [\n    { \"role\": \"user\", \"content\": \"Hello!\" }\n  ],\n  \"stream\": true\n}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin — Upstream URLs",
+          "item": [
+            {
+              "name": "List upstreams",
+              "request": {
+                "method": "GET",
+                "url": "{{llmUrl}}/api/v1/admin/upstream-urls",
+                "header": [{ "key": "X-Admin-Key", "value": "{{llmAdminKey}}" }]
+              }
+            },
+            {
+              "name": "Add upstream",
+              "request": {
+                "method": "POST",
+                "url": "{{llmUrl}}/api/v1/admin/upstream-urls",
+                "header": [
+                  { "key": "X-Admin-Key", "value": "{{llmAdminKey}}" },
+                  { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"base_url\": \"https://openrouter.ai/api/v1\",\n  \"api_key\": \"sk-or-...\",\n  \"model_name\": \"openai/gpt-4o\",\n  \"name\": \"OpenRouter GPT-4o\",\n  \"priority\": 10\n}"
+                }
+              }
+            },
+            {
+              "name": "Delete upstream",
+              "request": {
+                "method": "DELETE",
+                "url": "{{llmUrl}}/api/v1/admin/upstream-urls/1",
+                "header": [{ "key": "X-Admin-Key", "value": "{{llmAdminKey}}" }]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

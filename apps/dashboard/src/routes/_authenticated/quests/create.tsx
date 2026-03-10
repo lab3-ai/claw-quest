@@ -25,7 +25,7 @@ const IS_TESTNET = ESCROW_NETWORK_MODE === "testnet"
 
 type Tab = "details" | "reward" | "tasks" | "preview"
 type QuestType = "FCFS" | "LEADERBOARD" | "LUCKY_DRAW"
-type PaymentRail = "crypto" | "fiat"
+type PaymentRail = "crypto" | "fiat" | "llm"
 
 interface SocialEntry {
     platform: string
@@ -684,6 +684,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const [expandedTask, setExpandedTask] = useState<number | null>(null)
     const [requiredSkills, setRequiredSkills] = useState<Pick<ClawHubSkill, "id" | "name" | "desc" | "agents" | "version">[]>([])
     const [requireVerified, setRequireVerified] = useState(false)
+    const [llmKeyRewardEnabled, setLlmKeyRewardEnabled] = useState(false)
+    const [llmKeyTokenLimit, setLlmKeyTokenLimit] = useState("1000000")
     const { query: skillSearch, setQuery: setSkillSearch, results: skillSearchResults, isLoading: skillSearchLoading } = useSkillSearch()
     const [showSkillResults, setShowSkillResults] = useState(false)
     const [expandedDescs, setExpandedDescs] = useState<Set<string>>(new Set())
@@ -692,6 +694,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const socialValidation = useSocialValidation(session?.access_token)
     const [urlPreview, setUrlPreview] = useState<ClawHubSkill | null>(null)
     const fundAfterSave = useRef(false)
+    const scheduleLlm = useRef(false)
     const editPopulated = useRef(false)
     const [_restoredBanner, setRestoredBanner] = useState(false)
     const [originalRewardAmount, setOriginalRewardAmount] = useState<number>(0)
@@ -888,25 +891,28 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
             const method = isEditMode ? "PATCH" : "POST"
 
             // Always calculate fundingMethod from current rail value
-            const fundingMethod: "crypto" | "stripe" = form.rail === "fiat" ? "stripe" : "crypto"
+            const fundingMethod = form.rail === "fiat" ? "stripe" : form.rail === "llm" ? undefined : "crypto"
+            const rewardType = form.rail === "fiat" ? "USD" : form.rail === "llm" ? "LLM_KEY" : form.token
 
             const payload: any = {
                 title: form.title,
                 description: form.description || undefined,
                 type: form.type,
-                rewardType: form.rail === "fiat" ? "USD" : form.token,
-                rewardAmount: total,
+                rewardType,
+                rewardAmount: form.rail === "llm" ? 0 : total,
                 totalSlots: slots,
                 requiredSkills: requiredSkills.map(s => s.id),
                 requireVerified,
+                llmKeyRewardEnabled: form.rail === "llm" ? true : llmKeyRewardEnabled,
+                llmKeyTokenLimit: form.rail === "llm" ? (parseInt(llmKeyTokenLimit) || 1000000) : undefined,
                 tasks,
                 expiresAt: form.endAt ? new Date(form.endAt).toISOString() : undefined,
                 startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
-                network: form.network || undefined,
+                network: form.rail !== "llm" ? (form.network || undefined) : undefined,
                 drawTime: form.drawTime ? new Date(form.drawTime).toISOString() : undefined,
                 fundingMethod,
             }
-            if (!isEditMode) payload.status = "draft"
+            if (!isEditMode) payload.status = scheduleLlm.current ? "live" : "draft"
 
             const res = await fetch(url, {
                 method,
@@ -929,10 +935,12 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
         onSuccess: (data: any) => {
             clearDraft()
             const questId = data?.id || editQuestId
+            const wasLlmSubmit = scheduleLlm.current
+            scheduleLlm.current = false
             if (fundAfterSave.current && questId) {
                 navigate({ to: "/quests/$questId/fund", params: { questId } })
-            } else if (isEditMode && questId) {
-                // Funded quests without top-up: go to detail page
+            } else if ((isEditMode || wasLlmSubmit) && questId) {
+                // LLM submit or funded quests without top-up: go to detail page
                 navigate({ to: "/quests/$questId", params: { questId } })
             } else {
                 navigate({ to: "/dashboard" })
@@ -969,11 +977,14 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     }
 
     const validateReward = (): boolean => {
-        const total = parseFloat(form.total) || 0
         const winners = parseInt(form.winners) || 0
-
-        if (total <= 0) return false
         if (winners <= 0) return false
+
+        // LLM rail: no monetary total required
+        if (form.rail === "llm") return true
+
+        const total = parseFloat(form.total) || 0
+        if (total <= 0) return false
 
         // Lucky Draw requires drawTime
         if (form.type === "LUCKY_DRAW" && !form.drawTime.trim()) return false
@@ -1001,7 +1012,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
     const activeTotal = parseFloat(form.total) || 0
     const activeWinners = parseInt(form.winners) || 1
-    const tokenLabel = getTokenSymbol(form.rail, form.token, form.network)
+    const tokenLabel = getTokenSymbol(form.rail === "llm" ? "crypto" : form.rail, form.token, form.network)
 
     const durationDays = form.startAt && form.endAt
         ? Math.max(0, Math.round((new Date(form.endAt).getTime() - new Date(form.startAt).getTime()) / 86400000))
@@ -1236,13 +1247,21 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 total: form.total,
                                 winners: form.winners,
                                 drawTime: form.drawTime,
+                                llmKeyTokenLimit,
                             }}
                             stepSummary={stepSummaries.reward}
                             onToggle={() => handleStepToggle("reward")}
+                            onSetLlmKeyTokenLimit={setLlmKeyTokenLimit}
                             onFieldChange={(key, value) => {
                                 if (key === "rail") {
-                                    const fundingMethod: "crypto" | "stripe" = value === "fiat" ? "stripe" : "crypto"
-                                    setForm(prev => ({ ...prev, rail: value as PaymentRail, fundingMethod }))
+                                    if (value === "llm") {
+                                        setLlmKeyRewardEnabled(true)
+                                        setForm(prev => ({ ...prev, rail: "llm" as PaymentRail }))
+                                    } else {
+                                        setLlmKeyRewardEnabled(false)
+                                        const fundingMethod: "crypto" | "stripe" = value === "fiat" ? "stripe" : "crypto"
+                                        setForm(prev => ({ ...prev, rail: value as PaymentRail, fundingMethod }))
+                                    }
                                 } else if (key === "type") {
                                     setForm(prev => {
                                         if (value === "LEADERBOARD") {
@@ -1255,6 +1274,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                     set(key, value as string)
                                 }
                             }}
+                            llmKeyRewardEnabled={llmKeyRewardEnabled}
+                            onSetLlmKeyRewardEnabled={setLlmKeyRewardEnabled}
                             onNext={() => {
                                 if (tabValid.reward) {
                                     setTab("preview")
@@ -1291,12 +1312,14 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 isError: mutation.isError,
                                 error: mutation.error as Error | null,
                             }}
+                            llmKeyTokenLimit={parseInt(llmKeyTokenLimit) || 1000000}
                             onToggle={() => handleStepToggle("preview")}
                             onPrevious={() => setTab("reward")}
                             onSaveDraft={() => { fundAfterSave.current = false; mutation.mutate() }}
                             onSaveAndFund={() => { fundAfterSave.current = true; mutation.mutate() }}
                             onUpdate={() => { fundAfterSave.current = false; mutation.mutate() }}
                             onUpdateAndFund={() => { fundAfterSave.current = true; mutation.mutate() }}
+                            onSubmitLlm={() => { scheduleLlm.current = true; fundAfterSave.current = false; mutation.mutate() }}
                         />
 
                     </div>

@@ -32,15 +32,17 @@ function usePlatformStats() {
         rewardsPaid: null,
         waitlistCount: 0,
     })
+    const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         fetch(`${API_BASE}/stats`)
             .then((r) => r.json())
             .then((data: PlatformStats) => setStats(data))
             .catch(() => {/* silently keep nulls — shows "Growing" */ })
+            .finally(() => setIsLoading(false))
     }, [])
 
-    return stats
+    return { stats, isLoading }
 }
 
 // Read ?ref=<code> from URL on page load
@@ -181,7 +183,7 @@ function ScrollToTopButton() {
 
 export function Waitlist() {
     const [mascotMood, setMascotMood] = useState<MascotMood>("normal")
-    const stats = usePlatformStats()
+    const { stats, isLoading: statsLoading } = usePlatformStats()
     const referralCode = useReferralCode()
 
     return (
@@ -226,21 +228,32 @@ export function Waitlist() {
                     {/* Trust — avatar stack */}
                     <div className="relative z-10 flex flex-col items-center gap-2 sm:flex-row sm:gap-3">
                         <div className="flex -space-x-2">
-                            {AVATAR_URLS.map((url, i) => (
-                                <img
-                                    key={i}
-                                    src={url}
-                                    alt=""
-                                    className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-2 border-neutral-950 object-cover"
-                                />
-                            ))}
-                        </div>
-                        <p className="font-mono text-xs sm:text-sm text-muted-foreground">
-                            {stats.waitlistCount > 0
-                                ? <><span className="font-semibold text-white">+{stats.waitlistCount}</span>{" "}agent owners already on the waitlist</>
-                                : <span className="text-muted-foreground">Be among the first to join</span>
+                            {statsLoading
+                                ? AVATAR_URLS.map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-2 border-neutral-950 bg-neutral-800 animate-pulse"
+                                    />
+                                ))
+                                : AVATAR_URLS.map((url, i) => (
+                                    <img
+                                        key={i}
+                                        src={url}
+                                        alt=""
+                                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-2 border-neutral-950 object-cover"
+                                    />
+                                ))
                             }
-                        </p>
+                        </div>
+                        {statsLoading
+                            ? <div className="h-4 w-48 sm:w-56 rounded bg-neutral-800 animate-pulse" />
+                            : <p className="font-mono text-xs sm:text-sm text-muted-foreground">
+                                {stats.waitlistCount > 0
+                                    ? <><span className="font-semibold text-white">+{stats.waitlistCount}</span>{" "}agent owners already on the waitlist</>
+                                    : <span className="text-muted-foreground">Be among the first to join</span>
+                                }
+                            </p>
+                        }
                     </div>
                     {/* CTA */}
                     <div

@@ -101,7 +101,7 @@ function WaitlistNavbar() {
             <div className="flex items-center px-4 sm:px-6 lg:px-8 xl:px-10 py-3 max-w-4xl w-full  justify-between">
                 <button
                     onClick={() => { scrollTo("hero"); setMenuOpen(false) }}
-                    className="-ml-2 shrink-0 opacity-80 hover:opacity-100 transition-opacity "
+                    className="-ml-2 shrink-0"
                     aria-label="Scroll to top"
                 >
                     <BrandLogo dark size="sm" />
@@ -180,7 +180,7 @@ function ScrollToTopButton() {
 }
 
 export function Waitlist() {
-    const [mascotMood] = useState<MascotMood>("normal")
+    const [mascotMood, setMascotMood] = useState<MascotMood>("normal")
     const stats = usePlatformStats()
     const referralCode = useReferralCode()
 
@@ -205,9 +205,8 @@ export function Waitlist() {
                         <MascotEyes size={280} mood={mascotMood} />
                     </div>
 
-                    {/* Logo + Headline + Sub-headline */}
+                    {/* Headline + Sub-headline */}
                     <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4">
-                        <BrandLogo dark size="sm" />
                         <h1 className=" font-mono text-2xl font-semibold leading-tight tracking-tight sm:text-3xl lg:text-5xl">
                             Your AI Agent Could Be Earning{" "}
                             <span className="text-[var(--wl-accent)]">Right Now</span>
@@ -244,7 +243,11 @@ export function Waitlist() {
                         </p>
                     </div>
                     {/* CTA */}
-                    <div className="relative z-10 w-full flex justify-center">
+                    <div
+                        className="relative z-10 w-full flex justify-center"
+                        onMouseEnter={() => setMascotMood("happy")}
+                        onMouseLeave={() => setMascotMood("normal")}
+                    >
                         <TelegramJoinButton referralCode={referralCode ?? undefined} />
                     </div>
 

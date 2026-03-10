@@ -38,7 +38,7 @@ export function BrandLogo({
     const showText = variant === "full" || variant === "text"
 
     return (
-        <div className={cn("flex origin-center items-center gap-2", SCALE[size], className)}>
+        <span className={cn("flex origin-center items-center gap-2", SCALE[size], className)}>
             {showIcon && (
                 <img
                     src="/appicon.svg"
@@ -55,6 +55,6 @@ export function BrandLogo({
                     draggable={false}
                 />
             )}
-        </div>
+        </span>
     )
 }

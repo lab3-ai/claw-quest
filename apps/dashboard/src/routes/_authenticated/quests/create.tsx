@@ -892,14 +892,14 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
             // Always calculate fundingMethod from current rail value
             const fundingMethod = form.rail === "fiat" ? "stripe" : form.rail === "llm" ? undefined : "crypto"
-            const rewardType = form.rail === "fiat" ? "USD" : form.rail === "llm" ? "LLM_KEY" : form.token
+            const rewardType = form.rail === "fiat" ? "USDC" : form.rail === "llm" ? "LLM_KEY" : form.token
 
             const payload: any = {
                 title: form.title,
                 description: form.description || undefined,
                 type: form.type,
                 rewardAmount: form.rail === "llm" ? 0 : total,
-                rewardType: form.rail === "fiat" ? "USDC" : form.token,
+                rewardType,
                 totalSlots: slots,
                 requiredSkills: requiredSkills.map(s => s.id),
                 requireVerified,

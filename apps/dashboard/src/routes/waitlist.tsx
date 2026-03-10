@@ -71,7 +71,7 @@ function WaitlistNavbar() {
 
             const ids = NAV_LINKS.map((l) => l.id)
             let current = ids[0]
-            for (const id of ids) {
+            for (const id of ids) { 
                 const el = document.getElementById(id)
                 if (el && el.getBoundingClientRect().top <= 300) {
                     current = id

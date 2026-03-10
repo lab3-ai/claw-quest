@@ -105,6 +105,18 @@ export const MSG = {
         `Top 100 → OG Pioneer badge + 500 bonus XP\n` +
         `Top 1,000 → Premium quests 30 min early`,
 
+    waitlistJoinedViaReferral: (
+        position: number,
+        referralLink: string,
+        referrerName: string
+    ) =>
+        `🎉 You joined via referral from *${referrerName}*!\n\n` +
+        `You're *#${position}* in line (you got a *10-spot bonus* for joining via referral!)\n\n` +
+        `Share your referral link to move up *10 spots* for every friend who joins:\n\n` +
+        `\`${referralLink}\`\n\n` +
+        `Top 100 → OG Pioneer badge + 500 bonus XP\n` +
+        `Top 1,000 → Premium quests 30 min early`,
+
     waitlistAlreadyJoined: (position: number, referralLink: string) =>
         `👋 You're already on the waitlist at *#${position}*!\n\n` +
         `Your referral link:\n\`${referralLink}\`\n\n` +
@@ -112,6 +124,12 @@ export const MSG = {
 
     waitlistReferralApplied: (newPosition: number) =>
         `✅ Referral applied! You moved up to *#${newPosition}*.`,
+
+    waitlistReferralReward: (joinerName: string, newPosition: number, referralCount: number) =>
+        `🎊 *${joinerName}* joined via your referral link!\n\n` +
+        `You moved up to *#${newPosition}* in line.\n` +
+        `Total referrals: *${referralCount}*\n\n` +
+        `Keep sharing your link to move even higher! 🚀`,
 
     // ── Errors ──
     genericError: '\u274c An error occurred. Please try again.',

@@ -142,6 +142,18 @@ const questJoinRoute = createRoute({
     },
 })
 
+// Helper function to check authentication
+function requireAuth(context: RouterContext) {
+    // Wait for auth to finish loading
+    if (context.auth?.isLoading) {
+        return
+    }
+    // Redirect to login if not authenticated
+    if (!context.auth?.isAuthenticated) {
+        throw redirect({ to: '/login' })
+    }
+}
+
 // ── Protected routes (auth checked in beforeLoad) ──
 const dashboardRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
@@ -154,7 +166,7 @@ const dashboardRoute = createRoute({
         return result
     },
     beforeLoad: ({ context }) => {
-        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
+        requireAuth(context)
     },
     component: Dashboard,
 })

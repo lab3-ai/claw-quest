@@ -102,6 +102,10 @@ dist
 # Serverless directories
 .serverless/
 
+# Cloudflare Workers
+.wrangler/
+.dev.vars
+
 # FuseBox cache
 .fusebox/
 

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { handleTelegramLogin, handleTelegramLink } from './telegram-auth.service';
 
 const SocialSyncBody = z.object({
-    provider: z.enum(['twitter', 'discord', 'google', 'github']),
+    provider: z.enum(['twitter', 'x', 'discord', 'google', 'github']),
     providerToken: z.string().optional(),         // Discord/X OAuth access token
     providerRefreshToken: z.string().optional(),  // Discord OAuth refresh token
 });
@@ -44,9 +44,38 @@ export async function authRoutes(app: FastifyInstance) {
             },
         },
         async (request) => {
-            const user = await app.prisma.user.findUniqueOrThrow({
+            let user = await app.prisma.user.findUniqueOrThrow({
                 where: { id: request.user.id },
             });
+
+            // Server-side auto-sync: if X or Discord identity is linked in Supabase but missing in Prisma,
+            // fetch identities using the user's own token (no service role key required).
+            if (!user.xId || !user.discordId) {
+                const bearerToken = (request.headers.authorization as string).slice(7);
+                const { data: sbData } = await app.supabase.auth.getUser(bearerToken);
+                if (sbData?.user?.identities?.length) {
+                    const updates: Record<string, string | null> = {};
+                    for (const identity of sbData.user.identities) {
+                        const sub = (identity.identity_data?.sub ?? identity.identity_data?.provider_id) as string | undefined;
+                        const handle = (
+                            identity.identity_data?.user_name
+                            ?? identity.identity_data?.preferred_username
+                            ?? identity.identity_data?.full_name  // Discord fallback
+                            ?? null
+                        ) as string | null;
+                        if ((identity.provider === 'x' || identity.provider === 'twitter') && !user.xId && sub) {
+                            updates.xId = sub;
+                            updates.xHandle = handle;
+                        } else if (identity.provider === 'discord' && !user.discordId && sub) {
+                            updates.discordId = sub;
+                            updates.discordHandle = handle;
+                        }
+                    }
+                    if (Object.keys(updates).length > 0) {
+                        user = await app.prisma.user.update({ where: { id: user.id }, data: updates }).catch(() => user);
+                    }
+                }
+            }
 
             return {
                 id: user.id,
@@ -206,32 +235,42 @@ export async function authRoutes(app: FastifyInstance) {
                 return { ok: true };
             }
 
-            if (!request.user.supabaseId) {
-                return reply.status(400).send({ error: { message: 'No Supabase ID on user', code: 'NO_SUPABASE_ID' } });
-            }
-
-            const { data: supabaseUser, error } = await app.supabase.auth.admin.getUserById(
-                request.user.supabaseId
-            );
-            if (error || !supabaseUser) {
+            // Use the user's own token to fetch identities — no service role key required
+            const bearerToken = (request.headers.authorization as string).slice(7);
+            const { data: sbData, error } = await app.supabase.auth.getUser(bearerToken);
+            if (error || !sbData?.user) {
                 return reply.status(400).send({ error: { message: 'Failed to fetch Supabase user', code: 'SUPABASE_ERROR' } });
             }
 
-            const identity = supabaseUser.user.identities?.find(i => i.provider === provider);
+            // Normalize x↔twitter: Supabase may store the provider as either "x" or "twitter"
+            const isXProvider = provider === 'x' || provider === 'twitter';
+            const identity = sbData.user.identities?.find(i =>
+                i.provider === provider || (isXProvider && (i.provider === 'x' || i.provider === 'twitter'))
+            );
             if (!identity) {
                 return reply.status(400).send({ error: { message: `Provider '${provider}' not linked in Supabase`, code: 'PROVIDER_NOT_LINKED' } });
             }
 
-            const sub = identity.identity_data?.sub as string | undefined;
+            // Supabase may store user ID in sub, provider_id, or id depending on provider/version
+            const sub = (
+                identity.identity_data?.sub
+                ?? identity.identity_data?.provider_id
+                ?? identity.identity_data?.id
+            ) as string | undefined;
             if (!sub) {
                 return reply.status(400).send({ error: { message: 'Missing sub claim in identity data', code: 'MISSING_SUB' } });
             }
 
-            // user_name is the stable @handle; do not fall back to global_name (non-unique display name)
-            const userName = (identity.identity_data?.user_name ?? null) as string | null;
+            // user_name is the stable @handle; Discord uses full_name as fallback (no user_name field)
+            const userName = (
+                identity.identity_data?.user_name
+                ?? identity.identity_data?.preferred_username
+                ?? identity.identity_data?.full_name   // Discord: "victorluu99"
+                ?? null
+            ) as string | null;
 
             try {
-                if (provider === 'twitter') {
+                if (provider === 'twitter' || provider === 'x') {
                     await app.prisma.user.update({
                         where: { id: request.user.id },
                         data: { xId: sub, xHandle: userName },

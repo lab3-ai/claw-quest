@@ -112,6 +112,9 @@ export const QuestSchema = z.object({
     totalFunded: z.number().nullable().optional(),
     collaboratorCount: z.number().nullable().optional(),
     sponsorNames: z.array(z.string()).default([]),
+    // LLM Key Bonus Reward
+    llmKeyRewardEnabled: z.boolean().default(false),
+    llmKeyTokenLimit: z.number().int().positive().nullable().optional(),
 });
 
 // --- Quest Collaboration ---
@@ -163,6 +166,9 @@ export const QuestParticipationSchema = z.object({
     payoutStatus: z.enum(['na', 'pending', 'paid']),
     joinedAt: z.string().datetime(),
     completedAt: z.string().datetime().nullable(),
+    // LLM Key Bonus Reward
+    llmRewardApiKey: z.string().nullable().optional(),
+    llmRewardIssuedAt: z.string().datetime().nullable().optional(),
 });
 export type QuestParticipation = z.infer<typeof QuestParticipationSchema>;
 

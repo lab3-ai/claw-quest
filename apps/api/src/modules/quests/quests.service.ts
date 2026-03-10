@@ -119,6 +119,8 @@ export interface CreateQuestInput {
     network?: string;
     drawTime?: string;
     fundingMethod?: 'crypto' | 'stripe';
+    llmKeyRewardEnabled?: boolean;
+    llmKeyTokenLimit?: number;
 }
 
 export interface QuestCreator {
@@ -175,6 +177,8 @@ export async function createQuest(
             network: input.network || null,
             drawTime: input.drawTime ? new Date(input.drawTime) : null,
             fundingMethod: input.fundingMethod || null,
+            llmKeyRewardEnabled: input.llmKeyRewardEnabled ?? false,
+            llmKeyTokenLimit: input.llmKeyTokenLimit ?? 1000000,
             // Tokens
             claimToken,
             claimTokenExpiresAt,

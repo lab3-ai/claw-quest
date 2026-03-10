@@ -4,8 +4,9 @@
  * Separate from social-validator.ts which only checks target existence at creation time.
  */
 import { PrismaClient } from '@prisma/client'
-import { ensureFreshToken, checkFollowing, getLikingUsers, getRetweetedBy, getTweet, lookupUserByUsername } from '../x/x-rest-client'
-import { extractTweetId } from '../x/x-utils'
+import { ensureFreshToken, getTweet, checkFollowing, lookupUserByUsername } from '../x/x-rest-client'
+import { fetchTweetById, checkUserFollows, fetchTweetForQuoteVerify } from '../x/x-rapidapi-client'
+import { extractTweetId, normaliseHandle } from '../x/x-utils'
 import { getGuildMember, getUserGuildMember } from '../discord/discord-rest-client'
 import { validateSocialTarget, type SocialValidationResult } from './social-validator'
 
@@ -14,6 +15,7 @@ export interface VerificationContext {
   prisma: PrismaClient
   // X identity
   xId?: string | null
+  xHandle?: string | null
   xAccessToken?: string | null
   xRefreshToken?: string | null
   xTokenExpiry?: Date | null
@@ -35,59 +37,111 @@ export interface VerificationContext {
 async function verifyXAction(
   actionType: string, ctx: VerificationContext, taskIndex: number,
 ): Promise<SocialValidationResult> {
-  if (!ctx.xId) return { valid: false, error: 'Link your X account to verify this task' }
+  // post/quote_post can use RapidAPI as fallback — they verify via proof URL, not user-specific API calls
+  if (actionType === 'post' || actionType === 'quote_post') {
+    return verifyXPostWithFallback(actionType, ctx, taskIndex)
+  }
 
+  // like_post, follow_account, repost verify via RapidAPI using xHandle (no OAuth token needed)
+  if (!ctx.xHandle) return { valid: false, error: 'Link your X account to verify this task' }
+
+  // Support multiple param key conventions used by quest creators
+  const targetValue = ctx.params?.targetUrl || ctx.params?.postUrl || ctx.params?.accountHandle || ctx.params?.username || ''
+
+  switch (actionType) {
+    case 'follow_account': {
+      const targetHandle = targetValue.replace(/^@/, '').replace(/^https?:\/\/(x|twitter)\.com\//, '')
+      // Prefer OAuth path when user has linked X (official API); fallback to RapidAPI when no token
+      if (ctx.xId && (ctx.xAccessToken || ctx.xRefreshToken)) {
+        const token = await ensureFreshToken(
+          { id: ctx.userId, xAccessToken: ctx.xAccessToken, xRefreshToken: ctx.xRefreshToken, xTokenExpiry: ctx.xTokenExpiry },
+          ctx.prisma,
+        )
+        if (token) {
+          const targetXId = await lookupUserByUsername(token, targetHandle)
+          if (targetXId) {
+            const follows = await checkFollowing(token, ctx.xId, targetXId)
+            if (follows !== null) return follows ? { valid: true } : { valid: false, error: 'You are not following this account' }
+          }
+        }
+      }
+      // Fallback: RapidAPI (no OAuth). Requires xHandle.
+      if (!ctx.xHandle) return { valid: false, error: 'Follow verification unavailable — link your X account to verify' }
+      const follows = await checkUserFollows(ctx.xHandle, targetHandle)
+      if (follows === null) return { valid: false, error: 'Follow verification unavailable — try again later' }
+      return follows ? { valid: true } : { valid: false, error: 'You are not following this account' }
+    }
+    case 'like_post':
+      return { valid: false, error: 'Like verification coming soon — please check back later' }
+    case 'repost':
+      return { valid: false, error: 'Repost verification coming soon — please check back later' }
+    default:
+      return { valid: true }
+  }
+}
+
+/**
+ * Verify post/quote_post tasks via RapidAPI (no OAuth token needed).
+ * Primary path: uses RapidAPI to fetch the proof tweet and checks author by xHandle.
+ * Fallback: if no RapidAPI key, uses OAuth token (original behavior).
+ */
+async function verifyXPostWithFallback(
+  actionType: 'post' | 'quote_post', ctx: VerificationContext, taskIndex: number,
+): Promise<SocialValidationResult> {
+  const proofUrl = ctx.proofUrls?.[taskIndex]
+  if (!proofUrl) return { valid: false, error: 'Paste your tweet URL to verify' }
+  const proofTweetId = extractTweetId(proofUrl)
+  if (!proofTweetId) return { valid: false, error: 'Invalid tweet URL — use format: https://x.com/.../status/...' }
+
+  const targetValue = ctx.params?.targetUrl || ctx.params?.postUrl || ctx.params?.accountHandle || ctx.params?.username || ''
+
+  // Path A: RapidAPI (no OAuth required)
+  const rapidApiKey = process.env.RAPID_API_KEY
+  if (rapidApiKey) {
+    if (actionType === 'quote_post') {
+      // Use /get-tweet endpoint for reliable author ID + quoted_status_id_str
+      const result = await fetchTweetForQuoteVerify(proofTweetId, rapidApiKey)
+      if (!result) return { valid: false, error: 'Tweet not found — is it public?' }
+      if (ctx.xId && result.authorId && result.authorId !== ctx.xId) {
+        return { valid: false, error: 'This tweet was not posted by your linked X account' }
+      }
+      const targetTweetId = extractTweetId(targetValue)
+      if (targetTweetId && result.quotedStatusId !== targetTweetId) {
+        return { valid: false, error: 'This tweet does not quote the required post' }
+      }
+      return { valid: true }
+    }
+
+    // post: use fetchTweetById, verify author by xHandle or xId
+    const tweet = await fetchTweetById(proofTweetId, rapidApiKey)
+    if (!tweet) return { valid: false, error: 'Tweet not found — is it public?' }
+    if (ctx.xHandle) {
+      if (normaliseHandle(tweet.author.screenName) !== normaliseHandle(ctx.xHandle)) {
+        return { valid: false, error: 'This tweet was not posted by your linked X account' }
+      }
+    } else if (ctx.xId && tweet.author.id && tweet.author.id !== ctx.xId) {
+      return { valid: false, error: 'This tweet was not posted by your linked X account' }
+    }
+    return { valid: true }
+  }
+
+  // Path B: OAuth fallback (original behavior)
+  if (!ctx.xId) return { valid: false, error: 'Link your X account to verify this task' }
   const token = await ensureFreshToken(
     { id: ctx.userId, xAccessToken: ctx.xAccessToken, xRefreshToken: ctx.xRefreshToken, xTokenExpiry: ctx.xTokenExpiry },
     ctx.prisma,
   )
   if (!token) return { valid: false, error: 'X account token expired — please re-link your X account' }
-
-  const targetValue = ctx.params?.targetUrl || ctx.params?.accountHandle || ''
-
-  switch (actionType) {
-    case 'follow_account': {
-      const targetHandle = targetValue.replace(/^@/, '').replace(/^https?:\/\/(x|twitter)\.com\//, '')
-      const targetId = await lookupUserByUsername(token, targetHandle)
-      if (!targetId) return { valid: false, error: 'Could not resolve target X account' }
-      const following = await checkFollowing(token, ctx.xId, targetId)
-      if (following === null) return { valid: false, error: 'X API unavailable — try again in a few minutes' }
-      return following ? { valid: true } : { valid: false, error: 'You are not following this account' }
+  const tweet = await getTweet(token, proofTweetId)
+  if (!tweet) return { valid: false, error: 'Tweet not found — is it public?' }
+  if (tweet.authorId !== ctx.xId) return { valid: false, error: 'This tweet was not posted by your linked X account' }
+  if (actionType === 'quote_post') {
+    const targetTweetId = extractTweetId(targetValue)
+    if (targetTweetId && tweet.quotedTweetId !== targetTweetId) {
+      return { valid: false, error: 'This tweet does not quote the required post' }
     }
-    case 'like_post': {
-      const tweetId = extractTweetId(targetValue)
-      if (!tweetId) return { valid: false, error: 'Invalid tweet URL in task' }
-      const liked = await getLikingUsers(token, tweetId, ctx.xId)
-      if (liked === null) return { valid: false, error: 'X API unavailable — try again in a few minutes' }
-      return liked ? { valid: true } : { valid: false, error: 'You have not liked this post' }
-    }
-    case 'repost': {
-      const tweetId = extractTweetId(targetValue)
-      if (!tweetId) return { valid: false, error: 'Invalid tweet URL in task' }
-      const reposted = await getRetweetedBy(token, tweetId, ctx.xId)
-      if (reposted === null) return { valid: false, error: 'X API unavailable — try again in a few minutes' }
-      return reposted ? { valid: true } : { valid: false, error: 'You have not reposted this post' }
-    }
-    case 'post':
-    case 'quote_post': {
-      const proofUrl = ctx.proofUrls?.[taskIndex]
-      if (!proofUrl) return { valid: false, error: 'Paste your tweet URL to verify' }
-      const proofTweetId = extractTweetId(proofUrl)
-      if (!proofTweetId) return { valid: false, error: 'Invalid tweet URL — use format: https://x.com/.../status/...' }
-      const tweet = await getTweet(token, proofTweetId)
-      if (!tweet) return { valid: false, error: 'Tweet not found — is it public?' }
-      if (tweet.authorId !== ctx.xId) return { valid: false, error: 'This tweet was not posted by your linked X account' }
-      if (actionType === 'quote_post') {
-        const targetTweetId = extractTweetId(targetValue)
-        if (targetTweetId && tweet.quotedTweetId !== targetTweetId) {
-          return { valid: false, error: 'This tweet does not quote the required post' }
-        }
-      }
-      return { valid: true }
-    }
-    default:
-      return { valid: true }
   }
+  return { valid: true }
 }
 
 // ── Discord Verification ────────────────────────────────────────

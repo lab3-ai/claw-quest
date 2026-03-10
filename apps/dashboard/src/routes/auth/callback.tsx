@@ -30,7 +30,7 @@ export function AuthCallback() {
                 if (linkingProvider) {
                     localStorage.removeItem("clawquest_linking_provider")
                     // Sync handle to Prisma for Twitter/Discord (Google/GitHub are no-ops on backend)
-                    if (linkingProvider === "twitter" || linkingProvider === "discord") {
+                    if (linkingProvider === "twitter" || linkingProvider === "x" || linkingProvider === "discord") {
                         try {
                             await fetch(`${API_BASE}/auth/social/sync`, {
                                 method: "POST",
@@ -56,12 +56,14 @@ export function AuthCallback() {
             }
         })
 
-        // Also handle the case where the session is already available (e.g. page refresh on callback URL)
+        // Also handle the case where the session is already available (e.g. page refresh on callback URL).
+        // Skip redirect if identity linking is in progress — let onAuthStateChange handle USER_UPDATED.
         supabase.auth.getSession().then(({ data: { session }, error: sessionError }) => {
             if (sessionError) {
                 setError(sessionError.message)
             } else if (session) {
-                redirectAfterLogin()
+                const linkingProvider = localStorage.getItem("clawquest_linking_provider")
+                if (!linkingProvider) redirectAfterLogin()
             }
         })
 

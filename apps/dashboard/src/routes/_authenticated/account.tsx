@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { useAuth } from "@/context/AuthContext"
@@ -99,6 +99,39 @@ export function Account() {
         },
         enabled: !!token,
     })
+
+    // Auto-sync social providers: if Supabase identity exists but Prisma profile is missing xId/discordId,
+    // call /auth/social/sync to populate the local DB. Runs once when profile is first loaded.
+    useEffect(() => {
+        if (!token || !profile || !supabaseUser?.identities) return
+
+        const providerMap: Record<string, { prismaField: string | null; providerAliases: string[] }> = {
+            x:       { prismaField: profile.xId,       providerAliases: ['x', 'twitter'] },
+            discord: { prismaField: profile.discordId,  providerAliases: ['discord'] },
+        }
+
+        const toSync: string[] = []
+        for (const [provider, { prismaField, providerAliases }] of Object.entries(providerMap)) {
+            const hasIdentity = supabaseUser.identities.some(i => providerAliases.includes(i.provider))
+            if (hasIdentity && !prismaField) toSync.push(provider)
+        }
+
+        if (toSync.length === 0) return
+
+        Promise.all(
+            toSync.map(provider =>
+                fetch(`${API_BASE}/auth/social/sync`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ provider }),
+                }).catch(() => null)
+            )
+        ).then(results => {
+            if (results.some(r => r?.ok)) {
+                queryClient.invalidateQueries({ queryKey: ['auth', 'me'] })
+            }
+        })
+    }, [profile?.xId, profile?.discordId, supabaseUser?.identities, token])
 
     // Fetch wallets
     const { data: wallets = [], isLoading: walletsLoading, isError: walletsError } = useQuery<Wallet[]>({

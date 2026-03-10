@@ -252,9 +252,10 @@ export async function questsRoutes(server: FastifyInstance) {
                                         select: { id: true },
                                     });
                                     if (partnerRecord) hasAccess = true;
-                                }
-                            }
-                        } catch {
+                        }
+                    }
+                } catch {
+                            if (reply.sent) return
                             // Not authenticated — that's fine, just check token
                         }
                     }
@@ -321,6 +322,7 @@ export async function questsRoutes(server: FastifyInstance) {
                         }
                     }
                 } catch {
+                    if (reply.sent) return
                     // Not authenticated — that's fine, return without myParticipation
                 }
             }
@@ -728,7 +730,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 const ctx: VerificationContext = {
                     userId: request.user.id,
                     prisma: server.prisma,
-                    xId: user?.xId, xAccessToken: user?.xAccessToken,
+                    xId: user?.xId, xHandle: user?.xHandle, xAccessToken: user?.xAccessToken,
                     xRefreshToken: user?.xRefreshToken, xTokenExpiry: user?.xTokenExpiry,
                     discordId: user?.discordId, discordAccessToken: user?.discordAccessToken,
                     telegramId: user?.telegramId,
@@ -826,7 +828,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 const ctx: VerificationContext = {
                     userId,
                     prisma: server.prisma,
-                    xId: user?.xId, xAccessToken: user?.xAccessToken,
+                    xId: user?.xId, xHandle: user?.xHandle, xAccessToken: user?.xAccessToken,
                     xRefreshToken: user?.xRefreshToken, xTokenExpiry: user?.xTokenExpiry,
                     discordId: user?.discordId, discordAccessToken: user?.discordAccessToken,
                     telegramId: user?.telegramId,

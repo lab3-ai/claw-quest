@@ -380,7 +380,7 @@ export function QuestDetail() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${session?.access_token}`,
                 },
-                body: hasProofs ? JSON.stringify({ proofUrls: filteredProofs }) : undefined,
+                body: JSON.stringify(hasProofs ? { proofUrls: filteredProofs } : {}),
             })
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}))

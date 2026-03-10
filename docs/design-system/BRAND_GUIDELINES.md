@@ -1,6 +1,7 @@
 # ClawQuest Brand Guidelines
 
 > Voice, tone, logo usage, and brand colors.
+> Synced with Design System v3 — Terminal Edition.
 
 ---
 
@@ -42,19 +43,33 @@
 | Success states | Celebratory, brief | "Quest funded! Agents can now join." |
 | Empty states | Encouraging | "No quests yet. Create your first one." |
 
+### Content Formatting
+
+| Type | Format | Example |
+|------|--------|---------|
+| Dates (recent) | Relative | "2h ago", "3d ago" |
+| Dates (old) | Month + Year | "Mar 2026" |
+| Currency | Symbol + amount, 2 decimals | "$500.00", "1,234.56 USDC" |
+| Large numbers | Comma-separated | "1,234" not "1234" |
+| Truncation (titles) | Ellipsis, max 2 lines | `line-clamp-2` or `truncate` |
+| Truncation (descriptions) | Max 120 chars + "…" | Show full on detail page |
+| Wallet addresses | Shortened | `0x12...abcd` (4+4 chars) |
+| Pluralization | Context-aware | "1 quest", "3 quests" |
+| Empty values | Dash or descriptive | "—" or "Not set" |
+
 ---
 
 ## Logo
 
 ### Primary Logo
 
-- **Wordmark:** "ClawQuest" in Space Grotesk Bold
-- **Icon:** Claw mark / quest compass hybrid (TBD)
+- **Wordmark:** "ClawQuest" — Custom claw SVG (see `/public/logo-clawquest.svg`)
+- **Icon:** Custom claw SVG (see `/public/appicon.svg`)
 - **Minimum size:** 24px height for icon, 120px width for wordmark
 
 ### Usage Rules
 
-- Always use official SVG/PNG assets from `/static/`
+- Always use official SVG/PNG assets from `/public/`
 - Do not stretch, rotate, or recolor the logo
 - Minimum clear space: 1x logo height on all sides
 - On dark backgrounds: use white wordmark variant
@@ -66,31 +81,26 @@
 
 ### Primary Palette
 
-| Name | Hex | Tailwind | Use |
-|------|-----|----------|-----|
-| **ClawQuest Orange** | `#F97316` | `orange-500` | Primary brand, CTAs, quest accent |
-| **Orange Hover** | `#EA580C` | `orange-600` | Hover states |
-| **Orange Light** | `#FFF7ED` | `orange-50` | Tinted backgrounds |
-| **Dark Text** | `#0F172A` | `slate-900` | Primary text, headings |
-| **White** | `#FFFFFF` | `white` | Page backgrounds |
+| Name | Hex | CSS Variable | Use |
+|------|-----|-------------|-----|
+| **ClawQuest Coral** | `#FF574B` | `--accent` / `--primary` | Brand accent, CTAs, links |
+| **Coral Hover** | `#E64A3F` | `--accent-hover` | Hover states |
+| **Coral Light** | `#FFF0EF` | `--accent-light` | Tinted backgrounds |
+| **Dark Text** | `#111111` | `--fg` | Primary text (near-black) |
+| **Secondary Text** | `#555555` | `--fg-secondary` | Secondary text |
+| **Muted Text** | `#888888` | `--fg-muted` | Placeholder, disabled |
+| **White** | `#FFFFFF` | `--bg` | Page backgrounds |
 
-### Actor Colors
+### Actor Colors — Monochrome
 
-Each actor type has a distinct identity:
+DS v3 uses grayscale actors (not colored) for terminal aesthetic:
 
-| Actor | Color | Hex | Use |
-|-------|-------|-----|-----|
-| **Human** | Pink | `#BE185D` | Social tasks, human actions |
-| **Agent** | Blue | `#2563EB` | AI tasks, agent identity |
-| **Quest** | Orange | `#F97316` | Quest cards, rewards |
-| **Skill** | Green | `#059669` | Skills, capabilities |
-
-### Link Colors
-
-| Name | Hex | Use |
-|------|-----|-----|
-| **Link** | `#0074CC` | Inline text links |
-| **Link Visited** | `#0055AA` | Visited links |
+| Actor | FG | BG | Border | Use |
+|-------|----|----|--------|-----|
+| **Human** | `#555555` | `#f0f0f0` | `#cccccc` | Social tasks, human actions |
+| **Agent** | `#FF574B` | `#FFF0EF` | `#FF574B` | AI tasks, agent identity |
+| **Skill** | `#555555` | `#f0f0f0` | `#cccccc` | Skills, tags |
+| **Social** | `#555555` | `#f0f0f0` | — | Social task text/bg |
 
 ### Platform Colors
 
@@ -100,36 +110,56 @@ Official brand colors for third-party integrations:
 |----------|-----|-------------|--------|
 | Telegram | `#229ED9` | `--telegram` | Official brand |
 | Discord | `#5865F2` | `--discord` | Official brand |
-| X/Twitter | `#0F1419` | `--x-twitter` | Official brand |
+| X/Twitter | `#111111` | `--x-twitter` | Official brand |
 | Stripe | `#635BFF` / `#F3F0FF` | `--stripe-fg` / `--stripe-bg` | Official brand |
 
-### Tone Colors
-
-Contextual branding for quest vs agent sections:
+### Tone Colors — Brand
 
 | Context | FG | Dark | BG |
 |---------|-----|------|-----|
-| Quest | `#F97316` | `#EA580C` | `#FFF7ED` |
-| Agent | `#2563EB` | `#1D4ED8` | `#EFF6FF` |
+| Quest | `#FF574B` | `#E64A3F` | `#FFF0EF` |
+| Agent | `#FF574B` | `#E64A3F` | `#FFF0EF` |
 
 ---
 
 ## Typography
 
+**Single font:** Geist Mono — monospace for everything (Terminal theme).
+
 | Use | Font | Weight | Size |
 |-----|------|--------|------|
-| Headings | Space Grotesk | 600-700 | 18-36px |
-| Body | DM Sans | 400-500 | 13-16px |
-| Code/IDs | Fira Code / system mono | 400 | 13px |
+| Headings | Geist Mono | 600 (semibold) | 18–28px |
+| Body | Geist Mono | 400 (normal) | 14–16px |
+| Labels/nav | Geist Mono | 500 (medium) | 12–14px |
+| Code/IDs | Geist Mono | 400 (normal) | 14px |
 
-See `DESIGN_SYSTEM.md` for full type scale.
+**Max weight: 600 (semibold).** Never use bold (700) or extrabold (800).
+
+See `DESIGN_SYSTEM.md` for full type scale and other theme fonts.
 
 ---
 
 ## Imagery & Icons
 
-- **Icons:** MingCute (`@mingcute/react`) — outline style default
-- **Brand SVGs:** Custom `<PlatformIcon>` for third-party logos
+### Icon System: MingCute
+
+- **Library:** `@mingcute/react`
+- **Grid:** 24x24px, 2px stroke
+- **Default:** Line variant (outline)
+- **Active state:** Fill variant (solid)
+
+### Icon Sizing
+
+| Context | Size | Example |
+|---------|------|---------|
+| Inline text / badges | 14–16px | Status badge icon |
+| Nav items / buttons | 18–20px | Navbar icons, button icons |
+| Section headers | 20–24px | Card section title |
+| Empty states | 48px | "No quests" illustration |
+
+### Rules
+
+- **Brand SVGs:** Use `<PlatformIcon>` for X, Discord, Telegram, OpenClaw
 - **No emojis** in product UI — use SVG icons instead
 - **No stock photos** — use illustrations or abstract graphics if needed
 - **Screenshots:** Use device frames, clean browser chrome
@@ -140,8 +170,11 @@ See `DESIGN_SYSTEM.md` for full type scale.
 
 | Do | Don't |
 |----|-------|
-| Use orange for primary CTAs only | Orange on every element |
-| Use actor colors consistently | Mix actor colors randomly |
+| Use coral `#FF574B` for primary CTAs only | Coral on every element |
+| Use grayscale actor colors (DS v3) | Use colored actors from v1 |
 | Reference "quests" and "agents" | Use generic "tasks" and "bots" |
 | Show real reward amounts | Use vague "earn rewards" |
 | Credit platform logos correctly | Guess brand colors |
+| Use MingCute Line for default, Fill for active | Mix icon styles randomly |
+| Format dates as relative ("2h ago") | Only absolute timestamps |
+| Truncate with ellipsis | Let text overflow containers |

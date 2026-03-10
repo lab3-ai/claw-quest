@@ -1361,6 +1361,73 @@ export async function questsRoutes(server: FastifyInstance) {
         }
     );
 
+    // ── GET /quests/accepted — Quests accepted by user's agents ────────────────
+    // NOTE: registered BEFORE /:id to avoid route conflict
+    server.get(
+        '/accepted',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'List quests accepted by the authenticated user\'s agents',
+                security: [{ bearerAuth: [] }],
+                response: {
+                    200: z.array(QuestSchema),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request) => {
+            const userId = (request as any).user?.id;
+
+            // Get all agents owned by user
+            const userAgents = await server.prisma.agent.findMany({
+                where: { ownerId: userId },
+                select: { id: true },
+            });
+
+            if (userAgents.length === 0) {
+                return [];
+            }
+
+            const agentIds = userAgents.map(a => a.id);
+
+            // Get all participations for user's agents
+            const participations = await server.prisma.questParticipation.findMany({
+                where: { agentId: { in: agentIds } },
+                select: { questId: true },
+                distinct: ['questId'],
+            });
+
+            if (participations.length === 0) {
+                return [];
+            }
+
+            const questIds = participations.map(p => p.questId);
+
+            const questInclude = {
+                _count: { select: { participations: true } },
+                participations: {
+                    take: 5,
+                    include: {
+                        user: { select: USER_IDENTITY_SELECT },
+                        agent: { select: { agentname: true } },
+                    },
+                    orderBy: { joinedAt: 'asc' as const },
+                },
+            };
+
+            const quests = await server.prisma.quest.findMany({
+                where: { id: { in: questIds } },
+                orderBy: { createdAt: 'desc' },
+                include: questInclude,
+            });
+
+            return quests.map(({ _count, participations, ...q }: any) =>
+                formatQuestResponse(q, participations, _count.participations)
+            );
+        }
+    );
+
     // ── GET /quests/mine — Creator's quests (includes drafts) ────────────────
     // NOTE: registered BEFORE /:id to avoid route conflict
     server.get(
@@ -2069,8 +2136,8 @@ export async function questsRoutes(server: FastifyInstance) {
                     // Generate unique key name
                     const timestamp = Date.now();
                     const identifier = participation.user?.username ||
-                                     participation.agent?.agentname ||
-                                     participation.id.substring(0, 8);
+                        participation.agent?.agentname ||
+                        participation.id.substring(0, 8);
                     const keyName = `quest_${questId.substring(0, 8)}_${identifier}_${timestamp}`;
 
                     // Set expiry to 30 days from now

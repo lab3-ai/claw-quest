@@ -38,6 +38,7 @@
     --color-fg-muted: var(--fg-muted);
 
     --color-border: var(--border);
+    --color-border-muted: var(--border-muted);
     --color-border-heavy: var(--border-heavy);
     --color-border-strong: var(--border-strong);
 
@@ -164,6 +165,7 @@
     --fg-secondary: #555555;
     --fg-muted: #888888;
     --border: #e5e5e5;
+    --border-muted: #efefef;
     --border-heavy: #aaaaaa;
     --border-strong: #222222;
 
@@ -243,9 +245,9 @@
     --sidebar-bg: #e8e8e8;
 
     /* ── Typography — monospace-first ── */
-    --font: "Google Sans Code", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
-    --font-heading: "Google Sans Code", ui-monospace, "Cascadia Mono", monospace;
-    --font-mono: "Google Sans Code", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    --font: "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    --font-heading: "Geist Mono", ui-monospace, "Cascadia Mono", monospace;
+    --font-mono: "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
 
     --text-xs: 12px;
     --text-sm: 14px;
@@ -311,6 +313,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
 
 /* All interactive elements get pointer cursor */
 button,

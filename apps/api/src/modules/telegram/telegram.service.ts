@@ -11,6 +11,7 @@ import { verifyHandler } from './handlers/verify.handler';
 import { registerHandler } from './handlers/register.handler';
 import { questsHandler } from './handlers/quests.handler';
 import { createHandler } from './handlers/create.handler';
+import { waitlistHandler } from './handlers/waitlist.handler';
 import { fallbackHandler } from './handlers/fallback.handler';
 import { initClaudeChat } from './services/claude-chat.service';
 
@@ -47,6 +48,7 @@ export class TelegramService {
         this.bot.use(registerHandler(this.server));
         this.bot.use(questsHandler(this.server));
         this.bot.use(createHandler(this.server));
+        this.bot.use(waitlistHandler(this.server));
 
         // Fallback must be last — catches unmatched messages + active sessions
         this.bot.use(fallbackHandler(this.server));

@@ -167,11 +167,7 @@ export function FundQuest() {
 
     // Step 2: Determine payment method from quest data
     const method: FundingMethod | null = quest
-        ? (quest.fundingMethod
-            ? (quest.fundingMethod === 'stripe' ? 'stripe' : 'crypto')
-            : quest.rewardType === 'USD'
-                ? 'stripe'
-                : 'crypto')
+        ? (quest.fundingMethod === 'stripe' ? 'stripe' : 'crypto')
         : null
 
     // Step 3: Only fetch method-specific APIs after method is determined

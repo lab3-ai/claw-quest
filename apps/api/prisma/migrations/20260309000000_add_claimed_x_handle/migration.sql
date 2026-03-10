@@ -1,0 +1,9 @@
+-- Add X (Twitter) OAuth fields to User
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "xId" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "xHandle" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "xAccessToken" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "xRefreshToken" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "xTokenExpiry" TIMESTAMP(3);
+
+-- Unique index on xId
+CREATE UNIQUE INDEX IF NOT EXISTS "User_xId_key" ON "User"("xId");

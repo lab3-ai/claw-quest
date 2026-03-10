@@ -48,7 +48,7 @@ export function CountdownTimer() {
     }
 
     return (
-        <div className="w-full max-w-lg rounded-lg border border-neutral-700/60 px-3 py-3 sm:px-5 sm:py-4">
+        <div className="w-full rounded-lg border border-neutral-700/60 px-3 py-3 sm:px-5 sm:py-4">
             <p className="mb-3 sm:mb-4 text-center font-mono text-xs sm:text-sm text-neutral-400">
                 Early access opens in
             </p>

@@ -18,6 +18,7 @@ import { adminRoutes } from './modules/admin/admin.routes';
 import { discordRoutes } from './modules/discord/discord.routes';
 import { stripeRoutes } from './modules/stripe/stripe.routes';
 import { seoRoutes } from './modules/seo/seo.routes';
+import { statsRoutes } from './modules/stats/stats.routes';
 
 // ─── Supabase Admin Client ──────────────────────────────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
@@ -188,6 +189,7 @@ server.register(adminRoutes, { prefix: '/admin' });
 server.register(discordRoutes, { prefix: '/discord' });
 server.register(stripeRoutes, { prefix: '/stripe' });
 server.register(seoRoutes, { prefix: '/seo' });
+server.register(statsRoutes, { prefix: '/stats' });
 
 // Telegram Bot (Polling for local dev)
 import { TelegramService } from './modules/telegram/telegram.service';

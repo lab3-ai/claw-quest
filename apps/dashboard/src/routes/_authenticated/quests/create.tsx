@@ -748,8 +748,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
         if (!editQuest || editPopulated.current) return
         editPopulated.current = true
 
-        const isFiat = editQuest.rewardType === "USD"
-        const token = isFiat ? "USDC" : (editQuest.rewardType || "USDC")
+        const isFiat = editQuest.fundingMethod === "stripe"
+        const token = editQuest.rewardType || "USDC"
         // Check if token is a native token (not USDC/USDT)
         const isNative = !isFiat && token !== "USDC" && token !== "USDT"
         // Determine fundingMethod from existing quest or default based on rail
@@ -898,8 +898,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 title: form.title,
                 description: form.description || undefined,
                 type: form.type,
-                rewardType,
                 rewardAmount: form.rail === "llm" ? 0 : total,
+                rewardType: form.rail === "fiat" ? "USDC" : form.token,
                 totalSlots: slots,
                 requiredSkills: requiredSkills.map(s => s.id),
                 requireVerified,

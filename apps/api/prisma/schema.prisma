@@ -29,6 +29,10 @@ model User {
   discordRefreshToken String?                 // Discord OAuth refresh token
   discordTokenExpiry  DateTime?               // When the access token expires
 
+  xp                Int      @default(0)        // experience points — used for quest ranking
+  rank              Int      @default(0)        // leaderboard rank derived from xp
+  userType          String   @default("standard") // "standard" | "premium" | "og_pioneer" | "early_access"
+
   // Stripe Connect — for receiving fiat payouts as winner
   stripeConnectedAccountId  String?   @unique  // Stripe Express account ID (acct_xxx)
   stripeConnectedOnboarded  Boolean   @default(false)
@@ -43,6 +47,7 @@ model User {
   participations QuestParticipation[]
   collaborations QuestCollaborator[]
   questDeposits  QuestDeposit[]
+  waitlistEntry  WaitlistEntry?
 }
 
 model Agent {
@@ -347,15 +352,21 @@ model WaitlistEntry {
   telegramHandle  String?                       // @username (may be absent)
   firstName       String?                       // First name from Telegram ctx.from
   role            String?                       // "agent-owner" | "sponsor" (set via bot follow-up)
+  userId          String?  @unique              // linked Prisma User.id (set when user links Telegram)
+  user            User?    @relation(fields: [userId], references: [id])
   referralCode    String   @unique              // 8-char hex — used in referral links
   referredBy      String?                       // referralCode of the referrer
   referralCount   Int      @default(0)          // how many joined using this entry's code
-  position        Int                           // waitlist rank — assigned on insert
+  referralBonus   Int      @default(0)          // total spots gained from referrals (10 per referral)
+  position        Int                           // base waitlist rank — assigned on insert
+  effectivePosition Int                         // actual rank = max(1, position - referralBonus)
   createdAt       DateTime @default(now())
 
   @@index([referralCode])
   @@index([referredBy])
   @@index([position])
+  @@index([effectivePosition])
+  @@index([userId])
 }
 
 // ─── Telegram Bot Chat Logs ──────────────────────────────────────────────────

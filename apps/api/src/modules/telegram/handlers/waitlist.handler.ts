@@ -8,6 +8,8 @@ const WAITLIST_URL = process.env.FRONTEND_URL
     ? `${process.env.FRONTEND_URL}/waitlist`
     : 'https://clawquest.ai/waitlist';
 
+const REFERRAL_BONUS_PER_FRIEND = 10;
+
 function generateReferralCode(): string {
     return randomBytes(4).toString('hex'); // 8 hex chars e.g. "a3f9b2c1"
 }
@@ -35,9 +37,10 @@ export async function handleWaitlistJoin(
 
         if (existing) {
             const link = buildReferralLink(existing.referralCode);
-            return void ctx.reply(MSG.waitlistAlreadyJoined(existing.position, link), {
-                parse_mode: 'Markdown',
-            });
+            return void ctx.reply(
+                MSG.waitlistAlreadyJoined(existing.effectivePosition, link),
+                { parse_mode: 'Markdown' }
+            );
         }
 
         // Resolve referrer (if any)
@@ -47,13 +50,13 @@ export async function handleWaitlistJoin(
             })
             : null;
 
-        // Assign position: current count + 1
+        // Assign base position: current count + 1
         const count = await server.prisma.waitlistEntry.count();
         const basePosition = count + 1;
 
-        // Referral bonus: referred users jump 10 spots ahead of their natural position,
-        // but never below position 1.
-        const position = referrer ? Math.max(1, basePosition - 10) : basePosition;
+        // New joiner gets a 10-spot bonus if they came via referral link
+        const joinerBonus = referrer ? REFERRAL_BONUS_PER_FRIEND : 0;
+        const effectivePosition = Math.max(1, basePosition - joinerBonus);
 
         const referralCode = generateReferralCode();
 
@@ -64,20 +67,29 @@ export async function handleWaitlistJoin(
                 firstName,
                 referralCode,
                 referredBy: referrer?.referralCode ?? null,
-                position,
+                position: basePosition,
+                referralBonus: joinerBonus,
+                effectivePosition,
             },
         });
 
-        // Increment referrer's count
+        // Reward referrer: +10 bonus spots per friend who joins
         if (referrer) {
+            const newReferralBonus = referrer.referralBonus + REFERRAL_BONUS_PER_FRIEND;
+            const newEffectivePosition = Math.max(1, referrer.position - newReferralBonus);
+
             await server.prisma.waitlistEntry.update({
                 where: { id: referrer.id },
-                data: { referralCount: { increment: 1 } },
+                data: {
+                    referralCount: { increment: 1 },
+                    referralBonus: newReferralBonus,
+                    effectivePosition: newEffectivePosition,
+                },
             });
         }
 
         const link = buildReferralLink(referralCode);
-        await ctx.reply(MSG.waitlistJoined(position, link), { parse_mode: 'Markdown' });
+        await ctx.reply(MSG.waitlistJoined(effectivePosition, link), { parse_mode: 'Markdown' });
     } catch (err) {
         server.log.error({ err }, 'Waitlist join error');
         await ctx.reply(MSG.genericError);

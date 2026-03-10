@@ -21,12 +21,12 @@ function Digit({ char }: { char: string }) {
 function Segment({ value, label }: { value: number; label: string }) {
     const str = String(value).padStart(2, "0")
     return (
-        <div className="flex w-full flex-1 flex-col items-center gap-1 rounded-lg bg-neutral-800/80 py-3 sm:py-4">
-            <span className="font-mono text-2xl font-semibold tracking-widest text-white sm:text-4xl">
+        <div className="flex w-full flex-1 flex-col items-center gap-1 rounded-lg bg-surface-dark-subtle py-3 sm:py-4">
+            <span className="font-mono text-2xl font-semibold tracking-widest text-surface-dark-fg sm:text-4xl">
                 <Digit char={str[0]} />
                 <Digit char={str[1]} />
             </span>
-            <span className="text-xs capitalize tracking-wider text-neutral-400">
+            <span className="text-xs capitalize tracking-wider text-surface-dark-muted">
                 {label}
             </span>
         </div>
@@ -44,12 +44,12 @@ export function CountdownTimer() {
 
     const isExpired = time.days + time.hours + time.minutes + time.seconds === 0
     if (isExpired) {
-        return <p className="font-mono text-sm text-neutral-400">Launching Soon</p>
+        return <p className="font-mono text-sm text-muted-foreground">Launching Soon</p>
     }
 
     return (
-        <div className="w-full rounded-lg border border-neutral-700/60 px-3 py-3 sm:px-5 sm:py-4">
-            <p className="mb-3 sm:mb-4 text-center font-mono text-xs sm:text-sm text-neutral-400">
+        <div className="w-full rounded-lg border border-surface-dark-subtle px-3 py-3 sm:px-5 sm:py-4">
+            <p className="mb-3 sm:mb-4 text-center font-mono text-xs sm:text-sm text-surface-dark-muted">
                 Early access opens in
             </p>
             <div className="flex items-center gap-2 sm:gap-4">

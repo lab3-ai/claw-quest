@@ -31,7 +31,7 @@ export function TierProgress({ totalSignups, position, email }: TierProgressProp
         <div ref={ref} className="w-full space-y-5 py-5">
             {/* Current position indicator */}
             {position != null && (
-                <div className="flex flex-col items-center gap-4 rounded-lg bg-[var(--wl-accent)] px-5 py-5">
+                <div className="flex flex-col items-center gap-4 rounded-lg bg-primary px-5 py-5">
                     <CelebrateLine size={40} className="text-white/90" />
                     <div className="flex flex-col items-center gap-1">
                         {email && (
@@ -54,20 +54,20 @@ export function TierProgress({ totalSignups, position, email }: TierProgressProp
                     <div key={tier.name} className="space-y-2">
                         <div className="flex items-center justify-between font-mono text-xs">
                             <span className="text-white">{tier.name}</span>
-                            <span className="text-neutral-500">
-                                <span className="text-neutral-300">{filled}</span>/{tier.max} claimed
+                            <span className="text-surface-dark-muted">
+                                <span className="text-white">{filled}</span>/{tier.max} claimed
                             </span>
                         </div>
 
                         {/* Bar — fills on scroll into view */}
-                        <div className="h-2 w-full overflow-hidden bg-neutral-800">
+                        <div className="h-2 w-full overflow-hidden bg-surface-dark-subtle">
                             <div
-                                className="h-full bg-[var(--wl-accent)] transition-all duration-1000 ease-out"
+                                className="h-full bg-primary transition-all duration-1000 ease-out"
                                 style={{ width: visible ? `${pct}%` : "0%" }}
                             />
                         </div>
 
-                        <p className="font-mono text-xs text-neutral-500">
+                        <p className="font-mono text-xs text-surface-dark-muted">
                             {tier.perk}
                         </p>
                     </div>

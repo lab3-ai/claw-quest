@@ -66,7 +66,7 @@ export function Register() {
                     <Button
                         type="button"
                         variant="outline"
-                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-[10px]"
+                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-2.5"
                         onClick={async () => {
                             setTelegramLoading(true)
                             setError("")
@@ -123,7 +123,7 @@ export function Register() {
 
                         <Button
                             type="submit"
-                            className="w-full mt-2 text-base py-[10px]"
+                            className="w-full mt-2 text-base py-2.5"
                             disabled={loading}
                         >
                             {loading ? "Creating account..." : "Create account"}

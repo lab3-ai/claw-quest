@@ -1071,7 +1071,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 </nav>
                 <div style={{
                     marginTop: 40, padding: "24px", textAlign: "center",
-                    border: "1px solid var(--border)", borderRadius: 6, background: "var(--sidebar-bg)",
+                    border: "1px solid var(--border)", borderRadius: 0, background: "var(--sidebar-bg)",
                 }}>
                     <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
                         This quest is {editQuest.status} and cannot be edited

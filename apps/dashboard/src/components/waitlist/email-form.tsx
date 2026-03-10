@@ -58,12 +58,12 @@ export function EmailForm({ onSuccess, onError, className = "", compact, buttonT
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setError("") }}
                     placeholder="your@email.com"
-                    className="min-h-12 py-3 flex-1 rounded-lg border border-neutral-700 bg-neutral-900 px-4 font-mono text-sm text-white placeholder:text-neutral-500 focus:border-[var(--wl-accent)] outline-none"
+                    className="min-h-12 py-3 flex-1 rounded-lg border border-surface-dark-subtle bg-surface-dark px-4 font-mono text-sm text-white placeholder:text-surface-dark-muted focus:border-primary outline-none"
                 />
                 <button
                     type="submit"
                     disabled={loading}
-                    className="group min-h-12 py-3 flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-[var(--wl-accent)] px-6 font-mono text-sm font-semibold text-white transition-colors hover:bg-[var(--wl-accent-hover)] active:scale-95 disabled:opacity-50"
+                    className="group min-h-12 py-3 flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-6 font-mono text-sm font-semibold text-white transition-colors hover:bg-primary-hover active:scale-95 disabled:opacity-50"
                 >
                     {loading ? "Joining..." : <>{buttonText ?? "Join the Waitlist"} <ArrowRightLine size={16} className="inline-block transition-transform group-hover:translate-x-0.5" /></>}
                 </button>

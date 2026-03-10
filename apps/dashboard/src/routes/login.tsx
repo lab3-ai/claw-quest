@@ -145,7 +145,7 @@ export function Login() {
                     <Button
                         type="button"
                         variant="outline"
-                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-[10px]"
+                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-2.5"
                         onClick={handleGoogleLogin}
                         disabled={googleLoading}
                     >
@@ -168,7 +168,7 @@ export function Login() {
                     <Button
                         type="button"
                         variant="outline"
-                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-[10px]"
+                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-2.5"
                         onClick={async () => {
                             setTelegramLoading(true)
                             setError("")
@@ -197,7 +197,7 @@ export function Login() {
                     <Button
                         type="button"
                         variant="outline"
-                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-[10px]"
+                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-2.5"
                         onClick={handleTwitterLogin}
                         disabled={twitterLoading}
                     >
@@ -217,7 +217,7 @@ export function Login() {
                     <Button
                         type="button"
                         variant="outline"
-                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-[10px]"
+                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-2.5"
                         onClick={handleDiscordLogin}
                         disabled={discordLoading}
                     >
@@ -264,7 +264,7 @@ export function Login() {
 
                         <Button
                             type="submit"
-                            className="w-full mt-2 text-base py-[10px]"
+                            className="w-full mt-2 text-base py-2.5"
                             disabled={loading}
                         >
                             {loading ? "Signing in..." : "Sign in"}

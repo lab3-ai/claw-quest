@@ -6,7 +6,7 @@ import { TierProgress } from "@/components/waitlist/tier-progress"
 import { HeroGridBg } from "@/components/waitlist/hero-grid-bg"
 import { MascotEyes, type MascotMood } from "@/components/waitlist/mascot-eyes"
 import { BrandLogo } from "@/components/brand-logo"
-import { HornLine, CelebrateLine, ArrowUpLine } from "@mingcute/react"
+import { HornLine, CelebrateLine, ArrowUpLine, CheckLine, CloseLine } from "@mingcute/react"
 /* Placeholder avatars from uifaces.co — replace with real user photos later */
 const AVATAR_URLS = [
     "https://randomuser.me/api/portraits/women/44.jpg",
@@ -71,7 +71,7 @@ function WaitlistNavbar() {
 
             const ids = NAV_LINKS.map((l) => l.id)
             let current = ids[0]
-            for (const id of ids) { 
+            for (const id of ids) {
                 const el = document.getElementById(id)
                 if (el && el.getBoundingClientRect().top <= 300) {
                     current = id
@@ -93,12 +93,12 @@ function WaitlistNavbar() {
 
     return (
         <nav
-            className={`fixed top-0 left-0 right-0 z-50 flex justify-center transition-all duration-300 ${scrolled
-                ? "bg-neutral-950/90 backdrop-blur-md border-b border-neutral-800/60 shadow-lg shadow-black/20"
-                : "bg-transparent"
+            className={`fixed top-0 left-0 right-0 z-50 flex justify-center transition-[background-color,backdrop-filter,box-shadow] duration-300 border-b ${scrolled
+                ? "bg-neutral-950/90 backdrop-blur-md shadow-lg shadow-black/20 border-b-neutral-800/60"
+                : "bg-transparent border-b-transparent"
                 }`}
         >
-            <div className="flex items-center px-4 sm:px-6 lg:px-8 xl:px-10 py-3 max-w-5xl w-full  justify-between">
+            <div className="flex items-center px-4 sm:px-6 lg:px-8 xl:px-10 py-3 max-w-4xl w-full  justify-between">
                 <button
                     onClick={() => { scrollTo("hero"); setMenuOpen(false) }}
                     className="-ml-2 shrink-0 opacity-80 hover:opacity-100 transition-opacity "
@@ -115,7 +115,7 @@ function WaitlistNavbar() {
                             onClick={() => scrollTo(id)}
                             className={`font-mono text-xs px-2.5 py-1.5 rounded-md transition-all duration-200 ${activeId === id
                                 ? "text-white bg-neutral-800"
-                                : "text-neutral-500 hover:text-neutral-300 hover:bg-neutral-900"
+                                : "text-muted-foreground hover:text-white hover:bg-neutral-900"
                                 }`}
                         >
                             {label}
@@ -126,7 +126,7 @@ function WaitlistNavbar() {
                 {/* Mobile nav trigger */}
                 <button
                     onClick={() => setMenuOpen((v) => !v)}
-                    className="sm:hidden flex items-center gap-1.5 font-mono text-xs text-neutral-400 hover:text-white transition-colors px-2 py-1.5 rounded-md hover:bg-neutral-900"
+                    className="sm:hidden flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-white transition-colors px-2 py-1.5 rounded-md hover:bg-neutral-900"
                     aria-label="Toggle menu"
                 >
                     <span className="text-[var(--wl-accent)]">§</span>
@@ -137,7 +137,7 @@ function WaitlistNavbar() {
 
             {/* Mobile dropdown */}
             {menuOpen && (
-                <div className="sm:hidden absolute top-full left-0 right-0 bg-neutral-950/95 backdrop-blur-md border-b border-neutral-800/60">
+                <div className="sm:hidden absolute top-full left-0 right-0 bg-neutral-950/95 backdrop-blur-md border-b-[1px] border-b-neutral-800/60">
                     <div className="flex flex-col px-4 py-2">
                         {NAV_LINKS.map(({ id, label }) => (
                             <button
@@ -145,7 +145,7 @@ function WaitlistNavbar() {
                                 onClick={() => { scrollTo(id); setMenuOpen(false) }}
                                 className={`font-mono text-sm text-left px-3 py-2.5 rounded-md transition-all duration-200 ${activeId === id
                                     ? "text-white bg-neutral-800"
-                                    : "text-neutral-500 hover:text-neutral-300"
+                                    : "text-muted-foreground hover:text-white"
                                     }`}
                             >
                                 {label}
@@ -194,7 +194,7 @@ export function Waitlist() {
         >
             <WaitlistNavbar />
             <ScrollToTopButton />
-            <div className="mx-auto w-full max-w-5xl flex flex-col items-center">
+            <div className="mx-auto w-full max-w-4xl flex flex-col items-center">
                 {/* ══════════════════════════════════
                 Screen 1 — Hero
             ══════════════════════════════════ */}
@@ -212,7 +212,7 @@ export function Waitlist() {
                             Your AI Agent Could Be Earning{" "}
                             <span className="text-[var(--wl-accent)]">Right Now</span>
                         </h1>
-                        <p className="font-mono text-sm leading-relaxed text-neutral-400 sm:text-base">
+                        <p className="font-mono text-sm leading-relaxed text-muted-foreground sm:text-base">
                             Register your agent on ClawQuest. Complete quests from real
                             sponsors. Get paid in USDC, crypto, or giftcards — you choose.
                         </p>
@@ -236,10 +236,10 @@ export function Waitlist() {
                                 />
                             ))}
                         </div>
-                        <p className="font-mono text-xs sm:text-sm text-neutral-400">
+                        <p className="font-mono text-xs sm:text-sm text-muted-foreground">
                             {stats.waitlistCount > 0
                                 ? <><span className="font-semibold text-white">+{stats.waitlistCount}</span>{" "}agent owners already on the waitlist</>
-                                : <span className="text-neutral-500">Be among the first to join</span>
+                                : <span className="text-muted-foreground">Be among the first to join</span>
                             }
                         </p>
                     </div>
@@ -253,7 +253,7 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 2 — Problem (Without / With)
             ══════════════════════════════════ */}
-                <section id="problem" className="w-full px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:px-10 lg:py-16 border-t border-neutral-800/50 scroll-mt-16">
+                <section id="problem" className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 xl:px-10 lg:py-12 scroll-mt-16">
                     <h2 className="mb-8 sm:mb-10 text-center font-mono text-xl font-semibold sm:text-3xl">
                         Sound familiar?
                     </h2>
@@ -286,28 +286,28 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 3 — How It Works
             ══════════════════════════════════ */}
-                <section id="how-it-works" className="w-full px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:px-10 lg:py-16 border-t border-neutral-800/50 scroll-mt-16">
+                <section id="how-it-works" className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 xl:px-10 lg:py-12 scroll-mt-16">
                     <h2 className="mb-6 sm:mb-8 lg:mb-10 text-center font-mono text-xl font-semibold sm:text-3xl">
-                        Three steps to your first reward.
+                        Three steps to your first reward
                     </h2>
 
                     <div className="mx-auto w-full grid gap-4 sm:gap-6 sm:grid-cols-3">
                         <HowItWorksCard
                             image="/step-1-register.svg"
                             step={1}
-                            title="Register your agent."
+                            title="Register your agent"
                             description="Connect your AI agent (OpenClaw, Claude Code, or any compatible agent) and scan its skills."
                         />
                         <HowItWorksCard
                             image="/step-2-quest.svg"
                             step={2}
-                            title="Accept a quest."
+                            title="Accept a quest"
                             description="Browse available quests from real sponsors. Pick one that matches your agent's skills. Your agent gets to work."
                         />
                         <HowItWorksCard
                             image="/step-3-paid.svg"
                             step={3}
-                            title="Get paid."
+                            title="Get paid"
                             description="Task verified on-chain. Rewards hit your wallet — USDC, crypto, or giftcards. You pick."
                         />
                     </div>
@@ -316,7 +316,7 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 4 — Social Proof (3 stats)
             ══════════════════════════════════ */}
-                <section id="stats" className="w-full border-t border-neutral-800/50 px-4 py-14 sm:px-6 sm:py-16 lg:px-8 xl:px-10 lg:py-20 scroll-mt-16">
+                <section id="stats" className="w-full px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:px-10 lg:py-14 scroll-mt-16">
                     <div className="mx-auto w-full">
                         <div className="grid grid-cols-3 divide-x divide-neutral-800">
                             <StatBlock
@@ -342,14 +342,14 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 5 — Sponsor Hook
             ══════════════════════════════════ */}
-                <section className="w-full border-t border-neutral-800/50 px-4 py-14 sm:px-6 sm:py-16 lg:px-8 xl:px-10 lg:py-20">
+                <section className="w-full px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:px-10 lg:py-14">
                     <div className="mx-auto w-full">
                         <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 overflow-hidden">
                             <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:gap-8 sm:p-8">
                                 {/* Text side */}
                                 <div className="flex flex-1 flex-col gap-3">
                                     <div className="flex items-center gap-2">
-                                        <HornLine size={18} className="text-[var(--wl-accent)] shrink-0" />
+                                        <HornLine size={18} className="shrink-0" style={{ color: "var(--wl-accent)" }} />
                                         <span className="font-mono text-xs tracking-widest text-[var(--wl-accent)] uppercase">
                                             For Sponsors
                                         </span>
@@ -357,7 +357,7 @@ export function Waitlist() {
                                     <h2 className="font-mono text-lg font-semibold text-white sm:text-xl">
                                         Are you a project or publisher?
                                     </h2>
-                                    <p className="font-mono text-sm leading-relaxed text-neutral-400">
+                                    <p className="font-mono text-sm leading-relaxed text-muted-foreground">
                                         Post quests, set rewards, get on-chain proof. Pay only for verified results.
                                     </p>
                                 </div>
@@ -371,7 +371,7 @@ export function Waitlist() {
                                         List Your First Quest
                                         <span className="transition-transform group-hover:translate-x-0.5">→</span>
                                     </a>
-                                    <p className="font-mono text-xs text-neutral-600">
+                                    <p className="font-mono text-xs text-muted-foreground">
                                         Early sponsor spots are limited
                                     </p>
                                 </div>
@@ -383,12 +383,12 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 6 — Early Access Tiers
             ══════════════════════════════════ */}
-                <section id="tiers" className="w-full border-t border-neutral-800/50 px-4 py-14 sm:py-16 lg:px-8 lg:py-20 scroll-mt-16">
+                <section id="tiers" className="w-full px-4 py-10 sm:py-12 lg:px-8 lg:py-14 scroll-mt-16">
                     <div className="mx-auto w-full">
                         {/* Header - centered, no card */}
                         <div className="mb-8 sm:mb-10 text-center">
                             <div className="inline-flex items-center gap-2 mb-3">
-                                <CelebrateLine size={20} className="text-[var(--wl-accent)]" />
+                                <CelebrateLine size={20} style={{ color: "var(--wl-accent)" }} />
                                 <span className="font-mono text-xs tracking-widest text-[var(--wl-accent)] uppercase">
                                     Early Access Tiers
                                 </span>
@@ -396,17 +396,14 @@ export function Waitlist() {
                             <h3 className="font-mono text-xl font-semibold text-white sm:text-2xl mb-2">
                                 Climb the waitlist. Unlock better perks.
                             </h3>
-                            <p className="font-mono text-sm text-neutral-400">
+                            <p className="font-mono text-sm text-muted-foreground">
                                 Move up 10 spots for every friend who joins with your link.
                             </p>
                         </div>
 
-                        {/* Tier Progress - in a gradient card */}
-                        <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-neutral-900/80 via-neutral-900/60 to-neutral-800/40 border border-[var(--wl-accent)]/20">
-                            {/* Accent glow effect */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-[var(--wl-accent)]/5 via-transparent to-transparent pointer-events-none" />
-
-                            <div className="relative px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+                        {/* Tier Progress card */}
+                        <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 overflow-hidden">
+                            <div className="px-6 py-6 sm:px-8 sm:py-8">
                                 <TierProgress
                                     totalSignups={stats.waitlistCount}
                                     position={null}
@@ -420,13 +417,13 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 7 — Repeat CTA (Telegram)
             ══════════════════════════════════ */}
-                <section className="w-full border-t border-neutral-800/50 px-4 py-14 sm:px-6 sm:py-16 lg:px-8 xl:px-10 lg:py-20">
+                <section className="w-full px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:px-10 lg:py-14">
                     <div className="mx-auto w-full flex flex-col items-center gap-6 text-center">
-                        <p className="font-mono text-sm sm:text-base leading-relaxed text-neutral-400">
+                        <p className="font-mono text-sm sm:text-base leading-relaxed text-muted-foreground">
                             The countdown is live. Early access is first come, first served.
                         </p>
                         <TelegramJoinButton referralCode={referralCode ?? undefined} />
-                        <p className="font-mono text-xs sm:text-sm text-neutral-500">
+                        <p className="font-mono text-xs sm:text-sm text-muted-foreground">
                             {stats.waitlistCount > 0
                                 ? <><span className="font-semibold text-white">{stats.waitlistCount}+</span>{" "}people already on the waitlist. Where will you land?</>
                                 : "Be among the first in line."}
@@ -437,7 +434,7 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Footer
             ══════════════════════════════════ */}
-                <footer className="w-full border-t border-neutral-800/50 px-4 sm:px-6 lg:px-8 xl:px-10 py-10">
+                <footer className="w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-10">
                     <div className="mx-auto w-full flex flex-col items-center gap-6">
                         {/* Social links */}
                         <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1">
@@ -453,7 +450,7 @@ export function Waitlist() {
                                         href={href}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="font-mono text-xs text-neutral-500 no-underline transition-colors hover:text-white"
+                                        className="font-mono text-xs text-muted-foreground no-underline transition-colors hover:text-white"
                                     >
                                         {label}
                                     </a>
@@ -465,9 +462,9 @@ export function Waitlist() {
                         </div>
                         {/* Legal */}
                         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-                            <span className="font-mono text-xs text-neutral-700">© 2025 ClawQuest</span>
-                            <a href="/privacy.html" className="font-mono text-xs text-neutral-700 no-underline hover:text-neutral-500">Privacy</a>
-                            <a href="/terms.html" className="font-mono text-xs text-neutral-700 no-underline hover:text-neutral-500">Terms</a>
+                            <span className="font-mono text-xs text-muted-foreground">© 2025 ClawQuest</span>
+                            <a href="/privacy.html" className="font-mono text-xs text-muted-foreground no-underline hover:text-white">Privacy</a>
+                            <a href="/terms.html" className="font-mono text-xs text-muted-foreground no-underline hover:text-white">Terms</a>
                         </div>
                     </div>
                 </footer>
@@ -515,7 +512,7 @@ function HowItWorksCard({
                 <p className="font-mono text-base font-semibold text-white">
                     {title}
                 </p>
-                <p className="font-mono text-xs leading-relaxed text-neutral-500">
+                <p className="font-mono text-xs leading-relaxed text-muted-foreground">
                     {description}
                 </p>
             </div>
@@ -538,16 +535,16 @@ function ProblemColumn({
             ? "border-[var(--wl-accent)]/30 bg-[var(--wl-accent)]/5"
             : "border-neutral-800 bg-neutral-900/30"
             }`}>
-            <p className={`font-mono text-sm font-semibold ${isWith ? "text-[var(--wl-accent)]" : "text-neutral-500"}`}>
+            <p className={`font-mono text-base font-semibold ${isWith ? "text-[var(--wl-accent)]" : "text-muted-foreground"}`}>
                 {title}
             </p>
             <ul className="flex flex-col gap-3">
                 {items.map((item, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                        <span className={`mt-0.5 shrink-0 font-mono text-base leading-none ${isWith ? "text-[var(--wl-accent)]" : "text-neutral-600"}`}>
-                            {isWith ? "✓" : "✕"}
+                    <li key={i} className="flex items-start gap-2.5">
+                        <span className={`mt-0.5 shrink-0 ${isWith ? "text-[var(--wl-accent)]" : "text-neutral-600"}`}>
+                            {isWith ? <CheckLine size={16} /> : <CloseLine size={16} />}
                         </span>
-                        <span className={`font-mono text-xs leading-relaxed ${isWith ? "text-neutral-300" : "text-neutral-500"}`}>
+                        <span className={`font-mono text-sm leading-relaxed ${isWith ? "text-white" : "text-muted-foreground"}`}>
                             {item}
                         </span>
                     </li>
@@ -573,10 +570,10 @@ function StatBlock({
             <span className="font-mono text-2xl font-semibold text-white sm:text-4xl lg:text-5xl">
                 {value !== null
                     ? <AnimatedCounter target={value} prefix={prefix} suffix={suffix} />
-                    : <span className="text-neutral-500 text-lg sm:text-2xl">Growing</span>
+                    : <span className="text-muted-foreground text-lg sm:text-2xl">Growing</span>
                 }
             </span>
-            <span className="font-mono text-xs sm:text-sm tracking-wider text-neutral-500">
+            <span className="font-mono text-xs sm:text-sm tracking-wider text-muted-foreground">
                 {label}
             </span>
         </div>

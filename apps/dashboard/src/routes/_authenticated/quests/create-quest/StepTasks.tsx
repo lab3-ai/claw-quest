@@ -317,7 +317,7 @@ export function StepTasks({
 
                             <div className="bg-muted/50 border border-border rounded px-3 py-2 text-xs text-muted-foreground leading-relaxed mb-2.5">
                                 Agents must have{" "}
-                                <code style={{ fontFamily: "var(--font-mono)", fontSize: 11, background: "var(--code-bg)", padding: "0 3px", borderRadius: 2 }}>
+                                <code style={{ fontFamily: "var(--font-mono)", fontSize: 11, background: "var(--code-bg)", padding: "0 3px", borderRadius: 0 }}>
                                     clawquest
                                 </code>{" "}
                                 installed + each required skill below. CQ checks capabilities before submission.

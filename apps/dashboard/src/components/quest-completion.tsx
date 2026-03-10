@@ -201,7 +201,7 @@ export function QuestCompletion({
                 className={cn("flex gap-3 py-3", idx !== quest.tasks.length - 1 && "border-b")}
               >
                 <svg
-                  className="w-5 h-5 text-green-400 flex-shrink-0"
+                  className="w-5 h-5 text-success flex-shrink-0"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -356,19 +356,19 @@ function SubmissionReviewState({ quest, proof }: { quest: Quest; proof?: any }) 
       </div>
 
       {/* Status Card */}
-      <Card className="p-6 border-amber-500/50 bg-amber-500/10">
+      <Card className="p-6 border-warning/50 bg-warning/10">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-10 h-10 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-amber-400 font-medium">Under Review</h3>
-              <Badge variant="outline" className="border-amber-500/30 text-amber-400">Pending</Badge>
+              <h3 className="text-warning font-medium">Under Review</h3>
+              <Badge variant="outline" className="border-warning/30 text-warning">Pending</Badge>
             </div>
-            <p className="text-sm text-amber-300/70 mb-3">
+            <p className="text-sm text-warning/70 mb-3">
               Your submission is being reviewed by our team. You'll be notified once the review is complete.
             </p>
             <div className="text-xs text-muted-foreground">
@@ -422,19 +422,19 @@ function SubmissionApprovedState({ quest }: { quest: Quest; proof?: any }) {
       </div>
 
       {/* Status Card */}
-      <Card className="p-6 border-green-500/50 bg-green-500/10">
+      <Card className="p-6 border-success/50 bg-success/10">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-10 h-10 rounded-full bg-success/20 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-green-400 font-medium">Quest Completed!</h3>
-              <Badge variant="outline" className="border-green-500/30 text-green-400">Approved</Badge>
+              <h3 className="text-success font-medium">Quest Completed!</h3>
+              <Badge variant="outline" className="border-success/30 text-success">Approved</Badge>
             </div>
-            <p className="text-sm text-green-300/70">
+            <p className="text-sm text-success/70">
               Congratulations! Your submission has been approved. Your reward will be processed shortly.
             </p>
           </div>
@@ -452,7 +452,7 @@ function SubmissionApprovedState({ quest }: { quest: Quest; proof?: any }) {
               {quest.rewardAmount} {quest.rewardType}
             </div>
           </div>
-          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Processing</Badge>
+          <Badge className="bg-success/20 text-success border-success/30">Processing</Badge>
         </div>
       </Card>
     </div>
@@ -471,19 +471,19 @@ function SubmissionRejectedState({ quest, proof }: { quest: Quest; proof?: any }
       </div>
 
       {/* Status Card */}
-      <Card className="p-6 border-red-500/50 bg-red-500/10">
+      <Card className="p-6 border-error/50 bg-error/10">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-10 h-10 rounded-full bg-error/20 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-red-400 font-medium">Submission Rejected</h3>
-              <Badge variant="outline" className="border-red-500/30 text-red-400">Rejected</Badge>
+              <h3 className="text-error font-medium">Submission Rejected</h3>
+              <Badge variant="outline" className="border-error/30 text-error">Rejected</Badge>
             </div>
-            <p className="text-sm text-red-300/70 mb-3">
+            <p className="text-sm text-error/70 mb-3">
               Unfortunately, your submission did not meet the quest requirements.
             </p>
             {proof && proof[0]?.meta?.rejectionReason && (

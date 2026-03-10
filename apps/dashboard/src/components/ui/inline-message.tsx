@@ -20,27 +20,27 @@ const config: Record<
 > = {
     info: {
         icon: InformationLine,
-        border: "border-neutral-600",
-        bg: "bg-neutral-800/60",
-        text: "text-neutral-300",
+        border: "border-border",
+        bg: "bg-muted/60",
+        text: "text-muted-foreground",
     },
     warning: {
         icon: AlertLine,
-        border: "border-yellow-600/50",
-        bg: "bg-yellow-950/40",
-        text: "text-yellow-400",
+        border: "border-warning/50",
+        bg: "bg-warning-light",
+        text: "text-warning",
     },
     success: {
         icon: CheckLine,
-        border: "border-green-600/50",
-        bg: "bg-green-950/40",
-        text: "text-green-400",
+        border: "border-success/50",
+        bg: "bg-success-light",
+        text: "text-success",
     },
     error: {
         icon: CloseCircleLine,
-        border: "border-red-600/50",
-        bg: "bg-red-950/40",
-        text: "text-red-400",
+        border: "border-error/50",
+        bg: "bg-error-light",
+        text: "text-error",
     },
 }
 

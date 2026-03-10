@@ -25,7 +25,7 @@ export function PostSignup({ email, position }: PostSignupProps) {
     /* Step 1: Role selection */
     if (!role) {
         return (
-            <div className="w-full max-w-lg rounded-lg border border-neutral-700/60 px-4 py-6 sm:px-6">
+            <div className="w-full max-w-lg rounded-lg border border-border px-4 py-6 sm:px-6">
                 <p className="mb-5 text-center font-mono text-base text-white">
                     One quick question — what brings you here?
                 </p>
@@ -57,11 +57,11 @@ export function PostSignup({ email, position }: PostSignupProps) {
     )
 
     return (
-        <div className="w-full max-w-lg rounded-lg border border-neutral-700/60 px-4 py-6 sm:px-6">
+        <div className="w-full max-w-lg rounded-lg border border-border px-4 py-6 sm:px-6">
             <p className="mb-1 text-center font-mono text-2xl font-semibold text-white">
                 You're <span className="text-[var(--wl-accent)]">#{position}</span> in line.
             </p>
-            <p className="mb-5 text-center font-mono text-xs text-neutral-400">
+            <p className="mb-5 text-center font-mono text-xs text-muted-foreground">
                 Share your link to move up. Every friend who joins = 10 spots closer to the front.
             </p>
 
@@ -70,12 +70,12 @@ export function PostSignup({ email, position }: PostSignupProps) {
                 <input
                     readOnly
                     value={referralLink}
-                    className="h-10 flex-1 truncate rounded-lg bg-neutral-800/80 px-3 font-mono text-xs text-neutral-300"
+                    className="h-10 flex-1 truncate rounded-lg bg-surface-dark-subtle px-3 font-mono text-xs text-white"
                 />
                 <button
                     onClick={copyLink}
                     title={copied ? "Link copied!" : "Copy link"}
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-neutral-700/50 text-neutral-300 transition-colors hover:bg-neutral-600/50 hover:text-white active:scale-95"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-surface-dark-subtle/50 text-surface-dark-muted transition-colors hover:bg-surface-dark-subtle hover:text-white active:scale-95"
                 >
                     {copied ? <CheckLine size={16} /> : <CopyLine size={16} />}
                 </button>

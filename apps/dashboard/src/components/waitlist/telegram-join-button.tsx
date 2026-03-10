@@ -30,7 +30,7 @@ export function TelegramJoinButton({
                 {buttonText}
                 <ArrowRightLine size={16} className="transition-transform group-hover:translate-x-0.5" />
             </a>
-            <p className="text-center font-mono text-xs text-neutral-600">
+            <p className="text-center font-mono text-xs text-surface-dark-muted">
                 Opens Telegram — bot replies instantly with your spot
             </p>
         </div>

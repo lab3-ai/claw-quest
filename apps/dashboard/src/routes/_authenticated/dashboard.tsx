@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react"
-import { Link } from "@tanstack/react-router"
+import { useState, useEffect, useRef, useCallback, Fragment } from "react"
+import { Link, useNavigate } from "@tanstack/react-router"
 import { useQuery, useQueries, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { QuestersPopup } from "@/components/QuestersPopup"
@@ -116,8 +116,16 @@ function CmdBlock({ cmd }: { cmd: string }) {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function Dashboard() {
-    const { session, user } = useAuth()
+    const { session, user, isAuthenticated, isLoading } = useAuth()
     const queryClient = useQueryClient()
+    const navigate = useNavigate()
+
+    // Redirect to login if not authenticated (fallback check in case beforeLoad didn't catch it)
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            navigate({ to: '/login' })
+        }
+    }, [isLoading, isAuthenticated, navigate])
 
     // Get tab from URL search params, default to "my-quest"
     const urlParams = new URLSearchParams(window.location.search)
@@ -1208,9 +1216,8 @@ export function Dashboard() {
                                         const isPending = !!agent.activationCode
                                         const isExpanded = expandedAgent === agent.id
                                         return (
-                                            <>
+                                            <Fragment key={agent.id}>
                                                 <tr
-                                                    key={agent.id}
                                                     className="cursor-pointer hover:bg-muted/50"
                                                     data-agent-status={isPending ? "pending" : "claimed"}
                                                     onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}
@@ -1418,7 +1425,7 @@ export function Dashboard() {
                                                         </td>
                                                     </tr>
                                                 )}
-                                            </>
+                                            </Fragment>
                                         )
                                     })}
                                 </tbody>

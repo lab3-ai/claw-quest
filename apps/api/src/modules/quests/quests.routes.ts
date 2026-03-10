@@ -39,7 +39,7 @@ const CreateQuestSchema = QuestSchema.omit({
     sponsor: z.string().default('System'),
     status: z.nativeEnum(QUEST_STATUS).default(QUEST_STATUS.DRAFT),
     rewardAmount: z.number().default(0),
-    rewardType: z.enum(['USDC', 'LLMTOKEN_OPENROUTER', 'LLM_KEY']).default('USDC'),
+    rewardType: z.enum(['USDC', 'USDT', 'NATIVE', 'USD', 'LLMTOKEN_OPENROUTER', 'LLM_KEY']).default('USDC'),
     tokenProvider: z.string().optional(),
     tokenAmount: z.number().optional(),
     startAt: z.string().datetime().optional(),

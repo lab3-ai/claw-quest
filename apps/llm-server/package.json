@@ -1,0 +1,20 @@
+{
+  "name": "@clawquest/llm-server",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 execute clawquest-llm --file src/db/schema.sql",
+    "db:migrate:local": "wrangler d1 execute clawquest-llm --local --file src/db/schema.sql",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.6.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.91.0"
+  }
+}

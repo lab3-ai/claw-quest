@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { NETWORKS_PRIMARY, NETWORKS_OTHER, NATIVE_TOKENS, TOKEN_CONTRACTS, TOKEN_COLORS, getTokenSymbol, calcLbPayouts } from "./constants"
 
 type QuestType = "FCFS" | "LEADERBOARD" | "LUCKY_DRAW"
-type PaymentRail = "crypto" | "fiat"
+type PaymentRail = "crypto" | "fiat" | "llm"
 
 interface StepRewardProps {
     isActive: boolean
@@ -20,10 +20,14 @@ interface StepRewardProps {
         total: string
         winners: string
         drawTime: string
+        llmKeyTokenLimit: string
     }
     stepSummary?: string
+    llmKeyRewardEnabled: boolean
     onToggle: () => void
-    onFieldChange: (key: keyof StepRewardProps["form"], value: string | PaymentRail | QuestType) => void
+    onFieldChange: (key: keyof Omit<StepRewardProps["form"], "llmKeyTokenLimit">, value: string | PaymentRail | QuestType) => void
+    onSetLlmKeyRewardEnabled: (v: boolean) => void
+    onSetLlmKeyTokenLimit: (v: string) => void
     onNext: () => void
     onPrevious: () => void
 }
@@ -35,21 +39,26 @@ export function StepReward({
     isFuture,
     form,
     stepSummary,
+    llmKeyRewardEnabled,
     onToggle,
     onFieldChange,
+    onSetLlmKeyRewardEnabled,
+    onSetLlmKeyTokenLimit,
     onNext,
     onPrevious,
 }: StepRewardProps) {
     const activeTotal = parseFloat(form.total) || 0
     const activeWinners = parseInt(form.winners) || 1
-    const perWinner = activeWinners > 0 ? (activeTotal / activeWinners).toFixed(2) : "0.00"
+    const perWinner = form.rail === "llm"
+        ? parseInt(form.llmKeyTokenLimit || "1000000").toLocaleString()
+        : activeWinners > 0 ? (activeTotal / activeWinners).toFixed(2) : "0.00"
 
-    const totalError = activeTotal <= 0 && isActive
+    const totalError = form.rail !== "llm" && activeTotal <= 0 && isActive
     const winnersError = activeWinners <= 0 && isActive
     const drawTimeError = form.type === "LUCKY_DRAW" && !form.drawTime.trim() && isActive
     const leaderboardError = form.type === "LEADERBOARD" && activeWinners < 2 && isActive
 
-    const tokenLabel = getTokenSymbol(form.rail, form.token, form.network)
+    const tokenLabel = form.rail === "llm" ? "tokens" : getTokenSymbol(form.rail, form.token, form.network)
 
     const lbWinnersNum = Math.min(Math.max(activeWinners, 2), 100)
     const lbPayouts = calcLbPayouts(activeTotal, lbWinnersNum)
@@ -106,10 +115,16 @@ export function StepReward({
                                     <span className="text-base leading-none">⛓</span> Crypto
                                 </button>
                                 <button
-                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "fiat" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
+                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none border-r border-border bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "fiat" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
                                     onClick={() => onFieldChange("rail", "fiat")}
                                 >
                                     <span className="text-base leading-none">💳</span> Fiat (USD)
+                                </button>
+                                <button
+                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "llm" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
+                                    onClick={() => onFieldChange("rail", "llm")}
+                                >
+                                    <span className="text-base leading-none">🤖</span> LLM Token
                                 </button>
                             </div>
                         </div>
@@ -176,6 +191,29 @@ export function StepReward({
                         </div>
                     )}
 
+                    {/* LLM Token Reward */}
+                    {form.rail === "llm" && (
+                        <div className="space-y-4 mb-6">
+                            <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">LLM Token Reward</div>
+                            <div className="space-y-1.5">
+                                <Label>Token Limit per Winner</Label>
+                                <Input
+                                    type="number"
+                                    value={form.llmKeyTokenLimit}
+                                    onChange={e => onSetLlmKeyTokenLimit(e.target.value)}
+                                    placeholder="1000000"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Each winner receives an LLM API key with this many tokens. Default: 1,000,000.
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2 px-3 py-2 bg-accent-light border border-accent/30 rounded text-xs text-foreground leading-relaxed">
+                                <span className="shrink-0">✅</span>
+                                <span>Winners receive a personal <strong>LLM API key</strong> (OpenAI-compatible) with {parseInt(form.llmKeyTokenLimit || "1000000").toLocaleString()} tokens.</span>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Distribution Method */}
                     <div className="space-y-4 mb-6">
                         <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Distribution Method</div>
@@ -213,6 +251,7 @@ export function StepReward({
                         {/* Shared: Total Reward + Winners */}
                         <div style={{ marginTop: 12 }}>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {form.rail !== "llm" && (
                                 <div className="space-y-1.5 mb-3.5">
                                     <Label>Total Reward ({tokenLabel}) <span className="text-destructive">*</span></Label>
                                     <Input
@@ -223,6 +262,7 @@ export function StepReward({
                                     />
                                     {totalError && <div className="text-xs text-destructive mt-0.5">Total reward must be greater than 0</div>}
                                 </div>
+                                )}
                                 <div className="space-y-1.5 mb-3.5">
                                     <Label>
                                         Number of Winners <span className="text-destructive">*</span>
@@ -334,6 +374,44 @@ export function StepReward({
                             </div>
                         )}
                     </div>
+
+                    {/* LLM Key Bonus Reward */}
+                    {form.rail !== "llm" && (
+                    <div className="space-y-3 mb-6">
+                        <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Bonus Reward</div>
+                        <div className="flex items-start justify-between gap-3 p-3 border border-border rounded bg-transparent">
+                            <div className="flex-1">
+                                <div className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                                    <span>🤖</span> LLM API Key
+                                </div>
+                                <div className="text-xs text-muted-foreground mt-0.5 leading-snug">
+                                    Each winner receives a free LLM API key compatible with OpenAI SDK. They can use it immediately.
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                role="switch"
+                                aria-checked={llmKeyRewardEnabled}
+                                onClick={() => onSetLlmKeyRewardEnabled(!llmKeyRewardEnabled)}
+                                className={cn(
+                                    "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                                    llmKeyRewardEnabled ? "bg-accent" : "bg-muted"
+                                )}
+                            >
+                                <span className={cn(
+                                    "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform",
+                                    llmKeyRewardEnabled ? "translate-x-4" : "translate-x-0"
+                                )} />
+                            </button>
+                        </div>
+                        {llmKeyRewardEnabled && (
+                            <div className="flex items-center gap-2 px-3 py-2 bg-accent-light border border-accent/30 rounded text-xs text-foreground leading-relaxed">
+                                <span className="text-sm shrink-0">✅</span>
+                                <span>Winners will receive a personal <strong>LLM API key</strong> (OpenAI-compatible) shown on their quest result page.</span>
+                            </div>
+                        )}
+                    </div>
+                    )}
 
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <Button variant="secondary" onClick={onPrevious}>← Tasks</Button>

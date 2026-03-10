@@ -123,6 +123,8 @@ interface MyParticipation {
     tasksCompleted?: number
     tasksTotal?: number
     proof?: any
+    llmRewardApiKey?: string | null
+    llmRewardIssuedAt?: string | null
 }
 
 interface QuestWithParticipation extends Quest {
@@ -1285,7 +1287,74 @@ export function QuestDetail() {
                                     )}
                                 </div>
                             )}
+
+                        {/* ── LLM API Key Reward ── */}
+                        {isAuthenticated && quest.myParticipation?.llmRewardApiKey && (
+                            <LlmKeyCard apiKey={quest.myParticipation.llmRewardApiKey} />
+                        )}
                     </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function LlmKeyCard({ apiKey }: { apiKey: string }) {
+    const llmServerUrl = import.meta.env.VITE_LLM_SERVER_URL ?? "https://clawquest-llm-server.lab3-dev.workers.dev"
+    const baseUrl = `${llmServerUrl}/v1`
+    const snippet = `import OpenAI from "openai"
+
+const client = new OpenAI({
+  baseURL: "${baseUrl}",
+  apiKey: "${apiKey}",
+})
+
+const response = await client.chat.completions.create({
+  model: "gpt-4o-mini",
+  messages: [{ role: "user", content: "Hello!" }],
+})`
+
+    function copyText(text: string) {
+        navigator.clipboard.writeText(text).catch(() => {})
+    }
+
+    return (
+        <div className="mt-4 px-3 pt-4 border-t border-border">
+            <div className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
+                <span>🎁</span> LLM API Key Reward
+            </div>
+            <div className="space-y-2 text-xs">
+                <div className="flex items-center gap-2 p-2 px-3 border border-border rounded bg-muted">
+                    <span className="text-muted-foreground shrink-0 w-16">API Key</span>
+                    <code className="flex-1 font-mono truncate text-foreground">{apiKey}</code>
+                    <button
+                        type="button"
+                        onClick={() => copyText(apiKey)}
+                        className="shrink-0 text-xs text-accent hover:underline cursor-pointer"
+                    >
+                        Copy
+                    </button>
+                </div>
+                <div className="flex items-center gap-2 p-2 px-3 border border-border rounded bg-muted">
+                    <span className="text-muted-foreground shrink-0 w-16">Base URL</span>
+                    <code className="flex-1 font-mono truncate text-foreground">{baseUrl}</code>
+                    <button
+                        type="button"
+                        onClick={() => copyText(baseUrl)}
+                        className="shrink-0 text-xs text-accent hover:underline cursor-pointer"
+                    >
+                        Copy
+                    </button>
+                </div>
+                <div className="relative">
+                    <pre className="p-3 border border-border rounded bg-muted font-mono text-xs text-foreground overflow-x-auto whitespace-pre leading-relaxed">{snippet}</pre>
+                    <button
+                        type="button"
+                        onClick={() => copyText(snippet)}
+                        className="absolute top-2 right-2 text-xs text-accent hover:underline cursor-pointer"
+                    >
+                        Copy
+                    </button>
                 </div>
             </div>
         </div>

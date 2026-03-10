@@ -153,6 +153,10 @@ model Quest {
   sponsorWallet       String?             // Sponsor's wallet address
   escrowQuestId       String?             // bytes32 hex for contract reference
 
+  // LLM Key Bonus Reward (on-claw-llm-server)
+  llmKeyRewardEnabled Boolean @default(false)
+  llmKeyTokenLimit    Int?    @default(1000000)
+
   // Collaboration
   totalFunded     Decimal  @default(0) @db.Decimal(36, 18)
 
@@ -233,6 +237,10 @@ model QuestParticipation {
   payoutTokenKeyId     String?   // OpenRouter key ID (for revocation)
   payoutTokenExpiresAt DateTime? // When key auto-expires
   payoutTokenStatus    String?   // pending_key_creation | key_sent | used | expired
+
+  // LLM Key Bonus Reward (on-claw-llm-server)
+  llmRewardApiKey   String?
+  llmRewardIssuedAt DateTime?
 
   joinedAt    DateTime @default(now())
   completedAt DateTime?

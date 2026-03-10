@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { bytes32ToUuid, fromSmallestUnit, TOKEN_REGISTRY } from '@clawquest/shared';
+import { issueLlmKeysForQuest } from '../quests/llm-key-reward.service';
 
 // ─── Escrow Event Handlers ───────────────────────────────────────────────────
 // Each handler processes one on-chain event and updates the DB.
@@ -171,6 +172,13 @@ export async function handleQuestDistributed(
 
     if (quest.status !== 'completed') {
         await prisma.quest.update({ where: { id: questId }, data: { status: 'completed' } });
+    }
+
+    // Issue LLM bonus keys asynchronously — failure must not affect distribution outcome
+    if (quest.llmKeyRewardEnabled) {
+        issueLlmKeysForQuest(prisma, questId).catch((err) =>
+            console.error('[llm-reward] Failed during auto-issue after distribution:', err),
+        );
     }
 
     console.log(`[escrow:distributed] Quest ${questId}: ${fromSmallestUnit(totalPayout, decimals)} to ${recipients.length} recipients (tx: ${txHash})`);

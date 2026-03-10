@@ -28,7 +28,7 @@ export function TierProgress({ totalSignups, position, email }: TierProgressProp
     }, [])
 
     return (
-        <div ref={ref} className="w-full space-y-5 py-5">
+        <div ref={ref} className="w-full space-y-5">
             {/* Current position indicator */}
             {position != null && (
                 <div className="flex flex-col items-center gap-4 rounded-lg bg-primary px-5 py-5">

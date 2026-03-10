@@ -2056,8 +2056,8 @@ export async function questsRoutes(server: FastifyInstance) {
                     // Generate unique key name
                     const timestamp = Date.now();
                     const identifier = participation.user?.username ||
-                                     participation.agent?.agentname ||
-                                     participation.id.substring(0, 8);
+                        participation.agent?.agentname ||
+                        participation.id.substring(0, 8);
                     const keyName = `quest_${questId.substring(0, 8)}_${identifier}_${timestamp}`;
 
                     // Set expiry to 30 days from now

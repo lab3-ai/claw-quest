@@ -4,6 +4,7 @@ import { BotContext } from '../types';
 import { MSG } from '../content/messages';
 import { linkAccountKeyboard, claimAgentKeyboard, claimQuestKeyboard } from '../keyboards/menus';
 import { mainReplyKeyboard } from '../keyboards/reply-keyboard';
+import { handleWaitlistJoin } from './waitlist.handler';
 
 export function startHandler(server: FastifyInstance): Composer<BotContext> {
     const composer = new Composer<BotContext>();
@@ -13,6 +14,16 @@ export function startHandler(server: FastifyInstance): Composer<BotContext> {
 
         if (!payload) {
             return handleBareStart(server, ctx);
+        }
+
+        // Waitlist join: ?start=waitlist or ?start=ref_<code>
+        if (payload === 'waitlist') {
+            return handleWaitlistJoin(server, ctx);
+        }
+
+        if (payload.startsWith('ref_')) {
+            const referralCode = payload.slice(4); // strip "ref_" prefix
+            return handleWaitlistJoin(server, ctx, referralCode);
         }
 
         // Token prefix is the routing key — no wrapper needed

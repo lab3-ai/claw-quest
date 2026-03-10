@@ -28,20 +28,20 @@ export function TierProgress({ totalSignups, position, email }: TierProgressProp
     }, [])
 
     return (
-        <div ref={ref} className="w-full max-w-lg space-y-6">
+        <div ref={ref} className="w-full max-w-lg space-y-5 py-5">
             {/* Current position indicator */}
             {position != null && (
                 <div className="flex flex-col items-center gap-4 rounded-lg bg-[var(--wl-accent)] px-5 py-5">
                     <CelebrateLine size={40} className="text-white/90" />
                     <div className="flex flex-col items-center gap-1">
-                    {email && (
-                        <p className="font-mono text-xs text-white/80">
-                            Hey, {email}
+                        {email && (
+                            <p className="font-mono text-xs text-white/80">
+                                Hey, {email}
+                            </p>
+                        )}
+                        <p className="font-mono text-lg font-semibold text-white">
+                            You're #{position} in line
                         </p>
-                    )}
-                    <p className="font-mono text-lg font-semibold text-white">
-                        You're #{position} in line
-                    </p>
                     </div>
                 </div>
             )}

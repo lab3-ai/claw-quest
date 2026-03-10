@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { CountdownTimer } from "@/components/waitlist/countdown-timer"
 import { TelegramJoinButton } from "@/components/waitlist/telegram-join-button"
 import { AnimatedCounter } from "@/components/waitlist/animated-counter"
@@ -6,7 +6,7 @@ import { TierProgress } from "@/components/waitlist/tier-progress"
 import { HeroGridBg } from "@/components/waitlist/hero-grid-bg"
 import { MascotEyes, type MascotMood } from "@/components/waitlist/mascot-eyes"
 import { BrandLogo } from "@/components/brand-logo"
-import { HornLine, CelebrateLine } from "@mingcute/react"
+import { HornLine, CelebrateLine, ArrowUpLine } from "@mingcute/react"
 /* Placeholder avatars from uifaces.co — replace with real user photos later */
 const AVATAR_URLS = [
     "https://randomuser.me/api/portraits/women/44.jpg",
@@ -53,6 +53,132 @@ function useReferralCode(): string | null {
     return code
 }
 
+const NAV_LINKS = [
+    { id: "hero", label: "Home" },
+    { id: "problem", label: "Why" },
+    { id: "how-it-works", label: "How It Works" },
+    { id: "stats", label: "Stats" },
+    { id: "tiers", label: "Tiers" },
+] as const
+
+function WaitlistNavbar() {
+    const [activeId, setActiveId] = useState<string>("hero")
+    const [scrolled, setScrolled] = useState(false)
+
+    useEffect(() => {
+        const onScroll = () => {
+            setScrolled(window.scrollY > 20)
+
+            const ids = NAV_LINKS.map((l) => l.id)
+            let current = ids[0]
+            for (const id of ids) {
+                const el = document.getElementById(id)
+                if (el && el.getBoundingClientRect().top <= 300) {
+                    current = id
+                }
+            }
+            setActiveId(current)
+        }
+        window.addEventListener("scroll", onScroll, { passive: true })
+        return () => window.removeEventListener("scroll", onScroll)
+    }, [])
+
+    const scrollTo = useCallback((id: string) => {
+        const el = document.getElementById(id)
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, [])
+
+    const [menuOpen, setMenuOpen] = useState(false)
+    const activeLabel = NAV_LINKS.find((l) => l.id === activeId)?.label ?? "Menu"
+
+    return (
+        <nav
+            className={`fixed top-0 left-0 right-0 z-50 flex justify-center transition-all duration-300 ${scrolled
+                ? "bg-neutral-950/90 backdrop-blur-md border-b border-neutral-800/60 shadow-lg shadow-black/20"
+                : "bg-transparent"
+                }`}
+        >
+            <div className="flex items-center px-4 sm:px-6 lg:px-8 xl:px-10 py-3 max-w-5xl w-full  justify-between">
+                <button
+                    onClick={() => { scrollTo("hero"); setMenuOpen(false) }}
+                    className="-ml-2 shrink-0 opacity-80 hover:opacity-100 transition-opacity "
+                    aria-label="Scroll to top"
+                >
+                    <BrandLogo dark size="sm" />
+                </button>
+
+                {/* Desktop nav */}
+                <div className="hidden sm:flex items-center gap-0.5 sm:gap-1">
+                    {NAV_LINKS.map(({ id, label }) => (
+                        <button
+                            key={id}
+                            onClick={() => scrollTo(id)}
+                            className={`font-mono text-xs px-2.5 py-1.5 rounded-md transition-all duration-200 ${activeId === id
+                                ? "text-white bg-neutral-800"
+                                : "text-neutral-500 hover:text-neutral-300 hover:bg-neutral-900"
+                                }`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Mobile nav trigger */}
+                <button
+                    onClick={() => setMenuOpen((v) => !v)}
+                    className="sm:hidden flex items-center gap-1.5 font-mono text-xs text-neutral-400 hover:text-white transition-colors px-2 py-1.5 rounded-md hover:bg-neutral-900"
+                    aria-label="Toggle menu"
+                >
+                    <span className="text-[var(--wl-accent)]">§</span>
+                    <span>{activeLabel}</span>
+                    <span className={`transition-transform duration-200 ${menuOpen ? "rotate-180" : ""}`}>▾</span>
+                </button>
+            </div>
+
+            {/* Mobile dropdown */}
+            {menuOpen && (
+                <div className="sm:hidden absolute top-full left-0 right-0 bg-neutral-950/95 backdrop-blur-md border-b border-neutral-800/60">
+                    <div className="flex flex-col px-4 py-2">
+                        {NAV_LINKS.map(({ id, label }) => (
+                            <button
+                                key={id}
+                                onClick={() => { scrollTo(id); setMenuOpen(false) }}
+                                className={`font-mono text-sm text-left px-3 py-2.5 rounded-md transition-all duration-200 ${activeId === id
+                                    ? "text-white bg-neutral-800"
+                                    : "text-neutral-500 hover:text-neutral-300"
+                                    }`}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </nav>
+    )
+}
+
+function ScrollToTopButton() {
+    const [visible, setVisible] = useState(false)
+
+    useEffect(() => {
+        const onScroll = () => setVisible(window.scrollY > 400)
+        window.addEventListener("scroll", onScroll, { passive: true })
+        return () => window.removeEventListener("scroll", onScroll)
+    }, [])
+
+    return (
+        <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            aria-label="Scroll to top"
+            className={`fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--wl-accent)] border border-[var(--wl-accent)] text-white shadow-lg shadow-[var(--wl-accent)]/20 transition-all duration-300 hover:bg-[var(--wl-accent-hover)] hover:border-[var(--wl-accent-hover)] active:scale-95 ${visible ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-4 pointer-events-none"
+                }`}
+        >
+            <ArrowUpLine size={18} />
+        </button>
+    )
+}
+
 export function Waitlist() {
     const [mascotMood] = useState<MascotMood>("normal")
     const stats = usePlatformStats()
@@ -66,11 +192,13 @@ export function Waitlist() {
                 "--wl-accent-hover": "#E64A3F",
             } as React.CSSProperties}
         >
+            <WaitlistNavbar />
+            <ScrollToTopButton />
             <div className="mx-auto w-full max-w-5xl flex flex-col items-center">
                 {/* ══════════════════════════════════
                 Screen 1 — Hero
             ══════════════════════════════════ */}
-                <section id="hero" className="max-w-4xl relative flex flex-col items-center gap-4 sm:gap-5 lg:gap-6 overflow-hidden px-4 sm:px-6 lg:px-8 xl:px-10 pt-8 sm:pt-12 lg:pt-16 pb-8 sm:pb-10 lg:pb-14 text-center">
+                <section id="hero" className="max-w-4xl relative flex flex-col items-center gap-4 sm:gap-5 lg:gap-6 overflow-hidden px-4 sm:px-6 lg:px-8 xl:px-10 pt-20 sm:pt-24 lg:pt-28 pb-8 sm:pb-10 lg:pb-14 text-center">
                     <HeroGridBg />
                     {/* Mascot — eyes follow mouse */}
                     <div className="relative z-10 scale-[0.65] sm:scale-[0.8] lg:scale-100 origin-center">
@@ -125,7 +253,7 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 2 — Problem (Without / With)
             ══════════════════════════════════ */}
-                <section className="w-full px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:px-10 lg:py-16 border-t border-neutral-800/50">
+                <section id="problem" className="w-full px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:px-10 lg:py-16 border-t border-neutral-800/50 scroll-mt-16">
                     <h2 className="mb-8 sm:mb-10 text-center font-mono text-xl font-semibold sm:text-3xl">
                         Sound familiar?
                     </h2>
@@ -158,7 +286,7 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 3 — How It Works
             ══════════════════════════════════ */}
-                <section className="w-full px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:px-10 lg:py-16 border-t border-neutral-800/50">
+                <section id="how-it-works" className="w-full px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:px-10 lg:py-16 border-t border-neutral-800/50 scroll-mt-16">
                     <h2 className="mb-6 sm:mb-8 lg:mb-10 text-center font-mono text-xl font-semibold sm:text-3xl">
                         Three steps to your first reward.
                     </h2>
@@ -188,7 +316,7 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 4 — Social Proof (3 stats)
             ══════════════════════════════════ */}
-                <section className="w-full border-t border-neutral-800/50 px-4 py-14 sm:px-6 sm:py-16 lg:px-8 xl:px-10 lg:py-20">
+                <section id="stats" className="w-full border-t border-neutral-800/50 px-4 py-14 sm:px-6 sm:py-16 lg:px-8 xl:px-10 lg:py-20 scroll-mt-16">
                     <div className="mx-auto w-full">
                         <div className="grid grid-cols-3 divide-x divide-neutral-800">
                             <StatBlock
@@ -255,8 +383,8 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 6 — Early Access Tiers
             ══════════════════════════════════ */}
-                <section className="w-full border-t border-neutral-800/50 px-4 py-14  sm:py-16 lg:px-8 lg:py-20">
-                    <div className="mx-auto w-full ">
+                <section id="tiers" className="w-full border-t border-neutral-800/50 px-4 py-14 sm:py-16 lg:px-8 lg:py-20 scroll-mt-16">
+                    <div className="mx-auto w-full">
                         {/* Header - centered, no card */}
                         <div className="mb-8 sm:mb-10 text-center">
                             <div className="inline-flex items-center gap-2 mb-3">

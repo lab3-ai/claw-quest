@@ -49,7 +49,7 @@ interface AgentSkillInfo {
 
 type QuestFilter = "all" | "draft" | "live" | "scheduled" | "completed"
 type AgentFilter = "all" | "claimed" | "pending"
-type MainTab = "quests" | "agents"
+type MainTab = "my-quest" | "accepted" | "agents"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -118,7 +118,38 @@ function CmdBlock({ cmd }: { cmd: string }) {
 export function Dashboard() {
     const { session, user } = useAuth()
     const queryClient = useQueryClient()
-    const [mainTab, setMainTab] = useState<MainTab>("quests")
+
+    // Get tab from URL search params, default to "my-quest"
+    const urlParams = new URLSearchParams(window.location.search)
+    const urlTab = urlParams.get('tab')
+    const [mainTab, setMainTab] = useState<MainTab>(
+        urlTab === "accepted" || urlTab === "agents" ? urlTab : "my-quest"
+    )
+
+    // Sync URL when tab changes
+    useEffect(() => {
+        const tabParam = mainTab === "my-quest" ? undefined : mainTab
+        const newParams = new URLSearchParams(window.location.search)
+        if (tabParam) {
+            newParams.set('tab', tabParam)
+        } else {
+            newParams.delete('tab')
+        }
+        const newUrl = `${window.location.pathname}${newParams.toString() ? `?${newParams.toString()}` : ''}`
+        window.history.replaceState({}, '', newUrl)
+    }, [mainTab])
+
+    // Sync state when URL changes (listen to popstate)
+    useEffect(() => {
+        const handlePopState = () => {
+            const params = new URLSearchParams(window.location.search)
+            const tab = params.get('tab')
+            const tabParam = tab === "accepted" || tab === "agents" ? tab : "my-quest"
+            setMainTab(tabParam)
+        }
+        window.addEventListener('popstate', handlePopState)
+        return () => window.removeEventListener('popstate', handlePopState)
+    }, [])
     const [questFilter, setQuestFilter] = useState<QuestFilter>("all")
     const [questView, setQuestView] = useState<"card" | "list">("card")
     const [agentFilter] = useState<AgentFilter>("all")
@@ -182,6 +213,19 @@ export function Dashboard() {
         queryFn: async () => {
             const res = await fetch(`${API_BASE}/agents`, {
                 headers: { Authorization: `Bearer ${session?.access_token}` },
+            })
+            if (!res.ok) return []
+            return res.json()
+        },
+        enabled: !!session?.access_token,
+    })
+
+    // Get accepted quests - fetch from new API endpoint
+    const acceptedQuests = useQuery<MineQuest[]>({
+        queryKey: ["accepted-quests"],
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/quests/accepted`, {
+                headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
             })
             if (!res.ok) return []
             return res.json()
@@ -486,26 +530,35 @@ export function Dashboard() {
                     <button
                         className={cn(
                             "px-3.5 py-2.5 text-sm font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground",
+                            mainTab === "my-quest" && "text-foreground font-semibold border-b-(--tone-quest)"
+                        )}
+                        onClick={() => setMainTab("my-quest")}
+                    >
+                        My Quests <span className={cn("text-xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "my-quest" && "bg-(--tone-quest)")}>{quests.length}</span>
+                    </button>
+                    <button
+                        className={cn(
+                            "px-3.5 py-2.5 text-sm font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground",
+                            mainTab === "accepted" && "text-foreground font-semibold border-b-(--tone-quest)"
+                        )}
+                        onClick={() => setMainTab("accepted")}
+                    >
+                        Accepted Quests <span className={cn("text-xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "accepted" && "bg-(--tone-quest)")}>{acceptedQuests.data?.length ?? 0}</span>
+                    </button>
+                    <button
+                        className={cn(
+                            "px-3.5 py-2.5 text-sm font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground",
                             mainTab === "agents" && "text-foreground font-semibold border-b-(--tone-agent)"
                         )}
                         onClick={() => setMainTab("agents")}
                     >
                         My Agents <span className={cn("text-xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "agents" && "bg-(--tone-agent)")}>{agents.length}</span>
                     </button>
-                    <button
-                        className={cn(
-                            "px-3.5 py-2.5 text-sm font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground",
-                            mainTab === "quests" && "text-foreground font-semibold border-b-(--tone-quest)"
-                        )}
-                        onClick={() => setMainTab("quests")}
-                    >
-                        My Quests <span className={cn("text-xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "quests" && "bg-(--tone-quest)")}>{quests.length}</span>
-                    </button>
                 </div>
             </div>
 
             {/* ── My Quests tab ── */}
-            {mainTab === "quests" && (
+            {mainTab === "my-quest" && (
                 <div>
                     {/* Filter + view toggle */}
                     <div className="flex items-center justify-between py-2.5 border-b border-border max-sm:flex-col max-sm:items-stretch">
@@ -727,115 +780,374 @@ export function Dashboard() {
                     {/* List View */}
                     {questView === "list" && filteredQuests.length > 0 && (
                         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr>
-                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Reward</th>
-                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[220px]">Name</th>
-                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
-                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Questers</th>
-                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Time</th>
-                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none w-[100px]">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredQuests.map(quest => {
-                                    const time = formatTimeLeft(quest.expiresAt ?? null)
-                                    const slotsLeft = quest.totalSlots - quest.filledSlots
-                                    const isDraft = quest.status === "draft"
-                                    const titleLinkProps = isDraft && quest.previewToken
-                                        ? { to: "/quests/$questId" as const, params: { questId: quest.id }, search: { token: quest.previewToken } }
-                                        : { to: "/quests/$questId" as const, params: { questId: quest.id } }
-                                    return (
-                                        <tr key={quest.id} className="hover:bg-muted" data-status={quest.status}>
-                                            <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
-                                                <span className="text-md font-semibold text-success whitespace-nowrap leading-tight">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</span>
-                                            </td>
-                                            <td className="px-2 py-2.5 text-xs border-b border-border align-top min-w-[220px]">
-                                                <div>
-                                                    <Link {...titleLinkProps} className="text-primary no-underline font-normal text-base leading-snug visited:text-primary/80 hover:text-primary/80">
-                                                        {quest.title}
-                                                    </Link>
-                                                </div>
-                                                <div className="text-xs text-muted-foreground leading-snug line-clamp-1 my-0.5">{quest.description?.slice(0, 60)}{(quest.description?.length ?? 0) > 60 ? "…" : ""}</div>
-                                                <div className="text-xs text-muted-foreground">by <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
-                                            </td>
-                                            <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
-                                                <QuestTypeBadge type={quest.type} />
-                                                <div className="text-xs text-muted-foreground mt-0.5">{slotsLeft} slots left</div>
-                                            </td>
-                                            <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
-                                                {quest.questers > 0 && quest.questerDetails ? (
-                                                    <div
-                                                        className="flex items-center gap-0 cursor-pointer group"
-                                                        onClick={() => setPopupQuest({ id: quest.id, title: quest.title })}
-                                                    >
-                                                        {quest.questerDetails.slice(0, 3).map((d, i) => (
-                                                            <img
-                                                                key={i}
-                                                                src={getDiceBearUrl(d.agentName, 40)}
-                                                                alt={d.humanHandle}
-                                                                className="w-5 h-5 -ml-1.5 first:ml-0 rounded-full border-[1.5px] border-background shrink-0"
-                                                            />
-                                                        ))}
-                                                        <span className="ml-1 text-xs text-muted-foreground whitespace-nowrap group-hover:text-primary">
-                                                            <strong className="text-foreground font-semibold group-hover:text-primary">{quest.questers}</strong>
-                                                        </span>
+                            <table className="w-full border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Reward</th>
+                                        <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[220px]">Name</th>
+                                        <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
+                                        <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Questers</th>
+                                        <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Time</th>
+                                        <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none w-[100px]">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredQuests.map(quest => {
+                                        const time = formatTimeLeft(quest.expiresAt ?? null)
+                                        const slotsLeft = quest.totalSlots - quest.filledSlots
+                                        const isDraft = quest.status === "draft"
+                                        const titleLinkProps = isDraft && quest.previewToken
+                                            ? { to: "/quests/$questId" as const, params: { questId: quest.id }, search: { token: quest.previewToken } }
+                                            : { to: "/quests/$questId" as const, params: { questId: quest.id } }
+                                        return (
+                                            <tr key={quest.id} className="hover:bg-muted" data-status={quest.status}>
+                                                <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    <span className="text-md font-semibold text-success whitespace-nowrap leading-tight">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</span>
+                                                </td>
+                                                <td className="px-2 py-2.5 text-xs border-b border-border align-top min-w-[220px]">
+                                                    <div>
+                                                        <Link {...titleLinkProps} className="text-primary no-underline font-normal text-base leading-snug visited:text-primary/80 hover:text-primary/80">
+                                                            {quest.title}
+                                                        </Link>
                                                     </div>
-                                                ) : (
-                                                    <span className="text-muted-foreground text-xs">—</span>
-                                                )}
-                                            </td>
-                                            <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
-                                                {isDraft ? (() => {
-                                                    const errors = getPublishErrors(quest)
-                                                    const canPublish = Object.keys(errors).length === 0
-                                                    return (
+                                                    <div className="text-xs text-muted-foreground leading-snug line-clamp-1 my-0.5">{quest.description?.slice(0, 60)}{(quest.description?.length ?? 0) > 60 ? "…" : ""}</div>
+                                                    <div className="text-xs text-muted-foreground">by <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
+                                                </td>
+                                                <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    <QuestTypeBadge type={quest.type} />
+                                                    <div className="text-xs text-muted-foreground mt-0.5">{slotsLeft} slots left</div>
+                                                </td>
+                                                <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    {quest.questers > 0 && quest.questerDetails ? (
+                                                        <div
+                                                            className="flex items-center gap-0 cursor-pointer group"
+                                                            onClick={() => setPopupQuest({ id: quest.id, title: quest.title })}
+                                                        >
+                                                            {quest.questerDetails.slice(0, 3).map((d, i) => (
+                                                                <img
+                                                                    key={i}
+                                                                    src={getDiceBearUrl(d.agentName, 40)}
+                                                                    alt={d.humanHandle}
+                                                                    className="w-5 h-5 -ml-1.5 first:ml-0 rounded-full border-[1.5px] border-background shrink-0"
+                                                                />
+                                                            ))}
+                                                            <span className="ml-1 text-xs text-muted-foreground whitespace-nowrap group-hover:text-primary">
+                                                                <strong className="text-foreground font-semibold group-hover:text-primary">{quest.questers}</strong>
+                                                            </span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-muted-foreground text-xs">—</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    {isDraft ? (() => {
+                                                        const errors = getPublishErrors(quest)
+                                                        const canPublish = Object.keys(errors).length === 0
+                                                        return (
+                                                            <div className="flex flex-col gap-1.5 items-end">
+                                                                <Button asChild size="sm">
+                                                                    <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>Edit</Link>
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    disabled={!canPublish}
+                                                                    title={canPublish ? 'Publish quest' : `Missing: ${Object.values(errors).join(', ')}`}
+                                                                    onClick={() => handlePublish(quest.id)}
+                                                                >Publish</Button>
+                                                            </div>
+                                                        )
+                                                    })() : quest.status === "scheduled" ? (
                                                         <div className="flex flex-col gap-1.5 items-end">
                                                             <Button asChild size="sm">
                                                                 <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>Edit</Link>
                                                             </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                disabled={!canPublish}
-                                                                title={canPublish ? 'Publish quest' : `Missing: ${Object.values(errors).join(', ')}`}
-                                                                onClick={() => handlePublish(quest.id)}
-                                                            >Publish</Button>
+                                                            <Button asChild variant="secondary" size="sm">
+                                                                <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
+                                                            </Button>
                                                         </div>
-                                                    )
-                                                })() : quest.status === "scheduled" ? (
-                                                    <div className="flex flex-col gap-1.5 items-end">
-                                                        <Button asChild size="sm">
-                                                            <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>Edit</Link>
-                                                        </Button>
-                                                        <Button asChild variant="secondary" size="sm">
-                                                            <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
-                                                        </Button>
+                                                    ) : (
+                                                        <>
+                                                            <div className={cn(
+                                                                "font-mono text-xs font-semibold whitespace-nowrap",
+                                                                time.cls === "urgent" && "text-error",
+                                                                time.cls === "warning" && "text-warning",
+                                                                time.cls === "normal" && "text-foreground",
+                                                                time.cls === "muted" && "text-muted-foreground font-normal"
+                                                            )}>{time.val}</div>
+                                                            {time.label && <div className="font-sans text-xs font-normal text-muted-foreground">{time.label}</div>}
+                                                            <Button asChild variant="secondary" size="sm" className="mt-1 inline-block">
+                                                                <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                </td>
+                                                <td className="px-2 py-2.5 text-xs border-b border-border align-top w-[100px]">
+                                                    <QuestStatusBadge status={quest.status} />
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* ── Accepted Quests tab ── */}
+            {mainTab === "accepted" && (
+                <div>
+                    {/* Filter + view toggle */}
+                    <div className="flex items-center justify-between py-2.5 border-b border-border max-sm:flex-col max-sm:items-stretch">
+                        <div className="flex items-center text-xs text-muted-foreground px-1 max-sm:flex-wrap">
+                            <span className="text-xs text-muted-foreground">
+                                Quests your agents have accepted and are participating in
+                            </span>
+                        </div>
+                        <div className="inline-flex border border-input rounded overflow-hidden ml-3 shrink-0">
+                            <button
+                                className={cn(
+                                    "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none border-r border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+                                    questView === "card" && "bg-accent-light text-accent-foreground"
+                                )}
+                                onClick={() => setQuestView("card")}
+                                title="Card view"
+                            >
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                    <rect x="0" y="0" width="6" height="6" rx="1" fill="currentColor" />
+                                    <rect x="8" y="0" width="6" height="6" rx="1" fill="currentColor" />
+                                    <rect x="0" y="8" width="6" height="6" rx="1" fill="currentColor" />
+                                    <rect x="8" y="8" width="6" height="6" rx="1" fill="currentColor" />
+                                </svg>
+                            </button>
+                            <button
+                                className={cn(
+                                    "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+                                    questView === "list" && "bg-accent-light text-accent-foreground"
+                                )}
+                                onClick={() => setQuestView("list")}
+                                title="List view"
+                            >
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                    <rect x="0" y="1" width="14" height="2" rx="1" fill="currentColor" />
+                                    <rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor" />
+                                    <rect x="0" y="11" width="14" height="2" rx="1" fill="currentColor" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {acceptedQuests.isLoading && (
+                        <div>
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="flex gap-4 py-3.5 border-b border-border items-start md:flex-row flex-col md:gap-4 gap-2">
+                                    <div className="flex flex-col items-end gap-2 min-w-[120px] text-right pt-0.5 shrink-0">
+                                        <div className="skeleton" style={{ width: 60, height: 32 }} />
+                                        <div className="skeleton" style={{ width: 50, height: 14 }} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="skeleton" style={{ width: "70%", height: 16, marginBottom: 8 }} />
+                                        <div className="skeleton" style={{ width: "90%", height: 12, marginBottom: 8 }} />
+                                        <div className="skeleton" style={{ width: "40%", height: 12 }} />
+                                    </div>
+                                    <div className="flex flex-col items-end min-w-[90px] text-right pt-0.5 shrink-0 gap-0.5">
+                                        <div className="skeleton" style={{ width: 60, height: 14 }} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {!acceptedQuests.isLoading && (!acceptedQuests.data || acceptedQuests.data.length === 0) && (
+                        <div className="p-10 text-center text-muted-foreground">
+                            No accepted quests yet.{" "}
+                            <Link to="/quests">Browse available quests →</Link>
+                        </div>
+                    )}
+
+                    {/* Card View */}
+                    {questView === "card" && acceptedQuests.data && acceptedQuests.data.length > 0 && (
+                        <ul className="list-none">
+                            {acceptedQuests.data.map(quest => {
+                                const time = formatTimeLeft(quest.expiresAt ?? null)
+                                const slotsLeft = quest.totalSlots - quest.filledSlots
+                                const participation = agents
+                                    .flatMap(a => a.participations ?? [])
+                                    .find(p => p.quest.id === quest.id)
+
+                                return (
+                                    <li
+                                        key={quest.id}
+                                        className="flex gap-4 py-3.5 border-b border-border last:border-b-0 items-start transition-colors hover:bg-(--sidebar-bg) md:flex-row flex-col md:gap-4 gap-2"
+                                        data-status={quest.status}
+                                    >
+                                        <div className="flex flex-col items-end gap-2 min-w-[120px] text-right pt-0.5 shrink-0 md:flex-col flex-row md:gap-2 gap-3 md:min-w-[120px] min-w-0 md:items-end items-center">
+                                            <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
+                                                <span className="text-md font-semibold text-(--green) leading-tight font-mono">
+                                                    {quest.rewardAmount.toLocaleString()} {quest.rewardType}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground">total reward</span>
+                                            </div>
+                                            {participation && (
+                                                <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
+                                                    <span className="text-md font-semibold leading-tight font-mono text-foreground">
+                                                        {participation.tasksCompleted}/{participation.tasksTotal}
+                                                    </span>
+                                                    <span className="text-xs text-muted-foreground">tasks completed</span>
+                                                </div>
+                                            )}
+                                            {quest.questers > 0 && quest.questerDetails && (
+                                                <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
+                                                    <div
+                                                        className="flex items-center gap-0 cursor-pointer group"
+                                                        onClick={() => setPopupQuest({ id: quest.id, title: quest.title })}
+                                                    >
+                                                        {quest.questerDetails.slice(0, 5).map((d, i) => (
+                                                            <div
+                                                                key={i}
+                                                                className="group/avatar w-5 h-5 -ml-1.5 first:ml-0 rounded-full border-[1.5px] border-background shrink-0 relative overflow-visible hover:z-10 hover:-translate-y-px transition-transform"
+                                                            >
+                                                                <img src={getDiceBearUrl(d.agentName, 40)} alt={d.humanHandle} className="w-full h-full rounded-full" />
+                                                                <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 bg-foreground text-white text-xs px-2 py-1.5 rounded whitespace-nowrap z-100 pointer-events-none leading-relaxed text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-foreground">
+                                                                    <span className="text-surface-dark-muted text-xs">Human</span> <span className="font-semibold text-white">@{d.humanHandle}</span>
+                                                                    <br />
+                                                                    <span className="text-surface-dark-muted text-xs">Agent</span> <span className="font-semibold text-surface-dark-muted font-mono text-xs">{d.agentName}</span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                        <span className="ml-1 text-xs text-muted-foreground whitespace-nowrap group-hover:text-primary">
+                                                            {quest.questers > 5
+                                                                ? <><strong className="text-foreground font-semibold group-hover:text-primary">+{quest.questers - 5}</strong> more</>
+                                                                : <strong className="text-foreground font-semibold group-hover:text-primary">{quest.questers} questers</strong>
+                                                            }
+                                                        </span>
                                                     </div>
-                                                ) : (
-                                                    <>
-                                                        <div className={cn(
-                                                            "font-mono text-xs font-semibold whitespace-nowrap",
-                                                            time.cls === "urgent" && "text-error",
-                                                            time.cls === "warning" && "text-warning",
-                                                            time.cls === "normal" && "text-foreground",
-                                                            time.cls === "muted" && "text-muted-foreground font-normal"
-                                                        )}>{time.val}</div>
-                                                        {time.label && <div className="font-sans text-xs font-normal text-muted-foreground">{time.label}</div>}
-                                                        <Button asChild variant="secondary" size="sm" className="mt-1 inline-block">
-                                                            <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
-                                                        </Button>
-                                                    </>
-                                                )}
-                                            </td>
-                                            <td className="px-2 py-2.5 text-xs border-b border-border align-top w-[100px]">
+                                                </div>
+                                            )}
+                                            <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
+                                                <span className={cn("text-md font-semibold leading-tight font-mono", slotsLeft < 5 ? "text-error" : "text-foreground")}>
+                                                    {slotsLeft}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground">slots left</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-sm font-semibold mb-1 leading-snug">
+                                                <Link className="text-primary no-underline hover:underline hover:text-primary/80" to="/quests/$questId" params={{ questId: quest.id }}>
+                                                    {quest.title}
+                                                </Link>
+                                            </div>
+                                            <div className="text-xs text-muted-foreground leading-relaxed mb-2">{quest.description}</div>
+                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                <QuestTypeBadge type={quest.type} />
                                                 <QuestStatusBadge status={quest.status} />
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
+                                                {participation && (
+                                                    <QuestStatusBadge status={participation.status} />
+                                                )}
+                                                {quest.tags?.slice(0, 2).map(tag => (
+                                                    <Badge key={tag} variant="pill">{tag}</Badge>
+                                                ))}
+                                                <span className="text-xs text-muted-foreground">by <strong>{quest.sponsor}</strong></span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col items-end min-w-[90px] text-right pt-0.5 shrink-0 gap-0.5 md:flex-col flex-row md:gap-0.5 gap-2 md:min-w-[90px] min-w-0 md:items-end items-baseline">
+                                            <>
+                                                <span className={cn(
+                                                    "text-base font-semibold",
+                                                    time.cls === "warning" && "text-(--yellow)",
+                                                    time.cls === "urgent" && "text-(--red)",
+                                                    time.cls === "muted" && "text-muted-foreground font-normal"
+                                                )}>{time.val}</span>
+                                                {time.label && <span className="text-xs text-muted-foreground">{time.label}</span>}
+                                                <Button asChild variant="secondary" size="sm" className="mt-1 inline-block">
+                                                    <Link to="/quests/$questId" params={{ questId: quest.id }}>View Quest</Link>
+                                                </Button>
+                                            </>
+                                        </div>
+                                    </li>
+                                )
+                            })}
+                        </ul>
+                    )}
+
+                    {/* List View */}
+                    {questView === "list" && acceptedQuests.data && acceptedQuests.data.length > 0 && (
+                        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                            <table className="w-full border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Reward</th>
+                                        <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[220px]">Name</th>
+                                        <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Progress</th>
+                                        <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
+                                        <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Time</th>
+                                        <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none w-[100px]">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {acceptedQuests.data.map(quest => {
+                                        const time = formatTimeLeft(quest.expiresAt ?? null)
+                                        const slotsLeft = quest.totalSlots - quest.filledSlots
+                                        const participation = agents
+                                            .flatMap(a => a.participations ?? [])
+                                            .find(p => p.quest.id === quest.id)
+
+                                        return (
+                                            <tr key={quest.id} className="hover:bg-muted" data-status={quest.status}>
+                                                <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    <span className="text-md font-semibold text-success whitespace-nowrap leading-tight">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</span>
+                                                </td>
+                                                <td className="px-2 py-2.5 text-xs border-b border-border align-top min-w-[220px]">
+                                                    <div>
+                                                        <Link to="/quests/$questId" params={{ questId: quest.id }} className="text-primary no-underline font-normal text-base leading-snug visited:text-primary/80 hover:text-primary/80">
+                                                            {quest.title}
+                                                        </Link>
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground leading-snug line-clamp-1 my-0.5">{quest.description?.slice(0, 60)}{(quest.description?.length ?? 0) > 60 ? "…" : ""}</div>
+                                                    <div className="text-xs text-muted-foreground">by <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
+                                                </td>
+                                                <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    {participation ? (
+                                                        <div>
+                                                            <span className="text-sm font-semibold">{participation.tasksCompleted}/{participation.tasksTotal}</span>
+                                                            <div className="text-xs text-muted-foreground mt-0.5">tasks</div>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-muted-foreground text-xs">—</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    <QuestTypeBadge type={quest.type} />
+                                                    <div className="text-xs text-muted-foreground mt-0.5">{slotsLeft} slots left</div>
+                                                </td>
+                                                <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    <div className={cn(
+                                                        "font-mono text-xs font-semibold whitespace-nowrap",
+                                                        time.cls === "urgent" && "text-error",
+                                                        time.cls === "warning" && "text-warning",
+                                                        time.cls === "normal" && "text-foreground",
+                                                        time.cls === "muted" && "text-muted-foreground font-normal"
+                                                    )}>{time.val}</div>
+                                                    {time.label && <div className="font-sans text-xs font-normal text-muted-foreground">{time.label}</div>}
+                                                    <Button asChild variant="secondary" size="sm" className="mt-1 inline-block">
+                                                        <Link to="/quests/$questId" params={{ questId: quest.id }}>View</Link>
+                                                    </Button>
+                                                </td>
+                                                <td className="px-2 py-2.5 text-xs border-b border-border align-top w-[100px]">
+                                                    <QuestStatusBadge status={quest.status} />
+                                                    {participation && (
+                                                        <div className="mt-1">
+                                                            <QuestStatusBadge status={participation.status} />
+                                                        </div>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </div>
@@ -847,26 +1159,26 @@ export function Dashboard() {
 
                     {agentsLoading && (
                         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr>
-                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Agent</th>
-                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Status</th>
-                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Skills</th>
-                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[90px] text-center">Quests</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {[1, 2, 3].map(i => (
-                                    <tr key={i}>
-                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 120, height: 14 }} /></td>
-                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 70, height: 14 }} /></td>
-                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 140, height: 14 }} /></td>
-                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 30, height: 14, margin: "0 auto" }} /></td>
+                            <table className="w-full border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Agent</th>
+                                        <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Status</th>
+                                        <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Skills</th>
+                                        <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[90px] text-center">Quests</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {[1, 2, 3].map(i => (
+                                        <tr key={i}>
+                                            <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 120, height: 14 }} /></td>
+                                            <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 70, height: 14 }} /></td>
+                                            <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 140, height: 14 }} /></td>
+                                            <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 30, height: 14, margin: "0 auto" }} /></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
 
@@ -879,238 +1191,238 @@ export function Dashboard() {
 
                     {filteredAgents.length > 0 && (
                         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr>
-                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[30px] text-center"></th>
-                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Agent</th>
-                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Status</th>
-                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Skills</th>
-                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[90px] text-center">Quests</th>
-                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Registered</th>
-                                    <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Verified</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredAgents.map(agent => {
-                                    const isPending = !!agent.activationCode
-                                    const isExpanded = expandedAgent === agent.id
-                                    return (
-                                        <>
-                                            <tr
-                                                key={agent.id}
-                                                className="cursor-pointer hover:bg-muted/50"
-                                                data-agent-status={isPending ? "pending" : "claimed"}
-                                                onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}
-                                            >
-                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[30px] text-center">
-                                                    <span className={cn(
-                                                        "text-xs text-muted-foreground transition-transform duration-150 inline-block",
-                                                        isExpanded && "rotate-90"
-                                                    )}>▸</span>
-                                                </td>
-                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle min-w-[180px]">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span className="font-mono text-xs font-semibold text-foreground">{agent.agentname}</span>
-                                                        {agent.claimedVia === "x" && (
-                                                            <span className="inline-flex items-center text-[10px] font-semibold px-1 py-0.5 rounded bg-sky-500/15 text-sky-400">𝕏</span>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-xs text-muted-foreground">id: {agent.id.slice(0, 8)}…</div>
-                                                </td>
-                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
-                                                    {isPending ? (
-                                                        <Badge variant="filled-warning">Pending Claim</Badge>
-                                                    ) : agent.status === "questing" ? (
-                                                        <span className="text-(--yellow) font-semibold text-xs">
-                                                            <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-(--yellow)" /> Questing
-                                                        </span>
-                                                    ) : agent.status === "offline" ? (
-                                                        <span className="text-error font-semibold text-xs">
-                                                            <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-(--red)" /> Offline
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-accent font-semibold text-xs">
-                                                            <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-(--green)" /> Idle
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle min-w-[180px]">
-                                                    {(() => {
-                                                        const skillData = agentSkillsMap.get(agent.id)
-                                                        if (!skillData || skillData.skills.length === 0) {
-                                                            return <span className="text-xs text-muted-foreground">No skills</span>
-                                                        }
-                                                        return (
-                                                            <div className="flex flex-wrap gap-0.5">
-                                                                {skillData.skills.map(s => (
-                                                                    <span
-                                                                        key={s.name}
-                                                                        className={cn(
-                                                                            "inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded font-mono",
-                                                                            s.verified
-                                                                                ? "bg-emerald-500/15 text-emerald-400"
-                                                                                : "bg-(--skill-bg) text-(--skill-fg)"
-                                                                        )}
-                                                                    >
-                                                                        {s.verified && <span className="text-[10px]" title="Verified">✓</span>}
-                                                                        {s.name}
-                                                                    </span>
-                                                                ))}
-                                                            </div>
-                                                        )
-                                                    })()}
-                                                </td>
-                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[90px] text-center">
-                                                    {agent.status === "questing" ? "1 active" : "0"}
-                                                </td>
-                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
-                                                    <div className="text-xs text-muted-foreground" title={agent.createdAt}>
-                                                        {new Date(agent.createdAt).toLocaleDateString()}
-                                                    </div>
-                                                </td>
-                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
-                                                    {isPending ? (
-                                                        <Badge variant="filled-warning">Pending</Badge>
-                                                    ) : agent.claimedAt ? (
-                                                        <Badge variant="filled-success">Verified</Badge>
-                                                    ) : (
-                                                        <Badge variant="outline">Unverified</Badge>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                            {isExpanded && (
-                                                <tr key={`detail-${agent.id}`}>
-                                                    <td colSpan={7} className="p-0 bg-muted">
-                                                        <div className="py-3.5 px-4 pl-[26px] border-b border-border">
-                                                            {isPending ? (
-                                                                <div className="mb-3.5 last:mb-0">
-                                                                    <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Claim this Agent</div>
-                                                                    <p className="text-sm text-muted-foreground mb-2.5">
-                                                                        Run this command in your agent to claim it:
-                                                                    </p>
-                                                                    <div className="flex items-center justify-between bg-[#1e1e2e] text-[#cdd6f4] rounded px-3 py-2.5 font-mono text-xs mt-1.5">
-                                                                        <span className="text-[#a6adc8] mr-1.5">$</span>
-                                                                        <span className="select-all">
-                                                                            npx clawhub@latest claim --code {agent.activationCode}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="mb-3.5 last:mb-0">
-                                                                    <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Quest Participation</div>
-                                                                    {(!agent.participations || agent.participations.length === 0) ? (
-                                                                        <p className="text-sm text-muted-foreground">
-                                                                            No quest history yet.{" "}
-                                                                            <Link to="/quests">Browse available quests →</Link>
-                                                                        </p>
-                                                                    ) : (
-                                                                        <table className="w-full border-collapse">
-                                                                            <thead>
-                                                                                <tr>
-                                                                                    <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Quest</th>
-                                                                                    <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Progress</th>
-                                                                                    <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Status</th>
-                                                                                    <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Payout</th>
-                                                                                </tr>
-                                                                            </thead>
-                                                                            <tbody>
-                                                                                {agent.participations.map(p => (
-                                                                                    <tr key={p.id}>
-                                                                                        <td className="px-2 py-1.5 text-xs border-b border-border/50">
-                                                                                            <Link
-                                                                                                to="/quests/$questId"
-                                                                                                params={{ questId: p.quest.id }}
-                                                                                                className="text-primary no-underline font-medium hover:underline"
-                                                                                            >
-                                                                                                {p.quest.title}
-                                                                                            </Link>
-                                                                                        </td>
-                                                                                        <td className="px-2 py-1.5 text-xs border-b border-border/50">{p.tasksCompleted}/{p.tasksTotal}</td>
-                                                                                        <td className="px-2 py-1.5 text-xs border-b border-border/50">
-                                                                                            <QuestStatusBadge status={p.status} />
-                                                                                        </td>
-                                                                                        <td className="px-2 py-1.5 text-xs border-b border-border/50">
-                                                                                            {p.payoutStatus === "paid" ? (
-                                                                                                <span className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded bg-accent-light text-accent">
-                                                                                                    {(p.quest as any).fundingMethod === "stripe"
-                                                                                                        ? `$${p.payoutAmount?.toFixed(2)} USD`
-                                                                                                        : `${p.payoutAmount?.toFixed(2)} ${p.quest.rewardType}`}
-                                                                                                </span>
-                                                                                            ) : p.payoutStatus === "pending" ? (
-                                                                                                <span className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded bg-warning-light text-warning">Pending</span>
-                                                                                            ) : (
-                                                                                                <span className="text-muted-foreground">—</span>
-                                                                                            )}
-                                                                                        </td>
-                                                                                    </tr>
-                                                                                ))}
-                                                                            </tbody>
-                                                                        </table>
-                                                                    )}
-                                                                </div>
+                            <table className="w-full border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[30px] text-center"></th>
+                                        <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Agent</th>
+                                        <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Status</th>
+                                        <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Skills</th>
+                                        <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[90px] text-center">Quests</th>
+                                        <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Registered</th>
+                                        <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Verified</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredAgents.map(agent => {
+                                        const isPending = !!agent.activationCode
+                                        const isExpanded = expandedAgent === agent.id
+                                        return (
+                                            <>
+                                                <tr
+                                                    key={agent.id}
+                                                    className="cursor-pointer hover:bg-muted/50"
+                                                    data-agent-status={isPending ? "pending" : "claimed"}
+                                                    onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}
+                                                >
+                                                    <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[30px] text-center">
+                                                        <span className={cn(
+                                                            "text-xs text-muted-foreground transition-transform duration-150 inline-block",
+                                                            isExpanded && "rotate-90"
+                                                        )}>▸</span>
+                                                    </td>
+                                                    <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle min-w-[180px]">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="font-mono text-xs font-semibold text-foreground">{agent.agentname}</span>
+                                                            {agent.claimedVia === "x" && (
+                                                                <span className="inline-flex items-center text-[10px] font-semibold px-1 py-0.5 rounded bg-sky-500/15 text-sky-400">𝕏</span>
                                                             )}
-                                                            {/* My Skills section */}
-                                                            {!isPending && (() => {
-                                                                const skillData = agentSkillsMap.get(agent.id)
-                                                                const scanCmd = `npx @clawquest/scan --key <your-agent-api-key> --server ${API_BASE}`
-                                                                return (
-                                                                    <div className="mt-3.5">
-                                                                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">My Skills</div>
-                                                                        {(!skillData || skillData.skills.length === 0) ? (
-                                                                            <div>
-                                                                                <p className="text-sm text-muted-foreground mb-2">No skills scanned yet. Run Skill Scan to register your agent's skills.</p>
-                                                                                <div className="flex items-center gap-1.5">
-                                                                                    <code className="flex-1 bg-[#1e1e2e] text-[#cdd6f4] px-2.5 py-1.5 rounded font-mono text-[11px] select-all overflow-x-auto">{scanCmd}</code>
-                                                                                    <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-muted/80 text-[11px] font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
-                                                                                </div>
-                                                                            </div>
-                                                                        ) : (
-                                                                            <div>
-                                                                                <div className="space-y-1 mb-2">
-                                                                                    {skillData.skills.map(s => (
-                                                                                        <div key={s.name} className="flex items-center gap-2 text-xs">
-                                                                                            <code className="font-mono text-xs bg-muted px-1 py-px rounded">{s.name}</code>
-                                                                                            {s.version && <span className="text-muted-foreground">{s.version}</span>}
-                                                                                            {s.verified ? (
-                                                                                                <span className="text-emerald-400 font-semibold">✓ Verified</span>
-                                                                                            ) : (
-                                                                                                <span className="text-muted-foreground">Unverified</span>
-                                                                                            )}
-                                                                                            {s.platform && <span className="text-muted-foreground">{s.platform}</span>}
-                                                                                        </div>
-                                                                                    ))}
-                                                                                </div>
-                                                                                <div className="text-[11px] text-muted-foreground mb-1.5">
-                                                                                    {skillData.lastScan
-                                                                                        ? `Last scan: ${(() => {
-                                                                                            const diff = Date.now() - new Date(skillData.lastScan).getTime()
-                                                                                            const hours = Math.floor(diff / 3600000)
-                                                                                            if (hours < 1) return "just now"
-                                                                                            if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`
-                                                                                            const days = Math.floor(hours / 24)
-                                                                                            return `${days} day${days > 1 ? "s" : ""} ago`
-                                                                                        })()}`
-                                                                                        : "Never scanned"}
-                                                                                </div>
-                                                                                <div className="flex items-center gap-1.5">
-                                                                                    <code className="flex-1 bg-[#1e1e2e] text-[#cdd6f4] px-2.5 py-1.5 rounded font-mono text-[11px] select-all overflow-x-auto">{scanCmd}</code>
-                                                                                    <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-muted/80 text-[11px] font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
-                                                                                </div>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                )
-                                                            })()}
+                                                        </div>
+                                                        <div className="text-xs text-muted-foreground">id: {agent.id.slice(0, 8)}…</div>
+                                                    </td>
+                                                    <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
+                                                        {isPending ? (
+                                                            <Badge variant="filled-warning">Pending Claim</Badge>
+                                                        ) : agent.status === "questing" ? (
+                                                            <span className="text-(--yellow) font-semibold text-xs">
+                                                                <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-(--yellow)" /> Questing
+                                                            </span>
+                                                        ) : agent.status === "offline" ? (
+                                                            <span className="text-error font-semibold text-xs">
+                                                                <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-(--red)" /> Offline
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-accent font-semibold text-xs">
+                                                                <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-(--green)" /> Idle
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle min-w-[180px]">
+                                                        {(() => {
+                                                            const skillData = agentSkillsMap.get(agent.id)
+                                                            if (!skillData || skillData.skills.length === 0) {
+                                                                return <span className="text-xs text-muted-foreground">No skills</span>
+                                                            }
+                                                            return (
+                                                                <div className="flex flex-wrap gap-0.5">
+                                                                    {skillData.skills.map(s => (
+                                                                        <span
+                                                                            key={s.name}
+                                                                            className={cn(
+                                                                                "inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded font-mono",
+                                                                                s.verified
+                                                                                    ? "bg-emerald-500/15 text-emerald-400"
+                                                                                    : "bg-(--skill-bg) text-(--skill-fg)"
+                                                                            )}
+                                                                        >
+                                                                            {s.verified && <span className="text-[10px]" title="Verified">✓</span>}
+                                                                            {s.name}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            )
+                                                        })()}
+                                                    </td>
+                                                    <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[90px] text-center">
+                                                        {agent.status === "questing" ? "1 active" : "0"}
+                                                    </td>
+                                                    <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
+                                                        <div className="text-xs text-muted-foreground" title={agent.createdAt}>
+                                                            {new Date(agent.createdAt).toLocaleDateString()}
                                                         </div>
                                                     </td>
+                                                    <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
+                                                        {isPending ? (
+                                                            <Badge variant="filled-warning">Pending</Badge>
+                                                        ) : agent.claimedAt ? (
+                                                            <Badge variant="filled-success">Verified</Badge>
+                                                        ) : (
+                                                            <Badge variant="outline">Unverified</Badge>
+                                                        )}
+                                                    </td>
                                                 </tr>
-                                            )}
-                                        </>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
+                                                {isExpanded && (
+                                                    <tr key={`detail-${agent.id}`}>
+                                                        <td colSpan={7} className="p-0 bg-muted">
+                                                            <div className="py-3.5 px-4 pl-[26px] border-b border-border">
+                                                                {isPending ? (
+                                                                    <div className="mb-3.5 last:mb-0">
+                                                                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Claim this Agent</div>
+                                                                        <p className="text-sm text-muted-foreground mb-2.5">
+                                                                            Run this command in your agent to claim it:
+                                                                        </p>
+                                                                        <div className="flex items-center justify-between bg-[#1e1e2e] text-[#cdd6f4] rounded px-3 py-2.5 font-mono text-xs mt-1.5">
+                                                                            <span className="text-[#a6adc8] mr-1.5">$</span>
+                                                                            <span className="select-all">
+                                                                                npx clawhub@latest claim --code {agent.activationCode}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="mb-3.5 last:mb-0">
+                                                                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Quest Participation</div>
+                                                                        {(!agent.participations || agent.participations.length === 0) ? (
+                                                                            <p className="text-sm text-muted-foreground">
+                                                                                No quest history yet.{" "}
+                                                                                <Link to="/quests">Browse available quests →</Link>
+                                                                            </p>
+                                                                        ) : (
+                                                                            <table className="w-full border-collapse">
+                                                                                <thead>
+                                                                                    <tr>
+                                                                                        <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Quest</th>
+                                                                                        <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Progress</th>
+                                                                                        <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Status</th>
+                                                                                        <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Payout</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    {agent.participations.map(p => (
+                                                                                        <tr key={p.id}>
+                                                                                            <td className="px-2 py-1.5 text-xs border-b border-border/50">
+                                                                                                <Link
+                                                                                                    to="/quests/$questId"
+                                                                                                    params={{ questId: p.quest.id }}
+                                                                                                    className="text-primary no-underline font-medium hover:underline"
+                                                                                                >
+                                                                                                    {p.quest.title}
+                                                                                                </Link>
+                                                                                            </td>
+                                                                                            <td className="px-2 py-1.5 text-xs border-b border-border/50">{p.tasksCompleted}/{p.tasksTotal}</td>
+                                                                                            <td className="px-2 py-1.5 text-xs border-b border-border/50">
+                                                                                                <QuestStatusBadge status={p.status} />
+                                                                                            </td>
+                                                                                            <td className="px-2 py-1.5 text-xs border-b border-border/50">
+                                                                                                {p.payoutStatus === "paid" ? (
+                                                                                                    <span className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded bg-accent-light text-accent">
+                                                                                                        {(p.quest as any).fundingMethod === "stripe"
+                                                                                                            ? `$${p.payoutAmount?.toFixed(2)} USD`
+                                                                                                            : `${p.payoutAmount?.toFixed(2)} ${p.quest.rewardType}`}
+                                                                                                    </span>
+                                                                                                ) : p.payoutStatus === "pending" ? (
+                                                                                                    <span className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded bg-warning-light text-warning">Pending</span>
+                                                                                                ) : (
+                                                                                                    <span className="text-muted-foreground">—</span>
+                                                                                                )}
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    ))}
+                                                                                </tbody>
+                                                                            </table>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                                {/* My Skills section */}
+                                                                {!isPending && (() => {
+                                                                    const skillData = agentSkillsMap.get(agent.id)
+                                                                    const scanCmd = `npx @clawquest/scan --key <your-agent-api-key> --server ${API_BASE}`
+                                                                    return (
+                                                                        <div className="mt-3.5">
+                                                                            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">My Skills</div>
+                                                                            {(!skillData || skillData.skills.length === 0) ? (
+                                                                                <div>
+                                                                                    <p className="text-sm text-muted-foreground mb-2">No skills scanned yet. Run Skill Scan to register your agent's skills.</p>
+                                                                                    <div className="flex items-center gap-1.5">
+                                                                                        <code className="flex-1 bg-[#1e1e2e] text-[#cdd6f4] px-2.5 py-1.5 rounded font-mono text-[11px] select-all overflow-x-auto">{scanCmd}</code>
+                                                                                        <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-muted/80 text-[11px] font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div>
+                                                                                    <div className="space-y-1 mb-2">
+                                                                                        {skillData.skills.map(s => (
+                                                                                            <div key={s.name} className="flex items-center gap-2 text-xs">
+                                                                                                <code className="font-mono text-xs bg-muted px-1 py-px rounded">{s.name}</code>
+                                                                                                {s.version && <span className="text-muted-foreground">{s.version}</span>}
+                                                                                                {s.verified ? (
+                                                                                                    <span className="text-emerald-400 font-semibold">✓ Verified</span>
+                                                                                                ) : (
+                                                                                                    <span className="text-muted-foreground">Unverified</span>
+                                                                                                )}
+                                                                                                {s.platform && <span className="text-muted-foreground">{s.platform}</span>}
+                                                                                            </div>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                    <div className="text-[11px] text-muted-foreground mb-1.5">
+                                                                                        {skillData.lastScan
+                                                                                            ? `Last scan: ${(() => {
+                                                                                                const diff = Date.now() - new Date(skillData.lastScan).getTime()
+                                                                                                const hours = Math.floor(diff / 3600000)
+                                                                                                if (hours < 1) return "just now"
+                                                                                                if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`
+                                                                                                const days = Math.floor(hours / 24)
+                                                                                                return `${days} day${days > 1 ? "s" : ""} ago`
+                                                                                            })()}`
+                                                                                            : "Never scanned"}
+                                                                                    </div>
+                                                                                    <div className="flex items-center gap-1.5">
+                                                                                        <code className="flex-1 bg-[#1e1e2e] text-[#cdd6f4] px-2.5 py-1.5 rounded font-mono text-[11px] select-all overflow-x-auto">{scanCmd}</code>
+                                                                                        <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-muted/80 text-[11px] font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )
+                                                                })()}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </>
+                                        )
+                                    })}
+                                </tbody>
+                            </table>
                         </div>
                     )}
                 </div>

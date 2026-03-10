@@ -146,6 +146,13 @@ const questJoinRoute = createRoute({
 const dashboardRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/dashboard',
+    validateSearch: (search: Record<string, unknown>): { tab?: string } => {
+        const result: { tab?: string } = {}
+        if (search.tab && typeof search.tab === 'string') {
+            result.tab = search.tab
+        }
+        return result
+    },
     beforeLoad: ({ context }) => {
         if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
     },

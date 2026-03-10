@@ -18,7 +18,7 @@ export function TelegramJoinButton({
     const href = `https://t.me/${BOT_USERNAME}?start=${payload}`
 
     return (
-        <div className={`flex w-full max-w-lg flex-col gap-2`}>
+        <div className={`flex w-full max-w-md flex-col gap-2`}>
             <a
                 href={href}
                 target="_blank"

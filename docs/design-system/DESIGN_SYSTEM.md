@@ -93,12 +93,13 @@ Principles:
 | Token | Hex | Use |
 |-------|-----|-----|
 | `--bg` | `#ffffff` | Page background (white) |
-| `--bg-subtle` | `#e8e8e8` | Sidebar, section bg, card hover |
+| `--bg-subtle` | `#e5e5e5` | Sidebar, section bg, card hover |
 | `--bg-muted` | `#dcdcdc` | Disabled bg, skeleton loading |
 | `--fg` | `#111111` | Primary text (near-black) |
 | `--fg-secondary` | `#555555` | Secondary text |
 | `--fg-muted` | `#888888` | Placeholder, disabled text |
-| `--border` | `#d0d0d0` | Card borders, dividers |
+| `--border` | `#e5e5e5` | Default borders, dividers |
+| `--border-muted` | `#efefef` | Card borders, subtle dividers |
 | `--border-heavy` | `#aaaaaa` | Active borders, emphasis |
 | `--border-strong` | `#222222` | Strong contrast borders |
 
@@ -202,7 +203,7 @@ All actor colors use grayscale to match the monochromatic theme:
 | `--tag-bg` | `#dcdcdc` | `--bg-muted` |
 | `--tag-fg` | `#555555` | `--fg-secondary` |
 | `--code-bg` | `#1a1a1a` | `--surface-dark` |
-| `--sidebar-bg` | `#e8e8e8` | `--bg-subtle` |
+| `--sidebar-bg` | `#e8e8e8` | `--bg-subtle` (`#e5e5e5`) |
 
 ---
 
@@ -227,16 +228,17 @@ Based on 4px grid. Use consistently across all components.
 
 ## Border Radius
 
-Tight, minimal — no rounded corners.
+Terminal theme: all `0px` (square corners). Other themes override these tokens.
 
-| Token | Value | Use |
-|-------|-------|-----|
-| `--radius-sm` | `3px` | Badges, tags, small elements |
-| `--radius-md` | `4px` | Buttons, inputs, small cards |
-| `--radius-lg` | `6px` | Cards, modals, dropdowns |
-| `--radius-xl` | `8px` | Large cards, featured items |
+| Token | Terminal | Use |
+|-------|---------|-----|
+| `--radius-base` | `0px` | Default radius |
+| `--radius-sm` | `0px` | Badges, tags, small elements |
+| `--radius-md` | `0px` | Buttons, inputs, small cards |
+| `--radius-lg` | `0px` | Cards, modals, dropdowns |
+| `--radius-xl` | `0px` | Large cards, featured items |
 | `--radius-full` | `9999px` | Avatars, pills, toggles |
-| `--radius-base` | `0px` | Avatars, pills, toggles |
+| `--radius-button` | `0px` | Button corners |
 
 ---
 
@@ -293,124 +295,90 @@ Flat design — no decorative shadows.
 
 ---
 
-## Component Guidelines
+## Component Visual Specs
+
+> Interaction rules, do/don't, and behavioral patterns → see `UI_PATTERNS.md`
 
 ### Buttons
 
 | Variant | Style | Use |
 |---------|-------|-----|
-| **Default** | `bg: --primary` (black), white text, `--radius-md` | Main CTA |
-| **Outline** | `border: --border`, no bg, hover: `bg-muted` | Secondary actions |
-| **Ghost** | No border, no bg, hover: `bg-muted` | Tertiary, icon buttons |
-| **Destructive** | `bg: --error`, white text | Delete, destructive |
-| **Quest** | `bg: --primary`, `border: --border-heavy` | Quest-specific CTAs |
-| **Agent** | `bg: --tone-agent`, `border: --tone-agent-dark` | Agent-specific CTAs |
-| **Danger** | `bg: transparent`, `text/border: --error` | Soft destructive |
+| **Default** | `bg-primary text-primary-foreground` | Main CTA |
+| **Outline** | `border-border`, hover: `bg-muted` | Secondary actions |
+| **Ghost** | No border/bg, hover: `bg-muted` | Tertiary, icon buttons |
+| **Destructive** | `bg-error text-white` | Delete, destructive |
+| **Quest** | `bg-primary border-border-heavy` | Quest-specific CTAs |
+| **Agent** | `bg-tone-agent border-tone-agent-dark` | Agent-specific CTAs |
+| **Danger** | `text-error border-error` (transparent bg) | Soft destructive |
 
-Sizing: `sm` (32px h), `default` (36px h), `lg` (44px h), `icon` (36x36)
-
-All buttons: `font-weight: 600`, monospace, tight radius.
+Sizing: `sm` (32px h), `default` (36px h), `lg` (44px h), `icon` (36x36). All `font-semibold`, monospace.
 
 ### Cards
 
-- Background: `--bg` (white)
-- Border: `1px solid var(--border)`
-- Radius: `--radius-lg` (6px)
+- Border: `border border-border-muted` (1px, lightest border token)
+- Background: `bg-card` (`--bg`)
+- Hover: `hover:bg-background` (lightest bg). Glass theme: CSS override to `rgba(255,255,255,0.85)`
+- Radius: `--radius-base` (0px Terminal)
 - Padding: `--space-4` to `--space-5`
-- Hover: subtle border darken (no shadow)
 - No box-shadow at rest
 
 ### Badges / Tags
 
-- Radius: `--radius-full` (999px)
+- Radius: `--radius-full` (9999px)
 - Padding: `4px 8px`
-- Font: `--text-xs`, `font-weight: 500`, monospace
+- Font: `text-xs font-medium`
 - Variants: filled (bg + text) or outline (border + text)
 
 ### Form Inputs
 
 - Height: 36px (default), 44px (lg)
-- Border: `1px solid var(--border)`
-- Radius: `--radius-md` (4px)
+- Border: `border border-border`
 - Focus: `outline: 2px solid var(--accent)`, `outline-offset: 2px`
-- Error: `border-color: --error`
-- Font: monospace, `--text-base` (13px)
+- Error: `border-error`
+- Font: monospace, `text-base` (16px)
 
-### Navigation / Topbar
+### Topbar
 
-- Height: `54px` (default), `44px` (compact)
-- Background: `--bg` with bottom border
-- Logo: text `CLAWQUEST`, `text-base font-semibold`
-- Active link: `border-b-2 border-foreground` (underline indicator, not bg fill)
-- Auth buttons (Dashboard, User): `variant="outline"`, same size as primary CTAs
-- Font: `--text-sm` (12-13px) for nav items
+- Height: `64px` (default)
+- Background: `bg-background` + bottom border
+- Logo: `CLAWQUEST`, `text-base font-semibold`
+- Active link: `border-b-2 border-foreground` (underline indicator)
+- Nav font: `text-sm`
 
-### Tabs (Quest Explore)
+### Tabs
 
-- Style: pill/chip with sliding indicator (`bg-foreground` behind active tab)
-- Active tab: `text-background font-semibold` (inverted)
-- Inactive tab: `text-muted-foreground`, hover: `text-foreground`
-- Icons: MingCute — Fill variant for active, Line variant for inactive
-- Radius: `--radius-base` on each tab button
-- Animation: `transition-all duration-200 ease-out` on sliding indicator
+- Sliding indicator: `bg-foreground` behind active tab
+- Active: `text-background font-semibold` (inverted)
+- Inactive: `text-muted-foreground`, hover: `text-foreground`
+- Icons: Fill variant active, Line variant inactive
 
 ### View Toggle
 
-- Container: `border border-border p-0.5 rounded` with sliding indicator (`bg-accent`)
-- Active button: `text-accent-foreground`
-- Inactive button: `text-muted-foreground`, hover: `text-foreground`
-- Each button has a Tooltip (shadcn) on hover
-- Radius: `--radius-base` on buttons
+- Container: `border border-border p-0.5` with sliding indicator (`bg-accent`)
+- Active: `text-accent-foreground`
+- Inactive: `text-muted-foreground`, hover: `text-foreground`
 
 ---
 
-## Layout
+## Layout & Responsive
 
-### Container
+> See `UI_PATTERNS.md` for page layouts, container rules, grid patterns, and per-component responsive behavior.
 
-- Max width: `1100px` (via `.page-container`)
-- Padding: `20px 24px`
-- Centered with `margin: 0 auto`
+3 breakpoints (mobile-first):
 
-### Responsive Breakpoints
+| Breakpoint | Tailwind | Width |
+|------------|----------|-------|
+| Mobile | default | < 640px |
+| Tablet | `md:` | >= 768px |
+| Desktop | `xl:` | >= 1280px |
 
-3 supported breakpoints (mobile-first):
-
-| Breakpoint | Tailwind | Width | Target |
-|------------|----------|-------|--------|
-| Mobile | default | < 640px | Phone (portrait) |
-| Tablet | `md:` | >= 768px | Tablet / small laptop |
-| Desktop | `xl:` | >= 1280px | Desktop / wide screens |
-
-**Rules:**
-- Write mobile-first: base styles = mobile, then `md:` for tablet, `xl:` for desktop
-- Use `sm:` (640px) only for minor tweaks (show/hide elements), not as a primary breakpoint
-- Container: `max-w-7xl` (1280px) centered with `mx-auto px-6`
-- Avoid `lg:` and `2xl:` — keep breakpoints to 3 for consistency
-
-**Pattern examples:**
-```
-// Stack on mobile, side-by-side on tablet, wider gaps on desktop
-<div className="flex flex-col md:flex-row md:gap-4 xl:gap-6">
-
-// Hide on mobile, show from tablet
-<div className="hidden md:block">
-
-// Full-width mobile, constrained on desktop
-<div className="w-full xl:max-w-7xl xl:mx-auto">
-```
-
-### Grid
-
-- Quest cards: responsive columns with gap `--space-4`
-- Dashboard: compact card grid
-- Mobile: sheet menu (not hamburger dropdown)
+Rules: mobile-first, avoid `lg:`/`2xl:`, use `sm:` only for minor tweaks.
 
 ---
 
 ## Tailwind ↔ CSS Variable Mapping
 
-All CSS variables mapped in `tailwind.config.js`. Use Tailwind classes in JSX.
+All CSS variables mapped via `@theme` block in `apps/dashboard/src/index.css` (Tailwind v4). Use Tailwind classes in JSX.
 
 | CSS Variable | Tailwind Class | Example |
 |-------------|----------------|---------|
@@ -424,6 +392,7 @@ All CSS variables mapped in `tailwind.config.js`. Use Tailwind classes in JSX.
 | `--primary-fg` | `text-primary-foreground` | Button text |
 | `--accent` | `bg-accent` / `text-accent` | Accent highlights |
 | `--border` | `border-border` | `<div className="border border-border">` |
+| `--border-muted` | `border-border-muted` | `<div className="border border-border-muted">` (cards) |
 | `--success` | `text-success` / `bg-success` | Rewards, connected status |
 | `--error` | `text-error` / `bg-error` / `text-destructive` | Error states |
 
@@ -444,13 +413,13 @@ All CSS variables mapped in `tailwind.config.js`. Use Tailwind classes in JSX.
 | `accent-foreground` | `--accent-fg` | `#ffffff` |
 | `card` | `--bg` | `#ffffff` |
 | `popover` | `--bg` | `#ffffff` |
-| `input` | `--border` | `#d0d0d0` |
+| `input` | `--border` | `#e5e5e5` |
 | `ring` | `--accent` | `#FF574B` |
 
 ### CSS Variable Source
 
-All tokens defined in `apps/dashboard/src/index.css` `:root` block.
-Tailwind mapping in `apps/dashboard/tailwind.config.js`.
+All tokens defined in `apps/dashboard/src/index.css` — `:root` block for values, `@theme` block for Tailwind mapping.
+No separate `tailwind.config.js` — uses Tailwind v4 CSS-first configuration.
 
 ---
 
@@ -493,13 +462,64 @@ Tailwind mapping in `apps/dashboard/tailwind.config.js`.
 
 ---
 
+## Iconography
+
+**Library:** MingCute (`@mingcute/react`) — 24x24 grid, 2px stroke.
+
+### Sizing
+
+| Context | Size | Example |
+|---------|------|---------|
+| Inline (badges, meta) | 14–16px | `<WifiLine size={14} />` in status badge |
+| Nav / buttons | 18–20px | `<AddLine size={20} />` in navbar |
+| Section headers | 20–24px | Card section title icon |
+| Empty states / errors | 48px | `<Search2Line size={48} />` centered |
+
+### Variant Rules
+
+| State | Variant | Example |
+|-------|---------|---------|
+| Default / inactive | **Line** (outline) | `<StarLine />` |
+| Active / selected | **Fill** (solid) | `<StarFill />` |
+| Decorative (no meaning) | Line + `aria-hidden="true"` | Activity dots, dividers |
+
+### Brand Icons
+
+Use `<PlatformIcon name="..." size={N} colored />` for third-party logos (X, Discord, Telegram, OpenClaw). Never use MingCute for brand logos.
+
+---
+
+## Motion & Transitions
+
+### Enter/Exit Patterns
+
+| Pattern | Properties | Duration | Use |
+|---------|-----------|----------|-----|
+| Fade in | `opacity: 0→1` | `--duration-base` (150ms) | Component mount |
+| Slide up | `translateY(8px)→0` + fade | `--duration-slow` (250ms) | Modals, sheets |
+| Scale | `scale(0.95)→1` + fade | `--duration-slow` (250ms) | Dropdowns, popovers |
+| Collapse | `height: 0→auto` | `--duration-slow` (250ms) | Expandable sections |
+
+### Rules
+
+- All transitions: use `transform` + `opacity` only (no layout-shifting)
+- `prefers-reduced-motion: reduce` — all animations disabled globally
+- Skeleton loaders: acceptable (subtle pulse, non-distracting)
+- No stagger delays > 500ms total for lists
+- No auto-playing animations that can't be paused
+
+---
+
 ## Accessibility Checklist
 
-- [ ] Color contrast: minimum 4.5:1 for text, 3:1 for large text
+See `ACCESSIBILITY.md` for full standards.
+
+- [ ] Color contrast: 4.5:1 normal text, 3:1 large text (see verified table)
+- [ ] Semantic colors: always pair with icon/text — never color alone
 - [ ] Focus rings: `2px solid var(--accent)`, `outline-offset: 2px`
-- [ ] Touch targets: minimum 44x44px on mobile
+- [ ] Touch targets: 44x44px mobile, 36x36px desktop
 - [ ] `aria-label` on icon-only buttons
+- [ ] `aria-busy="true"` on loading skeletons
+- [ ] `aria-hidden="true"` on decorative elements
 - [ ] Tab order matches visual order
 - [ ] `prefers-reduced-motion` respected (global rule in `index.css`)
-- [ ] Semantic colors: never use color alone — pair with icon/text
-- [ ] Success green (`--success`) used for rewards/status, not accent

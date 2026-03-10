@@ -10,26 +10,28 @@
 ### Standard Page
 
 ```
-[Topbar 44px, sticky]
+[Topbar 64px, sticky]
 [Page Header: title + actions]
-[Content area, max-w 1100px centered]
+[Content area, max-w-7xl centered]
 [Footer]
 ```
 
-- Topbar: sticky, `z-50`, `bg-background` + bottom border, `h-11`
-- Page header: title (JetBrains Mono, `text-2xl` 24px, `font-bold`) + right-aligned action buttons
-- Content: `.page-container` = `max-w-[1100px] mx-auto px-6 py-5`
+- Topbar: sticky, `z-50`, `bg-background` + bottom border, `h-16`
+- Page header: `<PageTitle>` component — Geist Mono, `text-2xl` (24px), `font-semibold` + right-aligned actions
+- Content: parent layout provides `max-w-7xl mx-auto px-6 py-5`
+- Pages should NOT add their own max-width container — inherit from layout
 
 ### Two-Column Detail
 
-Used by: Quest Detail, Fund Quest
+Used by: Quest Detail, Agent Detail, Fund Quest
 
 ```
-[Main content 65%] [Sidebar 35%, max 320px]
+[Main content 1fr] [Sidebar 280px, sticky]
 ```
 
-- Sidebar: sticky on desktop, collapses below main on mobile
-- Gap: `24px`
+- Grid: `grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6`
+- Sidebar: sticky on desktop (`sticky top-6`), moves above main on mobile (`order-first`)
+- Cards: `border border-border-muted bg-card` (matches `<Card>` component)
 
 ### Dashboard / Bento Grid
 
@@ -58,10 +60,18 @@ Used by: Quest Detail, Fund Quest
 +----------------------------------+
 ```
 
-- Hover: subtle border darken (no shadow — flat design)
+- Hover: `hover:bg-background` (lightest bg, no shadow). Glass theme overrides to brighter translucent white
 - Click: entire card is clickable (`cursor-pointer`)
 - Badge colors: status-based (see DESIGN_SYSTEM.md)
-- Border radius: `rounded` (0px — square corners)
+- Border: `border border-border-muted` (1px, lightest border token, square corners)
+
+#### Responsive Behavior
+
+| Breakpoint | Layout |
+|------------|--------|
+| Mobile (< 640px) | Single column, full-width cards |
+| Tablet (md: 768px) | 2-column grid |
+| Desktop (xl: 1280px) | 3-column grid |
 
 ### Empty State
 
@@ -74,13 +84,15 @@ Used by: Quest Detail, Fund Quest
 +----------------------------------+
 ```
 
-- Center-aligned, `py-16`
-- Icon: MingCute, `text-fg-muted`
-- Description: `text-fg-secondary`, max `45ch`
+- Center-aligned, `py-12`
+- Icon: MingCute (48px), `text-muted-foreground`
+- Title: `text-sm font-semibold text-foreground`
+- Description: `text-xs text-fg-secondary`, max `45ch`
+- CTA: `<Button variant="outline">` below
 
 ### Loading State
 
-- **Page load:** Skeleton shimmer (not spinner)
+- **Page load:** Skeleton shimmer (not spinner), wrap in `aria-busy="true"`
 - **Button async:** Disable + spinner icon inside button
 - **List load:** 3-4 skeleton cards matching real card dimensions
 - **Never:** Full-page blocking spinner
@@ -89,15 +101,18 @@ Used by: Quest Detail, Fund Quest
 
 ```
 +----------------------------------+
-|     [AlertCircle icon]           |
+|     [AlertLine icon 48px]        |
 |    "Something went wrong"        |
 |    Specific error message        |
 |    [Retry button]                |
 +----------------------------------+
 ```
 
+- Icon: MingCute `AlertLine` (48px), `text-error`
+- Title: `text-sm font-semibold text-foreground`
+- Message: `text-xs text-fg-secondary`
+- Action: `<Button variant="outline">Retry</Button>` with query invalidation
 - Inline errors: `border-error` + `text-error` message below input
-- Page errors: centered card with retry action
 - Toast errors: brief, auto-dismiss 5s, `text-error` accent
 
 ---
@@ -108,10 +123,10 @@ Used by: Quest Detail, Fund Quest
 
 | Pattern | Rule |
 |---------|------|
-| Primary CTA | One per visible area. Solid black (`bg-primary text-primary-foreground`). |
+| Primary CTA | One per visible area. `bg-primary text-primary-foreground`. |
 | Destructive | Always requires confirmation dialog. `text-error` or `bg-error`. |
 | Loading | Disable + show spinner. Never allow double-click. |
-| Icon-only | Must have `aria-label`. Show tooltip on hover. |
+| Icon-only | Must have `aria-label`. Show tooltip on hover. 44x44px touch target. |
 | Group | Max 3 buttons side-by-side. Primary rightmost. |
 
 ### Forms
@@ -119,7 +134,7 @@ Used by: Quest Detail, Fund Quest
 | Pattern | Rule |
 |---------|------|
 | Validation | Real-time on blur, not on every keystroke |
-| Error messages | Below input, `text-error`, specific message |
+| Error messages | Below input, `text-error`, specific message, linked via `aria-describedby` |
 | Required fields | Mark optional fields instead (fewer labels) |
 | Submit button | Right-aligned, disabled until form is valid |
 | Multi-step | Accordion stepper with progress indicator |
@@ -141,15 +156,15 @@ Used by: Quest Detail, Fund Quest
 | Row actions | Dropdown menu (kebab icon) on hover/focus |
 | Pagination | Bottom-right, "Page X of Y" with prev/next |
 | Empty table | Full-width empty state inside table body |
-| Responsive | Stack to cards on mobile (< 640px) |
+| Responsive | Stack to cards on mobile (< 768px) |
 
-### Navigation
+### Navigation / Topbar
 
-- Active route: `bg-secondary font-medium text-foreground`
-- Hover: `hover:bg-muted hover:text-foreground`
+- Active link: `border-b-2 border-foreground` (underline indicator, not bg fill)
+- Hover: `hover:text-foreground`
 - Mobile: hamburger icon, Sheet slide-in from right
 - Breadcrumbs: only on 3+ level deep pages
-- Logo: `claw` (normal weight) + `quest` (extrabold) — weight contrast, no color
+- Logo: `CLAWQUEST`, `text-base font-semibold` — weight only, no color
 
 ---
 
@@ -159,18 +174,18 @@ Used by: Quest Detail, Fund Quest
 
 | Do | Don't |
 |----|-------|
-| Consistent `max-w-[1100px]` across pages | Mix container widths |
+| Let parent layout handle `max-w-7xl` | Add extra max-width wrappers inside pages |
 | Align content to 4px grid | Arbitrary spacing values |
 | Stack columns on mobile | Horizontal scroll on mobile |
-| Reserve space for async content | Layout shifts on load |
+| Reserve space for async content (skeleton) | Layout shifts on load |
 
 ### Styling
 
 | Do | Don't |
 |----|-------|
 | Use Tailwind design token classes (`text-base`, `text-error`) | Hardcode arbitrary values (`text-[14px]`, `text-red-600`) |
-| Use `rounded` (0px) everywhere, `rounded-full` for avatars only | Mix border radius sizes |
-| Use `border-border` for all borders | Hardcode border colors |
+| Use `border border-border-muted` for cards | Use heavy borders (`border-2 border-border-strong`) on cards |
+| Use `border-border` for inner dividers | Hardcode border colors |
 | Flat design — no shadows at rest | Add `shadow-sm/md` to cards |
 | Use `cn()` for conditional classes | Ternary in className strings |
 
@@ -179,19 +194,21 @@ Used by: Quest Detail, Fund Quest
 | Do | Don't |
 |----|-------|
 | Use shadcn components for standard UI | Build custom when shadcn exists |
-| Use Tailwind utilities for styling | Raw CSS vars in JSX `style` props |
+| Use Tailwind utilities for styling | Raw CSS vars in JSX `style` props (except dynamic widths) |
 | One primary CTA per visible area | Multiple primary buttons competing |
 | Disable buttons during async | Let users double-click submit |
 | Use semantic color tokens (`text-error`, `text-success`) | Use arbitrary Tailwind colors (`text-red-600`, `text-green-500`) |
+| Pair semantic colors with icons | Use color alone to convey meaning |
 
 ### Content
 
 | Do | Don't |
 |----|-------|
 | Truncate long titles with ellipsis | Let text overflow containers |
-| Show relative time ("2h ago") | Only absolute timestamps |
+| Show relative time ("2h ago") for recent dates | Only absolute timestamps |
 | Format numbers (1,234 not 1234) | Raw unformatted numbers |
 | Show skeleton while loading | Blank screen during fetch |
+| Use `Intl.DateTimeFormat` for dates | `toLocaleDateString()` without options |
 
 ### Interaction
 
@@ -202,15 +219,33 @@ Used by: Quest Detail, Fund Quest
 | `cursor-pointer` on clickables | Default cursor on interactive elements |
 | Visible focus rings (`outline: 2px solid var(--accent)`) | Remove outlines |
 | Toast for success feedback | Alert boxes for confirmations |
+| Include retry action on error states | Dead-end error messages |
 
 ---
 
 ## Responsive Breakpoints
 
-| Breakpoint | Behavior |
-|------------|----------|
-| < 640px (mobile) | Single column, stacked cards, Sheet nav, full-width buttons |
-| 640-768px (tablet portrait) | 2-column grids, full nav visible |
-| 768-1024px (tablet landscape) | 2-column detail layout, full nav |
-| 1024-1280px (desktop) | 3-column grids, full layout |
-| > 1280px (wide) | Max-width container, centered content |
+> Token definitions in `DESIGN_SYSTEM.md`. Rules and per-component behavior below.
+
+**Rules:**
+- Mobile-first: base styles = mobile, then `md:` tablet, `xl:` desktop
+- Use `sm:` (640px) only for minor tweaks (show/hide). Avoid `lg:`/`2xl:`
+- Container: `max-w-7xl` (1280px) centered with `mx-auto px-6`
+
+**Pattern examples:**
+```
+<div className="flex flex-col md:flex-row md:gap-4 xl:gap-6">
+<div className="hidden md:block">
+<div className="w-full xl:max-w-7xl xl:mx-auto">
+```
+
+### Per-Component Responsive
+
+| Component | Mobile | Tablet (md:) | Desktop (xl:) |
+|-----------|--------|-------------|---------------|
+| Quest cards | 1 col, full width | 2 col grid | 3 col grid |
+| Detail page | Stacked (sidebar on top) | 2-col `[1fr_280px]` | Same |
+| Tables | Stack to card list | Full table | Same |
+| Navbar | Sheet menu (right) | Full nav visible | Same |
+| Buttons | Full width (`w-full`) | Auto width | Same |
+| Tabs | Horizontal scroll | Full row | Same |

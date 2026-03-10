@@ -1,8 +1,12 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { Link } from "@tanstack/react-router"
 import { useAuth } from "@/context/AuthContext"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { PageTitle } from "@/components/page-title"
-import "./agentDetail.css"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { TimeLine, CheckCircleLine, CloseLine, WifiLine, AlertLine, Search2Line } from "@mingcute/react"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
@@ -42,10 +46,10 @@ interface AgentLog {
     createdAt: string
 }
 
-interface AgentStats {
-    questsCompleted: number
-    totalEarned: number
-    activeQuestCount: number
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatJoinDate(iso: string): string {
+    return new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric" }).format(new Date(iso))
 }
 
 // ─── API Fetchers ─────────────────────────────────────────────────────────────
@@ -67,38 +71,51 @@ async function fetchAgentLogs(agentId: string, session: unknown, limit = 50): Pr
     }
     const res = await fetch(`${API_BASE}/agents/${agentId}/logs?limit=${limit}`, { headers })
     if (!res.ok) {
-        if (res.status === 404) return [] // Endpoint not yet implemented
+        if (res.status === 404) return []
         throw new Error(`Failed to fetch logs: ${res.statusText}`)
     }
     return res.json()
 }
 
-// ─── Components ───────────────────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+const STATUS_CONFIG = {
+    questing: { label: "Questing", variant: "outline" as const, className: "border-accent/40 bg-accent-light text-accent", icon: WifiLine },
+    idle: { label: "Idle", variant: "outline-muted" as const, className: "", icon: TimeLine },
+    offline: { label: "Offline", variant: "filled-muted" as const, className: "", icon: CloseLine },
+}
 
 function StatusBadge({ status }: { status: Agent["status"] }) {
-    const statusLabels = {
-        idle: "Idle",
-        questing: "Questing",
-        offline: "Offline"
-    }
+    const config = STATUS_CONFIG[status]
+    const Icon = config.icon
     return (
-        <span className={`agent-status-badge agent-status-${status}`}>
-            {statusLabels[status]}
-        </span>
+        <Badge variant={config.variant} className={config.className}>
+            <Icon size={14} />
+            {config.label}
+        </Badge>
     )
 }
 
 function AgentHeader({ agent }: { agent: Agent }) {
     const avatarUrl = getDiceBearUrl(agent.agentname)
     return (
-        <div className="agent-header">
-            <img src={avatarUrl} alt={agent.agentname} className="agent-avatar" />
-            <div className="agent-header-info">
-                <h1 className="agent-name">{agent.agentname}</h1>
-                <div className="agent-meta">
+        <div className="flex items-start gap-4 p-5 border border-border-muted bg-card hover:bg-background transition-colors">
+            <img
+                src={avatarUrl}
+                alt={agent.agentname}
+                className="w-16 h-16 rounded-full border-2 border-border shrink-0"
+                loading="lazy"
+            />
+            <div className="flex-1 min-w-0">
+                <h2 className="text-xl font-semibold text-foreground truncate">{agent.agentname}</h2>
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     <StatusBadge status={agent.status} />
-                    {agent.platform && <span className="agent-platform">{agent.platform}</span>}
-                    <span className="agent-created">Joined {new Date(agent.createdAt).toLocaleDateString()}</span>
+                    {agent.platform && (
+                        <Badge variant="pill">{agent.platform}</Badge>
+                    )}
+                    <span className="text-xs text-muted-foreground">
+                        Joined {formatJoinDate(agent.createdAt)}
+                    </span>
                 </div>
             </div>
         </div>
@@ -111,71 +128,155 @@ function ActiveQuestCard({ participation }: { participation: Participation }) {
         : 0
 
     return (
-        <div className="active-quest-card">
-            <h3 className="active-quest-title">Active Quest</h3>
-            <div className="active-quest-info">
-                <p className="quest-name">{participation.quest.title}</p>
-                <div className="quest-reward">
-                    Reward: {participation.quest.rewardAmount} {participation.quest.rewardType}
+        <div className="p-5 border border-accent-border bg-accent-light">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Active Quest</h3>
+            <Link
+                to="/quests/$questId"
+                params={{ questId: participation.quest.id }}
+                className="text-sm font-medium text-link hover:underline"
+            >
+                {participation.quest.title}
+            </Link>
+            <p className="text-xs text-fg-secondary mt-1">
+                Reward: {participation.quest.rewardAmount} {participation.quest.rewardType}
+            </p>
+            <div className="mt-3">
+                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                        className="h-full bg-accent rounded-full transition-all duration-300"
+                        style={{ width: `${progress}%` }}
+                    />
                 </div>
-            </div>
-            <div className="progress-section">
-                <div className="progress-bar-container">
-                    <div className="progress-bar" style={{ width: `${progress}%` }} />
-                </div>
-                <p className="progress-text">
-                    {participation.tasksCompleted} / {participation.tasksTotal} tasks completed
+                <p className="text-xs text-muted-foreground mt-1.5">
+                    {participation.tasksCompleted} / {participation.tasksTotal} tasks
                 </p>
             </div>
         </div>
     )
 }
 
-function AgentStats({ stats }: { stats: AgentStats }) {
+function StatItem({ label, value }: { label: string; value: string | number }) {
     return (
-        <div className="agent-stats-sidebar">
-            <h3 className="stats-title">Stats</h3>
-            <div className="stat-item">
-                <span className="stat-label">Quests Completed</span>
-                <span className="stat-value">{stats.questsCompleted}</span>
-            </div>
-            <div className="stat-item">
-                <span className="stat-label">Total Earned</span>
-                <span className="stat-value">${stats.totalEarned.toFixed(2)}</span>
-            </div>
-            <div className="stat-item">
-                <span className="stat-label">Active Quests</span>
-                <span className="stat-value">{stats.activeQuestCount}</span>
-            </div>
+        <div className="flex justify-between items-center py-2.5 border-b border-border last:border-b-0">
+            <span className="text-xs text-fg-secondary">{label}</span>
+            <span className="text-sm font-semibold text-foreground">{value}</span>
+        </div>
+    )
+}
+
+function AgentStatsPanel({ agent }: { agent: Agent }) {
+    const participations = agent.participations || []
+    const completed = participations.filter(p => p.status === "completed")
+    const active = participations.filter(p => p.status === "in_progress")
+    const totalEarned = completed.reduce((sum, p) => sum + (p.payoutAmount || 0), 0)
+
+    return (
+        <div className="p-5 border border-border-muted bg-card hover:bg-background transition-colors sticky top-6">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Stats</h3>
+            <StatItem label="Quests Completed" value={completed.length} />
+            <StatItem label="Total Earned" value={`$${totalEarned.toFixed(2)}`} />
+            <StatItem label="Active Quests" value={active.length} />
         </div>
     )
 }
 
 function ActivityLog({ logs }: { logs: AgentLog[] }) {
-    if (logs.length === 0) {
-        return (
-            <div className="activity-log">
-                <h3 className="activity-log-title">Activity Log</h3>
-                <p className="activity-log-empty">No activity yet</p>
-            </div>
-        )
-    }
+    return (
+        <div className="p-5 border border-border-muted bg-card hover:bg-background transition-colors">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Activity Log</h3>
+            {logs.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No activity yet</p>
+            ) : (
+                <div className="flex flex-col gap-3">
+                    {logs.map((log) => (
+                        <div key={log.id} className="flex gap-2.5 items-start">
+                            <div className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 shrink-0" aria-hidden="true" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm text-foreground leading-relaxed">{log.message}</p>
+                                <span className="text-xs text-muted-foreground">
+                                    {new Date(log.createdAt).toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    )
+}
+
+function QuestHistory({ participations }: { participations: Participation[] }) {
+    const completed = participations.filter(p => p.status === "completed")
+    if (completed.length === 0) return null
 
     return (
-        <div className="activity-log">
-            <h3 className="activity-log-title">Activity Log</h3>
-            <div className="activity-log-entries">
-                {logs.map((log) => (
-                    <div key={log.id} className="activity-log-entry">
-                        <div className="activity-dot" />
-                        <div className="activity-content">
-                            <p className="activity-message">{log.message}</p>
-                            <span className="activity-time">
-                                {new Date(log.createdAt).toLocaleString()}
-                            </span>
+        <div className="p-5 border border-border-muted bg-card hover:bg-background transition-colors">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Quest History</h3>
+            <div className="flex flex-col gap-2">
+                {completed.map((p) => (
+                    <Link
+                        key={p.id}
+                        to="/quests/$questId"
+                        params={{ questId: p.quest.id }}
+                        className="flex items-center justify-between py-2.5 px-3 border border-border hover:bg-muted/50 transition-colors"
+                    >
+                        <div className="flex items-center gap-2 min-w-0">
+                            <CheckCircleLine size={16} className="text-success shrink-0" />
+                            <span className="text-sm text-foreground truncate">{p.quest.title}</span>
                         </div>
-                    </div>
+                        <span className="text-xs font-medium text-success shrink-0 ml-2">
+                            +{p.payoutAmount ?? 0} {p.quest.rewardType}
+                        </span>
+                    </Link>
                 ))}
+            </div>
+        </div>
+    )
+}
+
+function EmptyQuestsState() {
+    return (
+        <div className="p-5 border border-border-muted bg-card text-center py-12">
+            <Search2Line size={48} className="mx-auto text-muted-foreground mb-3" />
+            <p className="text-sm font-semibold text-foreground">No quests yet</p>
+            <p className="text-xs text-fg-secondary mt-1 max-w-[45ch] mx-auto">
+                This agent hasn't participated in any quests. Browse available quests to get started.
+            </p>
+            <Link to="/quests">
+                <Button variant="outline" className="mt-4">Browse Quests</Button>
+            </Link>
+        </div>
+    )
+}
+
+// ─── Loading skeleton ─────────────────────────────────────────────────────────
+
+function AgentDetailSkeleton() {
+    return (
+        <div aria-busy="true">
+            <Skeleton className="h-8 w-48 mb-6" />
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6">
+                <div className="flex flex-col gap-6">
+                    <Skeleton className="h-24" />
+                    <Skeleton className="h-40" />
+                </div>
+                <Skeleton className="h-48" />
+            </div>
+        </div>
+    )
+}
+
+// ─── Error state ──────────────────────────────────────────────────────────────
+
+function AgentErrorState({ onRetry }: { onRetry: () => void }) {
+    return (
+        <div>
+            <PageTitle title="Agent Details" />
+            <div className="text-center py-12">
+                <AlertLine size={48} className="mx-auto text-error mb-3" />
+                <p className="text-sm font-semibold text-foreground">Something went wrong</p>
+                <p className="text-xs text-fg-secondary mt-1">Failed to load agent details</p>
+                <Button variant="outline" className="mt-4" onClick={onRetry}>Retry</Button>
             </div>
         </div>
     )
@@ -189,6 +290,7 @@ interface AgentDetailProps {
 
 export function AgentDetail({ agentId }: AgentDetailProps) {
     const { session } = useAuth()
+    const queryClient = useQueryClient()
 
     const { data: agent, isLoading: agentLoading, error: agentError } = useQuery({
         queryKey: ["agent", agentId],
@@ -202,52 +304,40 @@ export function AgentDetail({ agentId }: AgentDetailProps) {
         enabled: !!session && !!agent,
     })
 
-    if (agentLoading) {
-        return (
-            <div className="agent-detail-container">
-                <PageTitle title="Agent Details" />
-                <p className="loading-text">Loading agent...</p>
-            </div>
-        )
-    }
+    if (agentLoading) return <AgentDetailSkeleton />
 
     if (agentError || !agent) {
         return (
-            <div className="agent-detail-container">
-                <PageTitle title="Agent Details" />
-                <p className="error-text">Failed to load agent</p>
-            </div>
+            <AgentErrorState
+                onRetry={() => queryClient.invalidateQueries({ queryKey: ["agent", agentId] })}
+            />
         )
     }
 
-    // Calculate stats
     const activeParticipations = agent.participations?.filter(p => p.status === "in_progress") || []
-    const completedParticipations = agent.participations?.filter(p => p.status === "completed") || []
-    const totalEarned = completedParticipations.reduce((sum, p) => sum + (p.payoutAmount || 0), 0)
-
-    const stats: AgentStats = {
-        questsCompleted: completedParticipations.length,
-        totalEarned,
-        activeQuestCount: activeParticipations.length,
-    }
-
+    const hasAnyParticipation = (agent.participations?.length ?? 0) > 0
     const activeQuest = activeParticipations[0]
 
     return (
-        <div className="agent-detail-container">
+        <div>
             <PageTitle title={agent.agentname} />
 
-            <div className="agent-detail-layout">
-                <main className="agent-detail-main">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6 mt-4">
+                {/* Main content */}
+                <div className="flex flex-col gap-4">
                     <AgentHeader agent={agent} />
-
                     {activeQuest && <ActiveQuestCard participation={activeQuest} />}
-
+                    {hasAnyParticipation ? (
+                        <QuestHistory participations={agent.participations || []} />
+                    ) : (
+                        <EmptyQuestsState />
+                    )}
                     <ActivityLog logs={logs} />
-                </main>
+                </div>
 
-                <aside className="agent-detail-sidebar">
-                    <AgentStats stats={stats} />
+                {/* Sidebar */}
+                <aside className="md:order-last order-first">
+                    <AgentStatsPanel agent={agent} />
                 </aside>
             </div>
         </div>

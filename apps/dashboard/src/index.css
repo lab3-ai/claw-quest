@@ -38,6 +38,7 @@
     --color-fg-muted: var(--fg-muted);
 
     --color-border: var(--border);
+    --color-border-muted: var(--border-muted);
     --color-border-heavy: var(--border-heavy);
     --color-border-strong: var(--border-strong);
 
@@ -164,6 +165,7 @@
     --fg-secondary: #555555;
     --fg-muted: #888888;
     --border: #e5e5e5;
+    --border-muted: #efefef;
     --border-heavy: #aaaaaa;
     --border-strong: #222222;
 
@@ -311,6 +313,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
 
 /* All interactive elements get pointer cursor */
 button,

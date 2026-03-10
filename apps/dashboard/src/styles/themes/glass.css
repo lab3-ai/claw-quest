@@ -24,6 +24,7 @@
     --fg-secondary: #475569;
     --fg-muted: #94a3b8;
     --border: rgba(148, 163, 184, 0.3);
+    --border-muted: rgba(148, 163, 184, 0.15);
     --border-heavy: rgba(100, 116, 139, 0.4);
     --border-strong: #0f172a;
 
@@ -96,6 +97,7 @@
     --fg-secondary: #94a3b8;
     --fg-muted: #64748b;
     --border: rgba(71, 85, 105, 0.4);
+    --border-muted: rgba(71, 85, 105, 0.2);
     --border-heavy: rgba(100, 116, 139, 0.5);
     --border-strong: #e2e8f0;
 
@@ -180,11 +182,13 @@
 }
 
 /* Glass card hover — brighten background */
-[data-theme="glass"] .hover-shadow:hover {
-    background: rgba(255, 255, 255, 0.8) !important;
+[data-theme="glass"] .hover-shadow:hover,
+[data-theme="glass"] .bg-card:hover {
+    background: rgba(255, 255, 255, 0.85);
 }
-[data-theme="glass"].dark .hover-shadow:hover {
-    background: rgba(30, 41, 59, 0.6) !important;
+[data-theme="glass"].dark .hover-shadow:hover,
+[data-theme="glass"].dark .bg-card:hover {
+    background: rgba(30, 41, 59, 0.6);
 }
 
 /* Glass card helper */

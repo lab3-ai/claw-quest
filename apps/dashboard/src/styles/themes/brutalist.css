@@ -24,6 +24,7 @@
     --fg-secondary: #333333;
     --fg-muted: #777777;
     --border: #000000;
+    --border-muted: #cccccc;
     --border-heavy: #000000;
     --border-strong: #000000;
 
@@ -96,6 +97,7 @@
     --fg-secondary: #cccccc;
     --fg-muted: #888888;
     --border: #ffffff;
+    --border-muted: #333333;
     --border-heavy: #ffffff;
     --border-strong: #ffffff;
 

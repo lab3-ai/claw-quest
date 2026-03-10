@@ -1,6 +1,7 @@
 # ClawQuest Accessibility Standards
 
 > A11y standards to enforce across the dashboard.
+> Synced with Design System v3 — Terminal Edition.
 
 ---
 
@@ -20,16 +21,37 @@
 | No color-only indicators | Always pair color with icon, text, or pattern |
 | Focus rings | Visible on all interactive elements |
 
-### Verified Combinations
+### Verified Combinations — Light Mode (Terminal)
 
-| Foreground | Background | Ratio | Pass |
-|------------|------------|-------|------|
-| `#0F172A` (fg) | `#FFFFFF` (bg) | 15.4:1 | AAA |
-| `#475569` (fg-secondary) | `#FFFFFF` (bg) | 7.1:1 | AA |
-| `#FFFFFF` (white) | `#F97316` (accent) | 3.2:1 | AA Large |
-| `#FFFFFF` (white) | `#EA580C` (accent-hover) | 4.6:1 | AA |
-| `#16A34A` (success) | `#F0FDF4` (success-light) | 4.1:1 | AA Large |
-| `#DC2626` (error) | `#FEF2F2` (error-light) | 5.6:1 | AA |
+| Foreground | Background | Ratio | Level | Notes |
+|------------|------------|-------|-------|-------|
+| `#111111` (fg) | `#ffffff` (bg) | 18.9:1 | AAA | Primary text |
+| `#555555` (fg-secondary) | `#ffffff` (bg) | 7.5:1 | AAA | Secondary text |
+| `#888888` (fg-muted) | `#ffffff` (bg) | 3.5:1 | AA Large | Muted text — use >= 18px or pair with icon |
+| `#ffffff` (white) | `#FF574B` (accent) | 3.1:1 | AA Large | Button text — only for large/bold text |
+| `#ffffff` (white) | `#E64A3F` (accent-hover) | 3.9:1 | AA Large | Hover state |
+| `#FF574B` (accent) | `#FFF0EF` (accent-light) | 2.8:1 | **FAIL** | Never use accent text on accent-light bg alone — pair with border/icon |
+| `#16a34a` (success) | `#f0fdf4` (success-light) | 3.1:1 | AA Large | Success — use >= 18px or pair with icon |
+| `#ff4444` (error) | `#fff0f0` (error-light) | 3.1:1 | AA Large | Error — use >= 18px or pair with icon |
+| `#ffaa00` (warning) | `#fff8e6` (warning-light) | 1.8:1 | **FAIL** | Warning text on warning-light — always pair with icon + fg text |
+| `#4488ff` (info) | `#e6f0ff` (info-light) | 2.9:1 | **FAIL** | Info text on info-light — always pair with icon + fg text |
+
+### Verified Combinations — Dark Mode (Terminal)
+
+| Foreground | Background | Ratio | Level | Notes |
+|------------|------------|-------|-------|-------|
+| `#e0e0e0` (fg) | `#0a0a0a` (bg) | 15.0:1 | AAA | Primary text |
+| `#a0a0a0` (fg-secondary) | `#0a0a0a` (bg) | 7.6:1 | AAA | Secondary text |
+| `#666666` (fg-muted) | `#0a0a0a` (bg) | 3.4:1 | AA Large | Muted text — use >= 18px or pair with icon |
+| `#000000` (black) | `#FF6B61` (accent) | 7.5:1 | AAA | Button text |
+| `#FF6B61` (accent) | `#3D1512` (accent-light) | 5.7:1 | AA | Accent on dark accent bg |
+| `#22c55e` (success) | `#052e16` (success-light) | 6.5:1 | AA | Success in dark mode |
+
+### Contrast Rules
+
+- **Semantic colored text** (success, error, warning, info) on light backgrounds: always pair with icon or use `--fg` for the primary label
+- **`--fg-muted`**: acceptable for timestamps, captions, and decorative text (large or paired with context) — never for essential information alone
+- **Accent buttons**: white text on `#FF574B` passes AA Large (3.1:1) — acceptable for bold button text at 14px+ semibold
 
 ---
 
@@ -38,7 +60,7 @@
 | Rule | Implementation |
 |------|----------------|
 | Tab order | Matches visual reading order (top → bottom, left → right) |
-| Focus visible | `outline: 3px solid var(--accent)` with `outline-offset: 2px` |
+| Focus visible | `outline: 2px solid var(--accent)` with `outline-offset: 2px` |
 | Skip link | "Skip to content" link, visible on focus, before topbar |
 | Escape key | Closes modals, dropdowns, popovers |
 | Enter/Space | Activates buttons and links |
@@ -88,6 +110,7 @@
 | Form errors | `aria-invalid="true"` + `aria-describedby="error-id"` |
 | Live updates (toasts) | `aria-live="polite"` or `role="alert"` |
 | Modals | `role="dialog"` + `aria-modal="true"` (Radix handles this) |
+| Decorative elements | `aria-hidden="true"` on dots, dividers, icons without meaning |
 
 ### ARIA Don'ts
 
@@ -140,6 +163,7 @@
 | Icons with meaning | `aria-label` on parent button/link |
 | Decorative icons | `aria-hidden="true"` (MingCute default) |
 | Complex graphics | `aria-describedby` linking to text description |
+| Lazy loading | `loading="lazy"` on below-fold images |
 
 ---
 
@@ -173,6 +197,7 @@
 | Links in text | 44px tap target with padding |
 | Icon buttons | 44x44px total area including padding |
 | Close buttons | 44x44px, positioned in corner with padding |
+| List item links | `py-2.5` minimum for 44px height |
 | Spacing between targets | 8px minimum gap |
 
 ---
@@ -198,7 +223,8 @@
 
 - [ ] Has appropriate ARIA attributes
 - [ ] Focus management works correctly
-- [ ] Color contrast passes AA
-- [ ] Touch targets are large enough
+- [ ] Color contrast passes AA (or AA Large with pairing)
+- [ ] Touch targets are large enough (44px mobile)
 - [ ] Works with keyboard only
 - [ ] Screen reader announces correctly
+- [ ] Semantic colored text paired with icon/label

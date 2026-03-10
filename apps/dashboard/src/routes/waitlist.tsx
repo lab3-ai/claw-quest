@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { CountdownTimer } from "@/components/waitlist/countdown-timer"
-import { TelegramJoinButton } from "@/components/waitlist/telegram-join-button"
+import { TelegramJoinButton, WAITLIST_TOKEN_KEY } from "@/components/waitlist/telegram-join-button"
+import { WaitlistSuccessModal } from "@/components/waitlist/waitlist-success-modal"
 import { AnimatedCounter } from "@/components/waitlist/animated-counter"
 import { TierProgress } from "@/components/waitlist/tier-progress"
 import { HeroGridBg } from "@/components/waitlist/hero-grid-bg"
@@ -53,6 +54,65 @@ function useReferralCode(): string | null {
         setCode(params.get("ref"))
     }, [])
     return code
+}
+
+interface WaitlistEntry {
+    position: number
+    referralCode: string
+    role: string | null
+    firstName: string | null
+}
+
+/**
+ * Polls GET /waitlist/me?token=<token> every 3s until telegramId is set.
+ * Once joined, shows the success modal and stops polling.
+ */
+function useWaitlistPolling() {
+    const [entry, setEntry] = useState<WaitlistEntry | null>(null)
+    const [showModal, setShowModal] = useState(false)
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+    useEffect(() => {
+        const token = localStorage.getItem(WAITLIST_TOKEN_KEY)
+        if (!token) return
+
+        async function poll() {
+            try {
+                const res = await fetch(`${API_BASE}/waitlist/me?token=${token}`)
+                if (!res.ok) return
+                const data = await res.json()
+                if (data.joined) {
+                    setEntry({
+                        position: data.position,
+                        referralCode: data.referralCode,
+                        role: data.role ?? null,
+                        firstName: data.firstName ?? null,
+                    })
+                    setShowModal(true)
+                    if (intervalRef.current) clearInterval(intervalRef.current)
+                }
+            } catch {
+                // silently ignore network errors
+            }
+        }
+
+        // Check immediately on mount (handles returning users)
+        poll()
+        // Then poll every 3s
+        intervalRef.current = setInterval(poll, 3000)
+
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current)
+        }
+    }, [])
+
+    function closeModal() {
+        setShowModal(false)
+        // Remove token so modal doesn't reappear on next visit
+        localStorage.removeItem(WAITLIST_TOKEN_KEY)
+    }
+
+    return { entry, showModal, closeModal }
 }
 
 const NAV_LINKS = [
@@ -185,6 +245,7 @@ export function Waitlist() {
     const [mascotMood, setMascotMood] = useState<MascotMood>("normal")
     const { stats, isLoading: statsLoading } = usePlatformStats()
     const referralCode = useReferralCode()
+    const { entry, showModal, closeModal } = useWaitlistPolling()
 
     return (
         <div
@@ -194,6 +255,16 @@ export function Waitlist() {
                 "--wl-accent-hover": "#E64A3F",
             } as React.CSSProperties}
         >
+            {showModal && entry && (
+                <WaitlistSuccessModal
+                    accessToken={localStorage.getItem(WAITLIST_TOKEN_KEY) ?? ""}
+                    position={entry.position}
+                    referralCode={entry.referralCode}
+                    initialRole={entry.role}
+                    firstName={entry.firstName}
+                    onClose={closeModal}
+                />
+            )}
             <WaitlistNavbar />
             <ScrollToTopButton />
             <div className="mx-auto w-full max-w-4xl flex flex-col items-center">

@@ -4,7 +4,7 @@ import { BotContext } from '../types';
 import { MSG } from '../content/messages';
 import { linkAccountKeyboard, claimAgentKeyboard, claimQuestKeyboard } from '../keyboards/menus';
 import { mainReplyKeyboard } from '../keyboards/reply-keyboard';
-import { handleWaitlistJoin } from './waitlist.handler';
+import { handleWaitlistJoin, handleWaitlistJoinByToken } from './waitlist.handler';
 
 export function startHandler(server: FastifyInstance): Composer<BotContext> {
     const composer = new Composer<BotContext>();
@@ -24,6 +24,12 @@ export function startHandler(server: FastifyInstance): Composer<BotContext> {
         if (payload.startsWith('ref_')) {
             const referralCode = payload.slice(4); // strip "ref_" prefix
             return handleWaitlistJoin(server, ctx, referralCode);
+        }
+
+        // Web-initiated join: wl_<accessToken> — links pending entry to Telegram user
+        if (payload.startsWith('wl_')) {
+            const accessToken = payload.slice(3);
+            return handleWaitlistJoinByToken(server, ctx, accessToken);
         }
 
         // Token prefix is the routing key — no wrapper needed

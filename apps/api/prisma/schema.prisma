@@ -356,12 +356,13 @@ model EscrowContract {
 
 model WaitlistEntry {
   id              String   @id @default(uuid())
-  telegramId      BigInt   @unique              // Telegram user ID — primary identity
+  telegramId      BigInt?  @unique              // Telegram user ID — set after bot join (nullable until then)
   telegramHandle  String?                       // @username (may be absent)
   firstName       String?                       // First name from Telegram ctx.from
-  role            String?                       // "agent-owner" | "sponsor" (set via bot follow-up)
+  role            String?                       // "agent-owner" | "sponsor" (set via web popup)
   userId          String?  @unique              // linked Prisma User.id (set when user links Telegram)
   user            User?    @relation(fields: [userId], references: [id])
+  accessToken     String?  @unique              // UUID generated on web click — links web session to bot join
   referralCode    String   @unique              // 8-char hex — used in referral links
   referredBy      String?                       // referralCode of the referrer
   referralCount   Int      @default(0)          // how many joined using this entry's code

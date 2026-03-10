@@ -11,6 +11,7 @@ import { useAccount } from "wagmi"
 import { Badge } from "@/components/ui/badge"
 import { QuestTypeBadge, QuestStatusBadge, RewardBadge } from "@/components/quest-badges"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
@@ -150,6 +151,7 @@ export function QuestDetail() {
     const queryClient = useQueryClient()
     const navigate = useNavigate()
     const [acceptMsg, setAcceptMsg] = useState<string | null>(null)
+    const [hasAccepted, setHasAccepted] = useState(false)
     const [claimStatus, setClaimStatus] = useState<"idle" | "claiming" | "success" | "error">("idle")
     const [claimError, setClaimError] = useState("")
     const [verifyingIndex, setVerifyingIndex] = useState<number | null>(null)
@@ -284,10 +286,6 @@ export function QuestDetail() {
             return res.json()
         },
         enabled: !isAuthLoading,
-        placeholderData: () => {
-            const cached = queryClient.getQueryData<Quest[]>(["quests"])
-            return cached?.find(q => q.id === questId) as QuestWithParticipation | undefined
-        },
         refetchOnMount: true,
         refetchOnWindowFocus: true,
     })
@@ -332,8 +330,10 @@ export function QuestDetail() {
         },
         onSuccess: (data) => {
             setAcceptMsg("Quest accepted!")
+            setHasAccepted(true)
             // Optimistic update: set myParticipation immediately so buttons enable instantly
-            queryClient.setQueryData<QuestWithParticipation>(["quest", questId, token], (old) => {
+            const queryKey = ["quest", questId, token, session?.access_token ?? "anon"]
+            queryClient.setQueryData<QuestWithParticipation>(queryKey, (old) => {
                 if (!old) return old
                 return {
                     ...old,
@@ -358,6 +358,7 @@ export function QuestDetail() {
             // "Already accepted" means participation exists — refetch to get myParticipation
             if (e.message.toLowerCase().includes("already accepted")) {
                 setAcceptMsg("Quest accepted!")
+                setHasAccepted(true)
                 queryClient.invalidateQueries({ queryKey: ["quest", questId] })
             } else {
                 setAcceptMsg(e.message)
@@ -418,6 +419,13 @@ export function QuestDetail() {
             setVerifyingIndex(null)
         }
     })
+
+    // Sync hasAccepted state when quest data loads with myParticipation
+    useEffect(() => {
+        if (quest?.myParticipation && !hasAccepted) {
+            setHasAccepted(true)
+        }
+    }, [quest?.myParticipation, hasAccepted])
 
     // Local countdown for quest.expiresAt
     const liveCountdown = useCountdown(quest?.expiresAt ?? null)
@@ -562,7 +570,7 @@ export function QuestDetail() {
         <div className="">
             <SeoHead
                 title={quest.title}
-                description={quest.description?.slice(0, 155) || `${quest.sponsor} quest — ${quest.rewardAmount} ${quest.rewardType} reward`}
+                description={quest.description?.slice(0, 155) || `${quest.sponsor} quest — ${quest.rewardAmount} ${quest.fundingMethod === "stripe" ? "USD" : quest.rewardType} reward`}
                 url={`https://clawquest.ai/quests/${quest.id}`}
                 jsonLd={{
                     name: quest.title,
@@ -571,7 +579,7 @@ export function QuestDetail() {
                     startDate: quest.startAt ?? undefined,
                     endDate: quest.expiresAt ?? undefined,
                     rewardAmount: quest.rewardAmount,
-                    rewardCurrency: quest.rewardType === 'USDC' || quest.rewardType === 'USDT' ? quest.rewardType : 'USD',
+                    rewardCurrency: quest.fundingMethod === 'stripe' ? 'USD' : (quest.rewardType === 'USDC' || quest.rewardType === 'USDT' ? quest.rewardType : quest.rewardType),
                 }}
             />
 
@@ -651,7 +659,9 @@ export function QuestDetail() {
                         <div className="px-3 py-2.5 border border-border rounded bg-muted">
                             <div className="text-xs text-muted-foreground mb-0.5">total reward</div>
                             <div className="text-sm font-semibold text-accent font-mono">
-                                {quest.rewardAmount.toLocaleString()} {quest.rewardType}
+                                {quest.fundingMethod === "stripe"
+                                    ? `$${quest.rewardAmount.toLocaleString()} USD`
+                                    : `${quest.rewardAmount.toLocaleString()} ${quest.rewardType}`}
                             </div>
                         </div>
                         <div className="px-3 py-2.5 border border-border rounded bg-muted">
@@ -811,8 +821,8 @@ export function QuestDetail() {
                                     const match = agentSkillMap.get(skill)
                                     const status = !isAuthenticated || !firstAgentId ? "pending"
                                         : match?.verified ? "done"
-                                        : match ? "verifying" // reported but not verified
-                                        : "pending" // missing
+                                            : match ? "verifying" // reported but not verified
+                                                : "pending" // missing
 
                                     return (
                                         <div key={idx} className="border border-border rounded mb-2.5 overflow-hidden last:mb-0">
@@ -824,8 +834,8 @@ export function QuestDetail() {
                                                 {isAuthenticated && firstAgentId && (
                                                     <span className={cn("text-[11px] font-semibold px-1.5 py-0.5 rounded",
                                                         match?.verified ? "bg-green-100 text-success"
-                                                        : match ? "bg-amber-100 text-warning"
-                                                        : "bg-red-100 text-error"
+                                                            : match ? "bg-amber-100 text-warning"
+                                                                : "bg-red-100 text-error"
                                                     )}>
                                                         {match?.verified ? "Verified" : match ? "Reported" : "Missing"}
                                                     </span>
@@ -930,7 +940,7 @@ export function QuestDetail() {
                         <div className="px-3 py-4 text-center border-b border-border">
                             <div className="text-[28px] font-semibold font-mono text-accent leading-tight">{quest.rewardAmount.toLocaleString()}</div>
                             <div className="flex justify-center gap-2 mt-2 text-xs">
-                                <RewardBadge type={quest.rewardType} />
+                                <RewardBadge type={quest.fundingMethod === "stripe" ? "USD" : quest.rewardType} />
                                 <QuestTypeBadge type={quest.type} />
                             </div>
                             <div className="text-xs text-muted-foreground mt-0.5">total reward pool</div>
@@ -998,17 +1008,17 @@ export function QuestDetail() {
 
                         {/* Stripe setup banner for USD quests */}
                         {isAuthenticated && !stripeStatus?.isOnboarded &&
-                            (quest.fundingMethod === "stripe" || quest.rewardType === "USD") && (
-                            <div className="px-3 pt-3">
-                                <div className="flex items-start gap-2 rounded-md bg-warning/10 border border-warning/30 px-3 py-2 text-xs text-warning-foreground">
-                                    <span className="shrink-0 mt-0.5">⚠</span>
-                                    <span>
-                                        This quest pays in USD. Set up your Stripe account to receive rewards.{" "}
-                                        <Link to="/stripe-connect" className="font-semibold underline">Set up Stripe &rarr;</Link>
-                                    </span>
+                            quest.fundingMethod === "stripe" && (
+                                <div className="px-3 pt-3">
+                                    <div className="flex items-start gap-2 rounded-md bg-warning/10 border border-warning/30 px-3 py-2 text-xs text-warning-foreground">
+                                        <span className="shrink-0 mt-0.5">⚠</span>
+                                        <span>
+                                            This quest pays in USD. Set up your Stripe account to receive rewards.{" "}
+                                            <Link to="/stripe-connect" className="font-semibold underline">Set up Stripe &rarr;</Link>
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
                         {/* CTA */}
                         <div className="p-3 border-b border-border">
@@ -1093,14 +1103,24 @@ export function QuestDetail() {
                                 // Live + non-creator + authenticated
                                 if (isLive && isAuthenticated) {
                                     // Already accepted — show status
-                                    if (quest.myParticipation) {
+                                    // Use hasAccepted state to avoid flickering when refetching
+                                    if (hasAccepted || quest.myParticipation) {
+                                        // Only show skeleton on initial load, not when refetching after accept
+                                        if (isLoading && !hasAccepted) {
+                                            return (
+                                                <div className="text-center py-2">
+                                                    <Skeleton className="h-5 w-32 mx-auto mb-1" />
+                                                    <Skeleton className="h-3 w-24 mx-auto" />
+                                                </div>
+                                            )
+                                        }
                                         return (
                                             <div className="text-center py-2">
                                                 <div className="text-sm font-semibold text-accent mb-1">
                                                     Quest Accepted
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">
-                                                    Status: {quest.myParticipation.status}
+                                                    Status: {quest.myParticipation?.status || "in_progress"}
                                                 </div>
                                             </div>
                                         )

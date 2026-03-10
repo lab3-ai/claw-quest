@@ -97,6 +97,22 @@ export const MSG = {
     fallbackNoMatch:
         "I didn't recognize that. Type /help to see available commands, or tap the menu button.",
 
+    // ── Waitlist ──
+    waitlistJoined: (position: number, referralLink: string) =>
+        `🎉 You're *#${position}* in line!\n\n` +
+        `Share your referral link to move up *10 spots* for every friend who joins:\n\n` +
+        `\`${referralLink}\`\n\n` +
+        `Top 100 → OG Pioneer badge + 500 bonus XP\n` +
+        `Top 1,000 → Premium quests 30 min early`,
+
+    waitlistAlreadyJoined: (position: number, referralLink: string) =>
+        `👋 You're already on the waitlist at *#${position}*!\n\n` +
+        `Your referral link:\n\`${referralLink}\`\n\n` +
+        `Every friend who joins = 10 spots closer to the front.`,
+
+    waitlistReferralApplied: (newPosition: number) =>
+        `✅ Referral applied! You moved up to *#${newPosition}*.`,
+
     // ── Errors ──
     genericError: '\u274c An error occurred. Please try again.',
 } as const;

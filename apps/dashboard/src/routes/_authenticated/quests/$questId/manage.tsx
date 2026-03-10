@@ -415,7 +415,7 @@ export function ManageQuest() {
                         <div className="flex justify-between items-center text-xs text-muted-foreground py-[0.35rem] border-t border-border">
                             <span>Reward</span>
                             <span className="font-semibold text-foreground">
-                                {quest.rewardType === "USD"
+                                {quest.fundingMethod === "stripe"
                                     ? `$${quest.rewardAmount.toLocaleString()} USD`
                                     : `${quest.rewardAmount.toLocaleString()} ${quest.rewardType}`}
                             </span>

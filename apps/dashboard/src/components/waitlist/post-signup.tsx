@@ -26,8 +26,8 @@ export function PostSignup({ email, position }: PostSignupProps) {
     if (!role) {
         return (
             <div className="w-full max-w-lg rounded-lg border border-neutral-700/60 px-4 py-6 sm:px-6">
-                <p className="mb-5 text-center font-mono text-lg text-white">
-                    What brings you here?
+                <p className="mb-5 text-center font-mono text-base text-white">
+                    One quick question — what brings you here?
                 </p>
                 <div className="flex gap-3">
                     <Button
@@ -62,7 +62,7 @@ export function PostSignup({ email, position }: PostSignupProps) {
                 You're <span className="text-[var(--wl-accent)]">#{position}</span> in line.
             </p>
             <p className="mb-5 text-center font-mono text-xs text-neutral-400">
-                Share to move up. Every friend = 10 spots closer.
+                Share your link to move up. Every friend who joins = 10 spots closer to the front.
             </p>
 
             {/* Referral link */}

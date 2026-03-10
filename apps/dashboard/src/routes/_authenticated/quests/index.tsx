@@ -217,68 +217,68 @@ export function QuestList() {
                     })}
                 </div>
                 <TooltipProvider delayDuration={300}>
-                <div className="relative inline-flex border border-border p-0.5 gap-0.5 rounded-button overflow-hidden ml-auto shrink-0">
-                    {/* Sliding highlight */}
-                    <span
-                        className="absolute top-0.5 bottom-0.5 rounded-button bg-primary transition-all duration-200 ease-out z-0"
-                        style={{ left: viewIndicatorStyle.left, width: viewIndicatorStyle.width }}
-                    />
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <button
-                                ref={el => { viewRefs.current["grid"] = el }}
-                                className={cn(
-                                    "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
-                                    view === "grid" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                                )}
-                                onClick={() => handleViewChange("grid")}
-                            >
-                                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                    <rect x="1" y="1" width="6" height="6" rx="1"/>
-                                    <rect x="9" y="1" width="6" height="6" rx="1"/>
-                                    <rect x="1" y="9" width="6" height="6" rx="1"/>
-                                    <rect x="9" y="9" width="6" height="6" rx="1"/>
-                                </svg>
-                            </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="text-xs">Grid view</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <button
-                                ref={el => { viewRefs.current["list"] = el }}
-                                className={cn(
-                                    "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
-                                    view === "list" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                                )}
-                                onClick={() => handleViewChange("list")}
-                            >
-                                <Rows3Line size={14} />
-                            </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="text-xs">List view</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <button
-                                ref={el => { viewRefs.current["compact"] = el }}
-                                className={cn(
-                                    "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
-                                    view === "compact" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                                )}
-                                onClick={() => handleViewChange("compact")}
-                            >
-                                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                    <line x1="1" y1="2" x2="15" y2="2"/>
-                                    <line x1="1" y1="5.5" x2="15" y2="5.5"/>
-                                    <line x1="1" y1="9" x2="15" y2="9"/>
-                                    <line x1="1" y1="12.5" x2="15" y2="12.5"/>
-                                </svg>
-                            </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="text-xs">Table view</TooltipContent>
-                    </Tooltip>
-                </div>
+                    <div className="relative inline-flex border border-border p-0.5 gap-0.5 rounded-button overflow-hidden ml-auto shrink-0">
+                        {/* Sliding highlight */}
+                        <span
+                            className="absolute top-0.5 bottom-0.5 rounded-button bg-primary transition-all duration-200 ease-out z-0"
+                            style={{ left: viewIndicatorStyle.left, width: viewIndicatorStyle.width }}
+                        />
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    ref={el => { viewRefs.current["grid"] = el }}
+                                    className={cn(
+                                        "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
+                                        view === "grid" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                                    )}
+                                    onClick={() => handleViewChange("grid")}
+                                >
+                                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                        <rect x="1" y="1" width="6" height="6" rx="1" />
+                                        <rect x="9" y="1" width="6" height="6" rx="1" />
+                                        <rect x="1" y="9" width="6" height="6" rx="1" />
+                                        <rect x="9" y="9" width="6" height="6" rx="1" />
+                                    </svg>
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="text-xs">Grid view</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    ref={el => { viewRefs.current["list"] = el }}
+                                    className={cn(
+                                        "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
+                                        view === "list" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                                    )}
+                                    onClick={() => handleViewChange("list")}
+                                >
+                                    <Rows3Line size={14} />
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="text-xs">List view</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    ref={el => { viewRefs.current["compact"] = el }}
+                                    className={cn(
+                                        "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
+                                        view === "compact" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                                    )}
+                                    onClick={() => handleViewChange("compact")}
+                                >
+                                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                        <line x1="1" y1="2" x2="15" y2="2" />
+                                        <line x1="1" y1="5.5" x2="15" y2="5.5" />
+                                        <line x1="1" y1="9" x2="15" y2="9" />
+                                        <line x1="1" y1="12.5" x2="15" y2="12.5" />
+                                    </svg>
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" className="text-xs">Table view</TooltipContent>
+                        </Tooltip>
+                    </div>
                 </TooltipProvider>
             </div>
 
@@ -368,73 +368,73 @@ export function QuestList() {
                 )}
 
                 {/* Compact list (table) view */}
-            {!isLoading && view === "compact" && (
-                <div className="block overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr>
-                                <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[140px]">Reward</th>
-                                <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[240px]">Name</th>
-                                <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
-                                <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Questers</th>
-                                <th className="text-right px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Slots</th>
-                                <th className="text-right px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Time Left</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sorted.length === 0 ? (
-                                <tr><td colSpan={6} className="px-2 py-3 text-xs border-b border-border align-top text-center py-8 text-muted-foreground">{emptyMessage}</td></tr>
-                            ) : sorted.map(quest => {
-                                const time = formatTimeShort(quest.expiresAt)
-                                return (
-                                    <tr key={quest.id} className="hover:bg-muted cursor-pointer transition-colors" onClick={() => navigate({ to: "/quests/$questId", params: { questId: quest.id } })}>
-                                        <td className="px-2 py-3 text-xs border-b border-border align-top whitespace-nowrap">
-                                            <span className="inline-flex items-center gap-1 text-sm font-semibold text-success whitespace-nowrap">
-                                                <TokenIcon token={quest.rewardType} size={16} />
-                                                {quest.rewardAmount.toLocaleString()} {quest.rewardType}
-                                            </span>
-                                        </td>
-                                        <td className="px-2 py-3 text-xs border-b border-border align-top min-w-[240px]">
-                                            <div className="text-base font-semibold leading-snug mb-0.5">{quest.title}</div>
-                                            <div className="text-xs text-muted-foreground leading-snug line-clamp-1 my-0.5">{quest.description}</div>
-                                            <div className="text-xs text-muted-foreground inline-flex items-center gap-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
-                                        </td>
-                                        <td className="px-2 py-3 text-xs border-b border-border align-top">
-                                            <span className={cn("inline-flex items-center gap-1 text-xs font-semibold uppercase", typeColorClass(quest.type))}>
-                                                {quest.type === "FCFS" && <RunLine size={14} />}
-                                                {quest.type === "LEADERBOARD" && <TrophyLine size={14} />}
-                                                {quest.type === "LUCKY_DRAW" && <RandomLine size={14} />}
-                                                {quest.type}
-                                            </span>
-                                        </td>
-                                        <td className="px-2 py-3 text-xs border-b border-border align-top whitespace-nowrap">
-                                            {quest.questers > 0 ? (
-                                                <QuestersAvatarStack
-                                                    details={(quest.questerDetails ?? []) as QuesterDetail[]}
-                                                    total={quest.questers}
-                                                    onClick={(e) => { e.stopPropagation(); setPopupQuest({ id: quest.id, title: quest.title }) }}
-                                                />
-                                            ) : (
-                                                <span className="text-xs text-muted-foreground">—</span>
-                                            )}
-                                        </td>
-                                        <td className="px-2 py-3 text-xs border-b border-border align-top text-right">{quest.totalSlots - quest.filledSlots}</td>
-                                        <td className="px-2 py-3 text-xs border-b border-border align-top text-right">
-                                            <div className={cn(
-                                                "font-mono text-xs font-semibold whitespace-nowrap",
-                                                time.cls === "warning" && "text-warning",
-                                                time.cls === "urgent" && "text-error",
-                                                time.cls === "normal" && "text-foreground",
-                                                time.cls === "muted" && "text-muted-foreground font-normal"
-                                            )}>{time.label}</div>
-                                        </td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+                {!isLoading && view === "compact" && (
+                    <div className="block overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                        <table className="w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[140px]">Reward</th>
+                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[240px]">Name</th>
+                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
+                                    <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Questers</th>
+                                    <th className="text-right px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Slots</th>
+                                    <th className="text-right px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Time Left</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sorted.length === 0 ? (
+                                    <tr><td colSpan={6} className="px-2 py-3 text-xs border-b border-border align-top text-center py-8 text-muted-foreground">{emptyMessage}</td></tr>
+                                ) : sorted.map(quest => {
+                                    const time = formatTimeShort(quest.expiresAt)
+                                    return (
+                                        <tr key={quest.id} className="hover:bg-muted cursor-pointer transition-colors" onClick={() => navigate({ to: "/quests/$questId", params: { questId: quest.id } })}>
+                                            <td className="px-2 py-3 text-xs border-b border-border align-top whitespace-nowrap">
+                                                <span className="inline-flex items-center gap-1 text-sm font-semibold text-success whitespace-nowrap">
+                                                    <TokenIcon token={quest.rewardType} size={16} />
+                                                    {quest.rewardAmount.toLocaleString()} {quest.rewardType}
+                                                </span>
+                                            </td>
+                                            <td className="px-2 py-3 text-xs border-b border-border align-top min-w-[240px]">
+                                                <div className="text-base font-semibold leading-snug mb-0.5">{quest.title}</div>
+                                                <div className="text-xs text-muted-foreground leading-snug line-clamp-1 my-0.5">{quest.description}</div>
+                                                <div className="text-xs text-muted-foreground inline-flex items-center gap-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
+                                            </td>
+                                            <td className="px-2 py-3 text-xs border-b border-border align-top">
+                                                <span className={cn("inline-flex items-center gap-1 text-xs font-semibold uppercase", typeColorClass(quest.type))}>
+                                                    {quest.type === "FCFS" && <RunLine size={14} />}
+                                                    {quest.type === "LEADERBOARD" && <TrophyLine size={14} />}
+                                                    {quest.type === "LUCKY_DRAW" && <RandomLine size={14} />}
+                                                    {quest.type}
+                                                </span>
+                                            </td>
+                                            <td className="px-2 py-3 text-xs border-b border-border align-top whitespace-nowrap">
+                                                {quest.questers > 0 ? (
+                                                    <QuestersAvatarStack
+                                                        details={(quest.questerDetails ?? []) as QuesterDetail[]}
+                                                        total={quest.questers}
+                                                        onClick={(e) => { e.stopPropagation(); setPopupQuest({ id: quest.id, title: quest.title }) }}
+                                                    />
+                                                ) : (
+                                                    <span className="text-xs text-muted-foreground">—</span>
+                                                )}
+                                            </td>
+                                            <td className="px-2 py-3 text-xs border-b border-border align-top text-right">{quest.totalSlots - quest.filledSlots}</td>
+                                            <td className="px-2 py-3 text-xs border-b border-border align-top text-right">
+                                                <div className={cn(
+                                                    "font-mono text-xs font-semibold whitespace-nowrap",
+                                                    time.cls === "warning" && "text-warning",
+                                                    time.cls === "urgent" && "text-error",
+                                                    time.cls === "normal" && "text-foreground",
+                                                    time.cls === "muted" && "text-muted-foreground font-normal"
+                                                )}>{time.label}</div>
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
         </div>
     )

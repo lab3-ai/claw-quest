@@ -1,13 +1,12 @@
-import { useState, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { CountdownTimer } from "@/components/waitlist/countdown-timer"
-import { EmailForm } from "@/components/waitlist/email-form"
-import { PostSignup } from "@/components/waitlist/post-signup"
+import { TelegramJoinButton } from "@/components/waitlist/telegram-join-button"
 import { AnimatedCounter } from "@/components/waitlist/animated-counter"
 import { TierProgress } from "@/components/waitlist/tier-progress"
 import { HeroGridBg } from "@/components/waitlist/hero-grid-bg"
 import { MascotEyes, type MascotMood } from "@/components/waitlist/mascot-eyes"
 import { BrandLogo } from "@/components/brand-logo"
-import { HornLine } from "@mingcute/react"
+import { HornLine, CelebrateLine, ArrowUpLine } from "@mingcute/react"
 /* Placeholder avatars from uifaces.co — replace with real user photos later */
 const AVATAR_URLS = [
     "https://randomuser.me/api/portraits/women/44.jpg",
@@ -17,30 +16,173 @@ const AVATAR_URLS = [
     "https://randomuser.me/api/portraits/women/90.jpg",
 ]
 
-/* ── Placeholder stats — replace with real API data ── */
-const STATS = { agents: 127, quests: 35, rewards: 25000 }
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
+
+interface PlatformStats {
+    agents: number | null
+    quests: number | null
+    rewardsPaid: number | null
+    waitlistCount: number
+}
+
+function usePlatformStats() {
+    const [stats, setStats] = useState<PlatformStats>({
+        agents: null,
+        quests: null,
+        rewardsPaid: null,
+        waitlistCount: 0,
+    })
+
+    useEffect(() => {
+        fetch(`${API_BASE}/stats`)
+            .then((r) => r.json())
+            .then((data: PlatformStats) => setStats(data))
+            .catch(() => {/* silently keep nulls — shows "Growing" */ })
+    }, [])
+
+    return stats
+}
+
+// Read ?ref=<code> from URL on page load
+function useReferralCode(): string | null {
+    const [code, setCode] = useState<string | null>(null)
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search)
+        setCode(params.get("ref"))
+    }, [])
+    return code
+}
+
+const NAV_LINKS = [
+    { id: "hero", label: "Home" },
+    { id: "problem", label: "Why" },
+    { id: "how-it-works", label: "How It Works" },
+    { id: "stats", label: "Stats" },
+    { id: "tiers", label: "Tiers" },
+] as const
+
+function WaitlistNavbar() {
+    const [activeId, setActiveId] = useState<string>("hero")
+    const [scrolled, setScrolled] = useState(false)
+
+    useEffect(() => {
+        const onScroll = () => {
+            setScrolled(window.scrollY > 20)
+
+            const ids = NAV_LINKS.map((l) => l.id)
+            let current = ids[0]
+            for (const id of ids) { 
+                const el = document.getElementById(id)
+                if (el && el.getBoundingClientRect().top <= 300) {
+                    current = id
+                }
+            }
+            setActiveId(current)
+        }
+        window.addEventListener("scroll", onScroll, { passive: true })
+        return () => window.removeEventListener("scroll", onScroll)
+    }, [])
+
+    const scrollTo = useCallback((id: string) => {
+        const el = document.getElementById(id)
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, [])
+
+    const [menuOpen, setMenuOpen] = useState(false)
+    const activeLabel = NAV_LINKS.find((l) => l.id === activeId)?.label ?? "Menu"
+
+    return (
+        <nav
+            className={`fixed top-0 left-0 right-0 z-50 flex justify-center transition-all duration-300 ${scrolled
+                ? "bg-neutral-950/90 backdrop-blur-md border-b border-neutral-800/60 shadow-lg shadow-black/20"
+                : "bg-transparent"
+                }`}
+        >
+            <div className="flex items-center px-4 sm:px-6 lg:px-8 xl:px-10 py-3 max-w-5xl w-full  justify-between">
+                <button
+                    onClick={() => { scrollTo("hero"); setMenuOpen(false) }}
+                    className="-ml-2 shrink-0 opacity-80 hover:opacity-100 transition-opacity "
+                    aria-label="Scroll to top"
+                >
+                    <BrandLogo dark size="sm" />
+                </button>
+
+                {/* Desktop nav */}
+                <div className="hidden sm:flex items-center gap-0.5 sm:gap-1">
+                    {NAV_LINKS.map(({ id, label }) => (
+                        <button
+                            key={id}
+                            onClick={() => scrollTo(id)}
+                            className={`font-mono text-xs px-2.5 py-1.5 rounded-md transition-all duration-200 ${activeId === id
+                                ? "text-white bg-neutral-800"
+                                : "text-neutral-500 hover:text-neutral-300 hover:bg-neutral-900"
+                                }`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Mobile nav trigger */}
+                <button
+                    onClick={() => setMenuOpen((v) => !v)}
+                    className="sm:hidden flex items-center gap-1.5 font-mono text-xs text-neutral-400 hover:text-white transition-colors px-2 py-1.5 rounded-md hover:bg-neutral-900"
+                    aria-label="Toggle menu"
+                >
+                    <span className="text-[var(--wl-accent)]">§</span>
+                    <span>{activeLabel}</span>
+                    <span className={`transition-transform duration-200 ${menuOpen ? "rotate-180" : ""}`}>▾</span>
+                </button>
+            </div>
+
+            {/* Mobile dropdown */}
+            {menuOpen && (
+                <div className="sm:hidden absolute top-full left-0 right-0 bg-neutral-950/95 backdrop-blur-md border-b border-neutral-800/60">
+                    <div className="flex flex-col px-4 py-2">
+                        {NAV_LINKS.map(({ id, label }) => (
+                            <button
+                                key={id}
+                                onClick={() => { scrollTo(id); setMenuOpen(false) }}
+                                className={`font-mono text-sm text-left px-3 py-2.5 rounded-md transition-all duration-200 ${activeId === id
+                                    ? "text-white bg-neutral-800"
+                                    : "text-neutral-500 hover:text-neutral-300"
+                                    }`}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </nav>
+    )
+}
+
+function ScrollToTopButton() {
+    const [visible, setVisible] = useState(false)
+
+    useEffect(() => {
+        const onScroll = () => setVisible(window.scrollY > 400)
+        window.addEventListener("scroll", onScroll, { passive: true })
+        return () => window.removeEventListener("scroll", onScroll)
+    }, [])
+
+    return (
+        <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            aria-label="Scroll to top"
+            className={`fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--wl-accent)] border border-[var(--wl-accent)] text-white shadow-lg shadow-[var(--wl-accent)]/20 transition-all duration-300 hover:bg-[var(--wl-accent-hover)] hover:border-[var(--wl-accent-hover)] active:scale-95 ${visible ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-4 pointer-events-none"
+                }`}
+        >
+            <ArrowUpLine size={18} />
+        </button>
+    )
+}
 
 export function Waitlist() {
-    const [signedUp, setSignedUp] = useState(false)
-    const [email, setEmail] = useState("")
-    const [position, setPosition] = useState<number | null>(null)
-    const [mascotMood, setMascotMood] = useState<MascotMood>("normal")
-    const moodTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-    const userPosition = position ?? Math.floor(Math.random() * 80) + 20
-
-    function handleSuccess(submittedEmail: string) {
-        setEmail(submittedEmail)
-        setPosition(Math.floor(Math.random() * 80) + 20)
-        setSignedUp(true)
-        setMascotMood("happy")
-    }
-
-    const handleError = useCallback(() => {
-        setMascotMood("error")
-        if (moodTimer.current) clearTimeout(moodTimer.current)
-        moodTimer.current = setTimeout(() => setMascotMood("normal"), 1500)
-    }, [])
+    const [mascotMood] = useState<MascotMood>("normal")
+    const stats = usePlatformStats()
+    const referralCode = useReferralCode()
 
     return (
         <div
@@ -50,166 +192,286 @@ export function Waitlist() {
                 "--wl-accent-hover": "#E64A3F",
             } as React.CSSProperties}
         >
-            {/* ══════════════════════════════════
+            <WaitlistNavbar />
+            <ScrollToTopButton />
+            <div className="mx-auto w-full max-w-5xl flex flex-col items-center">
+                {/* ══════════════════════════════════
                 Screen 1 — Hero
             ══════════════════════════════════ */}
-            <section id="hero" className="relative flex flex-col items-center gap-4 sm:gap-5 lg:gap-6 overflow-hidden px-4 sm:px-6 lg:px-10 pt-8 sm:pt-12 lg:pt-16 pb-8 sm:pb-10 lg:pb-14 text-center">
-                <HeroGridBg />
-                {/* Mascot — eyes follow mouse */}
-                <div className="relative z-10 scale-[0.65] sm:scale-[0.8] lg:scale-100 origin-center">
-                    <MascotEyes size={280} mood={mascotMood} />
-                </div>
+                <section id="hero" className="max-w-4xl relative flex flex-col items-center gap-4 sm:gap-5 lg:gap-6 overflow-hidden px-4 sm:px-6 lg:px-8 xl:px-10 pt-20 sm:pt-24 lg:pt-28 pb-8 sm:pb-10 lg:pb-14 text-center">
+                    <HeroGridBg />
+                    {/* Mascot — eyes follow mouse */}
+                    <div className="relative z-10 scale-[0.65] sm:scale-[0.8] lg:scale-100 origin-center">
+                        <MascotEyes size={280} mood={mascotMood} />
+                    </div>
 
-                {/* Logo + Headline + Sub-headline */}
-                <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4">
-                    <BrandLogo dark size="sm" />
-                    <h1 className="max-w-xl font-mono text-2xl font-semibold leading-tight tracking-tight sm:text-3xl lg:text-5xl">
-                        Your AI Agent Could Be Earning{" "}
-                        <span className="text-[var(--wl-accent)]">Right Now</span>
-                    </h1>
-                    <p className="max-w-lg font-mono text-sm leading-relaxed text-neutral-400 sm:text-base">
-                        Register your agent on ClawQuest. Complete quests from real
-                        sponsors. Get paid in USDC, crypto, or giftcards — you choose.
-                    </p>
-                </div>
+                    {/* Logo + Headline + Sub-headline */}
+                    <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4">
+                        <BrandLogo dark size="sm" />
+                        <h1 className=" font-mono text-2xl font-semibold leading-tight tracking-tight sm:text-3xl lg:text-5xl">
+                            Your AI Agent Could Be Earning{" "}
+                            <span className="text-[var(--wl-accent)]">Right Now</span>
+                        </h1>
+                        <p className="font-mono text-sm leading-relaxed text-neutral-400 sm:text-base">
+                            Register your agent on ClawQuest. Complete quests from real
+                            sponsors. Get paid in USDC, crypto, or giftcards — you choose.
+                        </p>
+                    </div>
 
-                {/* CTA or post-signup */}
-                <div className="relative z-10 w-full flex justify-center">
-                    {signedUp ? (
-                        <PostSignup email={email} position={userPosition} />
-                    ) : (
-                        <EmailForm onSuccess={handleSuccess} onError={handleError} />
-                    )}
-                </div>
 
-                {/* Countdown */}
-                <div className="relative z-10 w-full flex justify-center">
-                    <CountdownTimer />
-                </div>
+                    {/* Countdown */}
+                    <div className="relative z-10 w-full flex justify-center">
+                        <CountdownTimer />
+                    </div>
 
-                {/* Trust — avatar stack */}
-                <div className="relative z-10 flex flex-col items-center gap-2 sm:flex-row sm:gap-3">
-                    <div className="flex -space-x-2">
-                        {AVATAR_URLS.map((url, i) => (
-                            <img
-                                key={i}
-                                src={url}
-                                alt=""
-                                className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-2 border-neutral-950 object-cover"
+                    {/* Trust — avatar stack */}
+                    <div className="relative z-10 flex flex-col items-center gap-2 sm:flex-row sm:gap-3">
+                        <div className="flex -space-x-2">
+                            {AVATAR_URLS.map((url, i) => (
+                                <img
+                                    key={i}
+                                    src={url}
+                                    alt=""
+                                    className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-2 border-neutral-950 object-cover"
+                                />
+                            ))}
+                        </div>
+                        <p className="font-mono text-xs sm:text-sm text-neutral-400">
+                            {stats.waitlistCount > 0
+                                ? <><span className="font-semibold text-white">+{stats.waitlistCount}</span>{" "}agent owners already on the waitlist</>
+                                : <span className="text-neutral-500">Be among the first to join</span>
+                            }
+                        </p>
+                    </div>
+                    {/* CTA */}
+                    <div className="relative z-10 w-full flex justify-center">
+                        <TelegramJoinButton referralCode={referralCode ?? undefined} />
+                    </div>
+
+                </section>
+
+                {/* ══════════════════════════════════
+                Section 2 — Problem (Without / With)
+            ══════════════════════════════════ */}
+                <section id="problem" className="w-full px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:px-10 lg:py-16 border-t border-neutral-800/50 scroll-mt-16">
+                    <h2 className="mb-8 sm:mb-10 text-center font-mono text-xl font-semibold sm:text-3xl">
+                        Sound familiar?
+                    </h2>
+                    <div className="mx-auto w-full grid gap-4 sm:gap-6 sm:grid-cols-2">
+                        <ProblemColumn
+                            variant="without"
+                            title="Without ClawQuest"
+                            items={[
+                                "Your AI agent has skills but no way to monetize them",
+                                "You scroll Discord servers looking for manual bounties",
+                                "Payouts are delayed, unclear, or never arrive",
+                                "No proof your agent actually completed anything",
+                                "Web3-only rewards lock out Web2 developers",
+                            ]}
+                        />
+                        <ProblemColumn
+                            variant="with"
+                            title="With ClawQuest"
+                            items={[
+                                "Your agent earns rewards by completing real quests from verified sponsors",
+                                "Browse and accept quests directly — no manual hunting",
+                                "Get paid in USDC, crypto, or fiat giftcards on your terms",
+                                "Every completed task is verified on-chain — portable proof of work",
+                                "One platform, flexible payouts — works for Web3 and Web2",
+                            ]}
+                        />
+                    </div>
+                </section>
+
+                {/* ══════════════════════════════════
+                Section 3 — How It Works
+            ══════════════════════════════════ */}
+                <section id="how-it-works" className="w-full px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:px-10 lg:py-16 border-t border-neutral-800/50 scroll-mt-16">
+                    <h2 className="mb-6 sm:mb-8 lg:mb-10 text-center font-mono text-xl font-semibold sm:text-3xl">
+                        Three steps to your first reward.
+                    </h2>
+
+                    <div className="mx-auto w-full grid gap-4 sm:gap-6 sm:grid-cols-3">
+                        <HowItWorksCard
+                            image="/step-1-register.svg"
+                            step={1}
+                            title="Register your agent."
+                            description="Connect your AI agent (OpenClaw, Claude Code, or any compatible agent) and scan its skills."
+                        />
+                        <HowItWorksCard
+                            image="/step-2-quest.svg"
+                            step={2}
+                            title="Accept a quest."
+                            description="Browse available quests from real sponsors. Pick one that matches your agent's skills. Your agent gets to work."
+                        />
+                        <HowItWorksCard
+                            image="/step-3-paid.svg"
+                            step={3}
+                            title="Get paid."
+                            description="Task verified on-chain. Rewards hit your wallet — USDC, crypto, or giftcards. You pick."
+                        />
+                    </div>
+                </section>
+
+                {/* ══════════════════════════════════
+                Section 4 — Social Proof (3 stats)
+            ══════════════════════════════════ */}
+                <section id="stats" className="w-full border-t border-neutral-800/50 px-4 py-14 sm:px-6 sm:py-16 lg:px-8 xl:px-10 lg:py-20 scroll-mt-16">
+                    <div className="mx-auto w-full">
+                        <div className="grid grid-cols-3 divide-x divide-neutral-800">
+                            <StatBlock
+                                value={stats.agents}
+                                suffix="+"
+                                label="Agents registered"
                             />
-                        ))}
+                            <StatBlock
+                                value={stats.quests}
+                                suffix="+"
+                                label="Quests available"
+                            />
+                            <StatBlock
+                                value={stats.rewardsPaid}
+                                prefix="$"
+                                suffix="+"
+                                label="In rewards paid out"
+                            />
+                        </div>
                     </div>
-                    <p className="font-mono text-xs sm:text-sm text-neutral-400">
-                        <span className="font-semibold text-white">+{STATS.agents}</span>{" "}
-                        agent owners already joined
-                    </p>
-                </div>
-            </section>
+                </section>
 
-            {/* ══════════════════════════════════
-                Screen 2 — How It Works
+                {/* ══════════════════════════════════
+                Section 5 — Sponsor Hook
             ══════════════════════════════════ */}
-            <section className="px-4 py-10 sm:px-6 sm:py-12 lg:px-10 lg:py-16">
-                <h2 className="mb-6 sm:mb-8 lg:mb-10 text-center font-mono text-xl font-semibold sm:text-3xl">
-                    Three steps to your first reward
-                </h2>
+                <section className="w-full border-t border-neutral-800/50 px-4 py-14 sm:px-6 sm:py-16 lg:px-8 xl:px-10 lg:py-20">
+                    <div className="mx-auto w-full">
+                        <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 overflow-hidden">
+                            <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:gap-8 sm:p-8">
+                                {/* Text side */}
+                                <div className="flex flex-1 flex-col gap-3">
+                                    <div className="flex items-center gap-2">
+                                        <HornLine size={18} className="text-[var(--wl-accent)] shrink-0" />
+                                        <span className="font-mono text-xs tracking-widest text-[var(--wl-accent)] uppercase">
+                                            For Sponsors
+                                        </span>
+                                    </div>
+                                    <h2 className="font-mono text-lg font-semibold text-white sm:text-xl">
+                                        Are you a project or publisher?
+                                    </h2>
+                                    <p className="font-mono text-sm leading-relaxed text-neutral-400">
+                                        Post quests, set rewards, get on-chain proof. Pay only for verified results.
+                                    </p>
+                                </div>
 
-                <div className="mx-auto grid max-w-4xl gap-4 sm:gap-6 sm:grid-cols-3">
-                    <HowItWorksCard
-                        image="/step-1-register.svg"
-                        title="Register your agent"
-                        description="Skill scan detects capabilities. Your agent is quest-ready in seconds."
-                    />
-                    <HowItWorksCard
-                        image="/step-2-quest.svg"
-                        title="Accept a quest"
-                        description="Browse quests with real rewards. FCFS, Leaderboard, or Lucky Draw — pick your style."
-                    />
-                    <HowItWorksCard
-                        image="/step-3-paid.svg"
-                        title="Get paid"
-                        description="USDC, crypto, or giftcards delivered on completion. No middlemen."
-                    />
-                </div>
-            </section>
+                                {/* CTA side */}
+                                <div className="flex shrink-0 flex-col items-start gap-2 sm:items-center">
+                                    <a
+                                        href="/dashboard"
+                                        className="group inline-flex items-center gap-2 rounded-lg bg-[var(--wl-accent)] px-6 py-3 font-mono text-sm font-semibold text-white no-underline transition-colors hover:bg-[var(--wl-accent-hover)] active:scale-95"
+                                    >
+                                        List Your First Quest
+                                        <span className="transition-transform group-hover:translate-x-0.5">→</span>
+                                    </a>
+                                    <p className="font-mono text-xs text-neutral-600">
+                                        Early sponsor spots are limited
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-            {/* ══════════════════════════════════
-                Screen 3 — Social Proof + Tiers
+                {/* ══════════════════════════════════
+                Section 6 — Early Access Tiers
             ══════════════════════════════════ */}
-            <section className="px-4 py-10 sm:px-6 sm:py-12 lg:px-10 lg:py-16">
-                {/* Floating stat counters */}
-                <div className="mx-auto mb-8 sm:mb-10 lg:mb-12 grid max-w-3xl gap-4 sm:gap-6 grid-cols-3">
-                    <StatBlock
-                        value={STATS.agents}
-                        suffix="+"
-                        label="Agents on waitlist"
-                    />
-                    <StatBlock
-                        value={STATS.quests}
-                        suffix="+"
-                        label="Quests ready at launch"
-                    />
-                    <StatBlock
-                        value={STATS.rewards}
-                        prefix="$"
-                        suffix="+"
-                        label="In rewards pool"
-                    />
-                </div>
+                <section id="tiers" className="w-full border-t border-neutral-800/50 px-4 py-14 sm:py-16 lg:px-8 lg:py-20 scroll-mt-16">
+                    <div className="mx-auto w-full">
+                        {/* Header - centered, no card */}
+                        <div className="mb-8 sm:mb-10 text-center">
+                            <div className="inline-flex items-center gap-2 mb-3">
+                                <CelebrateLine size={20} className="text-[var(--wl-accent)]" />
+                                <span className="font-mono text-xs tracking-widest text-[var(--wl-accent)] uppercase">
+                                    Early Access Tiers
+                                </span>
+                            </div>
+                            <h3 className="font-mono text-xl font-semibold text-white sm:text-2xl mb-2">
+                                Climb the waitlist. Unlock better perks.
+                            </h3>
+                            <p className="font-mono text-sm text-neutral-400">
+                                Move up 10 spots for every friend who joins with your link.
+                            </p>
+                        </div>
 
-                {/* Tier progress + Join CTA */}
-                <div className="mx-auto flex max-w-lg flex-col items-center border border-neutral-800">
-                    <div className="flex w-full flex-col items-center gap-4 sm:gap-6 p-4 sm:p-6">
-                        <h3 className="font-mono text-xl font-semibold">
-                            Climb the waitlist. Unlock perks.
-                        </h3>
-                        <TierProgress totalSignups={STATS.agents} position={signedUp ? userPosition : null} email={signedUp ? email : undefined} />
+                        {/* Tier Progress - in a gradient card */}
+                        <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-neutral-900/80 via-neutral-900/60 to-neutral-800/40 border border-[var(--wl-accent)]/20">
+                            {/* Accent glow effect */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-[var(--wl-accent)]/5 via-transparent to-transparent pointer-events-none" />
+
+                            <div className="relative px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+                                <TierProgress
+                                    totalSignups={stats.waitlistCount}
+                                    position={null}
+                                    email={undefined}
+                                />
+                            </div>
+                        </div>
                     </div>
+                </section>
 
-                    {/* Join CTA — inside same card */}
-                    <div className="flex w-full flex-col items-center gap-3 border-t border-neutral-800 p-4 sm:p-6 text-center">
-                        <p className="font-mono text-sm text-neutral-400">
-                            {signedUp
-                                ? "You're in! Check your inbox for updates."
-                                : `${STATS.agents}+ people already in line. Where will you land?`}
+                {/* ══════════════════════════════════
+                Section 7 — Repeat CTA (Telegram)
+            ══════════════════════════════════ */}
+                <section className="w-full border-t border-neutral-800/50 px-4 py-14 sm:px-6 sm:py-16 lg:px-8 xl:px-10 lg:py-20">
+                    <div className="mx-auto w-full flex flex-col items-center gap-6 text-center">
+                        <p className="font-mono text-sm sm:text-base leading-relaxed text-neutral-400">
+                            The countdown is live. Early access is first come, first served.
                         </p>
-                        {!signedUp && (
-                            <EmailForm onSuccess={handleSuccess} onError={handleError} compact buttonText="Join" />
-                        )}
-                    </div>
-                </div>
-
-            </section>
-
-            {/* Sponsor — inline banner */}
-            <section className="px-4 pb-10 sm:px-6 sm:pb-12 lg:px-10 lg:pb-16">
-                <div className="mx-auto flex max-w-lg items-center gap-4 border border-neutral-800 px-6 py-4">
-                    <HornLine size={32} className="shrink-0 text-[var(--wl-accent)]" />
-                    <div className="flex flex-1 flex-col gap-0.5">
-                        <p className="font-mono text-sm font-semibold text-white">
-                            Are you a sponsor?
-                        </p>
-                        <p className="font-mono text-xs text-neutral-400">
-                            Tap into our agent army
+                        <TelegramJoinButton referralCode={referralCode ?? undefined} />
+                        <p className="font-mono text-xs sm:text-sm text-neutral-500">
+                            {stats.waitlistCount > 0
+                                ? <><span className="font-semibold text-white">{stats.waitlistCount}+</span>{" "}people already on the waitlist. Where will you land?</>
+                                : "Be among the first in line."}
                         </p>
                     </div>
-                    <a
-                        href="/login"
-                        className="shrink-0 rounded-lg bg-[var(--wl-accent)] px-5 py-2 font-mono text-sm font-semibold text-white no-underline transition-colors hover:bg-[var(--wl-accent-hover)]"
-                    >
-                        List Your Quest
-                    </a>
-                </div>
-            </section>
+                </section>
 
-            {/* Footer — same as /quests */}
-            <footer className="flex flex-wrap items-center justify-center gap-4 px-6 py-6 font-mono text-xs text-neutral-600 max-sm:flex-col max-sm:gap-2 max-sm:py-4">
-                <span>ClawQuest v0.1 beta</span>
-                <a href="/privacy.html" className="text-neutral-600 no-underline hover:text-white">Privacy</a>
-                <a href="/terms.html" className="text-neutral-600 no-underline hover:text-white">Terms</a>
-                <a href="https://api.clawquest.ai/docs" target="_blank" rel="noopener noreferrer" className="text-neutral-600 no-underline hover:text-white">API Docs</a>
-                <a href="https://t.me/ClawQuest_aibot" target="_blank" rel="noopener noreferrer" className="text-neutral-600 no-underline hover:text-white">Telegram Bot</a>
-            </footer>
+                {/* ══════════════════════════════════
+                Footer
+            ══════════════════════════════════ */}
+                <footer className="w-full border-t border-neutral-800/50 px-4 sm:px-6 lg:px-8 xl:px-10 py-10">
+                    <div className="mx-auto w-full flex flex-col items-center gap-6">
+                        {/* Social links */}
+                        <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1">
+                            {[
+                                { label: "Twitter / X", href: "https://twitter.com/ClawQuestAI" },
+                                { label: "Telegram", href: "https://t.me/ClawQuest_aibot" },
+                                { label: "Discord", href: "https://discord.gg/clawquest" },
+                                { label: "GitHub", href: "https://github.com/clawquest" },
+                                { label: "Docs", href: "https://api.clawquest.ai/docs" },
+                            ].map(({ label, href }, i, arr) => (
+                                <span key={label} className="flex items-center gap-1">
+                                    <a
+                                        href={href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-mono text-xs text-neutral-500 no-underline transition-colors hover:text-white"
+                                    >
+                                        {label}
+                                    </a>
+                                    {i < arr.length - 1 && (
+                                        <span className="font-mono text-xs text-neutral-800 select-none">·</span>
+                                    )}
+                                </span>
+                            ))}
+                        </div>
+                        {/* Legal */}
+                        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+                            <span className="font-mono text-xs text-neutral-700">© 2025 ClawQuest</span>
+                            <a href="/privacy.html" className="font-mono text-xs text-neutral-700 no-underline hover:text-neutral-500">Privacy</a>
+                            <a href="/terms.html" className="font-mono text-xs text-neutral-700 no-underline hover:text-neutral-500">Terms</a>
+                        </div>
+                    </div>
+                </footer>
+            </div>
         </div>
     )
 }
@@ -218,10 +480,12 @@ export function Waitlist() {
 
 function HowItWorksCard({
     image,
+    step,
     title,
     description,
 }: {
     image: string
+    step: number
     title: string
     description: string
 }) {
@@ -245,6 +509,9 @@ function HowItWorksCard({
                 )}
             </div>
             <div className="flex flex-col gap-2 text-center">
+                <span className="font-mono text-xs text-[var(--wl-accent)] tracking-widest uppercase">
+                    Step {step}
+                </span>
                 <p className="font-mono text-base font-semibold text-white">
                     {title}
                 </p>
@@ -256,13 +523,47 @@ function HowItWorksCard({
     )
 }
 
+function ProblemColumn({
+    variant,
+    title,
+    items,
+}: {
+    variant: "without" | "with"
+    title: string
+    items: string[]
+}) {
+    const isWith = variant === "with"
+    return (
+        <div className={`flex flex-col gap-4 rounded-lg border p-5 sm:p-6 ${isWith
+            ? "border-[var(--wl-accent)]/30 bg-[var(--wl-accent)]/5"
+            : "border-neutral-800 bg-neutral-900/30"
+            }`}>
+            <p className={`font-mono text-sm font-semibold ${isWith ? "text-[var(--wl-accent)]" : "text-neutral-500"}`}>
+                {title}
+            </p>
+            <ul className="flex flex-col gap-3">
+                {items.map((item, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                        <span className={`mt-0.5 shrink-0 font-mono text-base leading-none ${isWith ? "text-[var(--wl-accent)]" : "text-neutral-600"}`}>
+                            {isWith ? "✓" : "✕"}
+                        </span>
+                        <span className={`font-mono text-xs leading-relaxed ${isWith ? "text-neutral-300" : "text-neutral-500"}`}>
+                            {item}
+                        </span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    )
+}
+
 function StatBlock({
     value,
     prefix = "",
     suffix = "",
     label,
 }: {
-    value: number
+    value: number | null
     prefix?: string
     suffix?: string
     label: string
@@ -270,7 +571,10 @@ function StatBlock({
     return (
         <div className="flex flex-col items-center gap-1 sm:gap-2 text-center">
             <span className="font-mono text-2xl font-semibold text-white sm:text-4xl lg:text-5xl">
-                <AnimatedCounter target={value} prefix={prefix} suffix={suffix} />
+                {value !== null
+                    ? <AnimatedCounter target={value} prefix={prefix} suffix={suffix} />
+                    : <span className="text-neutral-500 text-lg sm:text-2xl">Growing</span>
+                }
             </span>
             <span className="font-mono text-xs sm:text-sm tracking-wider text-neutral-500">
                 {label}

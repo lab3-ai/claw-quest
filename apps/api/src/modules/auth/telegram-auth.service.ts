@@ -77,6 +77,7 @@ export async function handleTelegramLogin(params: {
 
                 // Short-circuit: we already have the session
                 const linkedAgents = await autoLinkAgents(prisma, telegramId, user.id);
+                await linkWaitlistEntry(prisma, telegramId, user.id);
                 return {
                     session,
                     user: {
@@ -120,7 +121,10 @@ export async function handleTelegramLogin(params: {
     // 4. Auto-link agents via TelegramLink matching (TelegramLink.telegramId is still BigInt)
     const linkedAgents = await autoLinkAgents(prisma, telegramId, user.id);
 
-    // 5. Generate Supabase session via magiclink OTP
+    // 5. Link waitlist entry if this Telegram was on the waitlist before registering
+    await linkWaitlistEntry(prisma, telegramId, user.id);
+
+    // 6. Generate Supabase session via magiclink OTP
     const session = await generateSupabaseSession(supabaseAdmin, user.email);
 
     return {
@@ -172,6 +176,9 @@ export async function handleTelegramLink(params: {
     // 4. Auto-link agents
     const linkedAgents = await autoLinkAgents(prisma, telegramId, userId);
 
+    // 5. Link waitlist entry if this Telegram was on the waitlist before linking
+    await linkWaitlistEntry(prisma, telegramId, userId);
+
     return {
         user: {
             id: user.id,
@@ -181,6 +188,37 @@ export async function handleTelegramLink(params: {
         },
         linkedAgents,
     };
+}
+
+/**
+ * Link a WaitlistEntry to a User account when the user connects their Telegram.
+ * Matches by telegramId (BigInt). Safe no-op if no entry exists or already linked.
+ */
+async function linkWaitlistEntry(prisma: PrismaClient, telegramId: string, userId: string): Promise<void> {
+    const PG_BIGINT_MAX = BigInt('9223372036854775807');
+    let tgBigInt: bigint;
+    try {
+        tgBigInt = BigInt(telegramId);
+        if (tgBigInt < 0 || tgBigInt > PG_BIGINT_MAX) return;
+    } catch {
+        return;
+    }
+
+    const entry = await prisma.waitlistEntry.findUnique({
+        where: { telegramId: tgBigInt },
+        select: { id: true, userId: true },
+    });
+
+    // No entry, or already linked to this user — nothing to do
+    if (!entry || entry.userId === userId) return;
+
+    // Already linked to a different user — do not overwrite
+    if (entry.userId && entry.userId !== userId) return;
+
+    await prisma.waitlistEntry.update({
+        where: { id: entry.id },
+        data: { userId },
+    });
 }
 
 /**

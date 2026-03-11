@@ -1,0 +1,62 @@
+async function verifyXPostWithFallback(
+  actionType: 'post' | 'quote_post', ctx: VerificationContext, taskIndex: number,
+): Promise<SocialValidationResult> {
+  const proofUrl = ctx.proofUrls?.[taskIndex]
+  if (!proofUrl) return { valid: false, error: 'Paste your tweet URL to verify' }
+  const proofTweetId = extractTweetId(proofUrl)
+  if (!proofTweetId) return { valid: false, error: 'Invalid tweet URL — use format: https://x.com/.../status/...' }
+
+  const targetValue = ctx.params?.targetUrl || ctx.params?.postUrl || ctx.params?.accountHandle || ctx.params?.username || ''
+
+  // Path A: RapidAPI (no OAuth required)
+  const rapidApiKey = process.env.RAPID_API_KEY
+  if (rapidApiKey) {
+    if (actionType === 'quote_post') {
+      // Use /get-tweet endpoint for reliable author ID + quoted_status_id_str
+      const result = await fetchTweetForQuoteVerify(proofTweetId, rapidApiKey)
+      if (!result) return { valid: false, error: 'Tweet not found — is it public?' }
+      if (ctx.xId && result.authorId && lt.authorId !== ctx.xId) {
+        return { valid: false, error: 'This tweet was not posted by your linked X account' }
+      }
+      const targetTweetId = extractTweetId(targetValue)
+      if (targetTweetId && result.quotedStatusId !== targetTweetId) {
+        return { valid: false, error: 'This tweet does not quote the required post' }
+      }
+      return { valid: true }
+    }
+
+    // post: use fetchTweetById, verify author by xHandle or xId
+    const tweet = await fetchTweetById(proofTweetId, rapidApiKey)
+    if (!tweet) return { valid: false, error: 'Tweet not found — is it public?' }
+    if (ctx.xHandle) {
+      if (normaliseHandle(tweet.author.screenName) !== normaliseHandle(ctx.xHandle)) {
+        return { valid: false, error: 'This tweet was not posted by your linked X account' }
+      }
+    } else if (ctx.xId && tweet.author.id && tweet.author.id !== ctx.xId) {
+      return { valid: false, error: 'This tweet was not posted by your linked X account' }
+    }
+    return { valid: true }
+  }
+
+  // Pa B: OAuth fallback (original behavior)
+  if (!ctx.xId) return { valid: false, error: 'Link your X account to verify this task' }
+  const token = await ensureFreshToken(
+    { id: ctx.userId, xAccessToken: ctx.xAccessToken, xRefreshToken: ctx.xRefreshToken, xTokenExpiry: ctx.xTokenExpiry },
+    ctx.prisma,
+  )
+  if (!token) return { valid: false, error: 'X account token expired — please re-link your X account' }
+  const tweet = await getTweet(token, proofTweetId)
+  if (!tweet) return { valid: false, error: 'Tweet not found — is it public?' }
+  if (tweet.authorId !== ctx.xId) return { valid: false, error: 'This tweet was not posted by your linked X account' }
+  if (actionType === 'quote_post') {
+    const targetTweetId = extractTweetId(targetValue)
+    if (targetTweetId && tweet.quotedTweetId !== targetTweetId) {
+      return { valid: false, error: 'This tweet does not quote the required post' }
+    }
+  }
+  return { valid: true }
+} let use call original behavior first then call // Path A: RapidAPI (no OAuth required) later
+
+---
+
+I want we remove function verifyXPostWithFallback, let move 'post' | 'quote_post' into  switch (actionType)

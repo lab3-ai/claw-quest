@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "967180e91994",
+  "session_id": "6356bfe0-09b9-4e61-a7ca-19738efaf2b9",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T11:05:53.597481Z",
+  "branch": "feat/switch-use-x-api",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "apps/api/src/modules/quests/social-action-verifier.ts",
+    "apps/api/src/modules/x/x-rest-client.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "4be41cad60f1",
+  "token_usage": {
+    "input_tokens": 28,
+    "cache_creation_tokens": 73422,
+    "cache_read_tokens": 1516582,
+    "output_tokens": 11403,
+    "api_call_count": 22
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T11:05:53.285256Z",
+    "agent_lines": 151,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 151,
+    "agent_percentage": 100
+  }
+}

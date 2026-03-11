@@ -41,13 +41,16 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
         if (location.pathname === '/for-dev-lab3') {
             return
         }
-
         // Allow all routes if dev bypass flag is set in localStorage
         if (typeof window !== 'undefined') {
             const devBypass = window.localStorage.getItem('cq_dev_bypass_waitlist')
             if (devBypass === 'lab3') {
                 return
             }
+        }
+        // Default: lock everything behind the waitlist home at '/'
+        if (location.pathname !== '/') {
+            throw redirect({ to: '/' })
         }
     },
     component: () => <Outlet />,
@@ -90,7 +93,7 @@ const devLab3Route = createRoute({
                         </a>
                         <a
                             href="/quests"
-                            className="inline-flex items-center justify-center rounded-md border border-dashed bg-muted px-4 py-2 text-xs font-medium text-foreground hover:bg-muted/80"
+                            className="inline-flex items-center justify-center rounded-md border border-border bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground shadow-sm hover:bg-secondary/80"
                         >
                             View Quests
                         </a>
@@ -146,7 +149,7 @@ const termsRoute = createRoute({
 
 const waitlistRoute = createRoute({
     getParentRoute: () => rootRoute,
-    path: '/waitlist',
+    path: '/',
     component: Waitlist,
 })
 

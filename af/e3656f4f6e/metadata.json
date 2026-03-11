@@ -5,7 +5,12 @@
   "branch": "main",
   "checkpoints_count": 5,
   "files_touched": [
+    "apps/api/package.json",
+    "apps/api/prisma/create-admin.ts",
     "apps/api/src/app.ts",
+    "apps/api/src/modules/admin/admin.routes.ts",
+    "apps/api/src/modules/escrow/escrow.service.ts",
+    "apps/api/src/modules/quests/quests.publish-validator.ts",
     "apps/api/src/modules/quests/quests.routes.ts"
   ],
   "sessions": [
@@ -26,6 +31,12 @@
       "transcript": "/af/e3656f4f6e/2/full.jsonl",
       "content_hash": "/af/e3656f4f6e/2/content_hash.txt",
       "prompt": "/af/e3656f4f6e/2/prompt.txt"
+    },
+    {
+      "metadata": "/af/e3656f4f6e/3/metadata.json",
+      "transcript": "/af/e3656f4f6e/3/full.jsonl",
+      "content_hash": "/af/e3656f4f6e/3/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {

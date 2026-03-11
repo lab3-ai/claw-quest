@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { createRouter, createRoute, createRootRouteWithContext, Outlet, redirect } from '@tanstack/react-router'
 import type { AuthContextType } from './context/AuthContext'
 import { Login } from './routes/login'
@@ -35,7 +36,69 @@ interface RouterContext {
 }
 
 const rootRoute = createRootRouteWithContext<RouterContext>()({
+    beforeLoad: ({ location }) => {
+        // Allow special dev bypass route without redirect
+        if (location.pathname === '/for-dev-lab3') {
+            return
+        }
+
+        // Allow all routes if dev bypass flag is set in localStorage
+        if (typeof window !== 'undefined') {
+            const devBypass = window.localStorage.getItem('cq_dev_bypass_waitlist')
+            if (devBypass === 'lab3') {
+                return
+            }
+        }
+    },
     component: () => <Outlet />,
+})
+
+// Auth-less routes (no topbar/footer)
+const devLab3Route = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/for-dev-lab3',
+    component: function DevLab3Bypass() {
+        useEffect(() => {
+            if (typeof window !== 'undefined') {
+                window.localStorage.setItem('cq_dev_bypass_waitlist', 'lab3')
+            }
+        }, [])
+
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+                <div className="max-w-md space-y-6 text-center">
+                    <div className="space-y-2">
+                        <h1 className="text-2xl font-semibold tracking-tight">Dev Lab 3 unlocked</h1>
+                        <p className="text-sm text-muted-foreground">
+                            Local bypass token has been stored in your browser. You can now navigate to any dashboard
+                            route without being redirected back to the waitlist.
+                        </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-center gap-3">
+                        <a
+                            href="/login"
+                            className="inline-flex items-center justify-center rounded-md border border-border bg-primary px-4 py-2 text-xs font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+                        >
+                            Go to Login
+                        </a>
+                        <a
+                            href="/dashboard"
+                            className="inline-flex items-center justify-center rounded-md border border-border bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground shadow-sm hover:bg-secondary/80"
+                        >
+                            Go to Dashboard
+                        </a>
+                        <a
+                            href="/quests"
+                            className="inline-flex items-center justify-center rounded-md border border-dashed bg-muted px-4 py-2 text-xs font-medium text-foreground hover:bg-muted/80"
+                        >
+                            View Quests
+                        </a>
+                    </div>
+                </div>
+            </div>
+        )
+    },
 })
 
 // Auth-less routes (no topbar/footer)
@@ -338,6 +401,7 @@ const stripeConnectRoute = createRoute({
 })
 
 const routeTree = rootRoute.addChildren([
+    devLab3Route,
     loginRoute,
     registerRoute,
     authCallbackRoute,

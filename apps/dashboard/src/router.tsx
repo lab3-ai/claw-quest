@@ -29,6 +29,11 @@ import { Terms } from './routes/terms'
 import { Waitlist } from './routes/waitlist'
 import { CliAuth } from './routes/cli-auth'
 import { AgentDetail } from './routes/_authenticated/agents/$agentId'
+import { GitHubCallback } from './routes/auth/github-callback'
+import { GitHubBountiesExplore } from './routes/_public/github-bounties/index'
+import { GitHubBountyDetail } from './routes/_public/github-bounties/detail'
+import { CreateGitHubBounty } from './routes/_authenticated/github-bounties/new'
+import { MyGitHubBounties } from './routes/_authenticated/github-bounties/mine'
 
 // Root route
 interface RouterContext {
@@ -139,6 +144,12 @@ const xCallbackRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/auth/x/callback',
     component: XCallback,
+})
+
+const githubCallbackRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/auth/github/callback',
+    component: GitHubCallback,
 })
 
 const privacyRoute = createRoute({
@@ -408,6 +419,40 @@ const stripeConnectRoute = createRoute({
     component: StripeConnect,
 })
 
+// ── GitHub Bounty routes ──
+const githubBountiesRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/github-bounties',
+    component: GitHubBountiesExplore,
+})
+
+const githubBountyDetailRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/github-bounties/$bountyId',
+    component: function GitHubBountyDetailPage() {
+        const { bountyId } = githubBountyDetailRoute.useParams()
+        return <GitHubBountyDetail bountyId={bountyId} />
+    },
+})
+
+const createGithubBountyRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/github-bounties/new',
+    beforeLoad: ({ context }) => {
+        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
+    },
+    component: CreateGitHubBounty,
+})
+
+const myGithubBountiesRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/github-bounties/mine',
+    beforeLoad: ({ context }) => {
+        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
+    },
+    component: MyGitHubBounties,
+})
+
 const routeTree = rootRoute.addChildren([
     devLab3Route,
     loginRoute,
@@ -415,6 +460,7 @@ const routeTree = rootRoute.addChildren([
     authCallbackRoute,
     telegramCallbackRoute,
     xCallbackRoute,
+    githubCallbackRoute,
     privacyRoute,
     termsRoute,
     waitlistRoute,
@@ -443,6 +489,10 @@ const routeTree = rootRoute.addChildren([
         verifyRoute,
         accountRoute,
         stripeConnectRoute,
+        githubBountiesRoute,
+        githubBountyDetailRoute,
+        createGithubBountyRoute,
+        myGithubBountiesRoute,
     ]),
 ])
 

@@ -42,34 +42,39 @@ async function verifyXAction(
     return verifyXPostWithFallback(actionType, ctx, taskIndex)
   }
 
-  // like_post, follow_account, repost verify via RapidAPI using xHandle (no OAuth token needed)
-  if (!ctx.xHandle) return { valid: false, error: 'Link your X account to verify this task' }
-
   // Support multiple param key conventions used by quest creators
   const targetValue = ctx.params?.targetUrl || ctx.params?.postUrl || ctx.params?.accountHandle || ctx.params?.username || ''
 
   switch (actionType) {
     case 'follow_account': {
       const targetHandle = targetValue.replace(/^@/, '').replace(/^https?:\/\/(x|twitter)\.com\//, '')
+
+      // If user has xId but no valid tokens, return token expired error
+      if (ctx.xId && !ctx.xAccessToken && !ctx.xRefreshToken) {
+        return { valid: false, error: 'X account token expired — please re-link your X account' }
+      }
+
       // Prefer OAuth path when user has linked X (official API); fallback to RapidAPI when no token
       if (ctx.xId && (ctx.xAccessToken || ctx.xRefreshToken)) {
         const token = await ensureFreshToken(
           { id: ctx.userId, xAccessToken: ctx.xAccessToken, xRefreshToken: ctx.xRefreshToken, xTokenExpiry: ctx.xTokenExpiry },
           ctx.prisma,
         )
-        if (token) {
-          const targetXId = await lookupUserByUsername(token, targetHandle)
-          if (targetXId) {
-            const follows = await checkFollowing(token, ctx.xId, targetXId)
-            if (follows !== null) return follows ? { valid: true } : { valid: false, error: 'You are not following this account' }
-          }
+        if (!token) {
+          // Token refresh failed - expired
+          return { valid: false, error: 'X account token expired — please re-link your X account' }
+        }
+        const targetXId = await lookupUserByUsername(token, targetHandle)
+        if (targetXId) {
+          const follows = await checkFollowing(token, ctx.xId, targetXId)
+          if (follows !== null) return follows ? { valid: true } : { valid: false, error: 'not following this account' }
         }
       }
       // Fallback: RapidAPI (no OAuth). Requires xHandle.
-      if (!ctx.xHandle) return { valid: false, error: 'Follow verification unavailable — link your X account to verify' }
+      if (!ctx.xHandle) return { valid: false, error: 'Link your X account to verify this task' }
       const follows = await checkUserFollows(ctx.xHandle, targetHandle)
       if (follows === null) return { valid: false, error: 'Follow verification unavailable — try again later' }
-      return follows ? { valid: true } : { valid: false, error: 'You are not following this account' }
+      return follows ? { valid: true } : { valid: false, error: 'not following this account' }
     }
     case 'like_post':
       return { valid: false, error: 'Like verification coming soon — please check back later' }

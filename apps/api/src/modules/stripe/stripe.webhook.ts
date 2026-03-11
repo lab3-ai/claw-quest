@@ -187,9 +187,16 @@ async function handleCheckoutCompleted(server: FastifyInstance, event: Stripe.Ev
     );
 
     const questId = session.metadata?.questId;
+    const bountyId = session.metadata?.bountyId;
     const sessionType = session.metadata?.type;
 
-    // Only process quest_funding sessions
+    // Route to bounty funding handler if this is a bounty_funding session
+    if (sessionType === 'bounty_funding' && bountyId) {
+        await handleBountyCheckoutCompleted(server, session);
+        return;
+    }
+
+    // Only process quest_funding sessions below
     if (!questId || sessionType !== 'quest_funding') {
         server.log.debug(
             { sessionId: session.id, questId, sessionType },
@@ -312,6 +319,35 @@ async function handleCheckoutCanceled(
         );
         throw err;
     }
+}
+
+/** GitHub Bounty USD funding confirmed via Stripe Checkout */
+async function handleBountyCheckoutCompleted(server: FastifyInstance, session: Stripe.Checkout.Session) {
+    const bountyId = session.metadata?.bountyId;
+    if (!bountyId) return;
+
+    if (session.payment_status !== 'paid') {
+        // Reset pending bounty to unfunded on cancellation
+        await server.prisma.gitHubBounty.updateMany({
+            where: { id: bountyId, fundingStatus: 'pending' },
+            data: { fundingStatus: 'unfunded', stripeSessionId: null },
+        });
+        return;
+    }
+
+    const bounty = await server.prisma.gitHubBounty.findUnique({ where: { id: bountyId } });
+    if (!bounty || bounty.fundingStatus === 'confirmed') return;
+
+    await server.prisma.gitHubBounty.update({
+        where: { id: bountyId },
+        data: {
+            fundingStatus: 'confirmed',
+            stripePaymentId: session.payment_intent as string,
+            status: 'live',
+        },
+    });
+
+    server.log.info({ bountyId, sessionId: session.id }, '[stripe:webhook] GitHub bounty funded, status → live');
 }
 
 /** Refund confirmed by Stripe */

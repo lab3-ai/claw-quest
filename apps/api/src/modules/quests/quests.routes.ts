@@ -928,6 +928,8 @@ export async function questsRoutes(server: FastifyInstance) {
                 // Try human JWT
                 try {
                     await (server as any).authenticate(request, reply);
+                    // Check if response was already sent (e.g., 401 from authenticate)
+                    if (reply.sent) return;
                     const user = (request as any).user;
                     if (user?.id) {
                         creator.userId = user.id;
@@ -1241,6 +1243,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     description: z.string().optional(),
                     sponsor: z.string().optional(),
                     type: z.nativeEnum(QUEST_TYPE).optional(),
+                    status: z.string().optional(),
                     rewardAmount: z.number().min(0).optional(),
                     rewardType: z.string().optional(),
                     totalSlots: z.number().min(1).optional(),

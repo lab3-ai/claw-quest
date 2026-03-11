@@ -43,12 +43,18 @@ export function PublicLayout() {
                     </Link>
 
                     {/* Desktop nav */}
-                    <nav className="hidden items-center gap-1 sm:flex">
+                    <nav className="hidden items-center gap-4 sm:flex">
                         <Link
                             to="/quests"
                             className="py-1.5 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
                         >
                             Quests
+                        </Link>
+                        <Link
+                            to="/github-bounties"
+                            className="py-1.5 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
+                        >
+                            Bounties
                         </Link>
                     </nav>
 
@@ -83,6 +89,13 @@ export function PublicLayout() {
                                     className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
                                 >
                                     Quests
+                                </Link>
+                                <Link
+                                    to="/github-bounties"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted"
+                                >
+                                    Bounties
                                 </Link>
                                 <div className="my-1 h-px bg-border" />
                                 <div className="px-3 py-2">

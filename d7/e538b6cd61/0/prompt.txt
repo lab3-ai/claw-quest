@@ -1,0 +1,13 @@
+@detail.tsx (1070-1086)  If it is LLMquest
+
+---
+
+@detail.tsx (1070-1086)  If it is LLM's quest, dont show button Fund Quest
+
+---
+
+We can create util constant variable for rewardType? and apply all place which used
+
+---
+
+suggest branch name

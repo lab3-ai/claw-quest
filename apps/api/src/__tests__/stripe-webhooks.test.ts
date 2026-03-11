@@ -13,17 +13,27 @@ import {
 const prisma = new PrismaClient();
 const testUserIds: string[] = [];
 
+// Create mock Stripe instance using vi.hoisted for proper mock factory access
+const { mockStripeWebhooks, mockStripeCheckout } = vi.hoisted(() => ({
+  mockStripeWebhooks: {
+    constructEvent: vi.fn((payload, signature, secret) => {
+      // Default: parse the payload and return as an event
+      const event = typeof payload === 'string' ? JSON.parse(payload) : payload;
+      return event;
+    }),
+  },
+  mockStripeCheckout: {
+    sessions: {
+      retrieve: vi.fn(),
+    },
+  },
+}));
+
 // Mock Stripe configuration
-vi.mock('../../modules/stripe/stripe.config', () => ({
+vi.mock('../modules/stripe/stripe.config', () => ({
   stripe: {
-    webhooks: {
-      constructEvent: vi.fn(),
-    },
-    checkout: {
-      sessions: {
-        retrieve: vi.fn(),
-      },
-    },
+    webhooks: mockStripeWebhooks,
+    checkout: mockStripeCheckout,
   },
   stripeConfig: {
     webhookSecret: 'whsec_test_secret',
@@ -84,8 +94,8 @@ describe('Stripe Webhook Integration Tests', () => {
       const event = createMockStripeEvent('checkout.session.completed', session);
 
       // Mock stripe.webhooks.constructEvent to return our event
-      const { stripe } = await import('../../modules/stripe/stripe.config');
-      vi.mocked(stripe.webhooks.constructEvent).mockReturnValue(event);
+      
+      mockStripeWebhooks.constructEvent.mockReturnValue(event);
 
       const payload = JSON.stringify(event);
       const signature = generateStripeSignature(payload);
@@ -99,6 +109,11 @@ describe('Stripe Webhook Integration Tests', () => {
         },
         payload,
       });
+
+      if (response.statusCode !== 200) {
+        console.log('Response status:', response.statusCode);
+        console.log('Response body:', response.body);
+      }
 
       expect(response.statusCode).toBe(200);
 
@@ -137,8 +152,8 @@ describe('Stripe Webhook Integration Tests', () => {
       });
 
       const event = createMockStripeEvent('checkout.session.completed', session);
-      const { stripe } = await import('../../modules/stripe/stripe.config');
-      vi.mocked(stripe.webhooks.constructEvent).mockReturnValue(event);
+      
+      mockStripeWebhooks.constructEvent.mockReturnValue(event);
 
       const payload = JSON.stringify(event);
       const signature = generateStripeSignature(payload);
@@ -148,6 +163,7 @@ describe('Stripe Webhook Integration Tests', () => {
         url: '/stripe/webhook',
         headers: {
           'stripe-signature': signature,
+          'content-type': 'application/json',
         },
         payload,
       });
@@ -185,8 +201,8 @@ describe('Stripe Webhook Integration Tests', () => {
       });
 
       const event = createMockStripeEvent('checkout.session.completed', session);
-      const { stripe } = await import('../../modules/stripe/stripe.config');
-      vi.mocked(stripe.webhooks.constructEvent).mockReturnValue(event);
+      
+      mockStripeWebhooks.constructEvent.mockReturnValue(event);
 
       const payload = JSON.stringify(event);
       const signature = generateStripeSignature(payload);
@@ -195,7 +211,7 @@ describe('Stripe Webhook Integration Tests', () => {
       const response1 = await server.inject({
         method: 'POST',
         url: '/stripe/webhook',
-        headers: { 'stripe-signature': signature },
+        headers: { 'stripe-signature': signature, 'content-type': 'application/json' },
         payload,
       });
 
@@ -205,7 +221,7 @@ describe('Stripe Webhook Integration Tests', () => {
       const response2 = await server.inject({
         method: 'POST',
         url: '/stripe/webhook',
-        headers: { 'stripe-signature': signature },
+        headers: { 'stripe-signature': signature, 'content-type': 'application/json' },
         payload,
       });
 
@@ -227,8 +243,8 @@ describe('Stripe Webhook Integration Tests', () => {
       });
 
       const event = createMockStripeEvent('checkout.session.completed', session);
-      const { stripe } = await import('../../modules/stripe/stripe.config');
-      vi.mocked(stripe.webhooks.constructEvent).mockReturnValue(event);
+      
+      mockStripeWebhooks.constructEvent.mockReturnValue(event);
 
       const payload = JSON.stringify(event);
       const signature = generateStripeSignature(payload);
@@ -236,7 +252,7 @@ describe('Stripe Webhook Integration Tests', () => {
       const response = await server.inject({
         method: 'POST',
         url: '/stripe/webhook',
-        headers: { 'stripe-signature': signature },
+        headers: { 'stripe-signature': signature, 'content-type': 'application/json' },
         payload,
       });
 
@@ -249,8 +265,8 @@ describe('Stripe Webhook Integration Tests', () => {
       const payload = JSON.stringify(event);
 
       // Mock signature verification to throw error
-      const { stripe } = await import('../../modules/stripe/stripe.config');
-      vi.mocked(stripe.webhooks.constructEvent).mockImplementation(() => {
+      
+      mockStripeWebhooks.constructEvent.mockImplementation(() => {
         throw new Error('Invalid signature');
       });
 
@@ -259,6 +275,7 @@ describe('Stripe Webhook Integration Tests', () => {
         url: '/stripe/webhook',
         headers: {
           'stripe-signature': 'invalid_signature',
+          'content-type': 'application/json',
         },
         payload,
       });
@@ -318,8 +335,8 @@ describe('Stripe Webhook Integration Tests', () => {
       });
 
       const event = createMockStripeEvent('charge.refunded', charge);
-      const { stripe } = await import('../../modules/stripe/stripe.config');
-      vi.mocked(stripe.webhooks.constructEvent).mockReturnValue(event);
+      
+      mockStripeWebhooks.constructEvent.mockReturnValue(event);
 
       const payload = JSON.stringify(event);
       const signature = generateStripeSignature(payload);
@@ -327,7 +344,7 @@ describe('Stripe Webhook Integration Tests', () => {
       const response = await server.inject({
         method: 'POST',
         url: '/stripe/webhook',
-        headers: { 'stripe-signature': signature },
+        headers: { 'stripe-signature': signature, 'content-type': 'application/json' },
         payload,
       });
 
@@ -360,11 +377,12 @@ describe('Stripe Webhook Integration Tests', () => {
         details_submitted: true,
         charges_enabled: true,
         payouts_enabled: true,
+        metadata: { userId: testUser.id } as any,
       });
 
       const event = createMockStripeEvent('account.updated', account);
-      const { stripe } = await import('../../modules/stripe/stripe.config');
-      vi.mocked(stripe.webhooks.constructEvent).mockReturnValue(event);
+      
+      mockStripeWebhooks.constructEvent.mockReturnValue(event);
 
       const payload = JSON.stringify(event);
       const signature = generateStripeSignature(payload);
@@ -372,7 +390,7 @@ describe('Stripe Webhook Integration Tests', () => {
       const response = await server.inject({
         method: 'POST',
         url: '/stripe/webhook',
-        headers: { 'stripe-signature': signature },
+        headers: { 'stripe-signature': signature, 'content-type': 'application/json' },
         payload,
       });
 
@@ -402,8 +420,8 @@ describe('Stripe Webhook Integration Tests', () => {
       });
 
       const event = createMockStripeEvent('account.updated', account);
-      const { stripe } = await import('../../modules/stripe/stripe.config');
-      vi.mocked(stripe.webhooks.constructEvent).mockReturnValue(event);
+      
+      mockStripeWebhooks.constructEvent.mockReturnValue(event);
 
       const payload = JSON.stringify(event);
       const signature = generateStripeSignature(payload);
@@ -411,7 +429,7 @@ describe('Stripe Webhook Integration Tests', () => {
       await server.inject({
         method: 'POST',
         url: '/stripe/webhook',
-        headers: { 'stripe-signature': signature },
+        headers: { 'stripe-signature': signature, 'content-type': 'application/json' },
         payload,
       });
 

@@ -142,7 +142,8 @@ clawquest/
 
 ```
 User        id, supabaseId(unique), email, username?(unique), password?(legacy), role(user|admin),
-            stripeConnectedAccountId?(unique), stripeConnectedOnboarded(bool), stripeCustomerId?(unique), timestamps
+            stripeConnectedAccountId?(unique), stripeConnectedOnboarded(bool), stripeCustomerId?(unique),
+            githubId?, githubHandle?, githubAccessToken?, timestamps
 Agent       id, ownerId→User, agentname, status(idle/questing/offline),
             activationCode?(unique), agentApiKey?(unique, cq_*)
 AgentSkill  id, agentId→Agent, name, version?, source(clawhub/mcp/manual),
@@ -155,6 +156,11 @@ QuestParticipation  id, questId, agentId, status, proof(JSON), tasksCompleted,
                     tasksTotal, payoutAmount, payoutStatus
 AgentLog    id, agentId, type(QUEST_START/QUEST_COMPLETE/ERROR/INFO), message, meta(JSON)
 EscrowCursor  chainId(unique), lastBlock, updatedAt — DB-persisted block cursor for escrow event polling
+GitHubBounty  id, creatorUserId→User, repoOwner, repoName, repoUrl, description, tasks[],
+              rewardType(USDC/LLM_KEY), rewardAmount, fundingMethod(crypto/stripe),
+              status(draft/active/completed), totalWinners, submissions[], createdAt, expiresAt
+GitHubBountySubmission  id, bountyId→GitHubBounty, submitterUserId→User, prUrl, prNumber,
+                        status(pending/approved/rejected), approvedAt
 ```
 
 ---
@@ -215,6 +221,17 @@ POST /stripe/webhook              → Stripe webhook handler (no auth, Stripe si
 Distribution calculator: computeFcfs, computeLeaderboard, computeLuckyDraw
 Status guards: reject non-live quests, prevent double-pay
 Dust handling: rounding remainder to first recipient, sum invariant
+
+── GitHub Bounty (v0.14.0) ──────────────────────────────────
+GET  /auth/github/authorize          → GitHub OAuth authorize endpoint (JWT)
+POST /auth/github/callback           → GitHub OAuth callback handler
+GET  /github-bounties                → list bounties (public)
+GET  /github-bounties/:id            → bounty detail (public)
+POST /github-bounties                → create bounty from repo (JWT)
+GET  /github-bounties/:id/submissions → list PR submissions (public)
+POST /github-bounties/:id/submit     → submit PR to bounty (JWT)
+PATCH /github-bounties/:id/submissions/:submissionId/approve → approve PR submission (JWT, creator only)
+DELETE /github-bounties/:id/submissions/:submissionId → reject/delete submission (JWT)
 ```
 
 ---
@@ -272,7 +289,21 @@ The `ESCROW_NETWORK_MODE` env var (and frontend counterpart `VITE_ESCROW_NETWORK
 
 ---
 
-## ✅ Recently Completed (v0.10.0 – v0.13.0)
+## ✅ Recently Completed (v0.10.0 – v0.14.0)
+
+### v0.14.0 — GitHub Bounty MVP
+- [x] GitHubBounty + GitHubBountySubmission Prisma models
+- [x] GitHub REST client module with repo analysis
+- [x] LLM-assisted bounty suggestion generation
+- [x] Create bounties from GitHub repos with AI-suggested tasks
+- [x] PR submission + creator approval flow
+- [x] USDC + LLM_KEY reward types support
+- [x] GitHub OAuth flow (authorize + callback)
+- [x] 9 GitHub bounty CRUD endpoints + submission management
+- [x] Dashboard: explore, detail + PR submit, create wizard, my bounties
+- [x] Stripe integration for bounty funding (USD)
+- [x] User fields: githubId, githubHandle, githubAccessToken
+- [x] 225 tests passing (no regressions)
 
 ### v0.13.0 — Stripe Connect Fiat Payments
 - [x] Stripe module: config, service, connect service, webhook handler, routes

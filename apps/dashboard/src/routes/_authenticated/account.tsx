@@ -33,6 +33,8 @@ interface UserProfile {
     hasXToken: boolean
     discordId: string | null
     discordHandle: string | null
+    githubId: string | null
+    githubHandle: string | null
     createdAt: string
 }
 
@@ -636,6 +638,45 @@ export function Account() {
                     {(unlinkError || linkError) && (
                         <div className="text-xs text-destructive py-3 flex items-center gap-2 mt-2">{unlinkError || linkError}</div>
                     )}
+                </div>
+            </div>
+
+            {/* GitHub for Bounties */}
+            <div className="border border-border rounded mb-5 bg-background">
+                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-muted text-foreground">GitHub for Bounties</div>
+                <div className="p-4">
+                    <div className="flex items-center gap-2.5 text-sm">
+                        <span className="w-5 text-center text-sm shrink-0 font-mono">GH</span>
+                        <span className="font-semibold min-w-[90px]">GitHub</span>
+                        {profile?.githubHandle ? (
+                            <>
+                                <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
+                                    <span className="text-success text-xs font-semibold">Connected</span>
+                                    <span className="text-muted-foreground text-xs font-mono">@{profile.githubHandle}</span>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="flex-1" />
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-[12px] px-[10px] py-1 min-w-[70px]"
+                                    onClick={() => {
+                                        const state = crypto.randomUUID()
+                                        sessionStorage.setItem("github_oauth_state", state)
+                                        sessionStorage.setItem("github_oauth_return_to", "/account")
+                                        window.location.href = `${API_BASE}/auth/github/authorize?scope=read:user&state=${state}`
+                                    }}
+                                >
+                                    Connect
+                                </Button>
+                            </>
+                        )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                        Required to submit PRs for GitHub bounties.
+                    </p>
                 </div>
             </div>
 

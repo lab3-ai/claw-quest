@@ -1243,6 +1243,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     description: z.string().optional(),
                     sponsor: z.string().optional(),
                     type: z.nativeEnum(QUEST_TYPE).optional(),
+                    status: z.string().optional(),
                     rewardAmount: z.number().min(0).optional(),
                     rewardType: z.string().optional(),
                     totalSlots: z.number().min(1).optional(),

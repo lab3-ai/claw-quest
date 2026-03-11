@@ -4,6 +4,7 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from 'fastify-type-provider-zod';
+import rawBody from 'fastify-raw-body';
 import { PrismaClient } from '@prisma/client';
 import { createClient } from '@supabase/supabase-js';
 import { authRoutes } from '../../modules/auth/auth.routes';
@@ -35,6 +36,13 @@ export async function createTestServer(prisma: PrismaClient, supabase?: any) {
   // Set up Zod validation
   server.setValidatorCompiler(validatorCompiler);
   server.setSerializerCompiler(serializerCompiler);
+
+  // Register raw-body plugin for webhook signature verification
+  await server.register(rawBody, {
+    field: 'rawBody',
+    global: false,
+    encoding: 'utf8',
+  });
 
   // Mock supabase if not provided
   const mockSupabase = supabase || {

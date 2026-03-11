@@ -62,6 +62,51 @@ export async function createFundCheckout(
     return { checkoutUrl: session.url!, sessionId: session.id };
 }
 
+/**
+ * Create a Stripe Checkout Session for GitHub bounty funding (USD reward type).
+ * On payment confirmed, webhook sets bounty status → 'live'.
+ */
+export async function createBountyFundCheckout(
+    prisma: PrismaClient,
+    bountyId: string,
+    successUrl: string,
+    cancelUrl: string,
+): Promise<{ checkoutUrl: string; sessionId: string }> {
+    const bounty = await prisma.gitHubBounty.findUnique({ where: { id: bountyId } });
+    if (!bounty) throw new Error('Bounty not found');
+    if (bounty.fundingStatus === 'confirmed') throw new Error('Bounty already funded');
+    if (bounty.rewardType !== 'USD') throw new Error('Only USD bounties require Stripe funding');
+
+    const amountCents = Math.round(Number(bounty.rewardAmount) * 100);
+
+    const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card'],
+        line_items: [{
+            price_data: {
+                currency: stripeConfig.currency,
+                unit_amount: amountCents,
+                product_data: {
+                    name: `Fund GitHub Bounty: ${bounty.title}`,
+                    description: `${bounty.repoOwner}/${bounty.repoName} — ${bounty.maxWinners} winner(s)`,
+                    metadata: { bountyId },
+                },
+            },
+            quantity: 1,
+        }],
+        metadata: { bountyId, type: 'bounty_funding' },
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+    });
+
+    await prisma.gitHubBounty.update({
+        where: { id: bountyId },
+        data: { stripeSessionId: session.id, fundingStatus: 'pending' },
+    });
+
+    return { checkoutUrl: session.url!, sessionId: session.id };
+}
+
 // ─── FLOW 2: DISTRIBUTE REWARDS (Platform → Winners via Stripe Transfer) ───
 
 /**

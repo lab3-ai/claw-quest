@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { isStripeConfigured } from './stripe.config';
 import { stripe } from './stripe.config';
-import { createFundCheckout, distributeFiat, refundFiat } from './stripe.service';
+import { createFundCheckout, createBountyFundCheckout, distributeFiat, refundFiat } from './stripe.service';
 import { createConnectedAccount, getConnectedAccountStatus, createDashboardLink } from './stripe-connect.service';
 import { stripeWebhookRoute } from './stripe.webhook';
 
@@ -58,6 +58,43 @@ export async function stripeRoutes(server: FastifyInstance) {
 
             try {
                 return await createFundCheckout(server.prisma, questId, successUrl, cancelUrl);
+            } catch (err: any) {
+                return reply.status(400).send({ message: err.message } as any);
+            }
+        },
+    );
+
+    // ── POST /stripe/checkout/bounty/:bountyId — Fund GitHub Bounty (USD) ─────
+    server.post(
+        '/checkout/bounty/:bountyId',
+        {
+            schema: {
+                tags: ['Stripe'],
+                summary: 'Create Stripe Checkout Session to fund a GitHub Bounty with USD',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ bountyId: z.string().uuid() }),
+                body: z.object({ successUrl: z.string().url(), cancelUrl: z.string().url() }),
+                response: {
+                    200: z.object({ checkoutUrl: z.string(), sessionId: z.string() }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            if (!isStripeConfigured()) {
+                return reply.status(503).send({ message: 'Stripe not configured' } as any);
+            }
+            const { bountyId } = request.params as any;
+            const { successUrl, cancelUrl } = request.body as any;
+
+            const bounty = await server.prisma.gitHubBounty.findUnique({ where: { id: bountyId } });
+            if (!bounty) return reply.status(404).send({ message: 'Bounty not found' } as any);
+            if (bounty.creatorUserId !== request.user.id) {
+                return reply.status(403).send({ message: 'Only bounty creator can fund it' } as any);
+            }
+
+            try {
+                return await createBountyFundCheckout(server.prisma, bountyId, successUrl, cancelUrl);
             } catch (err: any) {
                 return reply.status(400).send({ message: err.message } as any);
             }

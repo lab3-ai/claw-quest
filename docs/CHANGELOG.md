@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.14.0 — GitHub Bounty MVP (2026-03-11)
+
+### GitHub Bounty — Independent Bounty Module
+- [New] GitHubBounty + GitHubBountySubmission Prisma models
+- [New] GitHub REST client: getRepo, getRepoIssues, getReadme, getContributing, getPullRequest
+- [New] Repo analyzer: LLM-assisted bounty suggestion generation
+- [New] Create bounties from GitHub repos with AI-suggested tasks
+- [New] PR submission + creator approval flow (push to approved + get reward)
+- [New] USDC + LLM_KEY reward types support
+- [New] GitHub OAuth: `GET /auth/github/authorize` + `POST /auth/github/callback`
+- [New] 9 GitHub bounty endpoints: `/github-bounties` (CRUD, submit, approve)
+- [New] Dashboard: explore page, bounty detail + PR submit, create wizard (repo → AI suggestions → publish), my bounties management
+- [New] Stripe integration: `createBountyFundCheckout()` + webhook handler
+- [New] User fields: githubId, githubHandle, githubAccessToken
+- [New] 225 tests passing (no regressions)
+
+---
+
 ## v0.13.1 — Telegram bot production fix + waitlist numbering (2026-03-11)
 
 ### Telegram

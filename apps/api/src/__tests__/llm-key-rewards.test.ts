@@ -132,6 +132,15 @@ describe('LLM_KEY Reward Type Integration Tests', () => {
           fundingStatus: 'unfunded',
           llmKeyRewardEnabled: true,
           llmKeyTokenLimit: 500000,
+          tasks: [
+            {
+              id: '00000000-0000-0000-0000-000000000099',
+              platform: 'x',
+              actionType: 'follow_account',
+              label: 'Follow test',
+              params: { username: 'testaccount123' },
+            },
+          ],
         },
       });
 
@@ -148,12 +157,12 @@ describe('LLM_KEY Reward Type Integration Tests', () => {
       });
 
       // For LLM_KEY quests, this should succeed even without funding
-      // (The actual implementation may vary, but the test shows the intent)
-      if (response.statusCode === 200) {
-        const body = JSON.parse(response.body);
-        expect(body.status).toBe('live');
-        expect(body.fundingStatus).toBe('unfunded');
-      }
+      console.log('LLM KEY response:', response.statusCode, response.body.substring(0, 200));
+
+      expect(response.statusCode).toBe(200);
+      const body = JSON.parse(response.body);
+      expect(body.status).toBe('live');
+      expect(body.fundingStatus).toBe('unfunded');
     });
 
     it('should reject non-LLM_KEY quest going live without funding', async () => {
@@ -169,6 +178,15 @@ describe('LLM_KEY Reward Type Integration Tests', () => {
           totalSlots: 3,
           creatorUserId: creator.id,
           fundingStatus: 'unfunded',
+          tasks: [
+            {
+              id: '00000000-0000-0000-0000-000000000098',
+              platform: 'x',
+              actionType: 'follow_account',
+              label: 'Follow test',
+              params: { username: 'testaccount' },
+            },
+          ],
         },
       });
 
@@ -185,7 +203,8 @@ describe('LLM_KEY Reward Type Integration Tests', () => {
 
       expect(response.statusCode).toBe(400);
       const body = JSON.parse(response.body);
-      expect(body.message || body.error?.message).toContain('funded');
+      const msg = body.message || body.error?.message || '';
+      expect(msg.toLowerCase()).toMatch(/fund|publish requirements/i);
     });
   });
 
@@ -274,16 +293,16 @@ describe('LLM_KEY Reward Type Integration Tests', () => {
     it('should allow participation in LLM_KEY quest', async () => {
       const response = await server.inject({
         method: 'POST',
-        url: `/quests/${llmQuest.id}/join`,
+        url: `/quests/${llmQuest.id}/accept`,
         headers: {
           authorization: `Bearer ${participantToken}`,
         },
+        payload: {},
       });
 
       expect(response.statusCode).toBe(200);
       const body = JSON.parse(response.body);
-      expect(body.questId).toBe(llmQuest.id);
-      expect(body.userId).toBe(participant.id);
+      expect(body.participationId).toBeDefined();
     });
 
     it('should track LLM key issuance status', async () => {

@@ -17,11 +17,13 @@ export function validatePublishRequirements(quest: any): PublishValidationError 
     if (!(rewardAmountNum > 0)) fields.rewardAmount = 'Reward amount must be > 0';
     if (!quest.totalSlots || quest.totalSlots <= 0) fields.totalSlots = 'Total slots must be > 0';
 
-    // Accept fully funded: either confirmed status OR totalFunded >= rewardAmount
-    const totalFunded = Number(quest.totalFunded ?? 0);
-    const rewardAmtForFunding = Number(quest.rewardAmount ?? 0);
-    if (quest.fundingStatus !== FUNDING_STATUS.CONFIRMED && totalFunded < rewardAmtForFunding) {
-        fields.funding = `Insufficient funding: ${totalFunded}/${rewardAmtForFunding}`;
+    // LLM_KEY quests don't require on-chain funding
+    if (quest.rewardType !== 'LLM_KEY') {
+        const totalFunded = Number(quest.totalFunded ?? 0);
+        const rewardAmtForFunding = Number(quest.rewardAmount ?? 0);
+        if (quest.fundingStatus !== FUNDING_STATUS.CONFIRMED && totalFunded < rewardAmtForFunding) {
+            fields.funding = `Insufficient funding: ${totalFunded}/${rewardAmtForFunding}`;
+        }
     }
 
     // Tasks — safe-parse from JSON to prevent crash on malformed data

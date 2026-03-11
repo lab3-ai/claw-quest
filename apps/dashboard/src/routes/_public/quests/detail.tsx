@@ -1073,6 +1073,11 @@ export function QuestDetail() {
                                     return (
                                         <>
                                             {isCreator && (
+                                                <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>
+                                                    <Button className="w-full mb-2">Edit Quest</Button>
+                                                </Link>
+                                            )}
+                                            {isCreator && (
                                                 <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>
                                                     <Button variant="secondary" className="w-full mb-2">Manage Quest</Button>
                                                 </Link>

@@ -148,10 +148,23 @@ export async function createQuest(
         }
     }
 
-    // Only validate tasks for non-draft quests (agent flow creates with status='live')
+    // Validate publish requirements for non-draft quests (agent flow creates with status='live')
     if (input.status !== 'draft') {
         const taskErr = validateAllTasks(tasks);
         if (taskErr) throw new QuestValidationError(taskErr);
+
+        // Build a quest-like object for publish validation
+        const { validatePublishRequirements } = await import('./quests.publish-validator');
+        const publishErr = validatePublishRequirements({
+            ...input,
+            tasks,
+            fundingStatus: input.rewardType === 'LLM_KEY' ? 'confirmed' : 'pending',
+            totalFunded: 0,
+        });
+        if (publishErr) {
+            const messages = Object.values(publishErr.fields).join('; ');
+            throw new QuestValidationError(`Cannot publish: ${messages}`);
+        }
     }
 
     const claimToken = generateClaimToken();

@@ -89,6 +89,8 @@ export function questsCommand(program: Command) {
     .command('quests')
     .description('Manage quests');
 
+  const DEFAULT_LIMIT = 10;
+
   // ── list ──────────────────────────────────────────────────────────────────
   quests
     .command('list')
@@ -97,14 +99,22 @@ export function questsCommand(program: Command) {
     .option('--status <status>', 'Filter by status (live, scheduled, completed, cancelled)')
     .option('--type <type>', 'Filter by type (FCFS, LEADERBOARD, LUCKY_DRAW)')
     .option('--sort <sort>', 'Sort mode: featured, upcoming, top, ending, new')
-    .option('--limit <number>', 'Max results to fetch from API', '100')
+    .option('--limit <number>', `Max results to fetch from API (default: ${DEFAULT_LIMIT})`, String(DEFAULT_LIMIT))
+    .option('--page <number>', 'Page number (1-based)', '1')
     .option('--api-url <url>', 'API base URL', 'https://api.clawquest.ai')
     .action(async (options) => {
       const spinner = ora('Fetching quests...').start();
       const api = createApiClient({ baseURL: options.apiUrl });
 
       try {
-        const params: any = { limit: parseInt(options.limit) };
+        const limit = parseInt(options.limit);
+        const page = parseInt(options.page);
+        const offset = Math.max(0, (isNaN(page) ? 1 : Math.max(1, page)) - 1) * (isNaN(limit) ? DEFAULT_LIMIT : limit);
+
+        const params: any = {
+          limit: isNaN(limit) ? DEFAULT_LIMIT : limit,
+          offset,
+        };
         if (options.status) params.status = options.status;
         if (options.type) params.type = options.type;
 
@@ -127,6 +137,12 @@ export function questsCommand(program: Command) {
           console.log('');
           printQuestRow(q, i);
         });
+
+        if (page > 1) {
+          console.log(chalk.gray(`\nPage ${page} — use --page ${page + 1} for next page`));
+        } else {
+          console.log(chalk.gray(`\nUse --page 2 for next page`));
+        }
       } catch (error: any) {
         spinner.fail(error.message || 'Failed to fetch quests');
         process.exit(1);
@@ -139,7 +155,7 @@ export function questsCommand(program: Command) {
     const api = createApiClient();
 
     try {
-      const response = await api.get('/quests', { params: { status: 'live', limit: 50 } });
+      const response = await api.get('/quests', { params: { status: 'live', limit: DEFAULT_LIMIT } });
       const list: any[] = response.data;
       spinner.succeed(`Found ${list.length} live quests`);
 
@@ -189,7 +205,7 @@ export function questsCommand(program: Command) {
 
       try {
         const response = await api.get('/quests', { params: { status: 'scheduled', limit: 100 } });
-        const list = sortQuests(response.data, 'upcoming');
+        const list = sortQuests(response.data, 'upcoming').slice(0, DEFAULT_LIMIT);
         spinner.succeed(`${list.length} upcoming quest(s)`);
         if (list.length === 0) { console.log(chalk.gray('No upcoming quests')); return; }
         list.forEach((q, i) => {
@@ -207,7 +223,7 @@ export function questsCommand(program: Command) {
   quests
     .command('top')
     .description('Show live quests sorted by highest reward')
-    .option('--limit <number>', 'Number to show', '20')
+    .option('--limit <number>', `Number to show (default: ${DEFAULT_LIMIT})`, String(DEFAULT_LIMIT))
     .option('--api-url <url>', 'API base URL', 'https://api.clawquest.ai')
     .action(async (options) => {
       const spinner = ora('Fetching top reward quests...').start();
@@ -228,7 +244,7 @@ export function questsCommand(program: Command) {
   quests
     .command('ending')
     .description('Show live quests ending soon')
-    .option('--limit <number>', 'Number to show', '20')
+    .option('--limit <number>', `Number to show (default: ${DEFAULT_LIMIT})`, String(DEFAULT_LIMIT))
     .option('--api-url <url>', 'API base URL', 'https://api.clawquest.ai')
     .action(async (options) => {
       const spinner = ora('Fetching ending-soon quests...').start();
@@ -257,7 +273,7 @@ export function questsCommand(program: Command) {
 
       try {
         const response = await api.get('/quests', { params: { status: 'live', limit: 100 } });
-        const list = sortQuests(response.data, 'new');
+        const list = sortQuests(response.data, 'new').slice(0, DEFAULT_LIMIT);
         spinner.succeed(`${list.length} new quest(s) in the last 7 days`);
         if (list.length === 0) { console.log(chalk.gray('No new quests')); return; }
         list.forEach((q, i) => { console.log(''); printQuestRow(q, i); });

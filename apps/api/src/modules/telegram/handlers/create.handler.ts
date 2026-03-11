@@ -1,5 +1,6 @@
 import { Composer, InlineKeyboard } from 'grammy';
 import { FastifyInstance } from 'fastify';
+import { REWARD_TYPE } from '@clawquest/shared';
 import { BotContext } from '../types';
 import { createSessions, CreateSession } from '../telegram.session';
 
@@ -126,7 +127,7 @@ async function handleReward(
                 description: 'Draft created via Telegram',
                 type: session.type!,
                 rewardAmount: amount,
-                rewardType: 'USDC',
+                rewardType: REWARD_TYPE.USDC,
                 status: 'draft',
                 creatorUserId: user.id,
                 totalSlots: 10,

@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { QuestSchema, QuestTaskSchema, QuestersResponseSchema, QUEST_STATUS, QUEST_TYPE } from '@clawquest/shared';
+import { QuestSchema, QuestTaskSchema, QuestersResponseSchema, QUEST_STATUS, QUEST_TYPE, REWARD_TYPE } from '@clawquest/shared';
 import type { QuestTask } from '@clawquest/shared';
 import {
     createQuest,
@@ -39,7 +39,7 @@ const CreateQuestSchema = QuestSchema.omit({
     sponsor: z.string().default('System'),
     status: z.nativeEnum(QUEST_STATUS).default(QUEST_STATUS.DRAFT),
     rewardAmount: z.number().default(0),
-    rewardType: z.enum(['USDC', 'USDT', 'NATIVE', 'USD', 'LLMTOKEN_OPENROUTER', 'LLM_KEY']).default('USDC'),
+    rewardType: z.enum([REWARD_TYPE.USDC, REWARD_TYPE.USDT, REWARD_TYPE.NATIVE, REWARD_TYPE.USD, REWARD_TYPE.LLMTOKEN_OPENROUTER, REWARD_TYPE.LLM_KEY]).default(REWARD_TYPE.USDC),
     tokenProvider: z.string().optional(),
     tokenAmount: z.number().optional(),
     startAt: z.string().datetime().optional(),
@@ -55,7 +55,7 @@ const CreateQuestSchema = QuestSchema.omit({
 }).refine(
     (data) => {
         // If rewardType is LLMTOKEN_OPENROUTER, tokenProvider and tokenAmount are required
-        if (data.rewardType === 'LLMTOKEN_OPENROUTER') {
+        if (data.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER) {
             return data.tokenProvider && data.tokenAmount && data.tokenAmount > 0;
         }
         return true;
@@ -2085,7 +2085,7 @@ export async function questsRoutes(server: FastifyInstance) {
             }
 
             // Verify this is an LLM token reward quest
-            if (quest.rewardType !== 'LLMTOKEN_OPENROUTER') {
+            if (quest.rewardType !== REWARD_TYPE.LLMTOKEN_OPENROUTER) {
                 return reply.status(400).send({
                     message: 'This endpoint is only for LLMTOKEN_OPENROUTER reward type'
                 } as any);

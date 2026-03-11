@@ -1,3 +1,5 @@
+import { REWARD_TYPE } from "@clawquest/shared"
+
 /**
  * Network configuration type
  */
@@ -90,7 +92,7 @@ export const NETWORKS_OTHER = getOtherNetworks()
  * Includes both mainnet and testnet addresses.
  */
 export const TOKEN_CONTRACTS: Record<string, Record<string, string>> = {
-    USDC: {
+    [REWARD_TYPE.USDC]: {
         // Mainnet
         "Base": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
         "BNB Smart Chain": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
@@ -104,7 +106,7 @@ export const TOKEN_CONTRACTS: Record<string, Record<string, string>> = {
         "Base Sepolia": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
         "BNB Smart Chain Testnet": "0x64544969ed7ebf5f083679233325356ebe738930",
     },
-    USDT: {
+    [REWARD_TYPE.USDT]: {
         // Mainnet
         "Base": "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
         "BNB Smart Chain": "0x55d398326f99059fF775485246999027B3197955",
@@ -140,14 +142,14 @@ export const NATIVE_TOKENS: Record<string, { symbol: string; name: string }> = {
 }
 
 export const TOKEN_COLORS: Record<string, string> = {
-    USDC: "#2775ca",
-    USDT: "#26a17b",
-    NATIVE: "#627eea",
+    [REWARD_TYPE.USDC]: "#2775ca",
+    [REWARD_TYPE.USDT]: "#26a17b",
+    [REWARD_TYPE.NATIVE]: "#627eea",
 }
 
 export function getTokenSymbol(rail: "crypto" | "fiat", token: string, network: string): string {
-    if (rail === "fiat") return "USD"
-    if (token === "NATIVE") return (NATIVE_TOKENS[network] ?? { symbol: "?" }).symbol
+    if (rail === "fiat") return REWARD_TYPE.USD
+    if (token === REWARD_TYPE.NATIVE) return (NATIVE_TOKENS[network] ?? { symbol: "?" }).symbol
     return token
 }
 

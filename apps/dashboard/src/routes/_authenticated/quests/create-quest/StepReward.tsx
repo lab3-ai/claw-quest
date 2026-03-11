@@ -1,3 +1,4 @@
+import { REWARD_TYPE } from "@clawquest/shared"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -150,11 +151,11 @@ export function StepReward({
                                     <Label>Token</Label>
                                     <select className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring" value={form.token} onChange={e => onFieldChange("token", e.target.value)}>
                                         <optgroup label="Stablecoin">
-                                            <option value="USDC">USDC</option>
-                                            <option value="USDT">USDT</option>
+                                            <option value={REWARD_TYPE.USDC}>USDC</option>
+                                            <option value={REWARD_TYPE.USDT}>USDT</option>
                                         </optgroup>
                                         <optgroup label="Native">
-                                            <option value="NATIVE">{nativeInfo.symbol}</option>
+                                            <option value={REWARD_TYPE.NATIVE}>{nativeInfo.symbol}</option>
                                         </optgroup>
                                     </select>
                                 </div>

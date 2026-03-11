@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { useParams, useSearch, Link, useNavigate } from "@tanstack/react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { Quest } from "@clawquest/shared"
+import { REWARD_TYPE, FUNDING_METHOD } from "@clawquest/shared"
 import { useAuth } from "@/context/AuthContext"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { SponsorLogo } from "@/components/sponsor-logo"
@@ -572,7 +573,7 @@ export function QuestDetail() {
         <div className="">
             <SeoHead
                 title={quest.title}
-                description={quest.description?.slice(0, 155) || `${quest.sponsor} quest — ${quest.rewardAmount} ${quest.fundingMethod === "stripe" ? "USD" : quest.rewardType} reward`}
+                description={quest.description?.slice(0, 155) || `${quest.sponsor} quest — ${quest.rewardAmount} ${quest.fundingMethod === FUNDING_METHOD.STRIPE ? REWARD_TYPE.USD : quest.rewardType} reward`}
                 url={`https://clawquest.ai/quests/${quest.id}`}
                 jsonLd={{
                     name: quest.title,
@@ -581,7 +582,7 @@ export function QuestDetail() {
                     startDate: quest.startAt ?? undefined,
                     endDate: quest.expiresAt ?? undefined,
                     rewardAmount: quest.rewardAmount,
-                    rewardCurrency: quest.fundingMethod === 'stripe' ? 'USD' : (quest.rewardType === 'USDC' || quest.rewardType === 'USDT' ? quest.rewardType : quest.rewardType),
+                    rewardCurrency: quest.fundingMethod === FUNDING_METHOD.STRIPE ? REWARD_TYPE.USD : (quest.rewardType === REWARD_TYPE.USDC || quest.rewardType === REWARD_TYPE.USDT ? quest.rewardType : quest.rewardType),
                 }}
             />
 
@@ -661,8 +662,8 @@ export function QuestDetail() {
                         <div className="px-3 py-2.5 border border-border rounded bg-muted">
                             <div className="text-xs text-muted-foreground mb-0.5">total reward</div>
                             <div className="text-sm font-semibold text-accent font-mono">
-                                {quest.fundingMethod === "stripe"
-                                    ? `$${quest.rewardAmount.toLocaleString()} USD`
+                                {quest.fundingMethod === FUNDING_METHOD.STRIPE
+                                    ? `$${quest.rewardAmount.toLocaleString()} ${REWARD_TYPE.USD}`
                                     : `${quest.rewardAmount.toLocaleString()} ${quest.rewardType}`}
                             </div>
                         </div>
@@ -942,7 +943,7 @@ export function QuestDetail() {
                         <div className="px-3 py-4 text-center border-b border-border">
                             <div className="text-[28px] font-semibold font-mono text-accent leading-tight">{quest.rewardAmount.toLocaleString()}</div>
                             <div className="flex justify-center gap-2 mt-2 text-xs">
-                                <RewardBadge type={quest.fundingMethod === "stripe" ? "USD" : quest.rewardType} />
+                                <RewardBadge type={quest.fundingMethod === FUNDING_METHOD.STRIPE ? REWARD_TYPE.USD : quest.rewardType} />
                                 <QuestTypeBadge type={quest.type} />
                             </div>
                             <div className="text-xs text-muted-foreground mt-0.5">total reward pool</div>
@@ -1010,7 +1011,7 @@ export function QuestDetail() {
 
                         {/* Stripe setup banner for USD quests */}
                         {isAuthenticated && !stripeStatus?.isOnboarded &&
-                            quest.fundingMethod === "stripe" && (
+                            quest.fundingMethod === FUNDING_METHOD.STRIPE && (
                                 <div className="px-3 pt-3">
                                     <div className="flex items-start gap-2 rounded-md bg-warning/10 border border-warning/30 px-3 py-2 text-xs text-warning-foreground">
                                         <span className="shrink-0 mt-0.5">⚠</span>
@@ -1076,7 +1077,7 @@ export function QuestDetail() {
                                                     <Button variant="secondary" className="w-full mb-2">Manage Quest</Button>
                                                 </Link>
                                             )}
-                                            {!isFunded && (
+                                            {!isFunded && quest.rewardType !== REWARD_TYPE.LLM_KEY && (
                                                 <Link to="/quests/$questId/fund" params={{ questId: quest.id }}>
                                                     <Button className="w-full bg-success hover:bg-success/90 border-success">Fund Quest</Button>
                                                 </Link>
@@ -1172,7 +1173,7 @@ export function QuestDetail() {
 
                         {/* ── Claim Reward Section ── */}
                         {/* ── Fiat Payout Section (Stripe) ── */}
-                        {isAuthenticated && quest.fundingMethod === "stripe" && quest.myParticipation &&
+                        {isAuthenticated && quest.fundingMethod === FUNDING_METHOD.STRIPE && quest.myParticipation &&
                             (quest.myParticipation.status === "completed" || quest.myParticipation.status === "submitted") && (
                                 <div className="mt-4 px-3 pt-4 border-t border-border">
                                     <div className="text-center">

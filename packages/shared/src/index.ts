@@ -53,6 +53,17 @@ export const FUNDING_METHOD = {
     CRYPTO: 'crypto',
 } as const;
 
+export const REWARD_TYPE = {
+    USDC: 'USDC',
+    USDT: 'USDT',
+    NATIVE: 'NATIVE',
+    USD: 'USD',
+    LLMTOKEN_OPENROUTER: 'LLMTOKEN_OPENROUTER',
+    LLM_KEY: 'LLM_KEY',
+} as const;
+
+export type RewardType = (typeof REWARD_TYPE)[keyof typeof REWARD_TYPE];
+
 export const QUEST_TYPE = {
     FCFS: 'FCFS', // First Come First Served
     LEADERBOARD: 'LEADERBOARD',
@@ -85,7 +96,7 @@ export const QuestSchema = z.object({
     type: z.nativeEnum(QUEST_TYPE),
     status: z.nativeEnum(QUEST_STATUS),
     rewardAmount: z.number(),
-    rewardType: z.string(), // e.g. 'USDC', 'USD', 'XP'
+    rewardType: z.string(), // e.g. REWARD_TYPE.USDC, REWARD_TYPE.USD, REWARD_TYPE.LLM_KEY
     totalSlots: z.number(),
     filledSlots: z.number(),
     tags: z.array(z.string()).default([]),

@@ -1,0 +1,1 @@
+At now, only work with 2 task X (Follow on X, quote a post), so let hidden on Frotend 3 remaining Task. Note: remember only hidden on Frontend, we will active later

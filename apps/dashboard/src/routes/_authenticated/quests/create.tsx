@@ -1091,7 +1091,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const blockedStatus = editQuest && ["live", "completed", "expired", "cancelled"].includes(editQuest.status)
     if (isEditMode && blockedStatus) {
         return (
-            <div className="max-w-5xl mx-auto w-full py-5 px-6">
+            <div className="max-w-3xl mx-auto w-full py-5 px-6">
                 <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
                     <Link to="/quests/$questId" params={{ questId: editQuestId! }}>Quest</Link>
                     <span>›</span>
@@ -1131,7 +1131,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const topUpAmount = rewardIncreased ? newTotal - originalRewardAmount : 0
 
     return (
-        <div className="">
+        <div className="max-w-3xl mx-auto">
             <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
                 {isEditMode ? (
                     <>

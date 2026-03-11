@@ -182,14 +182,14 @@ const appLayoutRoute = createRoute({
     component: PublicLayout,
 })
 
-// Redirect root to /home
-const indexRoute = createRoute({
-    getParentRoute: () => appLayoutRoute,
-    path: '/',
-    beforeLoad: () => {
-        throw redirect({ to: '/home' })
-    },
-})
+// // Redirect root to /home
+// const indexRoute = createRoute({
+//     getParentRoute: () => appLayoutRoute,
+//     path: '/',
+//     beforeLoad: () => {
+//         throw redirect({ to: '/home' })
+//     },
+// })
 
 // ── Public routes (no auth required) ──
 const homeRoute = createRoute({
@@ -428,7 +428,7 @@ const routeTree = rootRoute.addChildren([
     waitlistAliasRoute,
     cliAuthRoute,
     appLayoutRoute.addChildren([
-        indexRoute,
+        // indexRoute,
         homeRoute,
         questsRoute,
         claimQuestRoute,

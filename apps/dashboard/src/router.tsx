@@ -104,12 +104,12 @@ const appLayoutRoute = createRoute({
     component: PublicLayout,
 })
 
-// Redirect root to /home
+// Redirect root to /quests
 const indexRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/',
     beforeLoad: () => {
-        throw redirect({ to: '/home' })
+        throw redirect({ to: '/quests' })
     },
 })
 

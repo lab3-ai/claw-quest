@@ -35,7 +35,7 @@ export function PublicLayout() {
             <header className="sticky top-0 z-50 bg-background">
                 <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-6">
                     <Link
-                        to="/home"
+                        to="/quests"
                         className="mr-5 flex items-center gap-2 no-underline"
                     >
                         <BrandLogo />

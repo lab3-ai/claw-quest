@@ -113,7 +113,7 @@ export function Login() {
                     <div className="mb-1 flex justify-center">
                         <button
                             type="button"
-                            onClick={() => navigate({ to: "/home" })}
+                            onClick={() => navigate({ to: "/quests" })}
                             className="cursor-pointer"
                         >
                             <BrandLogo size="sm" />

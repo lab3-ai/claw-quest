@@ -73,7 +73,7 @@ export async function handleStatus(server: FastifyInstance, ctx: BotContext) {
                     message += `\n   Submission: ${p.status}`;
 
                     if (p.status === 'in_progress') {
-                        message += '\n   \u2192 In progress';
+                        message += '\n   \u2192 Use /done <url> to submit proof';
                     } else if (p.status === 'submitted') {
                         message += '\n   \u23f3 Awaiting verification';
                     }

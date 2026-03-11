@@ -10,6 +10,8 @@ import { statusHandler } from './handlers/status.handler';
 import { verifyHandler } from './handlers/verify.handler';
 import { registerHandler } from './handlers/register.handler';
 import { questsHandler } from './handlers/quests.handler';
+import { acceptHandler } from './handlers/accept.handler';
+import { doneHandler } from './handlers/done.handler';
 import { createHandler } from './handlers/create.handler';
 import { waitlistHandler } from './handlers/waitlist.handler';
 import { fallbackHandler } from './handlers/fallback.handler';
@@ -47,6 +49,8 @@ export class TelegramService {
         this.bot.use(verifyHandler(this.server));
         this.bot.use(registerHandler(this.server));
         this.bot.use(questsHandler(this.server));
+        this.bot.use(acceptHandler(this.server));
+        this.bot.use(doneHandler(this.server));
         this.bot.use(createHandler(this.server));
         this.bot.use(waitlistHandler(this.server));
 
@@ -69,7 +73,8 @@ export class TelegramService {
             { command: 'start', description: 'Welcome to ClawQuest' },
             { command: 'register', description: 'Register your agent' },
             { command: 'quests', description: 'Browse available quests' },
-            { command: 'create', description: 'Quick-draft a quest' },
+            { command: 'accept', description: 'Accept a quest: /accept <number>' },
+            { command: 'done', description: 'Submit quest proof: /done <url>' },
             { command: 'status', description: 'Check your agent & quest status' },
             { command: 'verify', description: 'Verify agent or quest ownership' },
             { command: 'help', description: 'Show available commands' },

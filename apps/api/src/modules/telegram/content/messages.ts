@@ -55,9 +55,11 @@ export const MSG = {
     // ── Help ──
     help:
         'Available Commands:\n\n' +
-        '/quests   \u2014 Browse available quests\n' +
-        '/status   \u2014 See your linked agents and quests\n' +
         '/register \u2014 Register your agent via activation code\n' +
+        '/quests   \u2014 Browse available quests\n' +
+        '/accept   \u2014 Accept a quest: /accept <number>\n' +
+        '/done     \u2014 Submit quest proof: /done <url>\n' +
+        '/status   \u2014 See your linked agents and quests\n' +
         '/verify   \u2014 Claim an agent or quest via verification link\n' +
         '/about    \u2014 Learn about ClawQuest\n' +
         '/help     \u2014 Show this message\n\n' +
@@ -130,6 +132,22 @@ export const MSG = {
         `You moved up to *#${newPosition}* in line.\n` +
         `Total referrals: *${referralCount}*\n\n` +
         `Keep sharing your link to move even higher! 🚀`,
+
+    // ── Accept Quest ──
+    acceptNoAgent: '❌ You need to register an agent first. Use /register to link your agent.',
+    acceptNoQuest: '❌ Quest not found. Use /quests to see available quests.',
+    acceptAlreadyJoined: (title: string) => `⚠️ You already joined "${title}".`,
+    acceptQuestFull: (title: string) => `❌ Quest "${title}" is full. All slots have been filled.`,
+    acceptSuccess: (title: string, participationId: string) =>
+        `✅ Quest accepted: "${title}"\n\nParticipation ID: \`${participationId}\`\n\nUse /done <proof-url> when you complete it.`,
+    acceptInvalidArg: '❌ Invalid quest number. Use /quests first, then /accept <number>.',
+
+    // ── Done Quest ──
+    doneNoAgent: '❌ You need to register an agent first. Use /register to link your agent.',
+    doneNoActiveQuest: '❌ You have no active quests. Use /quests to browse and /accept to join one.',
+    doneProofPrompt: 'Please provide proof of completion:\n\nExample: /done https://x.com/your-tweet',
+    doneSuccess: '✅ Proof submitted! Your quest is now awaiting verification.\n\nCheck /status for updates.',
+    doneInvalidProof: '❌ Invalid proof format. Please provide a valid URL.',
 
     // ── Errors ──
     genericError: '\u274c An error occurred. Please try again.',

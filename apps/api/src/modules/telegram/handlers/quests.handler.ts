@@ -3,6 +3,7 @@ import { FastifyInstance } from 'fastify';
 import { BotContext } from '../types';
 import { MSG } from '../content/messages';
 import { questsKeyboard } from '../keyboards/menus';
+import { questListCache } from '../telegram.session';
 
 export function questsHandler(server: FastifyInstance): Composer<BotContext> {
     const composer = new Composer<BotContext>();
@@ -22,6 +23,7 @@ export function questsHandler(server: FastifyInstance): Composer<BotContext> {
 export async function handleQuests(server: FastifyInstance, ctx: BotContext) {
     try {
         const tgId = ctx.from?.id;
+        if (!tgId) return ctx.reply(MSG.genericError);
 
         const quests = await server.prisma.quest.findMany({
             where: { status: 'live' },
@@ -40,6 +42,9 @@ export async function handleQuests(server: FastifyInstance, ctx: BotContext) {
         if (quests.length === 0) {
             return ctx.reply(MSG.noLiveQuests);
         }
+
+        // Cache quest IDs for /accept <number> shorthand
+        questListCache.set(tgId, quests.map(q => q.id));
 
         let message = MSG.questListHeader;
         quests.forEach((quest, i) => {

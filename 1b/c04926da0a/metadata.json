@@ -3,7 +3,7 @@
   "checkpoint_id": "1bc04926da0a",
   "strategy": "manual-commit",
   "branch": "github",
-  "checkpoints_count": 57,
+  "checkpoints_count": 61,
   "files_touched": [
     ".env.example",
     "apps/api/prisma/schema.prisma",
@@ -49,13 +49,19 @@
       "transcript": "/1b/c04926da0a/2/full.jsonl",
       "content_hash": "/1b/c04926da0a/2/content_hash.txt",
       "prompt": "/1b/c04926da0a/2/prompt.txt"
+    },
+    {
+      "metadata": "/1b/c04926da0a/3/metadata.json",
+      "transcript": "/1b/c04926da0a/3/full.jsonl",
+      "content_hash": "/1b/c04926da0a/3/content_hash.txt",
+      "prompt": "/1b/c04926da0a/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 1555,
-    "cache_creation_tokens": 664344,
-    "cache_read_tokens": 23526357,
-    "output_tokens": 81529,
-    "api_call_count": 255
+    "input_tokens": 1583,
+    "cache_creation_tokens": 719287,
+    "cache_read_tokens": 24350307,
+    "output_tokens": 83972,
+    "api_call_count": 273
   }
 }

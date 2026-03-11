@@ -4,23 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ── Self-hosted: Adwaita Mono (GNOME monospace) ── */
-@font-face {
-    font-family: "Adwaita Mono";
-    src: url("/fonts/AdwaitaMono-Regular.woff2") format("woff2");
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: "Adwaita Mono";
-    src: url("/fonts/AdwaitaMono-Bold.woff2") format("woff2");
-    font-weight: 700;
-    font-style: normal;
-    font-display: swap;
-}
-
 @theme {
     --color-background: var(--bg);
     --color-foreground: var(--fg);
@@ -261,10 +244,10 @@
     --code-bg: #1a1a1a;
     --sidebar-bg: #e8e8e8;
 
-    /* ── Typography — geometric sans with mono fallback ── */
-    --font: "Space Grotesk", "Space Mono", "Geist Mono", ui-monospace, sans-serif;
-    --font-heading: "Space Grotesk", "Space Mono", "Geist Mono", ui-monospace, sans-serif;
-    --font-mono: "Adwaita Mono", "Space Mono", "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    /* ── Typography — monospace-first ── */
+    --font: "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    --font-heading: "Geist Mono", ui-monospace, "Cascadia Mono", monospace;
+    --font-mono: "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
 
     --text-xs: 12px;
     --text-sm: 14px;

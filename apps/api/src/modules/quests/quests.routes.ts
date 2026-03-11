@@ -1531,14 +1531,13 @@ export async function questsRoutes(server: FastifyInstance) {
             });
             const agentIds = userAgents.map(a => a.id);
 
-            if (agentIds.length === 0) {
-                return reply.status(400).send({ message: 'You have no agents participating in this quest' } as any);
-            }
-
             const participation = await server.prisma.questParticipation.findFirst({
                 where: {
                     questId: id,
-                    agentId: { in: agentIds },
+                    OR: [
+                        ...(agentIds.length > 0 ? [{ agentId: { in: agentIds } }] : []),
+                        { userId },
+                    ],
                     status: { in: ['completed', 'submitted'] },
                 },
             });

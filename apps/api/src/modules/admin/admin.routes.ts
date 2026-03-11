@@ -1,5 +1,7 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import { createHmac, timingSafeEqual } from 'crypto';
+import * as bcrypt from 'bcryptjs';
 import { requireAdmin } from './admin.middleware';
 import { getAdminPrisma, isTestnetDbConfigured, type AdminEnv } from './admin.prisma';
 import {
@@ -25,12 +27,111 @@ const envQuerySchema = z.object({
     env: z.enum(['mainnet', 'testnet']).default('mainnet'),
 });
 
+// ─── Admin JWT helpers ────────────────────────────────────────────────────────
+const JWT_EXPIRY_SECONDS = 60 * 60 * 8; // 8 hours
+
+function getJwtSecret(): string {
+    return process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET || 'admin-secret-change-me';
+}
+
+function signAdminJwt(payload: { id: string; email: string; role: string }): string {
+    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+    const body = Buffer.from(JSON.stringify({
+        ...payload,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + JWT_EXPIRY_SECONDS,
+    })).toString('base64url');
+    const sig = createHmac('sha256', getJwtSecret()).update(`${header}.${body}`).digest('base64url');
+    return `${header}.${body}.${sig}`;
+}
+
+export function verifyAdminJwt(token: string): { id: string; email: string; role: string } | null {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const [header, body, sig] = parts;
+    const expected = createHmac('sha256', getJwtSecret()).update(`${header}.${body}`).digest('base64url');
+    try {
+        if (!timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
+    } catch {
+        return null;
+    }
+    const payload = JSON.parse(Buffer.from(body, 'base64url').toString()) as any;
+    if (payload.exp < Math.floor(Date.now() / 1000)) return null;
+    return { id: payload.id, email: payload.email, role: payload.role };
+}
+
+// ─── Admin JWT middleware (replaces server.authenticate for admin routes) ─────
+export async function authenticateAdmin(request: FastifyRequest, reply: FastifyReply) {
+    const authHeader = request.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+        return reply.status(401).send({ message: 'Missing or invalid Authorization header' });
+    }
+    const token = authHeader.slice(7);
+    const payload = verifyAdminJwt(token);
+    if (!payload) {
+        return reply.status(401).send({ message: 'Invalid or expired admin token' });
+    }
+    request.user = {
+        id: payload.id,
+        email: payload.email,
+        role: payload.role,
+        username: null,
+        displayName: null,
+        supabaseId: '',
+    };
+}
+
+// ─── Admin Login Routes (public, no auth required) ───────────────────────────
+export async function adminLoginRoutes(server: FastifyInstance) {
+    server.post(
+        '/admin/login',
+        {
+            schema: {
+                tags: ['Admin'],
+                summary: 'Admin login via email/password (DB only)',
+                body: z.object({
+                    email: z.string().email(),
+                    password: z.string().min(1),
+                }),
+            },
+        },
+        async (request, reply) => {
+            const { email, password } = request.body as { email: string; password: string };
+
+            const user = await server.prisma.user.findUnique({
+                where: { email },
+                select: { id: true, email: true, role: true, password: true },
+            });
+
+            if (!user || !user.password) {
+                return reply.status(401).send({ message: 'Invalid email or password' });
+            }
+
+            const valid = await bcrypt.compare(password, user.password);
+            if (!valid) {
+                return reply.status(401).send({ message: 'Invalid email or password' });
+            }
+
+            if (user.role !== 'admin') {
+                return reply.status(403).send({ message: 'Admin access required' });
+            }
+
+            const token = signAdminJwt({ id: user.id, email: user.email, role: user.role });
+
+            return {
+                token,
+                user: { id: user.id, email: user.email, role: user.role },
+            };
+        }
+    );
+}
+
 // ─── Admin Routes ────────────────────────────────────────────────────────────
-// All routes require: authenticate + requireAdmin
+// All routes require: authenticateAdmin + requireAdmin
 
 export async function adminRoutes(server: FastifyInstance) {
-    // Apply auth + admin check to all routes in this plugin
-    server.addHook('onRequest', server.authenticate);
+    // Apply admin JWT auth + admin role check to all routes in this plugin
+    server.addHook('onRequest', authenticateAdmin);
     server.addHook('onRequest', requireAdmin);
 
     // ── GET /admin/env-status ───────────────────────────────────────────────

@@ -14,7 +14,7 @@ import { agentsRoutes } from './modules/agents/agents.routes';
 import { questsRoutes } from './modules/quests/quests.routes';
 import { escrowRoutes } from './modules/escrow/escrow.routes';
 import { walletsRoutes } from './modules/wallets/wallets.routes';
-import { adminRoutes } from './modules/admin/admin.routes';
+import { adminRoutes, adminLoginRoutes, verifyAdminJwt } from './modules/admin/admin.routes';
 import { discordRoutes } from './modules/discord/discord.routes';
 import { stripeRoutes } from './modules/stripe/stripe.routes';
 import { seoRoutes } from './modules/seo/seo.routes';
@@ -89,7 +89,21 @@ server.decorate('authenticate', async (request: FastifyRequest, reply: FastifyRe
 
     const token = authHeader.slice(7);
 
-    // Verify the token with Supabase Auth API
+    // ── Try admin JWT first (admin dashboard tokens) ──────────────────────────
+    const adminPayload = verifyAdminJwt(token);
+    if (adminPayload) {
+        request.user = {
+            id: adminPayload.id,
+            email: adminPayload.email,
+            role: adminPayload.role,
+            username: null,
+            displayName: null,
+            supabaseId: '',
+        };
+        return;
+    }
+
+    // ── Fall back to Supabase token verification ──────────────────────────────
     const { data, error } = await supabaseAdmin.auth.getUser(token);
 
     if (error || !data.user) {
@@ -186,6 +200,7 @@ server.register(agentsRoutes, { prefix: '/agents' });
 server.register(questsRoutes, { prefix: '/quests' });
 server.register(escrowRoutes, { prefix: '/escrow' });
 server.register(walletsRoutes, { prefix: '/wallets' });
+server.register(adminLoginRoutes); // public, no prefix
 server.register(adminRoutes, { prefix: '/admin' });
 server.register(discordRoutes, { prefix: '/discord' });
 server.register(stripeRoutes, { prefix: '/stripe' });
@@ -247,10 +262,10 @@ const start = async () => {
             console.warn('⚠️  Escrow not configured (missing contract address or operator key) — poller will not start');
         }
 
-        // ClawHub skill catalog sync (runs on startup + every 24h)
-        startClawhubSyncJob(server).catch((err) => {
-            console.error('⚠️  ClawHub sync job failed (non-fatal):', err.message);
-        });
+        // // ClawHub skill catalog sync (runs on startup + every 24h)
+        // startClawhubSyncJob(server).catch((err) => {
+        //     console.error('⚠️  ClawHub sync job failed (non-fatal):', err.message);
+        // });
 
         const port = parseInt(process.env.PORT || '3000', 10);
         await server.listen({ port, host: '0.0.0.0' });

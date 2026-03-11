@@ -260,6 +260,42 @@ export function ManageQuest() {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['quest-manage', questId] }),
     })
 
+    const publishMutation = useMutation({
+        mutationFn: async () => {
+            const res = await fetch(`${API_BASE}/quests/${questId}/publish`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session?.access_token}`,
+                },
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error((err as { message?: string }).message || 'Publish failed')
+            }
+            return res.json()
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['quest-manage', questId] }),
+    })
+
+    const closeMutation = useMutation({
+        mutationFn: async () => {
+            const res = await fetch(`${API_BASE}/quests/${questId}/close`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session?.access_token}`,
+                },
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error((err as { message?: string }).message || 'Close failed')
+            }
+            return res.json()
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['quest-manage', questId] }),
+    })
+
     if (isLoading) return (
         <div className="max-w-5xl mx-auto px-4 py-6 text-muted-foreground text-center py-12">
             Loading...
@@ -291,6 +327,64 @@ export function ManageQuest() {
             <div className="flex flex-col md:flex-row gap-6 items-start">
                 {/* Main column */}
                 <div className="flex-1 min-w-0">
+                    {/* Status Controls */}
+                    {isCreator && (quest.status === 'draft' || quest.status === 'live') && (
+                        <div className="bg-background border border-border rounded-lg p-5 mb-4">
+                            <h3 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.05em] m-0 mb-3">
+                                Quest Status
+                            </h3>
+                            <div className="flex flex-wrap gap-2 items-center">
+                                <span className={statusBadgeClass(quest.status)}>{quest.status}</span>
+                                {quest.status === 'draft' && (
+                                    <Button
+                                        variant="default"
+                                        size="sm"
+                                        disabled={!isFunded || publishMutation.isPending}
+                                        onClick={() => {
+                                            if (window.confirm('Publish this quest and make it live?')) {
+                                                publishMutation.mutate()
+                                            }
+                                        }}
+                                    >
+                                        {publishMutation.isPending ? 'Publishing...' : 'Publish Quest'}
+                                    </Button>
+                                )}
+                                {quest.status === 'live' && (
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        disabled={closeMutation.isPending}
+                                        onClick={() => {
+                                            if (window.confirm('Close this quest and mark it as completed?')) {
+                                                closeMutation.mutate()
+                                            }
+                                        }}
+                                    >
+                                        {closeMutation.isPending ? 'Closing...' : 'Close Quest'}
+                                    </Button>
+                                )}
+                            </div>
+                            {publishMutation.isError && (
+                                <p className="text-error text-xs mt-2">{(publishMutation.error as Error).message}</p>
+                            )}
+                            {closeMutation.isError && (
+                                <p className="text-error text-xs mt-2">{(closeMutation.error as Error).message}</p>
+                            )}
+                            {!isFunded && quest.status === 'draft' && (
+                                <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded text-xs">
+                                    <p className="text-amber-900 dark:text-amber-200 mb-2">Quest must be funded before publishing.</p>
+                                    <Link
+                                        to="/quests/$questId/fund"
+                                        params={{ questId }}
+                                        className="inline-block bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded text-[11px] font-semibold"
+                                    >
+                                        Fund Quest
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {/* Participants */}
                     <div className="bg-background border border-border rounded-lg overflow-hidden mb-4">
                         <h3 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.05em] m-0 px-5 py-4 border-b border-border">
@@ -404,9 +498,20 @@ export function ManageQuest() {
                 <div className="w-full md:min-w-2xs md:max-w-xs shrink-0">
                     {/* Quest overview */}
                     <div className="bg-background border border-border rounded-lg p-5 mb-4">
-                        <h3 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.05em] m-0 mb-3">
-                            Quest Info
-                        </h3>
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.05em] m-0">
+                                Quest Info
+                            </h3>
+                            {isCreator && quest.status === 'draft' && (
+                                <Link
+                                    to="/quests/$questId/edit"
+                                    params={{ questId }}
+                                    className="text-[11px] text-accent hover:underline font-medium"
+                                >
+                                    Edit
+                                </Link>
+                            )}
+                        </div>
                         <div className="text-[1.1rem] font-semibold text-foreground mb-2">{quest.title}</div>
                         <div className="flex flex-wrap gap-[6px] items-center mb-3">
                             <span className={statusBadgeClass(quest.status)}>{quest.status}</span>
@@ -478,3 +583,5 @@ export function ManageQuest() {
         </div>
     )
 }
+
+export default ManageQuest

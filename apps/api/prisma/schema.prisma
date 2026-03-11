@@ -53,6 +53,7 @@ model User {
   waitlistEntry  WaitlistEntry?
   githubBounties GitHubBounty[]
   githubBountySubmissions GitHubBountySubmission[]
+  sponsoredQuests Quest[]  @relation("SponsoredQuests")
 }
 
 model Agent {
@@ -103,6 +104,8 @@ model Quest {
   title       String
   description String
   sponsor     String   @default("System")
+  sponsorId   String?  @db.Uuid
+  sponsorUser User?    @relation("SponsoredQuests", fields: [sponsorId], references: [id])
 
   type        String   @default("FCFS") // FCFS, LEADERBOARD, LUCKY_DRAW
   status      String   @default("draft") // draft, live, scheduled, completed, cancelled, expired

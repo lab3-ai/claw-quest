@@ -182,14 +182,7 @@ const appLayoutRoute = createRoute({
     component: PublicLayout,
 })
 
-// // Redirect root to /home
-// const indexRoute = createRoute({
-//     getParentRoute: () => appLayoutRoute,
-//     path: '/',
-//     beforeLoad: () => {
-//         throw redirect({ to: '/home' })
-//     },
-// })
+// indexRoute not needed — root '/' is handled by waitlistRoute
 
 // ── Public routes (no auth required) ──
 const homeRoute = createRoute({

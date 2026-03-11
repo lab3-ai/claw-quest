@@ -1,0 +1,4 @@
+At detail LLM reward type 's quest has 2 issue: 
+1. total reward is 0, 
+2. total reward pool is 0 
+response already data: `llmKeyTokenLimit: 100`

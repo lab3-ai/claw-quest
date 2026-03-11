@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "bb2ded7450e5",
+  "session_id": "7bdfae5c-f376-483e-a16e-43ad634efdb3",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T05:48:04.203741Z",
+  "branch": "fix/verify-social-task",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/modules/quests/social-action-verifier.ts",
+    "apps/dashboard/src/routes/_authenticated/quests/create-quest/StepTasks.tsx",
+    "apps/dashboard/src/routes/_authenticated/quests/create.tsx"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "74c954219f2f",
+  "token_usage": {
+    "input_tokens": 29,
+    "cache_creation_tokens": 78446,
+    "cache_read_tokens": 1132044,
+    "output_tokens": 19460,
+    "api_call_count": 17
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T05:48:03.996726Z",
+    "agent_lines": 50,
+    "human_added": 2,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 52,
+    "agent_percentage": 96.15384615384616
+  }
+}

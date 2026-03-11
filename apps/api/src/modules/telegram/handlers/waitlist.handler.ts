@@ -19,47 +19,35 @@ function buildReferralLink(code: string): string {
 }
 
 /**
- * Recalculate effectivePosition for all waitlist entries based on actual ranking.
- * effectivePosition = rank when sorted by (position - referralBonus) ascending.
- * This ensures unique, accurate positions that reflect referral bonuses.
+ * Recalculate effectivePosition for entries that have joined via Telegram (telegramId set, position > 0).
+ * Rank = order by (position - referralBonus) ascending. Pending entries (position 0) keep effectivePosition 0.
  */
 async function recalculateEffectivePositions(prisma: any): Promise<void> {
-    // Get all entries sorted by (position - referralBonus) ascending
-    const entries = await prisma.waitlistEntry.findMany({
-        orderBy: [
-            {
-                position: 'asc',
-            },
-        ],
-        select: {
-            id: true,
-            position: true,
-            referralBonus: true,
-        },
+    const joined = await prisma.waitlistEntry.findMany({
+        where: { telegramId: { not: null }, position: { gt: 0 } },
+        select: { id: true, position: true, referralBonus: true },
     });
 
-    // Calculate effective position for each entry
-    // Sort by (position - referralBonus) and assign rank starting from 1
-    const entriesWithEffectivePosition = entries
+    const sorted = joined
         .map((entry: any) => ({
             ...entry,
-            adjustedPosition: entry.position - entry.referralBonus,
+            adjustedPosition: (entry.position ?? 0) - (entry.referralBonus ?? 0),
         }))
         .sort((a: any, b: any) => a.adjustedPosition - b.adjustedPosition)
-        .map((entry: any, index: number) => ({
-            id: entry.id,
-            effectivePosition: index + 1,
-        }));
+        .map((entry: any, index: number) => ({ id: entry.id, effectivePosition: index + 1 }));
 
-    // Update all entries in a transaction
-    await prisma.$transaction(
-        entriesWithEffectivePosition.map((entry: any) =>
+    await prisma.$transaction([
+        ...sorted.map((entry: { id: string; effectivePosition: number }) =>
             prisma.waitlistEntry.update({
                 where: { id: entry.id },
                 data: { effectivePosition: entry.effectivePosition },
             })
-        )
-    );
+        ),
+        prisma.waitlistEntry.updateMany({
+            where: { OR: [{ telegramId: null }, { position: 0 }] },
+            data: { effectivePosition: 0 },
+        }),
+    ]);
 }
 
 /**
@@ -86,7 +74,7 @@ export async function handleWaitlistJoinByToken(
         if (existingByTg) {
             const link = buildReferralLink(existingByTg.referralCode);
             return void ctx.reply(
-                MSG.waitlistAlreadyJoined(existingByTg.effectivePosition, link),
+                MSG.waitlistAlreadyJoined(existingByTg.effectivePosition ?? 0, link),
                 { parse_mode: 'Markdown' }
             );
         }
@@ -105,7 +93,7 @@ export async function handleWaitlistJoinByToken(
             // Already claimed by someone else
             const link = buildReferralLink(pendingEntry.referralCode);
             return void ctx.reply(
-                MSG.waitlistAlreadyJoined(pendingEntry.effectivePosition, link),
+                MSG.waitlistAlreadyJoined(pendingEntry.effectivePosition ?? 0, link),
                 { parse_mode: 'Markdown' }
             );
         }
@@ -119,7 +107,11 @@ export async function handleWaitlistJoinByToken(
 
         const joinerBonus = referrer ? REFERRAL_BONUS_PER_FRIEND : 0;
 
-        // Link telegramId to the pending entry
+        const joinedCount = await server.prisma.waitlistEntry.count({
+            where: { telegramId: { not: null } },
+        });
+        const basePosition = joinedCount + 1;
+
         await server.prisma.waitlistEntry.update({
             where: { id: pendingEntry.id },
             data: {
@@ -127,6 +119,7 @@ export async function handleWaitlistJoinByToken(
                 telegramHandle,
                 firstName,
                 referralBonus: joinerBonus,
+                position: basePosition,
             },
         });
 
@@ -149,7 +142,7 @@ export async function handleWaitlistJoinByToken(
         });
 
         const link = buildReferralLink(pendingEntry.referralCode);
-        const effectivePos = updated?.effectivePosition ?? pendingEntry.position;
+        const effectivePos = updated?.effectivePosition ?? basePosition;
 
         if (referrer) {
             const referrerName = referrer.firstName || referrer.telegramHandle || 'a friend';
@@ -169,8 +162,8 @@ export async function handleWaitlistJoinByToken(
                         String(referrer.telegramId),
                         MSG.waitlistReferralReward(
                             joinerName,
-                            updatedReferrer?.effectivePosition ?? referrer.position,
-                            updatedReferrer?.referralCount ?? referrer.referralCount
+                            updatedReferrer?.effectivePosition ?? referrer.position ?? 0,
+                            updatedReferrer?.referralCount ?? referrer.referralCount ?? 0
                         ),
                         { parse_mode: 'Markdown' }
                     );
@@ -210,7 +203,7 @@ export async function handleWaitlistJoin(
         if (existing) {
             const link = buildReferralLink(existing.referralCode);
             return void ctx.reply(
-                MSG.waitlistAlreadyJoined(existing.effectivePosition, link),
+                MSG.waitlistAlreadyJoined(existing.effectivePosition ?? 0, link),
                 { parse_mode: 'Markdown' }
             );
         }
@@ -291,8 +284,8 @@ export async function handleWaitlistJoin(
                         String(referrer.telegramId),
                         MSG.waitlistReferralReward(
                             joinerName,
-                            updatedReferrer?.effectivePosition ?? referrer.position,
-                            updatedReferrer?.referralCount ?? referrer.referralCount
+                            updatedReferrer?.effectivePosition ?? referrer.position ?? 0,
+                            updatedReferrer?.referralCount ?? referrer.referralCount ?? 0
                         ),
                         { parse_mode: 'Markdown' }
                     );

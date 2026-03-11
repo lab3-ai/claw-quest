@@ -1,8 +1,24 @@
 # Changelog
 
+## v0.13.1 — Telegram bot production fix + waitlist numbering (2026-03-11)
+
+### Telegram
+
+- [Fix] Call `deleteWebhook` before starting polling so production receives updates (if a webhook was ever set, polling previously got no updates; bot appeared to not respond to waitlist "Join via Telegram").
+- [Docs] TELEGRAM_BOT.md: waitlist flow + production troubleshooting (TELEGRAM_BOT_TOKEN, webhook, polling).
+
+### Waitlist
+
+- [Fix] Numbering (position / effectivePosition) assigned only when user joins via Telegram. Pending entries (click but never open bot) have position 0 and are not ranked.
+- [Fix] POST /waitlist/token creates with position 0; handleWaitlistJoinByToken sets position = count(joined) + 1 and recalculates so only joined users get #1, #2, …
+- [Fix] Stats waitlistCount counts only entries with telegramId (joined).
+
+---
+
 ## v0.13.0 — Design System v3 + Stripe Connect + Testnet Quests + Quest Sponsorship + Testing (2026-03-05)
 
 ### Quest Sponsorship Collaboration
+
 - [New] QuestCollaborator model — invite co-sponsors with 7-day expiry tokens
 - [New] QuestDeposit model — track multi-deposit funding per sponsor + escrow sub-questId
 - [New] POST /quests/:id/invite — generate shareable invite link (owner/sponsor only, max 5 sponsors)
@@ -24,6 +40,7 @@
 - [Fix] Migration backfill: existing funded quests set totalFunded = rewardAmount
 
 ### Design System v3 — Terminal Edition (Hiru)
+
 - [New] Complete UI overhaul — terminal-inspired dark theme
 - [New] Theme switcher component
 - [New] Dark mode shadows, improved tab badges
@@ -34,10 +51,12 @@
 - [Remove] Retro theme removed
 
 ### Stripe Connect Integration (Ryan)
+
 - [New] Stripe Connect for fiat payments — sponsor onboarding flow
 - [New] Product distribution docs and plan
 
 ### Testnet Quest Creation (Vincent/Thomas)
+
 - [New] Testnet support for quest creation (Base Sepolia)
 - [New] Chain and RPC registry API endpoints
 - [New] Per-chain polling control in escrow poller
@@ -48,20 +67,24 @@
 - [Fix] Dockerfile CMD — inline migration, remove entrypoint script
 
 ### Account Page (Thomas)
+
 - [New] Complete account page — wallet management + X read tokens
 - [Fix] Account page social linking reliability improvements
 
 ### Frontend (Ray)
+
 - [New] QuestList component — improved view toggle functionality
 - [Update] Dashboard layout enhancements
 
 ### Testing (Chalee)
+
 - [New] Unit tests: auth, quests, stripe modules (vitest)
 - [New] Auth test cases TC-AUTH-034 to TC-AUTH-044
 - [New] Bug report from QA testing
 - [New] Generate-testcase skill for automated test generation
 
 ### DevOps & Docs
+
 - [New] Local setup guide for team members
 - [New] Brand guidelines, UI patterns, accessibility standards docs
 - [New] Team coordination files (`.team/` directory)
@@ -74,6 +97,7 @@
 ## v0.12.1 — Auth Redirect Fix + Login Cleanup + Account Linking (2026-03-04)
 
 ### Bug Fixes
+
 - [Fix] "Log in to Accept Quest" button now saves quest URL to localStorage before redirecting to login — user returns to quest page after auth (previously landed on `/quests`)
 - [Fix] Fund page shows wrong chain — resolve chainId from `quest.network`
 - [Fix] Edit link on fund page points to edit page instead of manage
@@ -83,12 +107,14 @@
 - [Fix] X callback flash-of-error — same async session fix
 
 ### New Features
+
 - [New] Telegram unlink: `DELETE /auth/social/telegram` clears `telegramId`/`telegramUsername`
 - [New] Telegram unlink button on account page with lockout prevention
 - [New] Profile editing: display name + username inline edit on account page
 - [New] `PATCH /auth/me` endpoint for profile updates
 
 ### Cleanup
+
 - [Remove] GitHub login button (provider disabled in Supabase)
 
 ---
@@ -96,6 +122,7 @@
 ## v0.12.0 — Multi-Chain Escrow + Real Social Verification (2026-03-03)
 
 ### Multi-Chain Escrow Simplification
+
 - [New] `ESCROW_CHAIN_IDS` env var — comma-separated source of truth for active chains
 - [New] `ESCROW_CONTRACT` shared address for all chains (CREATE2 deterministic deploy)
 - [New] Multi-chain poller via `Promise.allSettled()` (1 chain fail won't block others)
@@ -106,6 +133,7 @@
 - [Deploy] Base mainnet + BNB mainnet — proxy `0xF86f5498165D62E044964740F30540D6c5675b99`
 
 ### Real Social Task Verification
+
 - [New] Completion-time verification: confirms user actually performed social action
 - [New] X REST client with OAuth PKCE: checkFollowing, getLikingUsers, getRetweetedBy, getTweet
 - [New] Social action verifier: dispatcher for 8 task types across 3 platforms (X, Discord, Telegram)
@@ -119,6 +147,7 @@
 ## v0.11.0 — Social Account Linking + Social Task Validation (2026-03-02)
 
 ### Telegram OIDC Login
+
 - [New] `POST /auth/telegram` — server-side code exchange, JWKS verification, session creation
 - [New] `POST /auth/telegram/link` — link Telegram to existing user account
 - [New] User.telegramId and User.telegramUsername fields (supports BigInt Telegram IDs)
@@ -129,6 +158,7 @@
 - [Fix] Telegram BigInt overflow handling (casts to String, uses raw queries for compatibility)
 
 ### Social Task Validation
+
 - [New] `GET /quests/validate-social?platform=x|discord|telegram&type=&value=` — real-time target validation
 - [New] X (Twitter) validation via oEmbed endpoint (free, no API key)
 - [New] Discord validation via public invite API (no auth required)
@@ -142,6 +172,7 @@
 ## v0.10.0 — Escrow Mainnet Integration (2026-02-28)
 
 ### Network Mode Configuration
+
 - [New] `ESCROW_NETWORK_MODE` env var (testnet | mainnet) — controls active blockchains
 - [New] Testnet: Base Sepolia (84532) + BSC Testnet (97)
 - [New] Mainnet: Base (8453) + BNB Chain (56)
@@ -152,6 +183,7 @@
 - [New] `NetworkMode` type exported from `packages/shared`
 
 ### Admin API Enhancements
+
 - [Update] All escrow endpoints (health, tx-status) now multi-env aware
 - [Update] Quest and user endpoints support environment filtering
 - [New] Clear separation of testnet vs mainnet data in admin queries
@@ -161,6 +193,7 @@
 ## v0.9.0 — Escrow Hardening + Admin Dashboard + Fund Page (2026-03-01)
 
 ### Escrow Module Hardened
+
 - [New] `EscrowCursor` Prisma model — DB-persisted block cursor for re-org safety
 - [New] 5-block confirmation buffer on escrow event polling
 - [New] All 4 event types polled: QuestFunded, QuestDistributed, QuestRefunded, EmergencyWithdrawal
@@ -172,6 +205,7 @@
 - [Update] Admin distribute/refund now require admin role (security hardening)
 
 ### Admin API — Multi-env Support
+
 - [New] All admin endpoints accept `?env=mainnet|testnet` query param
 - [New] `admin.prisma.ts` — testnet Prisma client factory
 - [New] `/admin/env-status` → current environment status
@@ -181,6 +215,7 @@
 - [Update] Escrow health/tx-status endpoints multi-env aware
 
 ### Dashboard Fund Page Refactored
+
 - [Split] From 409 lines → 9 focused components (~50 lines each)
 - [New] Allowance pre-check before approve button shows
 - [New] Balance check + insufficient balance warning
@@ -188,12 +223,14 @@
 - [New] Mobile responsive layout (single column on mobile)
 
 ### Base Sepolia Deployment
+
 - [New] Contract verified on Base Sepolia: `0xe1d2b3d041934e2f245d5a366396e4787d3802c1`
 - [New] `ESCROW_CONTRACT_84532` env var added to `.env.development`
 - [New] Roles configured: DEFAULT_ADMIN (deployer), OPERATOR (hot wallet)
 - [New] USDC allowlisted on Base Sepolia testnet
 
 ### Telegram Bot — New Commands
+
 - [New] `/register` — conversational agent registration (in-memory session)
 - [New] `/quests` — list available quests
 - [New] `/accept <questId>` — accept a quest
@@ -204,6 +241,7 @@
 - [New] In-memory session store for multi-step flows
 
 ### Quest Draft Flow & Edit
+
 - [New] Quest save draft with only title required (all other fields optional)
 - [New] localStorage persistence: form auto-saves to browser storage
 - [New] Publish validator: checks all required fields before quest can go live
@@ -213,12 +251,14 @@
 - [Update] Quest schema: rewardAmount defaults to 0, supports network + drawTime fields
 
 ### Custom Skill URLs
+
 - [New] Quest creation accepts direct URLs alongside ClawHub search
 - [New] `GET /quests/skill-preview?url=...` — CORS proxy for external skill metadata
 - [New] HTML parsing: JSON-LD → specific meta → body text → generic meta
 - [New] YAML frontmatter support for raw markdown URLs (GitHub raw)
 
 ### Bug Fixes (v0.8.1)
+
 - [Fix] GET /quests/:id 500 error (updatedAt serialization)
 - [Fix] previewToken/claimToken leaking in public responses
 - [Fix] creatorUserId missing from response schema
@@ -229,6 +269,7 @@
 ## v0.8.0 — Admin Dashboard (2026-02-28)
 
 ### Admin API Module
+
 - [New] `apps/api/src/modules/admin/` — admin routes + service
 - [New] `requireAdmin` middleware in `admin.middleware.ts`
 - [New] 14 admin endpoints for quest, user, escrow, analytics management
@@ -237,6 +278,7 @@
 - [New] CORS: `localhost:5174` (admin dev) + `admin.clawquest.ai` (prod)
 
 ### Admin Dashboard (separate repo)
+
 - [New] Multi-env switcher, escrow health monitoring, TX status lookup
 - [New] Quest participations table, user agents/quests tabs
 
@@ -245,30 +287,34 @@
 ## v0.7.0 — Telegram Bot Upgrade + Quest Claim Flow (2026-02-22)
 
 ### Telegram Bot — Modular Rewrite
+
 - [New] Composer-based architecture: handlers/, middleware/, keyboards/, content/
 - [New] /help command — lists all commands + dashboard link
 - [New] /about command — knowledge base with expandable inline topics (agents, quests, quest types, registration)
 - [New] /status command — shows linked agents & quests by Telegram ID
 - [New] /verify command — interactive Agent/Quest choice keyboard
-- [New] Fallback handler: auto-detect pasted tokens (agent_/quest_/verify_ prefix), FAQ keyword matching
+- [New] Fallback handler: auto-detect pasted tokens (agent*/quest*/verify\_ prefix), FAQ keyword matching
 - [New] Bot menu: setMyCommands registers /start, /help, /verify, /status, /about
 - [New] Knowledge base content: KNOWLEDGE const + FAQ array for keyword matching
 - [New] Centralized message strings (MSG const) and error middleware
 
 ### Telegram Bot — Token Prefix Migration
-- [Update] Token format: agent_<hex> (self-describing, no wrapper prefix in deeplinks)
-- [Update] Deeplink: start=agent_<hex> (token IS the payload)
-- [New] Backward compat: verify_ prefix (legacy) handled in start.handler + fallback.handler
-- [Update] skill.md: example response updated to new agent_ format
+
+- [Update] Token format: agent\_<hex> (self-describing, no wrapper prefix in deeplinks)
+- [Update] Deeplink: start=agent\_<hex> (token IS the payload)
+- [New] Backward compat: verify\_ prefix (legacy) handled in start.handler + fallback.handler
+- [Update] skill.md: example response updated to new agent\_ format
 
 ### API — Quest Claim Flow
-- [New] POST /quests generates claimToken (quest_<hex>) + claimTokenExpiresAt (48h)
+
+- [New] POST /quests generates claimToken (quest\_<hex>) + claimTokenExpiresAt (48h)
 - [New] POST /quests/claim — human JWT auth, validates token, assigns quest ownership
 - [Update] POST /quests response includes telegramDeeplink + previewUrl
 - [Fix] CreateQuestSchema: omit computed fields (questerNames, questerDetails)
 - [Fix] Quest response serialization: Date→ISO string, add computed fields
 
 ### Dashboard — Quest Claim Page
+
 - [New] /quests/claim route — mirrors /verify pattern, auto-POSTs claim token
 - [Update] router.tsx — claimQuestRoute added before questDetailRoute
 
@@ -277,6 +323,7 @@
 ## v0.6.0 — Custom Skill URLs in Quest Creation (2026-02-22)
 
 ### Dashboard — Quest Create: Custom Skill URL Support
+
 - [New] Search input accepts direct URLs (GitHub, skills.sh, any hosting) alongside ClawHub search
 - [New] URL preview dropdown: "URL" badge, skill name, description, version, source domain, "+ Add" button
 - [New] Custom skill styling: 🔗 icon + "custom" badge + source URL (vs 🧩 + agent count for ClawHub)
@@ -284,6 +331,7 @@
 - [New] CSS: `.custom-skill-badge`, `.required-skill-source`, `.skill-source-url`
 
 ### API — Skill Preview Proxy
+
 - [New] `GET /quests/skill-preview?url=...` — server-side fetch + parse to avoid CORS
   - SSRF guard: only HTTP/HTTPS allowed
   - GitHub blob→raw URL conversion
@@ -295,6 +343,7 @@
 - [Fix] CORS: added `http://127.0.0.1:5173` to allowed origins
 
 ### Dashboard — Hooks
+
 - [New] `useSkillSearch.ts`: `isSkillUrl()` URL detection, `fetchSkillFromUrl()` via API proxy
 
 ---
@@ -302,6 +351,7 @@
 ## v0.5.0 — User Dashboard (2026-02-20)
 
 ### Dashboard — User Dashboard (Home)
+
 - [New] `src/routes/_authenticated/dashboard.tsx` — full dashboard page (replaces AgentList at `/`)
   - 2 main tabs: **My Agents** + **My Quests**
   - My Quests: filter bar (all/live/scheduled/pending/draft/completed), card/list view toggle
@@ -318,6 +368,7 @@
 ## v0.4.0 — Quest Pages Complete (2026-02-20)
 
 ### Dashboard — Quest Detail Page
+
 - [New] `src/routes/_public/quests/detail.tsx` — full quest detail page matching design system
   - 2-column grid layout (main content + 280px sticky sidebar)
   - Breadcrumb, page header with status/type/reward badges
@@ -329,6 +380,7 @@
   - Supports live/completed/scheduled states
 
 ### Dashboard — Create Quest Page
+
 - [New] `src/routes/_authenticated/quests/create.tsx` — 3-step wizard form
   - Step tabs: Details / Reward / Tasks (with ✓ done state)
   - Tab 1: Title, Description, Sponsor, Tags, Slots, Expiry datetime
@@ -340,6 +392,7 @@
 - [New] "+ Create Quest" button added to Quest List page header
 
 ### Dashboard — Questers Pages
+
 - [New] `src/routes/_public/quests/questers.tsx` — full questers page at `/quests/:questId/questers`
   - Breadcrumb, page header (totalQuesters, type badge, tasks count, total reward)
   - Filter bar: "N all · N done · N in progress"
@@ -352,19 +405,23 @@
 - [Update] Quest list table view — added Questers column
 
 ### API
+
 - [New] `GET /quests/:id/questers` — paginated questers list with status filter (all/done/in_progress)
   - Returns: questTitle, questType, totalQuesters, doneQuesters, inProgressQuesters, tasksTotal, participations[], pagination
 - [Update] `GET /quests` and `GET /quests/:id` — include `questerDetails: [{agentName, humanHandle}]`
 
 ### Database
+
 - [Update] `QuestParticipation` model — added: `tasksCompleted`, `tasksTotal`, `payoutAmount`, `payoutStatus`
 - [Update] Seed data — 15 agents, 5 quests, realistic participations with tasks/payout data
 
 ### Shared Types
+
 - [New] `QuestParticipationSchema` — zod schema + TypeScript type
 - [New] `QuestersResponseSchema` — zod schema + TypeScript type
 
 ### CSS / Design System
+
 - [New] `src/components/avatarUtils.ts` — shared `AVATAR_COLORS` + `getInitials()` utility
 - [New] CSS imports in main.tsx: `actor-sections.css`, `forms.css`, breadcrumb, filters, pager, questers-popup, questers-avatars, breadcrumb
 - [Update] `src/styles/pages/quest-detail.css` — removed global `.page-container` max-width override
@@ -374,6 +431,7 @@
 ## v0.3.0 — Quest Explore Page (2026-02-18)
 
 ### Dashboard
+
 - [New] `src/routes/_authenticated/quests/index.tsx` — Quest Explore page matching design system
   - Card view + List/table view toggle
   - Tab bar: Featured / Highest Reward / Ending Soon / New (client-side sort)
@@ -388,11 +446,13 @@
 - [New] CSS: `quest-explore.css`, all shared CSS imported in `main.tsx`
 
 ### API
+
 - [New] `POST /auth/register`, `POST /auth/login` — JWT auth
 - [New] `GET /quests`, `GET /quests/:id` — quest list + detail
 - [New] `POST /quests/:id/accept` — accept quest with agent (auth required)
 
 ### Database
+
 - [New] `User`, `Agent`, `Quest`, `QuestParticipation` Prisma models
 - [New] Seed: 3 users, 10+ agents, 5 quests across all types/statuses
 

@@ -47,16 +47,14 @@ export async function waitlistRoutes(server: FastifyInstance) {
 
             const accessToken = randomBytes(16).toString('hex'); // 32 hex chars
             const referralCode = generateReferralCode();
-            const count = await server.prisma.waitlistEntry.count();
-            const basePosition = count + 1;
 
             await server.prisma.waitlistEntry.create({
                 data: {
                     accessToken,
                     referralCode,
                     referredBy: referrerExists ? referredBy : null,
-                    position: basePosition,
-                    effectivePosition: basePosition,
+                    position: 0,
+                    effectivePosition: 0,
                 },
             });
 

@@ -55,6 +55,15 @@ export class TelegramService {
     }
 
     public async startPolling() {
+        // Ensure no webhook is set — otherwise Telegram sends updates only to webhook URL
+        // and getUpdates (polling) receives nothing. Common cause of "bot works in dev, not in prod".
+        try {
+            await this.bot.api.deleteWebhook({ drop_pending_updates: false });
+            this.server.log.info('Telegram bot: webhook cleared (using polling)');
+        } catch (err) {
+            this.server.log.warn({ err }, 'Telegram deleteWebhook failed (continuing with polling)');
+        }
+
         // Register bot menu commands with Telegram
         await this.bot.api.setMyCommands([
             { command: 'start', description: 'Welcome to ClawQuest' },

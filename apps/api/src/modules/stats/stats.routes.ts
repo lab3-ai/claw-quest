@@ -39,7 +39,9 @@ export async function statsRoutes(server: FastifyInstance) {
                     _sum: { amount: true },
                     where: { status: 'confirmed' },
                 }),
-                server.prisma.waitlistEntry.count(),
+                server.prisma.waitlistEntry.count({
+                    where: { telegramId: { not: null } },
+                }),
             ]);
 
             const rewardsPaid = Number(depositsAgg._sum.amount ?? 0);

@@ -367,8 +367,8 @@ model WaitlistEntry {
   referredBy      String?                       // referralCode of the referrer
   referralCount   Int      @default(0)          // how many joined using this entry's code
   referralBonus   Int      @default(0)          // total spots gained from referrals (10 per referral)
-  position        Int                           // base waitlist rank — assigned on insert
-  effectivePosition Int                         // actual rank = max(1, position - referralBonus)
+  position        Int      @default(0)          // base waitlist rank — 0 = pending; set when user joins via Telegram
+  effectivePosition Int     @default(0)          // display rank (1-based); 0 = pending, only set for joined entries
   createdAt       DateTime @default(now())
 
   @@index([referralCode])

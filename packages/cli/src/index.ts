@@ -9,6 +9,7 @@ import { logsCommand } from './commands/logs';
 import { statusCommand } from './commands/status';
 import { configCommand } from './commands/config';
 import { quickstartCommand } from './commands/quickstart';
+import { updateCommand } from './commands/update';
 
 const program = new Command();
 
@@ -27,6 +28,7 @@ logsCommand(program);
 statusCommand(program);
 configCommand(program);
 quickstartCommand(program);
+updateCommand(program);
 
 // Parse arguments
 program.parse();

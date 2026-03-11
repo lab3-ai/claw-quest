@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "967180e91994",
+  "strategy": "manual-commit",
+  "branch": "feat/switch-use-x-api",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "apps/api/src/modules/quests/social-action-verifier.ts",
+    "apps/api/src/modules/x/x-rest-client.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/96/7180e91994/0/metadata.json",
+      "transcript": "/96/7180e91994/0/full.jsonl",
+      "content_hash": "/96/7180e91994/0/content_hash.txt",
+      "prompt": "/96/7180e91994/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 28,
+    "cache_creation_tokens": 73422,
+    "cache_read_tokens": 1516582,
+    "output_tokens": 11403,
+    "api_call_count": 22
+  }
+}

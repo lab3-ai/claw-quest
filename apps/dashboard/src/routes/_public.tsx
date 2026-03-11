@@ -35,7 +35,7 @@ export function PublicLayout() {
             <header className="sticky top-0 z-50 bg-background">
                 <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-6">
                     <Link
-                        to="/quests"
+                        to="/home"
                         className="mr-5 flex items-center gap-2 no-underline"
                     >
                         <BrandLogo />
@@ -45,7 +45,7 @@ export function PublicLayout() {
                     <nav className="hidden items-center gap-1 sm:flex">
                         <Link
                             to="/quests"
-                            className="px-0 py-1.5 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
+                            className="py-1.5 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
                         >
                             Quests
                         </Link>

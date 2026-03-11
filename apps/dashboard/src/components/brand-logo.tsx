@@ -51,7 +51,7 @@ export function BrandLogo({
                 <img
                     src="/logo-clawquest.svg"
                     alt="ClawQuest"
-                    className={cn("h-4 w-auto object-contain", dark && "invert")}
+                    className={cn("h-4 w-auto object-contain dark:invert", dark && "invert")}
                     draggable={false}
                 />
             )}

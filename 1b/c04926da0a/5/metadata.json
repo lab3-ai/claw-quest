@@ -1,0 +1,50 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "1bc04926da0a",
+  "session_id": "936697ae-1ed2-4c48-b472-d99d1f3cf128",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T17:50:52.575087Z",
+  "branch": "github",
+  "checkpoints_count": 8,
+  "files_touched": [
+    ".env.example",
+    "apps/api/prisma/schema.prisma",
+    "apps/api/src/__tests__/helpers/test-server.ts",
+    "apps/api/src/__tests__/llm-key-rewards.test.ts",
+    "apps/api/src/__tests__/quest-lifecycle.test.ts",
+    "apps/api/src/__tests__/stripe-webhooks.test.ts",
+    "apps/api/src/app.ts",
+    "apps/api/src/modules/auth/auth.routes.ts",
+    "apps/api/src/modules/quests/quests.publish-validator.ts",
+    "apps/api/src/modules/quests/quests.routes.ts",
+    "apps/api/src/modules/quests/quests.service.ts",
+    "apps/api/src/modules/quests/social-action-verifier.ts",
+    "apps/api/src/modules/stripe/stripe.routes.ts",
+    "apps/api/src/modules/stripe/stripe.service.ts",
+    "apps/api/src/modules/stripe/stripe.webhook.ts",
+    "apps/dashboard/src/router.tsx",
+    "apps/dashboard/src/routes/_public/github-bounties/index.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-6",
+  "turn_id": "6635bcaa4a40",
+  "token_usage": {
+    "input_tokens": 4096,
+    "cache_creation_tokens": 54853,
+    "cache_read_tokens": 1920434,
+    "output_tokens": 10257,
+    "api_call_count": 32
+  },
+  "session_metrics": {
+    "turn_count": 8
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T17:50:52.505642Z",
+    "agent_lines": 652,
+    "human_added": 9511,
+    "human_modified": 20,
+    "human_removed": 0,
+    "total_committed": 10183,
+    "agent_percentage": 6.402828243150349
+  }
+}

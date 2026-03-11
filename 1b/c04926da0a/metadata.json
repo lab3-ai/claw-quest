@@ -3,7 +3,7 @@
   "checkpoint_id": "1bc04926da0a",
   "strategy": "manual-commit",
   "branch": "github",
-  "checkpoints_count": 62,
+  "checkpoints_count": 70,
   "files_touched": [
     ".env.example",
     "apps/api/prisma/schema.prisma",
@@ -27,6 +27,7 @@
     "apps/dashboard/src/routes/_authenticated/account.tsx",
     "apps/dashboard/src/routes/_authenticated/github-bounties/new.tsx",
     "apps/dashboard/src/routes/_public.tsx",
+    "apps/dashboard/src/routes/_public/github-bounties/index.tsx",
     "apps/dashboard/src/routes/login.tsx",
     "docs/CHANGELOG.md",
     "docs/PROJECT_STATUS.md"
@@ -61,13 +62,19 @@
       "transcript": "/1b/c04926da0a/4/full.jsonl",
       "content_hash": "/1b/c04926da0a/4/content_hash.txt",
       "prompt": "/1b/c04926da0a/4/prompt.txt"
+    },
+    {
+      "metadata": "/1b/c04926da0a/5/metadata.json",
+      "transcript": "/1b/c04926da0a/5/full.jsonl",
+      "content_hash": "/1b/c04926da0a/5/content_hash.txt",
+      "prompt": "/1b/c04926da0a/5/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 1602,
-    "cache_creation_tokens": 800244,
-    "cache_read_tokens": 25063463,
-    "output_tokens": 87336,
-    "api_call_count": 290
+    "input_tokens": 5698,
+    "cache_creation_tokens": 855097,
+    "cache_read_tokens": 26983897,
+    "output_tokens": 97593,
+    "api_call_count": 322
   }
 }

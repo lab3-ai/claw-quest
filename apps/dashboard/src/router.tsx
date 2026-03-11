@@ -22,6 +22,7 @@ import { QuestCompletePage } from './routes/_authenticated/quests/$questId/compl
 import { Account } from './routes/_authenticated/account'
 import { StripeConnect } from './routes/_authenticated/stripe-connect'
 import { QuestJoin } from './routes/_public/quests/join'
+import { HomePage } from './routes/_public/home'
 import { Privacy } from './routes/privacy'
 import { Terms } from './routes/terms'
 import { Waitlist } from './routes/waitlist'
@@ -103,19 +104,30 @@ const appLayoutRoute = createRoute({
     component: PublicLayout,
 })
 
-// Redirect root to /quests
+// Redirect root to /home
 const indexRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/',
     beforeLoad: () => {
-        throw redirect({ to: '/quests' })
+        throw redirect({ to: '/home' })
     },
 })
 
 // ── Public routes (no auth required) ──
+const homeRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/home',
+    component: HomePage,
+})
+
 const questsRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/quests',
+    validateSearch: (search: Record<string, unknown>): { tab?: string } => {
+        const result: { tab?: string } = {}
+        if (search.tab && typeof search.tab === 'string') result.tab = search.tab
+        return result
+    },
     component: QuestList,
 })
 
@@ -337,6 +349,7 @@ const routeTree = rootRoute.addChildren([
     cliAuthRoute,
     appLayoutRoute.addChildren([
         indexRoute,
+        homeRoute,
         questsRoute,
         claimQuestRoute,
         myQuestsRoute,

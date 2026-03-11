@@ -15,7 +15,7 @@ export function PageTitle({ title, description, actions, border, className, chil
             <div>
                 <h1 className="text-3xl font-semibold text-foreground">{title}</h1>
                 {description && (
-                    <div className="mt-1 text-sm text-muted-foreground">{description}</div>
+                    <div className="mt-2 text-sm text-muted-foreground">{description}</div>
                 )}
                 {children && <div className="mt-2">{children}</div>}
             </div>

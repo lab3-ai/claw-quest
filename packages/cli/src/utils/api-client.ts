@@ -19,6 +19,12 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
     token = loadCredentials()?.agentApiKey;
   }
 
+  const debug = process.env.CLAWQUEST_DEBUG === 'true' || process.env.CLAWQUEST_DEBUG === '1';
+  if (debug) {
+    console.log('[DEBUG] createApiClient: baseURL=%s useHumanAuth=%s hasToken=%s tokenLength=%s', baseURL, options.useHumanAuth, !!token, token?.length ?? 0);
+    if (token) console.log('[DEBUG] Authorization header: Bearer %s...', token.slice(0, 40));
+  }
+
   const client = axios.create({
     baseURL,
     headers: {
@@ -26,6 +32,14 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
+
+  if (debug) {
+    client.interceptors.request.use((config) => {
+      const auth = config.headers?.Authorization;
+      console.log('[DEBUG] Request: %s %s | Authorization: %s', config.method?.toUpperCase(), config.url, auth ? `Bearer ${String(auth).slice(7, 47)}...` : 'NOT SET');
+      return config;
+    });
+  }
 
   client.interceptors.response.use(
     (response) => response,

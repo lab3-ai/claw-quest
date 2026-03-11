@@ -1,15 +1,103 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
-import axios from 'axios';
+import * as http from 'http';
+import * as crypto from 'crypto';
 import { createApiClient } from '../utils/api-client';
 import { saveHumanToken, clearHumanToken, loadHumanToken, hasHumanToken } from '../utils/credentials';
 
-function getSupabaseConfig(): { url: string; anonKey: string } | null {
-  const url = process.env.SUPABASE_URL;
-  const anonKey = process.env.SUPABASE_ANON_KEY;
-  if (!url || !anonKey) return null;
-  return { url, anonKey };
+const DASHBOARD_URL = process.env.CLAWQUEST_DASHBOARD_URL || 'https://www.clawquest.ai/';
+const CLI_AUTH_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+
+function generateState(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+function findAvailablePort(start = 9742, end = 9842): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const tryPort = (port: number) => {
+      if (port > end) {
+        reject(new Error('No available port found in range'));
+        return;
+      }
+      const server = http.createServer();
+      server.listen(port, () => {
+        server.close(() => resolve(port));
+      });
+      server.on('error', () => tryPort(port + 1));
+    };
+    tryPort(start);
+  });
+}
+
+async function openBrowser(url: string): Promise<void> {
+  const { exec } = require('child_process');
+  const platform = process.platform;
+  const cmd =
+    platform === 'darwin' ? `open "${url}"` :
+      platform === 'win32' ? `start "" "${url}"` :
+        `xdg-open "${url}"`;
+  await new Promise<void>((resolve) => exec(cmd, () => resolve()));
+}
+
+function startCallbackServer(
+  port: number,
+  expectedState: string,
+): Promise<{ token: string; email: string; expiresIn: number }> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      server.close();
+      reject(new Error('Login timed out after 5 minutes'));
+    }, CLI_AUTH_TIMEOUT_MS);
+
+    const server = http.createServer((req, res) => {
+      const url = new URL(req.url || '/', `http://localhost:${port}`);
+
+      if (req.method === 'POST' && url.pathname === '/callback') {
+        let body = '';
+        req.on('data', (chunk) => (body += chunk));
+        req.on('end', () => {
+          try {
+            const data = JSON.parse(body);
+            const { state, access_token, email, expires_in } = data;
+
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Content-Type', 'application/json');
+
+            if (state !== expectedState) {
+              res.writeHead(400);
+              res.end(JSON.stringify({ error: 'Invalid state' }));
+              return;
+            }
+
+            res.writeHead(200);
+            res.end(JSON.stringify({ ok: true }));
+            clearTimeout(timeout);
+            server.close();
+            resolve({ token: access_token, email, expiresIn: expires_in });
+          } catch {
+            res.writeHead(400);
+            res.end(JSON.stringify({ error: 'Invalid JSON' }));
+          }
+        });
+      } else if (req.method === 'OPTIONS') {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        res.writeHead(204);
+        res.end();
+      } else {
+        res.writeHead(404);
+        res.end();
+      }
+    });
+
+    server.listen(port);
+    server.on('error', (err) => {
+      clearTimeout(timeout);
+      reject(err);
+    });
+  });
 }
 
 export function authCommand(program: Command) {
@@ -20,50 +108,33 @@ export function authCommand(program: Command) {
   // Login
   auth
     .command('login')
-    .description('Login with email and password (human account)')
-    .option('-e, --email <email>', 'Email address')
-    .option('-p, --password <password>', 'Password')
-    .option('--api-url <url>', 'API base URL', 'https://api.clawquest.ai')
-    .action(async (options) => {
-      let { email, password } = options;
-
-      if (!email || !password) {
-        const readline = require('readline');
-        const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-        const ask = (q: string): Promise<string> =>
-          new Promise((resolve) => rl.question(q, resolve));
-
-        if (!email) email = await ask(chalk.cyan('Email: '));
-        if (!password) {
-          process.stdout.write(chalk.cyan('Password: '));
-          password = await ask('');
-        }
-        rl.close();
-      }
-
-      const supabase = getSupabaseConfig();
-      if (!supabase) {
-        console.error(chalk.red('SUPABASE_URL and SUPABASE_ANON_KEY env vars are required for login.'));
-        console.error(chalk.gray('Set them in your shell or .env file.'));
+    .description('Login to your ClawQuest account via browser')
+    .action(async () => {
+      let port: number;
+      try {
+        port = await findAvailablePort();
+      } catch {
+        console.error(chalk.red('Could not find an available port for the callback server.'));
         process.exit(1);
       }
 
-      const spinner = ora('Logging in...').start();
+      const state = generateState();
+      const callbackUrl = `http://localhost:${port}/callback`;
+      const loginUrl = `${DASHBOARD_URL}cli-auth?state=${state}&callback=${encodeURIComponent(callbackUrl)}`;
+
+      console.log(chalk.bold('\nClawQuest CLI Login\n'));
+      console.log(chalk.gray('Opening your browser to complete login...'));
+      console.log(chalk.gray(`Login URL: ${chalk.cyan(loginUrl)}\n`));
+      console.log(chalk.gray('If the browser did not open, copy the URL above and paste it into your browser.'));
+      console.log(chalk.gray('Waiting for login to complete... (press Ctrl+C to cancel)\n'));
+
+      await openBrowser(loginUrl);
+
+      const spinner = ora('Waiting for browser login...').start();
 
       try {
-        const response = await axios.post(
-          `${supabase.url}/auth/v1/token?grant_type=password`,
-          { email, password },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              apikey: supabase.anonKey,
-            },
-          }
-        );
-
-        const { access_token, expires_in } = response.data;
-        saveHumanToken(access_token, email, expires_in);
+        const { token, email, expiresIn } = await startCallbackServer(port, state);
+        saveHumanToken(token, email, expiresIn);
         spinner.succeed('Logged in successfully!');
 
         console.log(chalk.green(`\nWelcome, ${email}`));
@@ -73,9 +144,7 @@ export function authCommand(program: Command) {
         console.log(chalk.cyan('  cq quests create   - Create a quest'));
         console.log(chalk.cyan('  cq quests mine     - View your quests'));
       } catch (error: any) {
-        spinner.fail('Login failed');
-        const msg = error.response?.data?.error_description || error.response?.data?.message || error.message;
-        console.error(chalk.red(`Error: ${msg}`));
+        spinner.fail(error.message || 'Login failed');
         process.exit(1);
       }
     });
@@ -100,6 +169,17 @@ export function authCommand(program: Command) {
     .option('--api-url <url>', 'API base URL', 'https://api.clawquest.ai')
     .action(async (options) => {
       const session = loadHumanToken();
+      // Debug: xem đã load được session + token chưa
+      const debug = process.env.CLAWQUEST_DEBUG === 'true' || process.env.CLAWQUEST_DEBUG === '1';
+      if (debug) {
+        console.log(chalk.gray('[DEBUG] loadHumanToken():'), session ? 'OK' : 'null');
+        if (session) {
+          console.log(chalk.gray('[DEBUG] token length:'), session.token?.length ?? 0);
+          console.log(chalk.gray('[DEBUG] token preview:'), session.token ? `${session.token.slice(0, 30)}...` : 'MISSING');
+          console.log(chalk.gray('[DEBUG] email:'), session.email);
+        }
+        console.log(chalk.gray('[DEBUG] API baseURL:'), options.apiUrl);
+      }
       if (!session) {
         console.log(chalk.yellow('Not logged in. Run "cq auth login" first.'));
         process.exit(1);

@@ -25,6 +25,7 @@ import { QuestJoin } from './routes/_public/quests/join'
 import { Privacy } from './routes/privacy'
 import { Terms } from './routes/terms'
 import { Waitlist } from './routes/waitlist'
+import { CliAuth } from './routes/cli-auth'
 import { AgentDetail } from './routes/_authenticated/agents/$agentId'
 
 // Root route
@@ -83,6 +84,16 @@ const waitlistRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/waitlist',
     component: Waitlist,
+})
+
+const cliAuthRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/cli-auth',
+    validateSearch: (search: Record<string, unknown>): { state?: string; callback?: string } => ({
+        state: typeof search.state === 'string' ? search.state : undefined,
+        callback: typeof search.callback === 'string' ? search.callback : undefined,
+    }),
+    component: CliAuth,
 })
 
 // Single app layout (topbar + footer, handles both public & authenticated pages)
@@ -323,6 +334,7 @@ const routeTree = rootRoute.addChildren([
     privacyRoute,
     termsRoute,
     waitlistRoute,
+    cliAuthRoute,
     appLayoutRoute.addChildren([
         indexRoute,
         questsRoute,

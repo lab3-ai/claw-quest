@@ -1,0 +1,58 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "1bc04926da0a",
+  "session_id": "1d9503b8-0134-419a-a3a7-019b312dd12c",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T17:50:52.033891Z",
+  "branch": "github",
+  "checkpoints_count": 42,
+  "files_touched": [
+    ".env.example",
+    "apps/api/prisma/schema.prisma",
+    "apps/api/src/__tests__/helpers/test-server.ts",
+    "apps/api/src/__tests__/llm-key-rewards.test.ts",
+    "apps/api/src/__tests__/quest-lifecycle.test.ts",
+    "apps/api/src/__tests__/stripe-webhooks.test.ts",
+    "apps/api/src/app.ts",
+    "apps/api/src/modules/auth/auth.routes.ts",
+    "apps/api/src/modules/github-bounty/github-bounty.routes.ts",
+    "apps/api/src/modules/github-bounty/github-bounty.service.ts",
+    "apps/api/src/modules/github-bounty/github-rest-client.ts",
+    "apps/api/src/modules/quests/quests.publish-validator.ts",
+    "apps/api/src/modules/quests/quests.routes.ts",
+    "apps/api/src/modules/quests/quests.service.ts",
+    "apps/api/src/modules/quests/social-action-verifier.ts",
+    "apps/api/src/modules/stripe/stripe.routes.ts",
+    "apps/api/src/modules/stripe/stripe.service.ts",
+    "apps/api/src/modules/stripe/stripe.webhook.ts",
+    "apps/dashboard/src/router.tsx",
+    "apps/dashboard/src/routes/_authenticated/account.tsx",
+    "apps/dashboard/src/routes/_authenticated/github-bounties/new.tsx",
+    "apps/dashboard/src/routes/_public.tsx",
+    "apps/dashboard/src/routes/login.tsx",
+    "docs/CHANGELOG.md",
+    "docs/PROJECT_STATUS.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-4-6",
+  "turn_id": "1eecef1a1e79",
+  "token_usage": {
+    "input_tokens": 266,
+    "cache_creation_tokens": 367160,
+    "cache_read_tokens": 18750846,
+    "output_tokens": 56169,
+    "api_call_count": 179
+  },
+  "session_metrics": {
+    "turn_count": 42
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T17:50:51.493353Z",
+    "agent_lines": 2341,
+    "human_added": 4194,
+    "human_modified": 20,
+    "human_removed": 0,
+    "total_committed": 6555,
+    "agent_percentage": 35.71319603356217
+  }
+}

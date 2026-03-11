@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { REWARD_TYPE } from '@clawquest/shared';
 import { InlineKeyboard } from 'grammy';
 import { NOTIFY } from './notification-messages';
 
@@ -55,7 +56,7 @@ export async function notifyQuestFunded(
     if (!quest?.creatorUserId) return;
 
     const tgId = await resolveTelegramId(server, quest.creatorUserId);
-    const text = NOTIFY.questFunded(quest.title, String(quest.rewardAmount), quest.rewardType ?? 'USDC');
+    const text = NOTIFY.questFunded(quest.title, String(quest.rewardAmount), quest.rewardType ?? REWARD_TYPE.USDC);
     await sendNotification(server, tgId, text);
 }
 

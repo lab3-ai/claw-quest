@@ -15,6 +15,7 @@ import { StepDetails } from "./create-quest/StepDetails"
 import { StepTasks } from "./create-quest/StepTasks"
 import { StepReward } from "./create-quest/StepReward"
 import { StepPreview } from "./create-quest/StepPreview"
+import { REWARD_TYPE } from "@clawquest/shared"
 import { getTokenSymbol } from "./create-quest/constants"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
@@ -674,7 +675,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const [tab, setTab] = useState<Tab | null>("details")
     const [form, setForm] = useState<FormData>({
         title: "", description: "", startAt: "", endAt: "",
-        rail: "crypto", network: DEFAULT_NETWORK, token: "USDC", type: "FCFS",
+        rail: "crypto", network: DEFAULT_NETWORK, token: REWARD_TYPE.USDC, type: "FCFS",
         total: "100.00", winners: "50",
         drawTime: "",
         fundingMethod: "crypto",
@@ -749,9 +750,9 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
         editPopulated.current = true
 
         const isFiat = editQuest.fundingMethod === "stripe"
-        const token = editQuest.rewardType || "USDC"
+        const token = editQuest.rewardType || REWARD_TYPE.USDC
         // Check if token is a native token (not USDC/USDT)
-        const isNative = !isFiat && token !== "USDC" && token !== "USDT"
+        const isNative = !isFiat && token !== REWARD_TYPE.USDC && token !== REWARD_TYPE.USDT
         // Determine fundingMethod from existing quest or default based on rail
         const fundingMethod = editQuest.fundingMethod || (isFiat ? "stripe" : "crypto")
 
@@ -762,7 +763,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
             endAt: editQuest.expiresAt ? new Date(editQuest.expiresAt).toISOString().slice(0, 16) : "",
             rail: isFiat ? "fiat" : "crypto",
             network: editQuest.network || "Base",
-            token: isNative ? "NATIVE" : token,
+            token: isNative ? REWARD_TYPE.NATIVE : token,
             type: (editQuest.type || "FCFS") as QuestType,
             total: String(editQuest.rewardAmount ?? "100.00"),
             winners: String(editQuest.totalSlots ?? "50"),
@@ -892,7 +893,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
             // Always calculate fundingMethod from current rail value
             const fundingMethod = form.rail === "fiat" ? "stripe" : form.rail === "llm" ? undefined : "crypto"
-            const rewardType = form.rail === "fiat" ? "USD" : form.rail === "llm" ? "LLM_KEY" : form.token
+            const rewardType = form.rail === "fiat" ? REWARD_TYPE.USD : form.rail === "llm" ? REWARD_TYPE.LLM_KEY : form.token
 
             const payload: any = {
                 title: form.title,

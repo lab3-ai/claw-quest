@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import type { QuestTask } from '@clawquest/shared';
+import { REWARD_TYPE } from '@clawquest/shared';
 import { resolveInvite } from '../discord/discord-rest-client';
 
 // ─── Regex patterns for task param validation ────────────────────────────────
@@ -165,7 +166,7 @@ export async function createQuest(
             type: input.type || 'FCFS',
             status: input.status || 'draft',
             rewardAmount: input.rewardAmount,
-            rewardType: input.rewardType || 'USDC',
+            rewardType: input.rewardType || REWARD_TYPE.USDC,
             totalSlots: input.totalSlots || 100,
             filledSlots: 0,
             tags: input.tags || [],

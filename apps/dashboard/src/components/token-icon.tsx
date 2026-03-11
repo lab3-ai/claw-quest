@@ -1,12 +1,14 @@
+import { REWARD_TYPE } from "@clawquest/shared"
+
 /** Maps reward type → local SVG file in /tokens/ */
 const TOKEN_SLUG_MAP: Record<string, string> = {
-    'USDC': 'usdc',
-    'USDT': 'usdt',
+    [REWARD_TYPE.USDC]: 'usdc',
+    [REWARD_TYPE.USDT]: 'usdt',
+    [REWARD_TYPE.USD]: 'usd',
     'ETH': 'eth',
     'SOL': 'sol',
     'ARB': 'arb',
     'OP': 'op',
-    'USD': 'usd',
 }
 
 interface TokenIconProps {

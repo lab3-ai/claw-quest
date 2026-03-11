@@ -1,5 +1,3 @@
 {
-  "strategy": "manual-commit",
-  "enabled": true,
-  "telemetry": true
+  "enabled": true
 }

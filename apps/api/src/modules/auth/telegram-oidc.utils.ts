@@ -30,16 +30,17 @@ export async function verifyTelegramIdToken(idToken: string): Promise<TelegramCl
     console.log('[TelegramOIDC] full payload:', JSON.stringify(payload));
 
     const p = payload as JWTPayload & {
+        id?: string;
         sub?: string;
         name?: string;
         preferred_username?: string;
         picture?: string;
     };
 
-    if (!p.sub) throw new Error('Missing sub claim in Telegram ID token');
+    if (!p.id) throw new Error('Missing id claim in Telegram ID token');
 
     return {
-        telegramId: p.sub,
+        telegramId: p.id,
         name: p.name ?? '',
         username: p.preferred_username,
         picture: p.picture,

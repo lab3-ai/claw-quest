@@ -18,6 +18,7 @@
     --shadow-accent: 0 0 20px rgba(255, 87, 75, 0.15);
 
     --bg: #f8fafc;
+    --bg-secondary: #f1f5f9;
     --bg-subtle: rgba(255, 255, 255, 0.6);
     --bg-muted: rgba(241, 245, 249, 0.8);
     --fg: #0f172a;
@@ -91,6 +92,7 @@
     --shadow-accent: 0 0 24px rgba(255, 107, 97, 0.2);
 
     --bg: #0f172a;
+    --bg-secondary: #151e34;
     --bg-subtle: rgba(30, 41, 59, 0.6);
     --bg-muted: rgba(51, 65, 85, 0.5);
     --fg: #e2e8f0;

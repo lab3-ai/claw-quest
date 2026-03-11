@@ -18,6 +18,7 @@
     --shadow-accent: none;
 
     --bg: #f5f0e8;
+    --bg-secondary: #f0eae0;
     --bg-subtle: #ebe5d9;
     --bg-muted: #ddd6c8;
     --fg: #1a1a1a;
@@ -91,6 +92,7 @@
     --shadow-accent: none;
 
     --bg: #1a1a1a;
+    --bg-secondary: #1f1f1f;
     --bg-subtle: #252525;
     --bg-muted: #333333;
     --fg: #f5f0e8;

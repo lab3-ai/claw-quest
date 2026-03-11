@@ -1,54 +1,45 @@
-// Platform brand icons — inline SVG for pixel-perfect rendering
+// Platform brand icons — uses local SVG files from /brands/ directory
 // Usage: <PlatformIcon name="x" size={16} />
-//        <PlatformIcon name="discord" size={20} colored />  — applies brand color
+//        <PlatformIcon name="discord" size={20} colored />  — applies brand color via CSS filter
 
-type PlatformName = "x" | "discord" | "telegram" | "openclaw" | "claude" | "chatgpt" | "cursor"
+type PlatformName = "x" | "discord" | "telegram" | "google" | "openclaw" | "claude" | "chatgpt" | "cursor"
 
 interface Props {
     name: PlatformName
     size?: number
     className?: string
-    colored?: boolean   // if true, applies built-in brand color via style
+    colored?: boolean
     style?: React.CSSProperties
 }
 
-const BRAND_COLORS: Record<PlatformName, string> = {
-    x:         "#000000",
-    discord:   "#5865f2",
-    telegram:  "#229ed9",
-    openclaw:  "#dc2626",
-    claude:    "#7c3aed",
-    chatgpt:   "#16a34a",
-    cursor:    "#0284c7",
-}
+// Brands with local SVG files in /brands/ (already have color baked in)
+const FILE_BRANDS: PlatformName[] = ["x", "discord", "telegram", "google"]
 
 export function PlatformIcon({ name, size = 16, className, colored, style }: Props) {
     const s = size
+
+    // File-based brands
+    if (FILE_BRANDS.includes(name)) {
+        return (
+            <img
+                src={`/brands/${name}.svg`}
+                alt={name}
+                width={s}
+                height={s}
+                className={className}
+                style={style}
+                loading="lazy"
+            />
+        )
+    }
+
+    // Inline SVG fallbacks for icons without files
     const colorStyle: React.CSSProperties = {
         ...(colored ? { color: BRAND_COLORS[name] } : {}),
         ...style,
     }
     switch (name) {
-        case "x":
-            return (
-                <svg width={s} height={s} viewBox="0 0 300 300" fill="currentColor" className={className} style={colorStyle}>
-                    <path d="M178.57 127.15 290.27 0h-26.46l-97.03 110.38L89.34 0H0l117.13 166.93L0 300.25h26.46l102.4-116.59 81.8 116.59h89.34M36.01 19.54H76.66l187.13 262.13h-40.66" />
-                </svg>
-            )
-        case "discord":
-            return (
-                <svg width={s} height={s} viewBox="0 0 127.14 96.36" fill="currentColor" className={className} style={colorStyle}>
-                    <path d="M107.7 8.07A105.15 105.15 0 0081.47 0a72.06 72.06 0 00-3.36 6.83 97.68 97.68 0 00-29.11 0A72.37 72.37 0 0045.64 0a105.89 105.89 0 00-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0032.17 16.15 77.7 77.7 0 006.89-11.11 68.42 68.42 0 01-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0064.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 01-10.87 5.19 77 77 0 006.89 11.1 105.25 105.25 0 0032.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15zM42.45 65.69C36.18 65.69 31 60 31 53.05s5-12.68 11.45-12.68S54 46.05 53.89 53.05 48.84 65.69 42.45 65.69zm42.24 0C78.41 65.69 73.25 60 73.25 53.05s5-12.68 11.44-12.68S96.23 46.05 96.12 53.05 91.08 65.69 84.69 65.69z" />
-                </svg>
-            )
-        case "telegram":
-            return (
-                <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" className={className} style={colorStyle}>
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.07-.2c-.08-.06-.19-.04-.27-.02-.12.03-1.99 1.27-5.62 3.72-.53.36-1.01.54-1.44.53-.47-.01-1.38-.27-2.06-.49-.83-.27-1.49-.42-1.43-.88.03-.24.37-.49 1.02-.74 3.98-1.73 6.63-2.87 7.97-3.44 3.79-1.58 4.58-1.86 5.09-1.87.11 0 .37.03.54.17.14.12.18.28.2.45-.01.06.01.24 0 .38z" />
-                </svg>
-            )
         case "claude":
-            // Anthropic asterisk logo
             return (
                 <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" className={className} style={colorStyle}>
                     <path d="M12 2 9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z" />
@@ -56,7 +47,6 @@ export function PlatformIcon({ name, size = 16, className, colored, style }: Pro
                 </svg>
             )
         case "openclaw":
-            // Claw / lobster claw icon
             return (
                 <svg width={s} height={s} viewBox="0 0 24 24" fill="currentColor" className={className} style={colorStyle}>
                     <path d="M12 2C8.5 2 6 4.5 6 7.5c0 1.5.6 2.9 1.5 3.9L6 13l1.5 1.5 1.8-1.8c.8.4 1.7.8 2.7.8s1.9-.4 2.7-.8l1.8 1.8L18 13l-1.5-1.6c.9-1 1.5-2.4 1.5-3.9C18 4.5 15.5 2 12 2zm0 2c2.2 0 4 1.8 4 3.5 0 1-.4 1.9-1.1 2.6L14 11H10l-.9-.9C8.4 9.4 8 8.5 8 7.5 8 5.8 9.8 4 12 4z"/>
@@ -79,4 +69,11 @@ export function PlatformIcon({ name, size = 16, className, colored, style }: Pro
         default:
             return null
     }
+}
+
+const BRAND_COLORS: Partial<Record<PlatformName, string>> = {
+    openclaw:  "#dc2626",
+    claude:    "#7c3aed",
+    chatgpt:   "#16a34a",
+    cursor:    "#0284c7",
 }

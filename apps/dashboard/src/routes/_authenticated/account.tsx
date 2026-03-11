@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { PageTitle } from "@/components/page-title"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { PlatformIcon } from "@/components/PlatformIcon"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
@@ -408,12 +409,12 @@ export function Account() {
     }
 
     return (
-        <div className="">
-            <PageTitle title="Account" className="mb-6" />
+        <div className="max-w-3xl mx-auto">
+            <PageTitle title="Account" className="mb-4" />
 
             {/* Profile */}
-            <div className="border border-border rounded mb-5 bg-background">
-                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-muted text-foreground">Profile</div>
+            <div className="border border-border rounded mb-5 bg-background overflow-hidden">
+                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-secondary text-foreground">Profile</div>
                 <div className="p-4">
                     {profileLoading ? (
                         <>
@@ -506,8 +507,8 @@ export function Account() {
             </div>
 
             {/* Connected Accounts */}
-            <div className="border border-border rounded mb-5 bg-background">
-                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-muted text-foreground">Connected Accounts</div>
+            <div className="border border-border rounded mb-5 bg-background overflow-hidden">
+                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-secondary text-foreground">Connected Accounts</div>
                 <div className="p-4">
                     {LINK_PROVIDERS.map((p, idx) => {
                         const identity = identities.find(i => i.provider === p.key)
@@ -524,7 +525,9 @@ export function Account() {
 
                         return (
                             <div key={p.key} className={`flex items-center gap-2.5 py-2 text-sm min-w-0${idx > 0 ? " border-t border-border" : ""}`}>
-                                <span className="w-5 text-center text-sm shrink-0">{p.icon}</span>
+                                <span className="w-5 flex items-center justify-center shrink-0">
+                                    <PlatformIcon name={p.key as "google" | "telegram" | "x" | "discord"} size={16} />
+                                </span>
                                 <span className="font-semibold min-w-[90px]">{p.label}</span>
 
                                 {isTelegram ? (
@@ -637,8 +640,8 @@ export function Account() {
             </div>
 
             {/* Wallets */}
-            <div className="border border-border rounded mb-5 bg-background">
-                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-muted text-foreground">Wallets</div>
+            <div className="border border-border rounded mb-5 bg-background overflow-hidden">
+                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-secondary text-foreground">Wallets</div>
                 <div className="p-4">
                     {walletsLoading ? (
                         <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
@@ -765,8 +768,8 @@ function FiatPayoutSection({ token }: { token: string | undefined }) {
     })
 
     return (
-        <div className="border border-border rounded mb-5 bg-background">
-            <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-muted text-foreground">Fiat Payout</div>
+        <div className="border border-border rounded mb-5 bg-background overflow-hidden">
+            <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-secondary text-foreground">Fiat Payout</div>
             <div className="p-4">
                 {isLoading ? (
                     <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>

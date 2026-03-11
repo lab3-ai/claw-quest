@@ -1,0 +1,54 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "1bc04926da0a",
+  "session_id": "8e5b9e5e-ecac-43ea-872c-3da72a0a4d46",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T17:50:52.479306Z",
+  "branch": "github",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".env.example",
+    "apps/api/prisma/schema.prisma",
+    "apps/api/src/__tests__/helpers/test-server.ts",
+    "apps/api/src/__tests__/llm-key-rewards.test.ts",
+    "apps/api/src/__tests__/quest-lifecycle.test.ts",
+    "apps/api/src/__tests__/stripe-webhooks.test.ts",
+    "apps/api/src/app.ts",
+    "apps/api/src/modules/auth/auth.routes.ts",
+    "apps/api/src/modules/quests/quests.publish-validator.ts",
+    "apps/api/src/modules/quests/quests.routes.ts",
+    "apps/api/src/modules/quests/quests.service.ts",
+    "apps/api/src/modules/quests/social-action-verifier.ts",
+    "apps/api/src/modules/stripe/stripe.routes.ts",
+    "apps/api/src/modules/stripe/stripe.service.ts",
+    "apps/api/src/modules/stripe/stripe.webhook.ts",
+    "apps/dashboard/src/router.tsx",
+    "apps/dashboard/src/routes/_authenticated/account.tsx",
+    "apps/dashboard/src/routes/_public.tsx",
+    "apps/dashboard/src/routes/login.tsx",
+    "docs/CHANGELOG.md",
+    "docs/PROJECT_STATUS.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-4-6",
+  "turn_id": "925589aea8de",
+  "token_usage": {
+    "input_tokens": 19,
+    "cache_creation_tokens": 80957,
+    "cache_read_tokens": 713156,
+    "output_tokens": 3364,
+    "api_call_count": 17
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T17:50:52.46293Z",
+    "agent_lines": 812,
+    "human_added": 5723,
+    "human_modified": 20,
+    "human_removed": 0,
+    "total_committed": 6555,
+    "agent_percentage": 12.387490465293668
+  }
+}

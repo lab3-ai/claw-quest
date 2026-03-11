@@ -7,7 +7,7 @@ import { TierProgress } from "@/components/waitlist/tier-progress"
 import { HeroGridBg } from "@/components/waitlist/hero-grid-bg"
 import { MascotEyes, type MascotMood } from "@/components/waitlist/mascot-eyes"
 import { BrandLogo } from "@/components/brand-logo"
-import { HornLine, CelebrateLine, ArrowUpLine, CheckLine, CloseLine } from "@mingcute/react"
+import { HornLine, CelebrateLine, ArrowUpLine, CheckLine, CloseLine, Share2Line } from "@mingcute/react"
 /* Placeholder avatars from uifaces.co — replace with real user photos later */
 const AVATAR_URLS = [
     "https://randomuser.me/api/portraits/women/44.jpg",
@@ -71,10 +71,12 @@ function useWaitlistPolling() {
     const [entry, setEntry] = useState<WaitlistEntry | null>(null)
     const [showModal, setShowModal] = useState(false)
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+    const tokenRef = useRef<string | null>(null)
 
     useEffect(() => {
         const token = localStorage.getItem(WAITLIST_TOKEN_KEY)
         if (!token) return
+        tokenRef.current = token
 
         async function poll() {
             try {
@@ -88,7 +90,10 @@ function useWaitlistPolling() {
                         role: data.role ?? null,
                         firstName: data.firstName ?? null,
                     })
-                    setShowModal(true)
+                    const seenKey = `cq_waitlist_seen_${token}`
+                    if (!localStorage.getItem(seenKey)) {
+                        setShowModal(true)
+                    }
                     if (intervalRef.current) clearInterval(intervalRef.current)
                 }
             } catch {
@@ -108,11 +113,22 @@ function useWaitlistPolling() {
 
     function closeModal() {
         setShowModal(false)
-        // Remove token so modal doesn't reappear on next visit
-        localStorage.removeItem(WAITLIST_TOKEN_KEY)
+        const token = tokenRef.current ?? localStorage.getItem(WAITLIST_TOKEN_KEY)
+        if (token) {
+            localStorage.setItem(`cq_waitlist_seen_${token}`, "1")
+        }
     }
 
-    return { entry, showModal, closeModal }
+    function openModal() {
+        if (!entry) return
+        setShowModal(true)
+    }
+
+    function setRole(nextRole: string) {
+        setEntry((prev) => (prev ? { ...prev, role: nextRole } : prev))
+    }
+
+    return { entry, showModal, closeModal, openModal, setRole }
 }
 
 const NAV_LINKS = [
@@ -241,11 +257,29 @@ function ScrollToTopButton() {
     )
 }
 
+function WaitlistShareButton({ onClick }: { onClick: () => void }) {
+    return (
+        <div className="flex w-full max-w-md flex-col gap-2">
+            <button
+                type="button"
+                onClick={onClick}
+                className="group flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[var(--wl-accent)] px-6 py-3 font-mono text-sm font-semibold text-white no-underline transition-colors hover:bg-[var(--wl-accent-hover)] active:scale-95"
+            >
+                <Share2Line size={18} />
+                Share your link
+            </button>
+            <p className="text-center font-mono text-xs text-surface-dark-muted">
+                Share on X / Telegram or copy your referral link
+            </p>
+        </div>
+    )
+}
+
 export function Waitlist() {
     const [mascotMood, setMascotMood] = useState<MascotMood>("normal")
     const { stats, isLoading: statsLoading } = usePlatformStats()
     const referralCode = useReferralCode()
-    const { entry, showModal, closeModal } = useWaitlistPolling()
+    const { entry, showModal, closeModal, openModal, setRole } = useWaitlistPolling()
 
     return (
         <div
@@ -263,6 +297,7 @@ export function Waitlist() {
                     initialRole={entry.role}
                     firstName={entry.firstName}
                     onClose={closeModal}
+                    onRoleSaved={setRole}
                 />
             )}
             <WaitlistNavbar />
@@ -332,7 +367,10 @@ export function Waitlist() {
                         onMouseEnter={() => setMascotMood("happy")}
                         onMouseLeave={() => setMascotMood("normal")}
                     >
-                        <TelegramJoinButton referralCode={referralCode ?? undefined} />
+                        {entry
+                            ? <WaitlistShareButton onClick={openModal} />
+                            : <TelegramJoinButton referralCode={referralCode ?? undefined} />
+                        }
                     </div>
 
                 </section>
@@ -509,7 +547,10 @@ export function Waitlist() {
                         <p className="font-mono text-sm sm:text-base leading-relaxed text-muted-foreground">
                             The countdown is live. Early access is first come, first served.
                         </p>
-                        <TelegramJoinButton referralCode={referralCode ?? undefined} />
+                        {entry
+                            ? <WaitlistShareButton onClick={openModal} />
+                            : <TelegramJoinButton referralCode={referralCode ?? undefined} />
+                        }
                         <p className="font-mono text-xs sm:text-sm text-muted-foreground">
                             {stats.waitlistCount > 0
                                 ? <><span className="font-semibold text-white">{stats.waitlistCount}+</span>{" "}people already on the waitlist. Where will you land?</>

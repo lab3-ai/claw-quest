@@ -14,6 +14,7 @@ interface WaitlistSuccessModalProps {
     initialRole: string | null
     firstName: string | null
     onClose: () => void
+    onRoleSaved?: (role: "agent-owner" | "sponsor") => void
 }
 
 type Role = "agent-owner" | "sponsor"
@@ -25,6 +26,7 @@ export function WaitlistSuccessModal({
     initialRole,
     firstName,
     onClose,
+    onRoleSaved,
 }: WaitlistSuccessModalProps) {
     const [role, setRole] = useState<Role | null>(initialRole as Role | null)
     const [saving, setSaving] = useState(false)
@@ -72,6 +74,7 @@ export function WaitlistSuccessModal({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ token: accessToken, role: selectedRole }),
             })
+            onRoleSaved?.(selectedRole)
         } catch {
             // silently ignore — role is set locally
         } finally {

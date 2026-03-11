@@ -200,11 +200,23 @@ async function verifyTelegramAction(
       `https://api.telegram.org/bot${ctx.telegramBotToken}/getChatMember?chat_id=${encodeURIComponent(chatId)}&user_id=${ctx.telegramId}`,
       { signal: AbortSignal.timeout(8000) },
     )
-    if (!res.ok) {
-      return { valid: false, error: 'Bot cannot check this channel — it must be added as admin' }
+
+    // Always parse body — Telegram always returns JSON even for HTTP errors
+    const data = await res.json() as { ok: boolean; result?: { status: string }; description?: string; error_code?: number }
+
+    if (!data.ok) {
+      const desc = data.description ?? ''
+      console.error(`[Telegram] getChatMember failed for chatId=${chatId} userId=${ctx.telegramId}: ${res.status} ${desc}`)
+
+      if (desc.includes('CHAT_ADMIN_REQUIRED') || res.status === 403)
+        return { valid: false, error: 'Bot must be added as an admin of this channel' }
+      if (desc.includes('chat not found'))
+        return { valid: false, error: 'Channel not found — verify the channel URL in the quest task' }
+      if (desc.includes('USER_ID_INVALID') || desc.includes('user not found'))
+        return { valid: false, error: 'Could not verify your Telegram account — try unlinking and relinking' }
+
+      return { valid: false, error: `Telegram error: ${desc || 'Could not check membership'}` }
     }
-    const data = await res.json() as { ok: boolean; result?: { status: string } }
-    if (!data.ok) return { valid: false, error: 'Could not check membership' }
 
     const joined = ['creator', 'administrator', 'member', 'restricted'].includes(data.result?.status ?? '')
     return joined

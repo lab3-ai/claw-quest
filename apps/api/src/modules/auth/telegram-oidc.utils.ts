@@ -27,6 +27,8 @@ export async function verifyTelegramIdToken(idToken: string): Promise<TelegramCl
         audience: botId,
     });
 
+    console.log('[TelegramOIDC] full payload:', JSON.stringify(payload));
+
     const p = payload as JWTPayload & {
         sub?: string;
         name?: string;

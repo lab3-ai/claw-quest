@@ -19,6 +19,9 @@ function PlatformBtnIcon({ platform }: { platform: string }) {
     return <PlatformIcon name={key} size={15} colored />
 }
 
+// Temporarily hidden until backend verification is ready
+const HIDDEN_ACTION_TYPES = new Set(["like_post", "repost", "post"])
+
 const PLATFORM_ACTIONS: Record<string, ActionDef[]> = {
     X: [
         { type: "follow_account", label: "Follow on X", fields: "follow" },
@@ -229,7 +232,7 @@ export function StepTasks({
                                 {activePlatform && (
                                     <div className="block">
                                         <div className="border border-border rounded overflow-hidden mb-2.5">
-                                            {PLATFORM_ACTIONS[activePlatform].map(action => (
+                                            {PLATFORM_ACTIONS[activePlatform].filter(a => !HIDDEN_ACTION_TYPES.has(a.type)).map(action => (
                                                 <div
                                                     key={action.type}
                                                     className="flex items-center justify-between px-3 py-2 border-b border-border/30 text-xs cursor-pointer transition-colors hover:bg-(--human-bg) last:border-b-0"

@@ -138,6 +138,19 @@ server.decorate('authenticate', async (request: FastifyRequest, reply: FastifyRe
         });
     }
 
+    // Sync GitHub handle/id from Supabase identity (set on first GitHub login)
+    const githubIdentity = supabaseUser.identities?.find(i => i.provider === 'github');
+    if (githubIdentity && !user.githubHandle) {
+        const handle = (githubIdentity.identity_data?.user_name as string) || null;
+        const ghId = githubIdentity.identity_data?.sub ? String(githubIdentity.identity_data.sub) : null;
+        if (handle || ghId) {
+            user = await server.prisma.user.update({
+                where: { id: user.id },
+                data: { githubHandle: handle, githubId: ghId },
+            });
+        }
+    }
+
     request.user = {
         id: user.id,
         email: user.email,

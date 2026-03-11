@@ -41,6 +41,10 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
         if (location.pathname === '/for-dev-lab3') {
             return
         }
+        // Allow waitlist page without redirect
+        if (location.pathname === '/waitlist') {
+            return
+        }
         // Allow all routes if dev bypass flag is set in localStorage
         if (typeof window !== 'undefined') {
             const devBypass = window.localStorage.getItem('cq_dev_bypass_waitlist')
@@ -111,6 +115,8 @@ const loginRoute = createRoute({
     component: Login,
 })
 
+
+
 const registerRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/register',
@@ -150,6 +156,12 @@ const termsRoute = createRoute({
 const waitlistRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/',
+    component: Waitlist,
+})
+
+const waitlistAliasRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/waitlist',
     component: Waitlist,
 })
 
@@ -413,6 +425,7 @@ const routeTree = rootRoute.addChildren([
     privacyRoute,
     termsRoute,
     waitlistRoute,
+    waitlistAliasRoute,
     cliAuthRoute,
     appLayoutRoute.addChildren([
         indexRoute,

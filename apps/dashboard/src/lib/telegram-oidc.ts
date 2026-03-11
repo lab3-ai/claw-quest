@@ -1,6 +1,9 @@
 const TELEGRAM_AUTH_URL = 'https://oauth.telegram.org/auth';
 const DEFAULT_SCOPE = 'openid profile telegram:bot_access';
 
+export const TELEGRAM_BOT_USERNAME =
+    import.meta.env.VITE_TELEGRAM_BOT_USERNAME ?? 'ClawQuest_aibot';
+
 function getClientId(): string {
     const id = import.meta.env.VITE_TELEGRAM_CLIENT_ID;
     if (!id) throw new Error('VITE_TELEGRAM_CLIENT_ID not configured');

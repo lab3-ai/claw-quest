@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { useAuth } from "@/context/AuthContext"
 import { supabase } from "@/lib/supabase"
-import { startTelegramLogin } from "@/lib/telegram-oidc"
+import { startTelegramLogin, TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 import { SeoHead } from "@/components/seo-head"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -253,7 +253,7 @@ export function Login() {
                 <a href="/privacy.html" className="hover:text-foreground">Privacy</a>
                 <a href="/terms.html" className="hover:text-foreground">Terms</a>
                 <a href="https://api.clawquest.ai/docs" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">API Docs</a>
-                <a href="https://t.me/ClawQuest_aibot" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">Telegram Bot</a>
+                <a href={`https://t.me/${TELEGRAM_BOT_USERNAME}`} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">Telegram Bot</a>
             </footer>
         </div>
     )

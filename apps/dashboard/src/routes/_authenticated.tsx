@@ -19,6 +19,7 @@ import { useState } from "react"
 import { BankCardLine, Dashboard4Line, AddLine, DownLine } from "@mingcute/react"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { BrandLogo } from "@/components/brand-logo"
+import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 
 export function AuthenticatedLayout() {
     const { isAuthenticated, isLoading, logout, user } = useAuth()
@@ -199,7 +200,7 @@ export function AuthenticatedLayout() {
                     API Docs
                 </a>
                 <a
-                    href="https://t.me/ClawQuest_aibot"
+                    href={`https://t.me/${TELEGRAM_BOT_USERNAME}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground no-underline hover:text-foreground"

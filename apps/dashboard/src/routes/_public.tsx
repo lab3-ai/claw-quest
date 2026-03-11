@@ -20,6 +20,7 @@ import { Palette2Line, Dashboard4Line, AddLine, DownLine } from "@mingcute/react
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { useState } from "react"
 import { BrandLogo } from "@/components/brand-logo"
+import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 
 export function PublicLayout() {
     const { isAuthenticated, logout, user } = useAuth()
@@ -229,7 +230,7 @@ export function PublicLayout() {
                     API Docs
                 </a>
                 <a
-                    href="https://t.me/ClawQuest_aibot"
+                    href={`https://t.me/${TELEGRAM_BOT_USERNAME}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground no-underline hover:text-foreground"

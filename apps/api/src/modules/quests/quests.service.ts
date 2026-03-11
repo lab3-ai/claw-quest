@@ -122,6 +122,7 @@ export interface CreateQuestInput {
     fundingMethod?: 'crypto' | 'stripe';
     llmKeyRewardEnabled?: boolean;
     llmKeyTokenLimit?: number;
+    creatorTelegramId?: bigint;
 }
 
 export interface QuestCreator {
@@ -201,6 +202,7 @@ export async function createQuest(
             creatorAgentId: creator?.agentId || null,
             creatorUserId: creator?.userId || null,
             creatorEmail: creator?.email || null,
+            creatorTelegramId: input.creatorTelegramId || null,
             // When human creates directly, mark as claimed immediately
             claimedAt: creator?.userId ? new Date() : null,
         },

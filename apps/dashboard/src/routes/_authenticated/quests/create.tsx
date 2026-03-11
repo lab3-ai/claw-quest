@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react"
+import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 import { useNavigate, Link } from "@tanstack/react-router"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
@@ -674,7 +675,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                         chipStatus={chipStatus}
                     />
                     <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginTop: 6 }}>
-                        ⚠ Add <strong>@ClawQuest_aibot</strong> as admin to your group/channel for auto-verification to work.
+                        ⚠ Add <strong>@{TELEGRAM_BOT_USERNAME}</strong> as admin to your group/channel for auto-verification to work.
                     </div>
                 </div>
             )}

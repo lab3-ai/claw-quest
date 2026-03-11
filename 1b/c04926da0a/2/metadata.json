@@ -1,9 +1,11 @@
 {
   "cli_version": "0.5.0",
   "checkpoint_id": "1bc04926da0a",
+  "session_id": "7c253854-6cbe-44dd-99b1-a3b94494e21f",
   "strategy": "manual-commit",
+  "created_at": "2026-03-11T17:50:52.406974Z",
   "branch": "github",
-  "checkpoints_count": 57,
+  "checkpoints_count": 10,
   "files_touched": [
     ".env.example",
     "apps/api/prisma/schema.prisma",
@@ -13,9 +15,6 @@
     "apps/api/src/__tests__/stripe-webhooks.test.ts",
     "apps/api/src/app.ts",
     "apps/api/src/modules/auth/auth.routes.ts",
-    "apps/api/src/modules/github-bounty/github-bounty.routes.ts",
-    "apps/api/src/modules/github-bounty/github-bounty.service.ts",
-    "apps/api/src/modules/github-bounty/github-rest-client.ts",
     "apps/api/src/modules/quests/quests.publish-validator.ts",
     "apps/api/src/modules/quests/quests.routes.ts",
     "apps/api/src/modules/quests/quests.service.ts",
@@ -25,37 +24,30 @@
     "apps/api/src/modules/stripe/stripe.webhook.ts",
     "apps/dashboard/src/router.tsx",
     "apps/dashboard/src/routes/_authenticated/account.tsx",
-    "apps/dashboard/src/routes/_authenticated/github-bounties/new.tsx",
     "apps/dashboard/src/routes/_public.tsx",
     "apps/dashboard/src/routes/login.tsx",
     "docs/CHANGELOG.md",
     "docs/PROJECT_STATUS.md"
   ],
-  "sessions": [
-    {
-      "metadata": "/1b/c04926da0a/0/metadata.json",
-      "transcript": "/1b/c04926da0a/0/full.jsonl",
-      "content_hash": "/1b/c04926da0a/0/content_hash.txt",
-      "prompt": "/1b/c04926da0a/0/prompt.txt"
-    },
-    {
-      "metadata": "/1b/c04926da0a/1/metadata.json",
-      "transcript": "/1b/c04926da0a/1/full.jsonl",
-      "content_hash": "/1b/c04926da0a/1/content_hash.txt",
-      "prompt": "/1b/c04926da0a/1/prompt.txt"
-    },
-    {
-      "metadata": "/1b/c04926da0a/2/metadata.json",
-      "transcript": "/1b/c04926da0a/2/full.jsonl",
-      "content_hash": "/1b/c04926da0a/2/content_hash.txt",
-      "prompt": "/1b/c04926da0a/2/prompt.txt"
-    }
-  ],
+  "agent": "Claude Code",
+  "turn_id": "05a1ae128188",
   "token_usage": {
-    "input_tokens": 1555,
-    "cache_creation_tokens": 664344,
-    "cache_read_tokens": 23526357,
-    "output_tokens": 81529,
-    "api_call_count": 255
+    "input_tokens": 1172,
+    "cache_creation_tokens": 113066,
+    "cache_read_tokens": 2191430,
+    "output_tokens": 15890,
+    "api_call_count": 29
+  },
+  "session_metrics": {
+    "turn_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T17:50:52.332669Z",
+    "agent_lines": 620,
+    "human_added": 2632,
+    "human_modified": 20,
+    "human_removed": 0,
+    "total_committed": 3272,
+    "agent_percentage": 18.94865525672372
   }
 }

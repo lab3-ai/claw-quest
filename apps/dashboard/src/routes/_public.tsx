@@ -20,6 +20,7 @@ import { Palette2Line, Dashboard4Line, AddLine, DownLine } from "@mingcute/react
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { useState } from "react"
 import { BrandLogo } from "@/components/brand-logo"
+import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 
 export function PublicLayout() {
     const { isAuthenticated, logout, user } = useAuth()
@@ -45,7 +46,7 @@ export function PublicLayout() {
                     <nav className="hidden items-center gap-1 sm:flex">
                         <Link
                             to="/quests"
-                            className="px-0 py-1.5 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
+                            className="py-1.5 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
                         >
                             Quests
                         </Link>
@@ -79,7 +80,7 @@ export function PublicLayout() {
                                 <Link
                                     to="/quests"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted"
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
                                 >
                                     Quests
                                 </Link>
@@ -93,14 +94,14 @@ export function PublicLayout() {
                                         <Link
                                             to="/dashboard"
                                             onClick={() => setMobileOpen(false)}
-                                            className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted"
+                                            className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
                                         >
                                             Dashboard
                                         </Link>
                                         <Link
                                             to="/account"
                                             onClick={() => setMobileOpen(false)}
-                                            className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted"
+                                            className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
                                         >
                                             Account
                                         </Link>
@@ -110,7 +111,7 @@ export function PublicLayout() {
                                                 logout()
                                                 setMobileOpen(false)
                                             }}
-                                            className="rounded px-3 py-2.5 text-left text-sm text-destructive hover:bg-muted"
+                                            className="rounded px-3 py-2.5 text-left text-sm text-destructive hover:bg-bg-secondary"
                                         >
                                             Log out
                                         </button>
@@ -119,7 +120,7 @@ export function PublicLayout() {
                                     <Link
                                         to="/login"
                                         onClick={() => setMobileOpen(false)}
-                                        className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted"
+                                        className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
                                     >
                                         Log in
                                     </Link>
@@ -229,7 +230,7 @@ export function PublicLayout() {
                     API Docs
                 </a>
                 <a
-                    href="https://t.me/ClawQuest_aibot"
+                    href={`https://t.me/${TELEGRAM_BOT_USERNAME}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground no-underline hover:text-foreground"

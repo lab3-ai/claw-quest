@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react"
+import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 import { useNavigate, Link } from "@tanstack/react-router"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
@@ -619,20 +620,36 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                 </>
             )}
             {(fields === "discord_join") && (
-                <div className="space-y-1.5 mb-0">
-                    <Label>Discord Server URL</Label>
-                    <div className="text-xs text-muted-foreground mb-1 leading-snug">Invite link to the Discord server. Press ↵ to confirm.</div>
-                    <ChipInput
-                        chips={task.chips}
-                        onAdd={val => addChip(idx, val)}
-                        onRemove={ci => removeChip(idx, ci)}
-                        placeholder="https://discord.gg/..."
-                        validate={v => DISCORD_INVITE_RE.test(v.trim()) ? null : "Must be a valid Discord invite link (discord.gg/… or discord.com/invite/…)"}
-                        maxChips={1}
-                        error={chipError}
-                        chipStatus={chipStatus}
-                    />
-                </div>
+                <>
+                    <div className="flex items-center gap-2 px-2.5 py-2 bg-indigo-50 border border-indigo-300 rounded text-xs text-foreground mb-2">
+                        <span>🤖</span>
+                        <span style={{ flex: 1 }}>
+                            Add the <strong>ClawQuest bot</strong> to your server to enable join verification.
+                        </span>
+                        <Button size="sm" onClick={async (e) => {
+                            e.stopPropagation()
+                            try {
+                                const res = await fetch(`${API_BASE}/discord/bot-invite-url?guildId=`)
+                                const json = await res.json()
+                                if (json.data?.url) window.open(json.data.url, "_blank")
+                            } catch { /* ignore */ }
+                        }}>Invite Bot</Button>
+                    </div>
+                    <div className="space-y-1.5 mb-0">
+                        <Label>Discord Server URL</Label>
+                        <div className="text-xs text-muted-foreground mb-1 leading-snug">Invite link to the Discord server. Press ↵ to confirm.</div>
+                        <ChipInput
+                            chips={task.chips}
+                            onAdd={val => addChip(idx, val)}
+                            onRemove={ci => removeChip(idx, ci)}
+                            placeholder="https://discord.gg/..."
+                            validate={v => DISCORD_INVITE_RE.test(v.trim()) ? null : "Must be a valid Discord invite link (discord.gg/… or discord.com/invite/…)"}
+                            maxChips={1}
+                            error={chipError}
+                            chipStatus={chipStatus}
+                        />
+                    </div>
+                </>
             )}
             {(fields === "discord_role") && (
                 <DiscordRoleFields
@@ -658,7 +675,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                         chipStatus={chipStatus}
                     />
                     <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginTop: 6 }}>
-                        ⚠ Add <strong>@ClawQuest_aibot</strong> as admin to your group/channel for auto-verification to work.
+                        ⚠ Add <strong>@{TELEGRAM_BOT_USERNAME}</strong> as admin to your group/channel for auto-verification to work.
                     </div>
                 </div>
             )}
@@ -1075,7 +1092,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const blockedStatus = editQuest && ["live", "completed", "expired", "cancelled"].includes(editQuest.status)
     if (isEditMode && blockedStatus) {
         return (
-            <div className="max-w-5xl mx-auto w-full py-5 px-6">
+            <div className="max-w-3xl mx-auto w-full py-5 px-6">
                 <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
                     <Link to="/quests/$questId" params={{ questId: editQuestId! }}>Quest</Link>
                     <span>›</span>
@@ -1115,7 +1132,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const topUpAmount = rewardIncreased ? newTotal - originalRewardAmount : 0
 
     return (
-        <div className="">
+        <div className="max-w-3xl mx-auto">
             <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
                 {isEditMode ? (
                     <>

@@ -99,7 +99,7 @@ function StatusBadge({ status }: { status: Agent["status"] }) {
 function AgentHeader({ agent }: { agent: Agent }) {
     const avatarUrl = getDiceBearUrl(agent.agentname)
     return (
-        <div className="flex items-start gap-4 p-5 border border-border-muted bg-card hover:bg-background transition-colors">
+        <div className="flex items-start gap-4 p-5 border border-border-muted bg-card hover:bg-bg-secondary transition-colors">
             <img
                 src={avatarUrl}
                 alt={agent.agentname}
@@ -171,7 +171,7 @@ function AgentStatsPanel({ agent }: { agent: Agent }) {
     const totalEarned = completed.reduce((sum, p) => sum + (p.payoutAmount || 0), 0)
 
     return (
-        <div className="p-5 border border-border-muted bg-card hover:bg-background transition-colors sticky top-6">
+        <div className="p-5 border border-border-muted bg-card hover:bg-bg-secondary transition-colors sticky top-6">
             <h3 className="text-sm font-semibold text-foreground mb-3">Stats</h3>
             <StatItem label="Quests Completed" value={completed.length} />
             <StatItem label="Total Earned" value={`$${totalEarned.toFixed(2)}`} />
@@ -182,7 +182,7 @@ function AgentStatsPanel({ agent }: { agent: Agent }) {
 
 function ActivityLog({ logs }: { logs: AgentLog[] }) {
     return (
-        <div className="p-5 border border-border-muted bg-card hover:bg-background transition-colors">
+        <div className="p-5 border border-border-muted bg-card hover:bg-bg-secondary transition-colors">
             <h3 className="text-sm font-semibold text-foreground mb-3">Activity Log</h3>
             {logs.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">No activity yet</p>
@@ -210,7 +210,7 @@ function QuestHistory({ participations }: { participations: Participation[] }) {
     if (completed.length === 0) return null
 
     return (
-        <div className="p-5 border border-border-muted bg-card hover:bg-background transition-colors">
+        <div className="p-5 border border-border-muted bg-card hover:bg-bg-secondary transition-colors">
             <h3 className="text-sm font-semibold text-foreground mb-3">Quest History</h3>
             <div className="flex flex-col gap-2">
                 {completed.map((p) => (
@@ -218,7 +218,7 @@ function QuestHistory({ participations }: { participations: Participation[] }) {
                         key={p.id}
                         to="/quests/$questId"
                         params={{ questId: p.quest.id }}
-                        className="flex items-center justify-between py-2.5 px-3 border border-border hover:bg-muted/50 transition-colors"
+                        className="flex items-center justify-between py-2.5 px-3 border border-border hover:bg-bg-secondary/50 transition-colors"
                     >
                         <div className="flex items-center gap-2 min-w-0">
                             <CheckCircleLine size={16} className="text-success shrink-0" />

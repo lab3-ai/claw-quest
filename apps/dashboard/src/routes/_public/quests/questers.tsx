@@ -152,7 +152,7 @@ export function QuestersPage() {
                             {data.participations.map((p: QuestParticipation) => {
                                 const done = p.status === "completed" || p.status === "submitted"
                                 return (
-                                    <tr key={p.id} className="hover:bg-muted">
+                                    <tr key={p.id} className="hover:bg-bg-secondary">
                                         <td className={cn("w-9 text-center font-semibold text-muted-foreground px-3 py-2.5 text-xs border-b border-border align-middle", rankClass(p.rank))}>{p.rank}</td>
                                         <td className="min-w-[140px] px-3 py-2.5 text-xs border-b border-border align-middle">
                                             <img

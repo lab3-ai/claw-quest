@@ -371,7 +371,7 @@ export function Dashboard() {
                                                         <div
                                                             key={opt.id}
                                                             className={cn(
-                                                                "flex items-center gap-2 px-2.5 py-2 text-sm text-foreground cursor-pointer transition-colors hover:bg-muted [&+&]:border-t [&+&]:border-border",
+                                                                "flex items-center gap-2 px-2.5 py-2 text-sm text-foreground cursor-pointer transition-colors hover:bg-bg-secondary [&+&]:border-t [&+&]:border-border",
                                                                 activePlatform === opt.id && "bg-accent-light",
                                                                 !opt.available && "opacity-50 cursor-not-allowed"
                                                             )}
@@ -592,7 +592,7 @@ export function Dashboard() {
                         <div className="inline-flex border border-input rounded overflow-hidden ml-3 shrink-0">
                             <button
                                 className={cn(
-                                    "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none border-r border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+                                    "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none border-r border-border bg-background text-muted-foreground hover:bg-bg-secondary hover:text-foreground",
                                     questView === "card" && "bg-accent-light text-accent-foreground"
                                 )}
                                 onClick={() => setQuestView("card")}
@@ -607,7 +607,7 @@ export function Dashboard() {
                             </button>
                             <button
                                 className={cn(
-                                    "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+                                    "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none bg-background text-muted-foreground hover:bg-bg-secondary hover:text-foreground",
                                     questView === "list" && "bg-accent-light text-accent-foreground"
                                 )}
                                 onClick={() => setQuestView("list")}
@@ -808,7 +808,7 @@ export function Dashboard() {
                                             ? { to: "/quests/$questId" as const, params: { questId: quest.id }, search: { token: quest.previewToken } }
                                             : { to: "/quests/$questId" as const, params: { questId: quest.id } }
                                         return (
-                                            <tr key={quest.id} className="hover:bg-muted" data-status={quest.status}>
+                                            <tr key={quest.id} className="hover:bg-bg-secondary" data-status={quest.status}>
                                                 <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
                                                     <span className="text-md font-semibold text-success whitespace-nowrap leading-tight">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</span>
                                                 </td>
@@ -915,7 +915,7 @@ export function Dashboard() {
                         <div className="inline-flex border border-input rounded overflow-hidden ml-3 shrink-0">
                             <button
                                 className={cn(
-                                    "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none border-r border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+                                    "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none border-r border-border bg-background text-muted-foreground hover:bg-bg-secondary hover:text-foreground",
                                     questView === "card" && "bg-accent-light text-accent-foreground"
                                 )}
                                 onClick={() => setQuestView("card")}
@@ -930,7 +930,7 @@ export function Dashboard() {
                             </button>
                             <button
                                 className={cn(
-                                    "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none bg-background text-muted-foreground hover:bg-muted hover:text-foreground",
+                                    "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none bg-background text-muted-foreground hover:bg-bg-secondary hover:text-foreground",
                                     questView === "list" && "bg-accent-light text-accent-foreground"
                                 )}
                                 onClick={() => setQuestView("list")}
@@ -1103,7 +1103,7 @@ export function Dashboard() {
                                             .find(p => p.quest.id === quest.id)
 
                                         return (
-                                            <tr key={quest.id} className="hover:bg-muted" data-status={quest.status}>
+                                            <tr key={quest.id} className="hover:bg-bg-secondary" data-status={quest.status}>
                                                 <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
                                                     <span className="text-md font-semibold text-success whitespace-nowrap leading-tight">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</span>
                                                 </td>
@@ -1218,7 +1218,7 @@ export function Dashboard() {
                                         return (
                                             <Fragment key={agent.id}>
                                                 <tr
-                                                    className="cursor-pointer hover:bg-muted/50"
+                                                    className="cursor-pointer hover:bg-bg-secondary/50"
                                                     data-agent-status={isPending ? "pending" : "claimed"}
                                                     onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}
                                                 >
@@ -1381,7 +1381,7 @@ export function Dashboard() {
                                                                                     <p className="text-sm text-muted-foreground mb-2">No skills scanned yet. Run Skill Scan to register your agent's skills.</p>
                                                                                     <div className="flex items-center gap-1.5">
                                                                                         <code className="flex-1 bg-[#1e1e2e] text-[#cdd6f4] px-2.5 py-1.5 rounded font-mono text-[11px] select-all overflow-x-auto">{scanCmd}</code>
-                                                                                        <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-muted/80 text-[11px] font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
+                                                                                        <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-bg-secondary/80 text-[11px] font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
                                                                                     </div>
                                                                                 </div>
                                                                             ) : (
@@ -1414,7 +1414,7 @@ export function Dashboard() {
                                                                                     </div>
                                                                                     <div className="flex items-center gap-1.5">
                                                                                         <code className="flex-1 bg-[#1e1e2e] text-[#cdd6f4] px-2.5 py-1.5 rounded font-mono text-[11px] select-all overflow-x-auto">{scanCmd}</code>
-                                                                                        <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-muted/80 text-[11px] font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
+                                                                                        <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-bg-secondary/80 text-[11px] font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
                                                                                     </div>
                                                                                 </div>
                                                                             )}

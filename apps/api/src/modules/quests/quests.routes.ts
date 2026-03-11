@@ -52,6 +52,7 @@ const CreateQuestSchema = QuestSchema.omit({
     fundingMethod: z.enum(['crypto', 'stripe']).optional(),
     llmKeyRewardEnabled: z.boolean().default(false),
     llmKeyTokenLimit: z.number().int().positive().optional(),
+    creatorTelegramId: z.coerce.bigint().optional(),
 }).refine(
     (data) => {
         // If rewardType is LLMTOKEN_OPENROUTER, tokenProvider and tokenAmount are required
@@ -252,9 +253,9 @@ export async function questsRoutes(server: FastifyInstance) {
                                         select: { id: true },
                                     });
                                     if (partnerRecord) hasAccess = true;
-                        }
-                    }
-                } catch {
+                                }
+                            }
+                        } catch {
                             if (reply.sent) return
                             // Not authenticated — that's fine, just check token
                         }

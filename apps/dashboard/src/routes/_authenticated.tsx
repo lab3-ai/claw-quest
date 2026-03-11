@@ -19,6 +19,7 @@ import { useState } from "react"
 import { BankCardLine, Dashboard4Line, AddLine, DownLine } from "@mingcute/react"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { BrandLogo } from "@/components/brand-logo"
+import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 
 export function AuthenticatedLayout() {
     const { isAuthenticated, isLoading, logout, user } = useAuth()
@@ -94,28 +95,28 @@ export function AuthenticatedLayout() {
                                 <Link
                                     to="/quests"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted"
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
                                 >
                                     Quests
                                 </Link>
                                 <Link
                                     to="/dashboard"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted"
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
                                 >
                                     Dashboard
                                 </Link>
                                 <Link
                                     to="/account"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted"
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
                                 >
                                     Account
                                 </Link>
                                 <Link
                                     to="/stripe-connect"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted flex items-center gap-2"
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary flex items-center gap-2"
                                 >
                                     <BankCardLine className="h-4 w-4" />
                                     Stripe Payout
@@ -126,7 +127,7 @@ export function AuthenticatedLayout() {
                                         logout()
                                         setMobileOpen(false)
                                     }}
-                                    className="rounded px-3 py-2.5 text-left text-sm text-destructive hover:bg-muted"
+                                    className="rounded px-3 py-2.5 text-left text-sm text-destructive hover:bg-bg-secondary"
                                 >
                                     Log out
                                 </button>
@@ -199,7 +200,7 @@ export function AuthenticatedLayout() {
                     API Docs
                 </a>
                 <a
-                    href="https://t.me/ClawQuest_aibot"
+                    href={`https://t.me/${TELEGRAM_BOT_USERNAME}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground no-underline hover:text-foreground"

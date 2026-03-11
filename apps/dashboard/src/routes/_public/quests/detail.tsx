@@ -662,9 +662,11 @@ export function QuestDetail() {
                         <div className="px-3 py-2.5 border border-border rounded bg-muted">
                             <div className="text-xs text-muted-foreground mb-0.5">total reward</div>
                             <div className="text-sm font-semibold text-accent font-mono">
-                                {quest.fundingMethod === FUNDING_METHOD.STRIPE
-                                    ? `$${quest.rewardAmount.toLocaleString()} ${REWARD_TYPE.USD}`
-                                    : `${quest.rewardAmount.toLocaleString()} ${quest.rewardType}`}
+                                {quest.rewardType === REWARD_TYPE.LLM_KEY
+                                    ? `${(quest.llmKeyTokenLimit ?? 0).toLocaleString()} tokens/winner`
+                                    : quest.fundingMethod === FUNDING_METHOD.STRIPE
+                                        ? `$${quest.rewardAmount.toLocaleString()} ${REWARD_TYPE.USD}`
+                                        : `${quest.rewardAmount.toLocaleString()} ${quest.rewardType}`}
                             </div>
                         </div>
                         <div className="px-3 py-2.5 border border-border rounded bg-muted">
@@ -941,7 +943,11 @@ export function QuestDetail() {
                     <div className="border border-border rounded mb-3.5 sticky top-[55px]">
                         {/* Reward hero */}
                         <div className="px-3 py-4 text-center border-b border-border">
-                            <div className="text-[28px] font-semibold font-mono text-accent leading-tight">{quest.rewardAmount.toLocaleString()}</div>
+                            <div className="text-[28px] font-semibold font-mono text-accent leading-tight">
+                                {quest.rewardType === REWARD_TYPE.LLM_KEY
+                                    ? (quest.llmKeyTokenLimit ?? 0).toLocaleString()
+                                    : quest.rewardAmount.toLocaleString()}
+                            </div>
                             <div className="flex justify-center gap-2 mt-2 text-xs">
                                 <RewardBadge type={quest.fundingMethod === FUNDING_METHOD.STRIPE ? REWARD_TYPE.USD : quest.rewardType} />
                                 <QuestTypeBadge type={quest.type} />

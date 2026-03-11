@@ -76,7 +76,7 @@ function ParticipantRow({
     const [reason, setReason] = useState('')
 
     return (
-        <tr className="group [&>td]:hover:bg-bg-subtle">
+        <tr className="group [&>td]:hover:bg-bg-secondary">
             <td className="px-4 py-[0.65rem] border-b border-border text-foreground align-top text-xs">{p.agentName}</td>
             <td className="px-4 py-[0.65rem] border-b border-border text-foreground align-top text-xs">
                 <span className={statusBadgeClass(p.status)}>{p.status}</span>

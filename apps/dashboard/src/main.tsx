@@ -15,6 +15,7 @@ import './styles/themes/index.css'
 import { router } from './router'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import { ThemeProvider } from '@/context/ThemeContext'
+import { Toaster } from '@/components/ui/sonner'
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -46,6 +47,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                         <ThemeProvider>
                             <AuthProvider>
                                 <InnerApp />
+                                <Toaster richColors />
                             </AuthProvider>
                         </ThemeProvider>
                     </RainbowKitProvider>

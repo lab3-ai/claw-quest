@@ -19,6 +19,9 @@ function PlatformBtnIcon({ platform }: { platform: string }) {
     return <PlatformIcon name={key} size={15} colored />
 }
 
+// Temporarily hidden until backend verification is ready
+const HIDDEN_ACTION_TYPES = new Set(["like_post", "repost", "post"])
+
 const PLATFORM_ACTIONS: Record<string, ActionDef[]> = {
     X: [
         { type: "follow_account", label: "Follow on X", fields: "follow" },
@@ -219,7 +222,7 @@ export function StepTasks({
                                     {Object.keys(PLATFORM_ACTIONS).map(p => (
                                         <button
                                             key={p}
-                                            className={cn("flex items-center gap-1.5 px-3 py-1.5 border border-input rounded bg-background text-foreground text-xs font-medium cursor-pointer transition-colors hover:border-muted-foreground hover:bg-muted", activePlatform === p && "border-accent text-accent bg-accent-light font-semibold")}
+                                            className={cn("flex items-center gap-1.5 px-3 py-1.5 border border-input rounded bg-background text-foreground text-xs font-medium cursor-pointer transition-colors hover:border-muted-foreground hover:bg-bg-secondary", activePlatform === p && "border-accent text-accent bg-accent-light font-semibold")}
                                             onClick={() => onSetActivePlatform(activePlatform === p ? null : p)}
                                         >
                                             <span className="icon"><PlatformBtnIcon platform={p} /></span> {p}
@@ -229,7 +232,7 @@ export function StepTasks({
                                 {activePlatform && (
                                     <div className="block">
                                         <div className="border border-border rounded overflow-hidden mb-2.5">
-                                            {PLATFORM_ACTIONS[activePlatform].map(action => (
+                                            {PLATFORM_ACTIONS[activePlatform].filter(a => !HIDDEN_ACTION_TYPES.has(a.type)).map(action => (
                                                 <div
                                                     key={action.type}
                                                     className="flex items-center justify-between px-3 py-2 border-b border-border/30 text-xs cursor-pointer transition-colors hover:bg-(--human-bg) last:border-b-0"
@@ -420,7 +423,7 @@ export function StepTasks({
                                         {urlPreview && !urlFetching && (() => {
                                             const isAdded = addedSkillIds.has(urlPreview.id)
                                             return (
-                                                <div className={cn("flex items-start gap-2.5 px-2.5 py-2 border-b border-border/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-muted/50", isAdded && "opacity-50 cursor-default bg-muted/50")} onClick={() => !isAdded && onAddSkill(urlPreview)}>
+                                                <div className={cn("flex items-start gap-2.5 px-2.5 py-2 border-b border-border/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-bg-secondary/50", isAdded && "opacity-50 cursor-default bg-muted/50")} onClick={() => !isAdded && onAddSkill(urlPreview)}>
                                                     <div className="flex-1 min-w-0 overflow-hidden">
                                                         <div className="text-xs font-semibold text-primary flex items-center gap-1.5 truncate">
                                                             <span className="inline-flex items-center justify-center text-xs font-semibold uppercase px-1.5 py-px rounded bg-blue-100 text-info mr-1 tracking-wide shrink-0">URL</span>
@@ -457,7 +460,7 @@ export function StepTasks({
                                         {skillSearchResults.map(s => {
                                             const isAdded = addedSkillIds.has(s.id)
                                             return (
-                                                <div key={s.id} className={cn("flex items-start gap-2.5 px-2.5 py-2 border-b border-border/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-muted/50", isAdded && "opacity-50 cursor-default bg-muted/50")} onClick={() => !isAdded && onAddSkill(s)}>
+                                                <div key={s.id} className={cn("flex items-start gap-2.5 px-2.5 py-2 border-b border-border/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-bg-secondary/50", isAdded && "opacity-50 cursor-default bg-muted/50")} onClick={() => !isAdded && onAddSkill(s)}>
                                                     <div className="flex-1 min-w-0 overflow-hidden">
                                                         <div className="text-xs font-semibold text-primary flex items-center gap-1.5 truncate">
                                                             {s.ownerImage ? (

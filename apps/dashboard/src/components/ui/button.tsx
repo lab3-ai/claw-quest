@@ -13,12 +13,12 @@ const buttonVariants = cva(
                 destructive:
                     "bg-destructive text-destructive-foreground hover:bg-destructive/90",
                 outline:
-                    "border border-input bg-background hover:bg-muted",
+                    "border border-input bg-background hover:bg-bg-secondary",
                 "outline-primary":
                     "border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20",
                 secondary:
                     "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-                ghost: "hover:bg-muted",
+                ghost: "hover:bg-bg-secondary",
                 link: "text-foreground underline-offset-4 hover:underline",
                 /* ClawQuest domain variants */
                 quest: "bg-primary text-primary-foreground border border-(--border-heavy) hover:bg-primary/80",

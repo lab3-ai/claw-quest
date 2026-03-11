@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { createRouter, createRoute, createRootRouteWithContext, Outlet, redirect } from '@tanstack/react-router'
 import type { AuthContextType } from './context/AuthContext'
 import { Login } from './routes/login'
@@ -22,6 +23,7 @@ import { QuestCompletePage } from './routes/_authenticated/quests/$questId/compl
 import { Account } from './routes/_authenticated/account'
 import { StripeConnect } from './routes/_authenticated/stripe-connect'
 import { QuestJoin } from './routes/_public/quests/join'
+import { HomePage } from './routes/_public/home'
 import { Privacy } from './routes/privacy'
 import { Terms } from './routes/terms'
 import { Waitlist } from './routes/waitlist'
@@ -34,7 +36,76 @@ interface RouterContext {
 }
 
 const rootRoute = createRootRouteWithContext<RouterContext>()({
+    beforeLoad: ({ location }) => {
+        // Allow special dev bypass route without redirect
+        if (location.pathname === '/for-dev-lab3') {
+            return
+        }
+        // Allow waitlist page without redirect
+        if (location.pathname === '/waitlist') {
+            return
+        }
+        // Allow all routes if dev bypass flag is set in localStorage
+        if (typeof window !== 'undefined') {
+            const devBypass = window.localStorage.getItem('cq_dev_bypass_waitlist')
+            if (devBypass === 'lab3') {
+                return
+            }
+        }
+        // Default: lock everything behind the waitlist home at '/'
+        if (location.pathname !== '/') {
+            throw redirect({ to: '/' })
+        }
+    },
     component: () => <Outlet />,
+})
+
+// Auth-less routes (no topbar/footer)
+const devLab3Route = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/for-dev-lab3',
+    component: function DevLab3Bypass() {
+        useEffect(() => {
+            if (typeof window !== 'undefined') {
+                window.localStorage.setItem('cq_dev_bypass_waitlist', 'lab3')
+            }
+        }, [])
+
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+                <div className="max-w-md space-y-6 text-center">
+                    <div className="space-y-2">
+                        <h1 className="text-2xl font-semibold tracking-tight">Dev Lab 3 unlocked</h1>
+                        <p className="text-sm text-muted-foreground">
+                            Local bypass token has been stored in your browser. You can now navigate to any dashboard
+                            route without being redirected back to the waitlist.
+                        </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-center gap-3">
+                        <a
+                            href="/login"
+                            className="inline-flex items-center justify-center rounded-md border border-border bg-primary px-4 py-2 text-xs font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+                        >
+                            Go to Login
+                        </a>
+                        <a
+                            href="/dashboard"
+                            className="inline-flex items-center justify-center rounded-md border border-border bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground shadow-sm hover:bg-secondary/80"
+                        >
+                            Go to Dashboard
+                        </a>
+                        <a
+                            href="/quests"
+                            className="inline-flex items-center justify-center rounded-md border border-border bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground shadow-sm hover:bg-secondary/80"
+                        >
+                            View Quests
+                        </a>
+                    </div>
+                </div>
+            </div>
+        )
+    },
 })
 
 // Auth-less routes (no topbar/footer)
@@ -43,6 +114,8 @@ const loginRoute = createRoute({
     path: '/login',
     component: Login,
 })
+
+
 
 const registerRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -82,6 +155,12 @@ const termsRoute = createRoute({
 
 const waitlistRoute = createRoute({
     getParentRoute: () => rootRoute,
+    path: '/',
+    component: Waitlist,
+})
+
+const waitlistAliasRoute = createRoute({
+    getParentRoute: () => rootRoute,
     path: '/waitlist',
     component: Waitlist,
 })
@@ -103,19 +182,23 @@ const appLayoutRoute = createRoute({
     component: PublicLayout,
 })
 
-// Redirect root to /quests
-const indexRoute = createRoute({
-    getParentRoute: () => appLayoutRoute,
-    path: '/',
-    beforeLoad: () => {
-        throw redirect({ to: '/quests' })
-    },
-})
+// indexRoute not needed — root '/' is handled by waitlistRoute
 
 // ── Public routes (no auth required) ──
+const homeRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/home',
+    component: HomePage,
+})
+
 const questsRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/quests',
+    validateSearch: (search: Record<string, unknown>): { tab?: string } => {
+        const result: { tab?: string } = {}
+        if (search.tab && typeof search.tab === 'string') result.tab = search.tab
+        return result
+    },
     component: QuestList,
 })
 
@@ -326,6 +409,7 @@ const stripeConnectRoute = createRoute({
 })
 
 const routeTree = rootRoute.addChildren([
+    devLab3Route,
     loginRoute,
     registerRoute,
     authCallbackRoute,
@@ -334,9 +418,11 @@ const routeTree = rootRoute.addChildren([
     privacyRoute,
     termsRoute,
     waitlistRoute,
+    waitlistAliasRoute,
     cliAuthRoute,
     appLayoutRoute.addChildren([
-        indexRoute,
+        // indexRoute,
+        homeRoute,
         questsRoute,
         claimQuestRoute,
         myQuestsRoute,

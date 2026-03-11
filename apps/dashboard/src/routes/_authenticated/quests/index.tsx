@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react"
-import { useNavigate } from "@tanstack/react-router"
+import { useNavigate, useSearch } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { QuestCard, QuestersAvatarStack } from "@/components/QuestCard"
@@ -72,9 +72,13 @@ export function QuestList() {
     const { session } = useAuth()
     const { theme, colorMode } = useTheme()
     const navigate = useNavigate()
+    const searchParams = useSearch({ strict: false }) as { tab?: string }
     const [tab, setTab] = useState<Tab>(() => {
+        const validTabs = ["featured", "highest-reward", "ending-soon", "new", "upcoming"]
+        // URL ?tab param takes priority, then session storage, then default
+        if (searchParams.tab && validTabs.includes(searchParams.tab)) return searchParams.tab as Tab
         const stored = sessionStorage.getItem("cq-quest-tab")
-        return (stored && ["featured", "highest-reward", "ending-soon", "new", "upcoming"].includes(stored) ? stored : "featured") as Tab
+        return (stored && validTabs.includes(stored) ? stored : "featured") as Tab
     })
     const [prevTab, setPrevTab] = useState<Tab>(tab)
     const [view, setView] = useState<View>(() => {
@@ -387,7 +391,7 @@ export function QuestList() {
                                 ) : sorted.map(quest => {
                                     const time = formatTimeShort(quest.expiresAt)
                                     return (
-                                        <tr key={quest.id} className="hover:bg-muted cursor-pointer transition-colors" onClick={() => navigate({ to: "/quests/$questId", params: { questId: quest.id } })}>
+                                        <tr key={quest.id} className="hover:bg-bg-secondary cursor-pointer transition-colors" onClick={() => navigate({ to: "/quests/$questId", params: { questId: quest.id } })}>
                                             <td className="px-2 py-3 text-xs border-b border-border align-top whitespace-nowrap">
                                                 <span className="inline-flex items-center gap-1 text-sm font-semibold text-success whitespace-nowrap">
                                                     <TokenIcon token={quest.rewardType} size={16} />

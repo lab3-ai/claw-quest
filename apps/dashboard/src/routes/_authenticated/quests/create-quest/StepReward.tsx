@@ -110,19 +110,19 @@ export function StepReward({
                             <Label className="mr-4">Reward Method</Label>
                             <div className="inline-flex border border-border rounded overflow-hidden">
                                 <button
-                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none border-r border-border bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "crypto" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
+                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none border-r border-border bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-bg-secondary hover:text-foreground", form.rail === "crypto" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
                                     onClick={() => onFieldChange("rail", "crypto")}
                                 >
                                     <span className="text-base leading-none">⛓</span> Crypto
                                 </button>
                                 <button
-                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none border-r border-border bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "fiat" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
+                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none border-r border-border bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-bg-secondary hover:text-foreground", form.rail === "fiat" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
                                     onClick={() => onFieldChange("rail", "fiat")}
                                 >
                                     <span className="text-base leading-none">💳</span> Fiat (USD)
                                 </button>
                                 <button
-                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-muted hover:text-foreground", form.rail === "llm" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
+                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-bg-secondary hover:text-foreground", form.rail === "llm" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
                                     onClick={() => onFieldChange("rail", "llm")}
                                 >
                                     <span className="text-base leading-none">🤖</span> LLM Token
@@ -232,7 +232,7 @@ export function StepReward({
                                         i < arr.length - 1 && "border-r border-input",
                                         form.type === opt.val
                                             ? "bg-muted text-foreground"
-                                            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                                            : "text-muted-foreground hover:bg-bg-secondary/50 hover:text-foreground"
                                     )}
                                     onClick={() => {
                                         let winners = form.winners

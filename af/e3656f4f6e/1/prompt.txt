@@ -1,0 +1,2 @@
+'/Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/modules/quests/quests.publish-validator.ts' 
+LLM reward methods not working with if (!(rewardAmountNum > 0)) fields.rewardAmount = 'Reward amount must be > 0';

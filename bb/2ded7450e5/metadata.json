@@ -3,7 +3,7 @@
   "checkpoint_id": "bb2ded7450e5",
   "strategy": "manual-commit",
   "branch": "fix/verify-social-task",
-  "checkpoints_count": 3,
+  "checkpoints_count": 4,
   "files_touched": [
     "apps/api/src/modules/quests/social-action-verifier.ts",
     "apps/dashboard/src/routes/_authenticated/quests/create-quest/StepTasks.tsx",
@@ -27,13 +27,19 @@
       "transcript": "/bb/2ded7450e5/2/full.jsonl",
       "content_hash": "/bb/2ded7450e5/2/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/bb/2ded7450e5/3/metadata.json",
+      "transcript": "/bb/2ded7450e5/3/full.jsonl",
+      "content_hash": "/bb/2ded7450e5/3/content_hash.txt",
+      "prompt": "/bb/2ded7450e5/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 30,
-    "cache_creation_tokens": 149029,
-    "cache_read_tokens": 1128936,
-    "output_tokens": 6195,
-    "api_call_count": 22
+    "input_tokens": 59,
+    "cache_creation_tokens": 227475,
+    "cache_read_tokens": 2260980,
+    "output_tokens": 25655,
+    "api_call_count": 39
   }
 }

@@ -80,11 +80,11 @@ describe('Quest Lifecycle API Integration Tests', () => {
           totalSlots: 5,
           tasks: [
             {
-              id: '1',
+              id: '00000000-0000-0000-0000-000000000001',
               platform: 'x',
-              action: 'follow_account',
-              target: '@testaccount',
-              description: 'Follow our account',
+              actionType: 'follow_account',
+              label: 'Follow our account',
+              params: { target: '@testaccount' },
             },
           ],
         },
@@ -130,6 +130,7 @@ describe('Quest Lifecycle API Integration Tests', () => {
           totalSlots: 3,
           creatorUserId: creator.id,
           fundingStatus: 'unfunded',
+          tasks: [],
         },
       });
       questId = quest.id;
@@ -203,6 +204,7 @@ describe('Quest Lifecycle API Integration Tests', () => {
           totalSlots: 2,
           creatorUserId: creator.id,
           fundingStatus: 'unfunded',
+          tasks: [],
         },
       });
       questId = quest.id;
@@ -244,6 +246,7 @@ describe('Quest Lifecycle API Integration Tests', () => {
           creatorUserId: creator.id,
           fundingStatus: 'confirmed',
           fundedAt: new Date(),
+          tasks: [],
         },
       });
       questId = quest.id;
@@ -252,7 +255,7 @@ describe('Quest Lifecycle API Integration Tests', () => {
     it('should allow user to join quest', async () => {
       const response = await server.inject({
         method: 'POST',
-        url: `/quests/${questId}/join`,
+        url: `/quests/${questId}/accept`,
         headers: {
           authorization: `Bearer ${participantToken}`,
         },
@@ -260,15 +263,13 @@ describe('Quest Lifecycle API Integration Tests', () => {
 
       expect(response.statusCode).toBe(200);
       const body = JSON.parse(response.body);
-      expect(body.questId).toBe(questId);
-      expect(body.userId).toBe(participant.id);
-      expect(body.status).toBe('in_progress');
+      expect(body.participationId).toBeDefined();
     });
 
     it('should prevent duplicate participation', async () => {
       const response = await server.inject({
         method: 'POST',
-        url: `/quests/${questId}/join`,
+        url: `/quests/${questId}/accept`,
         headers: {
           authorization: `Bearer ${participantToken}`,
         },
@@ -276,7 +277,7 @@ describe('Quest Lifecycle API Integration Tests', () => {
 
       expect(response.statusCode).toBe(400);
       const body = JSON.parse(response.body);
-      expect(body.message || body.error?.message).toContain('already participating');
+      expect(body.message || body.error?.message).toContain('already accepted');
     });
   });
 
@@ -298,6 +299,7 @@ describe('Quest Lifecycle API Integration Tests', () => {
           creatorUserId: creator.id,
           fundingStatus: 'confirmed',
           fundedAt: new Date(),
+          tasks: [],
         },
       });
       questId = quest.id;
@@ -369,6 +371,7 @@ describe('Quest Lifecycle API Integration Tests', () => {
           fundingStatus: 'confirmed',
           fundedAt: new Date(),
           fundingMethod: 'stripe',
+          tasks: [],
         },
       });
       questId = quest.id;

@@ -73,11 +73,11 @@ describe('LLM_KEY Reward Type Integration Tests', () => {
           llmKeyTokenLimit: 1000000, // 1M tokens
           tasks: [
             {
-              id: '1',
+              id: '00000000-0000-0000-0000-000000000001',
               platform: 'x',
-              action: 'follow_account',
-              target: '@ai_test',
-              description: 'Follow AI account',
+              actionType: 'follow_account',
+              label: 'Follow AI account',
+              params: { target: '@ai_test' },
             },
           ],
         },

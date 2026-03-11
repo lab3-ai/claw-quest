@@ -115,6 +115,10 @@ export const QuestSchema = z.object({
     expiresAt: z.string().datetime().nullable(), // ISO string
     createdAt: z.string().datetime(), // ISO string for API
     updatedAt: z.string().datetime(), // ISO string for API
+    // Creator fields
+    creatorUserId: z.string().uuid().nullable().optional(),
+    creatorAgentId: z.string().uuid().nullable().optional(),
+    creatorEmail: z.string().email().nullable().optional(),
     // Escrow / funding fields (optional — only present when funded)
     fundingStatus: z.string().nullable().optional(),
     cryptoTxHash: z.string().nullable().optional(),

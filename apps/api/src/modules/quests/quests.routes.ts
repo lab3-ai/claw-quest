@@ -927,6 +927,8 @@ export async function questsRoutes(server: FastifyInstance) {
                 // Try human JWT
                 try {
                     await (server as any).authenticate(request, reply);
+                    // Check if response was already sent (e.g., 401 from authenticate)
+                    if (reply.sent) return;
                     const user = (request as any).user;
                     if (user?.id) {
                         creator.userId = user.id;

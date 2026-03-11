@@ -87,6 +87,11 @@ function authHeaders(token: string): Record<string, string> {
   return { 'Authorization': `Bearer ${token}` }
 }
 
+/** Returns the app-only Bearer Token from env, or null if not configured. */
+export function getAppBearerToken(): string | null {
+  return process.env.X_BEARER_TOKEN ?? null
+}
+
 // ── Verification Endpoints ──────────────────────────────────────
 
 /** Check if userXId follows targetXId. Paginates up to 1000 results. */
@@ -138,18 +143,70 @@ export async function getLikingUsers(
   }
 }
 
-/** Check if userXId retweeted tweetId. Max 100 results. */
+/** Check if userXId retweeted tweetId. Paginates up to 10 pages (1000 results). */
 export async function getRetweetedBy(
   token: string, tweetId: string, userXId: string,
 ): Promise<boolean | null> {
   try {
-    const res = await fetch(
-      `${X_API}/tweets/${tweetId}/retweeted_by?user.fields=id&max_results=100`,
-      { headers: authHeaders(token), signal: AbortSignal.timeout(TIMEOUT_MS) },
-    )
-    if (!res.ok) return null
-    const data = await res.json() as { data?: Array<{ id: string }> }
-    return data.data?.some(u => u.id === userXId) ?? false
+    let paginationToken: string | undefined
+    for (let page = 0; page < 10; page++) {
+      const url = new URL(`${X_API}/tweets/${tweetId}/retweeted_by`)
+      url.searchParams.set('max_results', '100')
+      url.searchParams.set('user.fields', 'id')
+      if (paginationToken) url.searchParams.set('pagination_token', paginationToken)
+
+      const res = await fetch(url.toString(), {
+        headers: authHeaders(token),
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      })
+      if (!res.ok) return null
+
+      const data = await res.json() as {
+        data?: Array<{ id: string }>
+        meta?: { next_token?: string }
+      }
+      if (data.data?.some(u => u.id === userXId)) return true
+      paginationToken = data.meta?.next_token
+      if (!paginationToken) break
+    }
+    return false
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Check if userXId liked tweetId using app-only Bearer Token.
+ * Endpoint: GET /2/users/{userXId}/liked_tweets. Paginates up to 10 pages (1000 likes).
+ */
+export async function checkUserLikedTweet(
+  userXId: string, tweetId: string,
+): Promise<boolean | null> {
+  const token = getAppBearerToken()
+  if (!token) return null
+  try {
+    let paginationToken: string | undefined
+    for (let page = 0; page < 10; page++) {
+      const url = new URL(`${X_API}/users/${userXId}/liked_tweets`)
+      url.searchParams.set('max_results', '100')
+      url.searchParams.set('tweet.fields', 'id')
+      if (paginationToken) url.searchParams.set('pagination_token', paginationToken)
+
+      const res = await fetch(url.toString(), {
+        headers: authHeaders(token),
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      })
+      if (!res.ok) return null
+
+      const data = await res.json() as {
+        data?: Array<{ id: string }>
+        meta?: { next_token?: string }
+      }
+      if (data.data?.some(t => t.id === tweetId)) return true
+      paginationToken = data.meta?.next_token
+      if (!paginationToken) break
+    }
+    return false
   } catch {
     return null
   }

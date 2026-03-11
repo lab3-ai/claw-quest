@@ -391,7 +391,7 @@ export function QuestList() {
                                 ) : sorted.map(quest => {
                                     const time = formatTimeShort(quest.expiresAt)
                                     return (
-                                        <tr key={quest.id} className="hover:bg-muted cursor-pointer transition-colors" onClick={() => navigate({ to: "/quests/$questId", params: { questId: quest.id } })}>
+                                        <tr key={quest.id} className="hover:bg-bg-secondary cursor-pointer transition-colors" onClick={() => navigate({ to: "/quests/$questId", params: { questId: quest.id } })}>
                                             <td className="px-2 py-3 text-xs border-b border-border align-top whitespace-nowrap">
                                                 <span className="inline-flex items-center gap-1 text-sm font-semibold text-success whitespace-nowrap">
                                                     <TokenIcon token={quest.rewardType} size={16} />

@@ -30,6 +30,7 @@
     --color-ring: var(--accent);
 
     --color-bg: var(--bg);
+    --color-bg-secondary: var(--bg-secondary);
     --color-bg-subtle: var(--bg-subtle);
     --color-bg-muted: var(--bg-muted);
 
@@ -159,6 +160,7 @@
 [data-theme="terminal"] {
     /* ── Core Colors ── */
     --bg: #ffffff;
+    --bg-secondary: #f5f5f5;
     --bg-subtle: #e5e5e5;
     --bg-muted: #dcdcdc;
     --fg: #111111;

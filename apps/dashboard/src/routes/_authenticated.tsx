@@ -94,28 +94,28 @@ export function AuthenticatedLayout() {
                                 <Link
                                     to="/quests"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted"
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
                                 >
                                     Quests
                                 </Link>
                                 <Link
                                     to="/dashboard"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted"
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
                                 >
                                     Dashboard
                                 </Link>
                                 <Link
                                     to="/account"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted"
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
                                 >
                                     Account
                                 </Link>
                                 <Link
                                     to="/stripe-connect"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted flex items-center gap-2"
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary flex items-center gap-2"
                                 >
                                     <BankCardLine className="h-4 w-4" />
                                     Stripe Payout
@@ -126,7 +126,7 @@ export function AuthenticatedLayout() {
                                         logout()
                                         setMobileOpen(false)
                                     }}
-                                    className="rounded px-3 py-2.5 text-left text-sm text-destructive hover:bg-muted"
+                                    className="rounded px-3 py-2.5 text-left text-sm text-destructive hover:bg-bg-secondary"
                                 >
                                     Log out
                                 </button>

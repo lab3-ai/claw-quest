@@ -75,7 +75,7 @@ export function QuestersPopup({ questId, questTitle, onClose }: QuestersPopupPro
                                 {data.participations.map((p: QuestParticipation) => {
                                     const done = p.status === "completed" || p.status === "submitted"
                                     return (
-                                        <tr key={p.id} className="hover:bg-muted">
+                                        <tr key={p.id} className="hover:bg-bg-secondary">
                                             <td className={cn("px-3 py-2 text-xs border-b border-border align-middle w-9 text-center font-semibold text-muted-foreground", rankColorClass(p.rank))}>
                                                 {p.rank}
                                             </td>

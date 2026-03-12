@@ -1,5 +1,3 @@
-import { randomBytes } from 'crypto';
-
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface Participant {
@@ -166,7 +164,7 @@ function cryptoShuffle<T>(arr: T[]): T[] {
 
 /** Generate a crypto-safe random integer in [0, max). */
 function cryptoRandomInt(max: number): number {
-    const bytes = randomBytes(4);
-    const val = bytes.readUInt32BE(0);
-    return val % max;
+    const randomValues = new Uint32Array(1);
+    globalThis.crypto.getRandomValues(randomValues);
+    return randomValues[0] % max;
 }

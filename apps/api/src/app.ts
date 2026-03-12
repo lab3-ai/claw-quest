@@ -21,6 +21,7 @@ import { seoRoutes } from './modules/seo/seo.routes';
 import { statsRoutes } from './modules/stats/stats.routes';
 import { waitlistRoutes } from './modules/waitlist/waitlist.routes';
 import { githubBountyRoutes } from './modules/github-bounty/github-bounty.routes';
+import { llmModelsRoutes } from './modules/llm-models/llm-models.routes';
 import { web3SkillsRoutes } from './modules/web3-skills/web3-skills.routes';
 
 // ─── Supabase Admin Client ──────────────────────────────────────────────────
@@ -249,6 +250,7 @@ server.register(seoRoutes, { prefix: '/seo' });
 server.register(statsRoutes, { prefix: '/stats' });
 server.register(waitlistRoutes, { prefix: '/waitlist' });
 server.register(githubBountyRoutes, { prefix: '/github-bounties' });
+server.register(llmModelsRoutes, { prefix: '/llm-models' });
 server.register(web3SkillsRoutes, { prefix: '/web3-skills' });
 
 // Telegram Bot (Polling for local dev)
@@ -295,15 +297,15 @@ server.get('/skill.md', async (_request, reply) => {
 const start = async () => {
     try {
         // Load RPC registry from DB before starting escrow poller or accepting requests
-        // if (isEscrowConfigured()) {
-        //     await rpcManager.load(prisma);
-        //     invalidateClientCache(); // ensure clients are rebuilt with DB-sourced RPCs
-        //     startEscrowPoller(server).catch((err) => {
-        //         console.error('⚠️  Escrow poller failed (non-fatal):', err.message);
-        //     });
-        // } else {
-        //     console.warn('⚠️  Escrow not configured (missing contract address or operator key) — poller will not start');
-        // }
+        if (isEscrowConfigured()) {
+            await rpcManager.load(prisma);
+            invalidateClientCache(); // ensure clients are rebuilt with DB-sourced RPCs
+            startEscrowPoller(server).catch((err) => {
+                console.error('⚠️  Escrow poller failed (non-fatal):', err.message);
+            });
+        } else {
+            console.warn('⚠️  Escrow not configured (missing contract address or operator key) — poller will not start');
+        }
 
         // // ClawHub skill catalog sync (runs on startup + every 24h)
         // startClawhubSyncJob(server).catch((err) => {

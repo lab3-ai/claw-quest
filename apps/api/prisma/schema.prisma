@@ -168,6 +168,11 @@ model Quest {
   llmKeyRewardEnabled Boolean @default(false)
   llmKeyTokenLimit    Int?    @default(1000000)
 
+  // LLM Model Reward (LLMTOKEN_OPENROUTER)
+  llmModelId           String?
+  llmModel             LlmModel? @relation(fields: [llmModelId], references: [id])
+  tokenBudgetPerWinner Decimal?  @db.Decimal(18, 6)  // USD budget per winner
+
   // Collaboration
   totalFunded     Decimal  @default(0) @db.Decimal(36, 18)
 
@@ -179,11 +184,32 @@ model Quest {
   deposits       QuestDeposit[]
 
   @@index([claimToken])
+  @@index([llmModelId])
   @@index([previewToken])
   @@index([creatorTelegramId])
   @@index([creatorAgentId])
   @@index([creatorUserId])
   @@index([status, createdAt])
+}
+
+// ─── LLM Model Catalog ────────────────────────────────────────────────────────
+
+model LlmModel {
+  id               String   @id @default(uuid())
+  openrouterId     String   @unique  // e.g. "anthropic/claude-sonnet-4.6"
+  name             String           // "Claude Sonnet 4.6"
+  provider         String           // "Anthropic"
+  tier             String   @default("standard") // budget | mid | premium
+  inputPricePer1M  Decimal  @db.Decimal(10, 4)   // sell price $/1M input tokens (incl. 6% markup)
+  outputPricePer1M Decimal  @db.Decimal(10, 4)   // sell price $/1M output tokens (incl. 6% markup)
+  contextWindow    Int                             // max context tokens
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  quests           Quest[]
+
+  @@index([isActive, outputPricePer1M])
 }
 
 model QuestCollaborator {

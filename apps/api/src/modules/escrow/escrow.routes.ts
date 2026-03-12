@@ -52,6 +52,7 @@ export async function escrowRoutes(server: FastifyInstance) {
                 params: z.object({ questId: z.string().uuid() }),
                 querystring: z.object({
                     chainId: z.coerce.number().optional(),
+                    tokenSymbol: z.string().optional(),
                 }),
                 response: {
                     200: z.object({
@@ -76,7 +77,7 @@ export async function escrowRoutes(server: FastifyInstance) {
             }
 
             const { questId } = request.params as any;
-            const { chainId } = (request.query as any) || {};
+            const { chainId, tokenSymbol } = (request.query as any) || {};
 
             // Validate chain is allowed in current environment
             if (chainId && !isChainAllowed(chainId)) {
@@ -96,7 +97,7 @@ export async function escrowRoutes(server: FastifyInstance) {
                     }
                 } catch { /* public access — no user */ }
 
-                const params = await getDepositParams(server.prisma, questId, depositorUserId, chainId);
+                const params = await getDepositParams(server.prisma, questId, depositorUserId, chainId, tokenSymbol);
                 return params;
             } catch (err: any) {
                 if (err.message === 'Quest not found') {

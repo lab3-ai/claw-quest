@@ -178,19 +178,25 @@ export function FundQuest() {
         ? (quest.fundingMethod === 'stripe' ? 'stripe' : 'crypto')
         : null
 
+    // LLM quests need a user-chosen token since their rewardType is not a real on-chain token
+    const isLlmQuest = !!quest && quest.rewardType?.toUpperCase().includes('LLM')
+    const [selectedToken, setSelectedToken] = useState<string>('USDC')
+
     // Step 3: Only fetch method-specific APIs after method is determined
     // ── Crypto: Fetch deposit params ────────────────────────────────────────
     const { data: params, isLoading: paramsLoading, error: paramsError } = useQuery<DepositParams>({
-        queryKey: ['deposit-params', questId],
+        queryKey: ['deposit-params', questId, isLlmQuest ? selectedToken : undefined],
         queryFn: async () => {
-            const res = await fetch(`${API_BASE}/escrow/deposit-params/${questId}`)
+            const url = new URL(`${API_BASE}/escrow/deposit-params/${questId}`)
+            if (isLlmQuest) url.searchParams.set('tokenSymbol', selectedToken)
+            const res = await fetch(url.toString())
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}))
                 throw new Error(err.message || 'Failed to load deposit params')
             }
             return res.json()
         },
-        enabled: !!questId && method === 'crypto' && !authLoading, // Only fetch when method is crypto and auth is ready
+        enabled: !!questId && method === 'crypto' && !!quest && !authLoading,
     })
 
     // ── Fund flow state + contract writes ───────────────────────────────────
@@ -243,6 +249,11 @@ export function FundQuest() {
     useEffect(() => {
         if (fundingStatus === 'confirmed' || fundingStatus === 'live' || fundingStatus === 'scheduled') setStep('success')
     }, [fundingStatus, setStep])
+
+    // Reset flow when LLM token selection changes
+    useEffect(() => {
+        if (isLlmQuest) setStep('connect')
+    }, [selectedToken, isLlmQuest, setStep])
 
     // ── Render ──────────────────────────────────────────────────────────────
     // Show skeleton while waiting for auth token or loading quest data
@@ -329,6 +340,20 @@ export function FundQuest() {
                                     <Link to="/dashboard">Back to Dashboard</Link>
                                 </Button>
                             </>
+                        )}
+
+                        {isLlmQuest && !paramsError && (
+                            <div className="mb-4">
+                                <label className="text-xs text-fg-muted mb-1 block">Deposit token</label>
+                                <select
+                                    value={selectedToken}
+                                    onChange={e => setSelectedToken(e.target.value)}
+                                    className="text-sm border border-border rounded-md px-3 py-2 bg-background w-full"
+                                >
+                                    <option value="USDC">USDC</option>
+                                    <option value="USDT">USDT</option>
+                                </select>
+                            </div>
                         )}
 
                         {params && (

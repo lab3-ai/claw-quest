@@ -31,6 +31,11 @@ export function validatePublishRequirements(quest: any): PublishValidationError 
         }
     }
 
+    // LLMTOKEN_OPENROUTER quests must have a model selected
+    if (quest.rewardType === 'LLMTOKEN_OPENROUTER' && !quest.llmModelId) {
+        fields.llmModelId = 'LLM model selection is required';
+    }
+
     // Tasks — safe-parse from JSON to prevent crash on malformed data
     const parsed = z.array(QuestTaskSchema).safeParse(quest.tasks ?? []);
     if (!parsed.success) {

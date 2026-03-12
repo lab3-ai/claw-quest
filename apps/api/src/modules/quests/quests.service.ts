@@ -147,6 +147,9 @@ export interface CreateQuestInput {
     llmKeyRewardEnabled?: boolean;
     llmKeyTokenLimit?: number;
     creatorTelegramId?: bigint;
+    // LLM Model Reward (LLMTOKEN_OPENROUTER)
+    llmModelId?: string;
+    tokenBudgetPerWinner?: number;
 }
 
 export interface QuestCreator {
@@ -192,6 +195,31 @@ export async function createQuest(
         }
     }
 
+    // ── LLM Model Reward: server-side cost computation ────────────────────────
+    let computedRewardAmount = input.rewardAmount;
+    let llmModelId: string | null = null;
+    let tokenBudgetPerWinner: number | null = null;
+    let tokenProvider: string | null = null;
+    let tokenAmount: number | null = null;
+    let fundingMethod: 'crypto' | 'stripe' | null = input.fundingMethod || null;
+
+    if (input.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER) {
+        if (!input.llmModelId || !input.tokenBudgetPerWinner) {
+            throw new QuestValidationError('LLM reward quests require llmModelId and tokenBudgetPerWinner');
+        }
+        const model = await prisma.llmModel.findUnique({ where: { id: input.llmModelId } });
+        if (!model || !model.isActive) {
+            throw new QuestValidationError('Selected LLM model is not available');
+        }
+        const totalSlots = input.totalSlots || 100;
+        computedRewardAmount = Math.round(input.tokenBudgetPerWinner * totalSlots * 100) / 100;
+        llmModelId = model.id;
+        tokenBudgetPerWinner = input.tokenBudgetPerWinner;
+        tokenProvider = 'openrouter';
+        tokenAmount = input.tokenBudgetPerWinner;
+        fundingMethod = 'crypto'; // Only crypto allowed for LLM reward quests
+    }
+
     const claimToken = generateClaimToken();
     const claimTokenExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h
     const previewToken = generatePreviewToken();
@@ -203,8 +231,10 @@ export async function createQuest(
             sponsor: input.sponsor || 'System',
             type: input.type || 'FCFS',
             status: input.status || 'draft',
-            rewardAmount: input.rewardAmount,
+            rewardAmount: computedRewardAmount,
             rewardType: input.rewardType || REWARD_TYPE.USDC,
+            tokenProvider,
+            tokenAmount,
             totalSlots: input.totalSlots || 100,
             filledSlots: 0,
             tags: input.tags || [],
@@ -215,9 +245,11 @@ export async function createQuest(
             startAt: input.startAt ? new Date(input.startAt) : null,
             network: input.network || null,
             drawTime: input.drawTime ? new Date(input.drawTime) : null,
-            fundingMethod: input.fundingMethod || null,
+            fundingMethod,
             llmKeyRewardEnabled: input.llmKeyRewardEnabled ?? false,
             llmKeyTokenLimit: input.llmKeyTokenLimit ?? 1000000,
+            llmModelId,
+            tokenBudgetPerWinner,
             // Tokens
             claimToken,
             claimTokenExpiresAt,
@@ -265,6 +297,11 @@ export interface UpdateQuestInput {
     network?: string;
     drawTime?: string | null;
     fundingMethod?: 'crypto' | 'stripe';
+    llmKeyRewardEnabled?: boolean;
+    llmKeyTokenLimit?: number;
+    // LLM Model Reward (LLMTOKEN_OPENROUTER)
+    llmModelId?: string;
+    tokenBudgetPerWinner?: number;
 }
 
 export async function updateQuest(
@@ -297,6 +334,29 @@ export async function updateQuest(
     if (input.network !== undefined) data.network = input.network;
     if (input.drawTime !== undefined) data.drawTime = input.drawTime ? new Date(input.drawTime) : null;
     if (input.fundingMethod !== undefined) data.fundingMethod = input.fundingMethod;
+    if (input.llmKeyRewardEnabled !== undefined) data.llmKeyRewardEnabled = input.llmKeyRewardEnabled;
+    if (input.llmKeyTokenLimit !== undefined) data.llmKeyTokenLimit = input.llmKeyTokenLimit;
+
+    // LLM model reward: re-compute rewardAmount server-side when llmModelId or tokenBudgetPerWinner changes
+    const effectiveRewardType = input.rewardType ?? quest.rewardType;
+    if (effectiveRewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER) {
+        const newModelId = input.llmModelId ?? (quest as any).llmModelId;
+        const newBudget = input.tokenBudgetPerWinner ?? Number((quest as any).tokenBudgetPerWinner ?? 0);
+        if (newModelId && newBudget) {
+            const model = await prisma.llmModel.findUnique({ where: { id: newModelId } });
+            if (!model || !model.isActive) throw new QuestValidationError('Selected LLM model is not available');
+            const totalSlots = input.totalSlots ?? quest.totalSlots;
+            data.rewardAmount = Math.round(newBudget * totalSlots * 100) / 100;
+            data.llmModelId = newModelId;
+            data.tokenBudgetPerWinner = newBudget;
+            data.tokenProvider = 'openrouter';
+            data.tokenAmount = newBudget;
+            data.fundingMethod = 'crypto';
+        }
+    } else {
+        if (input.llmModelId !== undefined) data.llmModelId = input.llmModelId;
+        if (input.tokenBudgetPerWinner !== undefined) data.tokenBudgetPerWinner = input.tokenBudgetPerWinner;
+    }
 
     // Handle status changes with validation
     if (input.status !== undefined) {
@@ -403,9 +463,18 @@ export function formatQuestResponse(
         c.user?.displayName ?? c.user?.username ?? 'Sponsor'
     ) ?? quest.sponsorNames ?? [];
 
+    // Serialize llmModel Decimal fields if present
+    const llmModel = quest.llmModel ? {
+        ...quest.llmModel,
+        inputPricePer1M: Number(quest.llmModel.inputPricePer1M),
+        outputPricePer1M: Number(quest.llmModel.outputPricePer1M),
+    } : null;
+
     return {
         ...safeQuest,
         rewardAmount,
+        tokenBudgetPerWinner: quest.tokenBudgetPerWinner != null ? Number(quest.tokenBudgetPerWinner) : null,
+        llmModel,
         llmKeyTokenLimit,
         tags: quest.tags ?? [],
         requiredSkills: quest.requiredSkills ?? [],

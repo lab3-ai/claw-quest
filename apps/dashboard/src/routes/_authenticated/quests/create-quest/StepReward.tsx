@@ -1,10 +1,13 @@
 import { REWARD_TYPE } from "@clawquest/shared"
+import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { NETWORKS_PRIMARY, NETWORKS_OTHER, NATIVE_TOKENS, TOKEN_CONTRACTS, TOKEN_COLORS, getTokenSymbol, calcLbPayouts } from "./constants"
+
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
 type QuestType = "FCFS" | "LEADERBOARD" | "LUCKY_DRAW"
 type PaymentRail = "crypto" | "fiat" | "llm"
@@ -22,14 +25,16 @@ interface StepRewardProps {
         total: string
         winners: string
         drawTime: string
-        llmKeyTokenLimit: string
+        llmModelId: string
+        tokenBudgetPerWinner: string
     }
     stepSummary?: string
     llmKeyRewardEnabled: boolean
     onToggle: () => void
-    onFieldChange: (key: keyof Omit<StepRewardProps["form"], "llmKeyTokenLimit">, value: string | PaymentRail | QuestType) => void
+    onFieldChange: (key: keyof Omit<StepRewardProps["form"], "llmModelId" | "tokenBudgetPerWinner">, value: string | PaymentRail | QuestType) => void
     onSetLlmKeyRewardEnabled: (v: boolean) => void
-    onSetLlmKeyTokenLimit: (v: string) => void
+    onSetLlmModelId: (v: string) => void
+    onSetTokenBudgetPerWinner: (v: string) => void
     onNext: () => void
     onPrevious: () => void
 }
@@ -45,14 +50,22 @@ export function StepReward({
     onToggle,
     onFieldChange,
     onSetLlmKeyRewardEnabled,
-    onSetLlmKeyTokenLimit,
+    onSetLlmModelId,
+    onSetTokenBudgetPerWinner,
     onNext,
     onPrevious,
 }: StepRewardProps) {
+    const { data: llmModels } = useQuery<any[]>({
+        queryKey: ["llm-models"],
+        queryFn: () => fetch(`${API_BASE}/llm-models`).then(r => r.json()).then(d => d.data ?? d),
+        enabled: isActive && form.rail === "llm",
+        staleTime: 5 * 60 * 1000,
+    })
+
     const activeTotal = parseFloat(form.total) || 0
     const activeWinners = parseInt(form.winners) || 1
     const perWinner = form.rail === "llm"
-        ? parseInt(form.llmKeyTokenLimit || "1000000").toLocaleString()
+        ? `$${parseFloat(form.tokenBudgetPerWinner || "0").toFixed(2)}`
         : activeWinners > 0 ? (activeTotal / activeWinners).toFixed(2) : "0.00"
 
     const totalError = form.rail !== "llm" && activeTotal <= 0 && isActive
@@ -206,20 +219,55 @@ export function StepReward({
                         <div className="space-y-4 mb-6">
                             <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">LLM Token Reward</div>
                             <div className="space-y-1.5">
-                                <Label>Token Limit per Winner</Label>
+                                <Label>Model <span className="text-destructive">*</span></Label>
+                                <select
+                                    className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+                                    value={form.llmModelId}
+                                    onChange={e => onSetLlmModelId(e.target.value)}
+                                >
+                                    <option value="">-- Select a model --</option>
+                                    {["premium", "mid", "budget"].map(tier => {
+                                        const tierModels = (llmModels ?? []).filter((m: any) => m.tier === tier)
+                                        if (!tierModels.length) return null
+                                        return (
+                                            <optgroup key={tier} label={tier.charAt(0).toUpperCase() + tier.slice(1)}>
+                                                {tierModels.map((m: any) => (
+                                                    <option key={m.id} value={m.id}>
+                                                        {m.name} — ${m.outputPricePer1M}/1M out tokens
+                                                    </option>
+                                                ))}
+                                            </optgroup>
+                                        )
+                                    })}
+                                </select>
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label>Budget per Winner (USD) <span className="text-destructive">*</span></Label>
                                 <Input
                                     type="number"
-                                    value={form.llmKeyTokenLimit}
-                                    onChange={e => onSetLlmKeyTokenLimit(e.target.value)}
-                                    placeholder="1000000"
+                                    min="0.01"
+                                    step="0.01"
+                                    value={form.tokenBudgetPerWinner}
+                                    onChange={e => onSetTokenBudgetPerWinner(e.target.value)}
+                                    placeholder="5.00"
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    Each winner receives an LLM API key with this many tokens. Default: 1,000,000.
+                                    USD worth of LLM tokens each winner can spend on the selected model.
                                 </p>
                             </div>
-                            <div className="flex items-center gap-2 px-3 py-2 bg-accent-light border border-accent/30 rounded text-xs text-foreground leading-relaxed">
-                                <span className="shrink-0">✅</span>
-                                <span>Winners receive a personal <strong>LLM API key</strong> (OpenAI-compatible) with {parseInt(form.llmKeyTokenLimit || "1000000").toLocaleString()} tokens.</span>
+                            {parseFloat(form.tokenBudgetPerWinner) > 0 && activeWinners > 0 && (
+                                <div className="text-xs text-muted-foreground p-2 px-3 bg-muted rounded border border-border">
+                                    <span className="font-mono text-accent">${parseFloat(form.tokenBudgetPerWinner).toFixed(2)}</span>
+                                    <span> per winner × </span>
+                                    <span className="font-mono text-accent">{form.winners}</span>
+                                    <span> winners = </span>
+                                    <span className="font-mono text-accent font-semibold">${(parseFloat(form.tokenBudgetPerWinner) * activeWinners).toFixed(2)}</span>
+                                    <span> total</span>
+                                </div>
+                            )}
+                            <div className="flex items-center gap-2 px-3 py-2 bg-info-light border border-info rounded text-xs text-foreground leading-relaxed">
+                                <span className="text-sm shrink-0">⛓</span>
+                                <span>Quest requires <strong>crypto funding</strong>. It will go live after your deposit is confirmed on-chain.</span>
                             </div>
                         </div>
                     )}

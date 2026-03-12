@@ -1,0 +1,1 @@
+New task Fulstack [FE+API] Dasboard router at FE, at accepted quest need to show all quests which finished or completed/ended

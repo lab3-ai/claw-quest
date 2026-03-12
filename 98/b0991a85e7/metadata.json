@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "98b0991a85e7",
+  "strategy": "manual-commit",
+  "branch": "refactore/filter-and-stripe",
+  "checkpoints_count": 4,
+  "files_touched": [
+    ".team/sessions/stripe-coming-soon-2026-03-12.md",
+    "apps/api/src/modules/quests/quests.routes.ts",
+    "apps/api/src/modules/stripe/stripe.routes.ts",
+    "apps/dashboard/src/main.tsx",
+    "apps/dashboard/src/routes/_authenticated/account.tsx",
+    "apps/dashboard/src/routes/_authenticated/dashboard.tsx",
+    "apps/dashboard/src/routes/_authenticated/github-bounties/mine.tsx",
+    "apps/dashboard/src/routes/_authenticated/quests/$questId/fund-success.tsx",
+    "apps/dashboard/src/routes/_authenticated/quests/$questId/fund.tsx",
+    "apps/dashboard/src/routes/_authenticated/quests/$questId/manage.tsx",
+    "apps/dashboard/src/routes/_authenticated/quests/create-quest/StepPreview.tsx",
+    "apps/dashboard/src/routes/_authenticated/quests/create-quest/StepReward.tsx",
+    "apps/dashboard/src/routes/_authenticated/stripe-connect.tsx",
+    "docs/CHANGELOG.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/98/b0991a85e7/0/metadata.json",
+      "transcript": "/98/b0991a85e7/0/full.jsonl",
+      "content_hash": "/98/b0991a85e7/0/content_hash.txt",
+      "prompt": "/98/b0991a85e7/0/prompt.txt"
+    },
+    {
+      "metadata": "/98/b0991a85e7/1/metadata.json",
+      "transcript": "/98/b0991a85e7/1/full.jsonl",
+      "content_hash": "/98/b0991a85e7/1/content_hash.txt",
+      "prompt": "/98/b0991a85e7/1/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 29,
+    "cache_creation_tokens": 72269,
+    "cache_read_tokens": 1721766,
+    "output_tokens": 8172,
+    "api_call_count": 25
+  }
+}

@@ -1,0 +1,1 @@
+Tôi vừa merge với main, hãy fix confict file @apps/dashboard/src/routes/_authenticated/quests/$questId/manage.tsx

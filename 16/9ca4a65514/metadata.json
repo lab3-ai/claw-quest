@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "169ca4a65514",
+  "strategy": "manual-commit",
+  "branch": "refactore/filter-and-stripe",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/app.ts",
+    "apps/api/src/modules/quests/quests.service.ts",
+    "apps/dashboard/src/components/ui/button.tsx",
+    "apps/dashboard/src/components/waitlist/draft-quest-modal.tsx",
+    "apps/dashboard/src/components/waitlist/telegram-join-button.tsx",
+    "apps/dashboard/src/components/waitlist/waitlist-success-modal.tsx",
+    "apps/dashboard/src/router.tsx",
+    "apps/dashboard/src/routes/_authenticated.tsx",
+    "apps/dashboard/src/routes/_authenticated/admin/web3-skills.tsx",
+    "apps/dashboard/src/routes/_authenticated/dashboard.tsx",
+    "apps/dashboard/src/routes/_authenticated/quests/$questId/manage.tsx",
+    "apps/dashboard/src/routes/_public.tsx",
+    "apps/dashboard/src/routes/_public/concepts.demo.buttons.tsx",
+    "apps/dashboard/src/routes/login.tsx",
+    "apps/dashboard/src/routes/register.tsx",
+    "docs/CHANGELOG.md",
+    "docs/design-system/DESIGN_SYSTEM.md",
+    "docs/design-system/UI_PATTERNS.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/16/9ca4a65514/0/metadata.json",
+      "transcript": "/16/9ca4a65514/0/full.jsonl",
+      "content_hash": "/16/9ca4a65514/0/content_hash.txt",
+      "prompt": "/16/9ca4a65514/0/prompt.txt"
+    }
+  ]
+}

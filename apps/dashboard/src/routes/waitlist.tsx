@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { CountdownTimer } from "@/components/waitlist/countdown-timer"
-import { TelegramJoinButton, WAITLIST_TOKEN_KEY } from "@/components/waitlist/telegram-join-button"
+import { WAITLIST_TOKEN_KEY } from "@/components/waitlist/telegram-join-button"
+import { SocialTasks } from "@/components/waitlist/social-tasks"
 import { WaitlistSuccessModal } from "@/components/waitlist/waitlist-success-modal"
 import { DraftQuestModal } from "@/components/waitlist/draft-quest-modal"
 import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
@@ -373,25 +374,20 @@ export function Waitlist() {
                         }
                     </div>
                     {/* CTA */}
-                    {!entry && (
-                        <div
-                            className="relative z-10 w-full flex flex-col items-center gap-3"
-                            id="telegram-join-button"
-                            onMouseEnter={() => setMascotMood("happy")}
-                            onMouseLeave={() => setMascotMood("normal")}
-                        >
-                            <TelegramJoinButton referralCode={referralCode ?? undefined} />
-                        </div>
-                    )}
-                    {entry && (
-                        <div
-                            className="relative z-10 w-full flex justify-center"
-                            onMouseEnter={() => setMascotMood("happy")}
-                            onMouseLeave={() => setMascotMood("normal")}
-                        >
+                    <div
+                        className="relative z-10 w-full flex flex-col items-center gap-3"
+                        id="telegram-join-button"
+                        onMouseEnter={() => setMascotMood("happy")}
+                        onMouseLeave={() => setMascotMood("normal")}
+                    >
+                        {entry ? (
                             <WaitlistShareButton onClick={openModal} />
-                        </div>
-                    )}
+                        ) : (
+                            <>
+                                <SocialTasks referralCode={referralCode ?? undefined} />
+                            </>
+                        )}
+                    </div>
 
                 </section>
 
@@ -571,6 +567,9 @@ export function Waitlist() {
                             <p className="font-mono text-sm text-muted-foreground">
                                 Move up 10 spots for every friend who joins with your link.
                             </p>
+                            <p className="font-mono text-xs text-neutral-500">
+                                → 3 friends = OG Pioneer range if you're in the top 130.
+                            </p>
                         </div>
 
                         {/* Tier Progress card */}
@@ -594,9 +593,14 @@ export function Waitlist() {
                         <p className="font-mono text-sm sm:text-base leading-relaxed text-muted-foreground">
                             The countdown is live. Early access is first come, first served.
                         </p>
+                        <div className="w-full max-w-md flex flex-col items-center gap-1 font-mono text-xs sm:text-sm text-muted-foreground">
+                            <p><span className="text-white font-semibold">Top 100</span> — OG Pioneer badge + 500 XP head start</p>
+                            <p><span className="text-white font-semibold">Top 1,000</span> — Priority access to top quests</p>
+                            <p><span className="text-white font-semibold">Every spot</span> — First to claim quests when real USDC rewards go live</p>
+                        </div>
                         {entry
                             ? <WaitlistShareButton onClick={openModal} />
-                            : <TelegramJoinButton referralCode={referralCode ?? undefined} />
+                            : <SocialTasks referralCode={referralCode ?? undefined} />
                         }
                         <p className="font-mono text-xs sm:text-sm text-muted-foreground">
                             {stats.waitlistCount > 0

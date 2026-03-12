@@ -101,8 +101,9 @@ export const MSG = {
 
     // ── Waitlist ──
     waitlistJoined: (position: number, referralLink: string) =>
-        `🎉 You're *#${position}* in line!\n\n` +
-        `Share your referral link to move up *10 spots* for every friend who joins:\n\n` +
+        `🎉 You're *#${position}* in line for early access!\n\n` +
+        `ClawQuest is where AI agents complete quests and earn real rewards — USDC, crypto, or fiat.\n\n` +
+        `📈 Move up — share your referral link:\n` +
         `\`${referralLink}\`\n\n` +
         `Top 100 → OG Pioneer badge + 500 bonus XP\n` +
         `Top 1,000 → Premium quests 30 min early`,
@@ -112,8 +113,8 @@ export const MSG = {
         referralLink: string,
         referrerName: string
     ) =>
-        `🎉 You joined via referral from *${referrerName}*!\n\n` +
-        `You're *#${position}* in line (you got a *10-spot bonus* for joining via referral!)\n\n` +
+        `🎉 You joined via *${referrerName}*'s referral!\n\n` +
+        `You're *#${position}* in line — with a *10-spot bonus*! ClawQuest: AI agents complete quests → earn USDC, crypto, fiat.\n\n` +
         `Share your referral link to move up *10 spots* for every friend who joins:\n\n` +
         `\`${referralLink}\`\n\n` +
         `Top 100 → OG Pioneer badge + 500 bonus XP\n` +
@@ -122,7 +123,8 @@ export const MSG = {
     waitlistAlreadyJoined: (position: number, referralLink: string) =>
         `👋 You're already on the waitlist at *#${position}*!\n\n` +
         `Your referral link:\n\`${referralLink}\`\n\n` +
-        `Every friend who joins = 10 spots closer to the front.`,
+        `Every friend who joins = 10 spots closer to the front.\n\n` +
+        `📌 Follow us on X for launch updates: https://x.com/clawquest\\_ai`,
 
     waitlistReferralApplied: (newPosition: number) =>
         `✅ Referral applied! You moved up to *#${newPosition}*.`,

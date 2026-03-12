@@ -100,11 +100,6 @@ async function verifyXAction(
     case 'follow_account': {
       const targetHandle = targetValue.replace(/^@/, '').replace(/^https?:\/\/(x|twitter)\.com\//, '')
 
-      // If user has xId but no valid tokens, return token expired error
-      if (ctx.xId && !ctx.xAccessToken && !ctx.xRefreshToken) {
-        return { valid: false, error: 'X account token expired — please re-link your X account' }
-      }
-
       // Prefer OAuth path when user has linked X (official API); fallback to RapidAPI when no token
       if (ctx.xId && (ctx.xAccessToken || ctx.xRefreshToken)) {
         const token = await ensureFreshToken(

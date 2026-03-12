@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "40ce53f68cb0",
+  "strategy": "manual-commit",
+  "branch": "hiru-uiux",
+  "checkpoints_count": 7,
+  "files_touched": [
+    "apps/dashboard/src/components/waitlist/telegram-join-button.tsx",
+    "apps/dashboard/src/routes/waitlist.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/40/ce53f68cb0/0/metadata.json",
+      "transcript": "/40/ce53f68cb0/0/full.jsonl",
+      "content_hash": "/40/ce53f68cb0/0/content_hash.txt",
+      "prompt": "/40/ce53f68cb0/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 56,
+    "cache_creation_tokens": 54153,
+    "cache_read_tokens": 2026784,
+    "output_tokens": 7029,
+    "api_call_count": 38
+  }
+}

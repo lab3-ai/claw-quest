@@ -2,12 +2,21 @@
 
 import type { FastifyInstance } from 'fastify';
 import type { JsonValue } from '@prisma/client/runtime/library';
-import { WEB3_KEYWORDS, TOKEN_FALSE_POSITIVES, CATEGORY_RULES } from './web3-categories';
+import {
+  UNAMBIGUOUS_KEYWORDS, MODERATE_KEYWORDS, CONTEXT_WORDS,
+  NEGATIVE_PATTERNS, CATEGORY_RULES,
+} from './web3-categories';
 
 interface ClassifyResult {
   isWeb3: boolean;
   category: string | null;
 }
+
+// Pre-compile word-boundary regexes for moderate keywords
+const MODERATE_REGEXES = MODERATE_KEYWORDS.map(kw => ({
+  keyword: kw,
+  regex: new RegExp(`\\b${kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i'),
+}));
 
 /** Classify a single skill by scanning its text fields for web3 keywords. */
 export function classifySkill(skill: {
@@ -23,21 +32,31 @@ export function classifySkill(skill: {
     JSON.stringify(skill.tags),
   ].join(' ').toLowerCase();
 
-  const matchedKeywords = WEB3_KEYWORDS.filter(kw => searchText.includes(kw));
-
-  // Special handling for "token" — only match if not in auth/JWT context
-  if (matchedKeywords.length === 0) {
-    if (searchText.includes('token') && !TOKEN_FALSE_POSITIVES.some(fp => searchText.includes(fp))) {
-      matchedKeywords.push('token');
-    }
+  // Early exit: negative patterns suppress classification
+  if (NEGATIVE_PATTERNS.some(np => searchText.includes(np))) {
+    return { isWeb3: false, category: null };
   }
 
-  if (matchedKeywords.length === 0) return { isWeb3: false, category: null };
+  // Tier 1: Any unambiguous keyword → instant match
+  const hasUnambiguous = UNAMBIGUOUS_KEYWORDS.some(kw => searchText.includes(kw));
+  if (hasUnambiguous) {
+    const category = CATEGORY_RULES.find(rule =>
+      rule.keywords.some(kw => searchText.includes(kw))
+    )?.category ?? 'Other';
+    return { isWeb3: true, category };
+  }
+
+  // Tier 2: Moderate keywords with word-boundary matching
+  const moderateMatches = MODERATE_REGEXES.filter(m => m.regex.test(searchText));
+  if (moderateMatches.length === 0) return { isWeb3: false, category: null };
+
+  // Require context: either a context word present, or 2+ moderate keywords
+  const hasContext = CONTEXT_WORDS.some(cw => searchText.includes(cw));
+  if (!hasContext && moderateMatches.length < 2) return { isWeb3: false, category: null };
 
   const category = CATEGORY_RULES.find(rule =>
     rule.keywords.some(kw => searchText.includes(kw))
   )?.category ?? 'Other';
-
   return { isWeb3: true, category };
 }
 
@@ -56,7 +75,7 @@ export async function classifySingleSkill(server: FastifyInstance, skillId: stri
     data: {
       web3_auto_detected: isWeb3,
       web3_category: category,
-      is_web3: isWeb3, // no admin override yet for new skills
+      is_web3: isWeb3,
     },
   });
 }
@@ -74,11 +93,7 @@ export async function classifyAllUnclassified(server: FastifyInstance): Promise<
     if (isWeb3) {
       await server.prisma.clawhub_skills.update({
         where: { id: skill.id },
-        data: {
-          web3_auto_detected: true,
-          web3_category: category,
-          is_web3: true,
-        },
+        data: { web3_auto_detected: true, web3_category: category, is_web3: true },
       });
       classified++;
     }

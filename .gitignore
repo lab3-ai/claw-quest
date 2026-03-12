@@ -148,3 +148,4 @@ apps/api/.env
 apps/dashboard/.env
 # Claude/ClaudeKit hooks logs (whole directory)
 .claude/hooks/.logs/
+reference-skill

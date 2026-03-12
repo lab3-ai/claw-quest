@@ -3,6 +3,7 @@ import { useParams, Link } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL ?? window.location.origin
@@ -420,7 +421,7 @@ export function ManageQuest() {
                                 <span className={statusBadgeClass(quest.status)}>{quest.status}</span>
                                 {quest.status === 'draft' && (
                                     <Button
-                                        variant="default"
+                                        variant="primary"
                                         size="sm"
                                         disabled={!isFunded || publishMutation.isPending}
                                         onClick={() => {
@@ -435,7 +436,7 @@ export function ManageQuest() {
                                 )}
                                 {quest.status === 'live' && (
                                     <Button
-                                        variant="destructive"
+                                        variant="danger"
                                         size="sm"
                                         disabled={closeMutation.isPending}
                                         onClick={() => {
@@ -562,35 +563,59 @@ export function ManageQuest() {
                     {/* Actions */}
                     {isCreator && (
                         <div className="flex flex-wrap gap-2 mb-4 max-sm:mb-3 max-sm:flex-col">
-                            <Button
-                                variant="default"
-                                size="sm"
-                                disabled={!isFunded || !hasVerified || distributeMutation.isPending}
-                                onClick={() => {
-                                    const msg = isFiatFunded
-                                        ? 'Distribute payout via Stripe to verified participants who have completed onboarding?'
-                                        : 'Distribute payout to all verified participants?'
-                                    if (window.confirm(msg)) {
-                                        distributeMutation.mutate()
-                                    }
-                                }}
-                                className="max-sm:w-full max-sm:min-h-[44px]"
-                            >
-                                {distributeMutation.isPending ? 'Distributing...' : 'Distribute Payout'}
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={!isFunded || refundMutation.isPending}
-                                onClick={() => {
-                                    if (window.confirm('Refund the escrow balance back to your wallet?')) {
-                                        refundMutation.mutate()
-                                    }
-                                }}
-                                className="max-sm:w-full max-sm:min-h-[44px]"
-                            >
-                                {refundMutation.isPending ? 'Refunding...' : 'Refund'}
-                            </Button>
+                            {isFiatFunded ? (
+                                <>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <span className="inline-block">
+                                                <Button variant="primary" size="sm" disabled className="max-sm:w-full max-sm:min-h-[44px] opacity-60 cursor-not-allowed">
+                                                    Distribute Payout
+                                                </Button>
+                                            </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Coming Soon</TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <span className="inline-block">
+                                                <Button variant="outline" size="sm" disabled className="max-sm:w-full max-sm:min-h-[44px] opacity-60 cursor-not-allowed">
+                                                    Refund
+                                                </Button>
+                                            </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>Coming Soon</TooltipContent>
+                                    </Tooltip>
+                                </>
+                            ) : (
+                                <>
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
+                                        disabled={!isFunded || !hasVerified || distributeMutation.isPending}
+                                        onClick={() => {
+                                            if (window.confirm('Distribute payout to all verified participants?')) {
+                                                distributeMutation.mutate()
+                                            }
+                                        }}
+                                        className="max-sm:w-full max-sm:min-h-[44px]"
+                                    >
+                                        {distributeMutation.isPending ? 'Distributing...' : 'Distribute Payout'}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={!isFunded || refundMutation.isPending}
+                                        onClick={() => {
+                                            if (window.confirm('Refund the escrow balance back to your wallet?')) {
+                                                refundMutation.mutate()
+                                            }
+                                        }}
+                                        className="max-sm:w-full max-sm:min-h-[44px]"
+                                    >
+                                        {refundMutation.isPending ? 'Refunding...' : 'Refund'}
+                                    </Button>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>

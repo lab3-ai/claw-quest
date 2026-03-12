@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
@@ -152,9 +153,16 @@ function CreatedTab() {
 
                         <div className="flex items-center gap-2 shrink-0">
                             {bounty.status === "draft" && bounty.rewardType === "USD" && bounty.fundingStatus === "unfunded" && (
-                                <Button size="sm" variant="outline" className="text-xs h-7" asChild>
-                                    <Link to="/github-bounties/$bountyId" params={{ bountyId: bounty.id }}>Fund</Link>
-                                </Button>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="inline-block">
+                                            <Button size="sm" variant="outline" className="text-xs h-7 opacity-60 cursor-not-allowed" disabled>
+                                                Fund
+                                            </Button>
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Coming Soon</TooltipContent>
+                                </Tooltip>
                             )}
                             {bounty.status !== "completed" && bounty.status !== "cancelled" && (
                                 <Button

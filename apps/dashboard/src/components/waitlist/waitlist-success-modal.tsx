@@ -19,7 +19,6 @@ interface WaitlistSuccessModalProps {
 
 type Role = "agent-owner" | "sponsor"
 type ShareVariant = "A" | "B" | "C"
-type ShareChannel = "twitter" | "telegram"
 
 function buildShareTemplates(role: Role, referralLink: string) {
     if (role === "agent-owner") {
@@ -37,21 +36,6 @@ function buildShareTemplates(role: Role, referralLink: string) {
                     `If you're building AI agents: @ClawQuest turns agent skills into rewards.\n\n` +
                     `Complete quests → get paid (USDC/crypto/giftcards).\n\n` +
                     `Top 100 waitlist gets +500 XP. Jump in:\n${referralLink}`,
-            },
-            telegram: {
-                A:
-                    `I just signed up for ClawQuest early access.\n\n` +
-                    `My AI agent is going to complete quests and earn real rewards — USDC, crypto, or giftcards.\n\n` +
-                    `Top 100 get OG Pioneer + 500 XP.\n\n` +
-                    `Jump the queue with my link: ${referralLink}`,
-                B:
-                    `Joined ClawQuest early access.\n\n` +
-                    `Agents complete quests → earn real rewards. Flexible payouts (USDC/crypto/giftcards).\n\n` +
-                    `Use my referral link to move up the waitlist: ${referralLink}`,
-                C:
-                    `ClawQuest waitlist is live.\n\n` +
-                    `If you own AI agents, this is the cleanest “earn by doing” flow I’ve seen.\n\n` +
-                    `Referral link: ${referralLink}`,
             },
         } as const
     }
@@ -71,19 +55,6 @@ function buildShareTemplates(role: Role, referralLink: string) {
                 `Post quests on @ClawQuest → agents compete → you get verifiable completion + retention proof.\n\n` +
                 `Early sponsor spots:\n${referralLink}`,
         },
-        telegram: {
-            A:
-                `Looking to get real AI agents using your product — not just installs that vanish?\n\n` +
-                `ClawQuest lets you post quests, set rewards, and get on-chain proof of completion + retention.\n\n` +
-                `Early sponsor spots are limited: ${referralLink}`,
-            B:
-                `Sponsors / publishers:\n\n` +
-                `Post quests → agents complete tasks → you pay only for results.\n\n` +
-                `Join early access: ${referralLink}`,
-            C:
-                `If you’re a publisher and want “pay for outcomes” growth, check ClawQuest.\n\n` +
-                `Early sponsor access: ${referralLink}`,
-        },
     } as const
 }
 
@@ -99,9 +70,8 @@ export function WaitlistSuccessModal({
     const [role, setRole] = useState<Role | null>(initialRole as Role | null)
     const [saving, setSaving] = useState(false)
     const [copied, setCopied] = useState(false)
-    const [copiedText, setCopiedText] = useState<"twitter" | "telegram" | null>(null)
+    const [copiedText, setCopiedText] = useState<boolean>(false)
     const [variant, setVariant] = useState<ShareVariant>("A")
-    const [channel, setChannel] = useState<ShareChannel>("twitter")
     const firedRef = useRef(false)
 
     const referralLink = `${WAITLIST_URL}?ref=${referralCode}`
@@ -169,22 +139,15 @@ export function WaitlistSuccessModal({
         return templates.twitter[variant]
     }, [templates, variant])
 
-    const telegramText = useMemo(() => {
-        if (!templates) return ""
-        return templates.telegram[variant]
-    }, [templates, variant])
-
     const twitterIntentText = useMemo(() => encodeURIComponent(twitterText), [twitterText])
-    const telegramShareText = useMemo(() => encodeURIComponent(telegramText), [telegramText])
 
     const greeting = firstName ? `You're in, ${firstName}!` : "You're in!"
 
-    function copyShareText(kind: "twitter" | "telegram") {
-        const text = kind === "twitter" ? twitterText : telegramText
-        if (!text) return
-        navigator.clipboard.writeText(text)
-        setCopiedText(kind)
-        setTimeout(() => setCopiedText(null), 2000)
+    function copyShareText() {
+        if (!twitterText) return
+        navigator.clipboard.writeText(twitterText)
+        setCopiedText(true)
+        setTimeout(() => setCopiedText(false), 2000)
     }
 
     return (
@@ -231,7 +194,7 @@ export function WaitlistSuccessModal({
                             </p>
                             <div className="flex gap-3">
                                 <Button
-                                    variant="outline-primary"
+                                    variant="primary-tonal"
                                     size="lg"
                                     onClick={() => saveRole("agent-owner")}
                                     disabled={saving}
@@ -240,7 +203,7 @@ export function WaitlistSuccessModal({
                                     I own AI agents
                                 </Button>
                                 <Button
-                                    variant="outline-primary"
+                                    variant="primary-tonal"
                                     size="lg"
                                     onClick={() => saveRole("sponsor")}
                                     disabled={saving}
@@ -283,30 +246,10 @@ export function WaitlistSuccessModal({
                                 ))}
                             </div>
 
-                            {/* Preview (tabbed) */}
+                            {/* Preview */}
                             <div className="w-full rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
                                 <div className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setChannel("twitter")}
-                                            className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 font-mono text-[11px] transition-colors ${channel === "twitter"
-                                                ? "border-[var(--wl-accent)]/40 bg-[var(--wl-accent)]/10 text-white"
-                                                : "border-neutral-800 bg-neutral-950 text-muted-foreground hover:text-white"
-                                                }`}
-                                        >
-                                            <PlatformIcon name="x" size={12} />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setChannel("telegram")}
-                                            className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 font-mono text-[11px] transition-colors ${channel === "telegram"
-                                                ? "border-[var(--wl-accent)]/40 bg-[var(--wl-accent)]/10 text-white"
-                                                : "border-neutral-800 bg-neutral-950 text-muted-foreground hover:text-white"
-                                                }`}
-                                        >
-                                            <PlatformIcon name="telegram" size={12} />
-                                        </button>
                                         <span className="font-mono text-[11px] text-muted-foreground">
                                             Variant {variant}
                                         </span>
@@ -314,16 +257,16 @@ export function WaitlistSuccessModal({
 
                                     <button
                                         type="button"
-                                        onClick={() => copyShareText(channel)}
+                                        onClick={() => copyShareText()}
                                         className="inline-flex items-center gap-1 rounded-md border border-neutral-800 bg-neutral-950 px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:text-white"
                                     >
-                                        {copiedText === channel ? <CheckLine size={12} /> : <CopyLine size={12} />}
+                                        {copiedText ? <CheckLine size={12} /> : <CopyLine size={12} />}
                                         Copy
                                     </button>
                                 </div>
 
                                 <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded-md border border-neutral-800 bg-neutral-950 px-3 py-2 font-mono text-[11px] text-white/90">
-                                    {channel === "twitter" ? twitterText : telegramText}
+                                    {twitterText}
                                 </pre>
                             </div>
 
@@ -344,42 +287,29 @@ export function WaitlistSuccessModal({
                             </div>
 
                             {/* Share buttons */}
-                            <div className="flex gap-2">
+                            <div className="flex flex-col gap-2">
                                 <Button
                                     asChild
-                                    variant="outline-primary"
+                                    variant="primary-tonal"
                                     size="sm"
-                                    className="flex-1 font-mono no-underline"
+                                    className="w-full font-mono no-underline"
                                 >
                                     <a
                                         href={`https://twitter.com/intent/tweet?text=${twitterIntentText}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
-                                        <PlatformIcon name="x" size={14} /> Share on X
+                                        <PlatformIcon name="x" size={14} style={{ filter: "brightness(0) invert(1)" }} /> Share on X
                                     </a>
                                 </Button>
-                                <Button
-                                    asChild
-                                    variant="outline-primary"
-                                    size="sm"
-                                    className="flex-1 font-mono no-underline"
-                                >
-                                    <a
-                                        href={`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${telegramShareText}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        <PlatformIcon name="telegram" size={14} /> Telegram
-                                    </a>
-                                </Button>
-                            </div>
+                            </div >
 
                             {/* (Copy buttons moved into preview tab header) */}
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
+                        </div >
+                    )
+                    }
+                </div >
+            </div >
+        </div >
     )
 }

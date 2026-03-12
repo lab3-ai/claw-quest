@@ -1,7 +1,30 @@
-import { randomBytes } from 'crypto';
+import { randomBytes, randomUUID } from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import type { QuestTask } from '@clawquest/shared';
 import { REWARD_TYPE } from '@clawquest/shared';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const QUEST_TASK_ACTION_TYPES = [
+    'follow_account', 'like_post', 'repost', 'post', 'quote_post',
+    'join_server', 'verify_role', 'join_channel',
+] as const;
+const QUEST_TASK_PLATFORMS = ['x', 'discord', 'telegram'] as const;
+
+/** Normalize raw tasks from DB (legacy or partial shape) to QuestTaskSchema shape for response. */
+function normalizeQuestTasks(raw: unknown): QuestTask[] {
+    if (!Array.isArray(raw)) return [];
+    return raw.map((t: any) => {
+        const id = typeof t?.id === 'string' && UUID_RE.test(t.id) ? t.id : randomUUID();
+        const platform = t?.platform && QUEST_TASK_PLATFORMS.includes(t.platform) ? t.platform : 'x';
+        const actionType = t?.actionType && QUEST_TASK_ACTION_TYPES.includes(t.actionType) ? t.actionType : 'follow_account';
+        const label = typeof t?.label === 'string' && t.label.length > 0 ? t.label.slice(0, 100) : 'Task';
+        const params = t?.params && typeof t.params === 'object' && !Array.isArray(t.params)
+            ? Object.fromEntries(Object.entries(t.params).filter(([, v]) => typeof v === 'string').map(([k, v]) => [String(k), v as string]))
+            : {};
+        const requireTagFriends = typeof t?.requireTagFriends === 'boolean' ? t.requireTagFriends : false;
+        return { id, platform, actionType, label, params, requireTagFriends };
+    });
+}
 import { resolveInvite } from '../discord/discord-rest-client';
 import { validatePublishRequirements } from './quests.publish-validator';
 
@@ -416,17 +439,24 @@ export function formatQuestResponse(
         humanHandle: resolveHumanHandle(p),
     })) ?? [];
 
-    // Destructure out internal fields before spreading
+    // Destructure out internal fields before spreading (avoid leaking BigInt/private fields)
     const {
         claimToken: _claimToken,
         claimTokenExpiresAt: _claimTokenExpiresAt,
         claimedAt: _claimedAt,
         previewToken: _previewToken,
+        creatorTelegramId: _creatorTelegramId,
         ...safeQuest
     } = quest;
 
     const rewardAmount =
         quest.rewardAmount != null ? Number(quest.rewardAmount) : 0;
+
+    // QuestSchema expects llmKeyTokenLimit to be positive or null (not 0)
+    const llmKeyTokenLimit =
+        quest.llmKeyTokenLimit != null && Number(quest.llmKeyTokenLimit) > 0
+            ? Number(quest.llmKeyTokenLimit)
+            : null;
 
     // Collaboration fields
     const sponsorNames = collaborators?.map((c: any) =>
@@ -445,9 +475,10 @@ export function formatQuestResponse(
         rewardAmount,
         tokenBudgetPerWinner: quest.tokenBudgetPerWinner != null ? Number(quest.tokenBudgetPerWinner) : null,
         llmModel,
+        llmKeyTokenLimit,
         tags: quest.tags ?? [],
         requiredSkills: quest.requiredSkills ?? [],
-        tasks: quest.tasks ?? [],
+        tasks: normalizeQuestTasks(quest.tasks),
         questers,
         questerNames: names,
         questerDetails: details,

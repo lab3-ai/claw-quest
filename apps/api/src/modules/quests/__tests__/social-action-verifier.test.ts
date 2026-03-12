@@ -157,6 +157,28 @@ describe('verifySocialAction', () => {
     expect((await verifySocialAction('discord', 'join_server', 0, ctx)).valid).toBe(true)
   })
 
+  it('Discord join_server: resolves guildId from inviteUrl when guildId missing', async () => {
+    // 1st fetch: resolveInvite(abc) → guild
+    // 2nd fetch: getUserGuildMember(token, resolvedGuildId) → member
+    global.fetch = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ guild: { id: 'resolved-guild-id', name: 'Test' } }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ roles: ['r1'] }) })
+    const ctx: VerificationContext = {
+      ...baseCtx, discordId: 'd1', discordAccessToken: 'disc-tok',
+      params: { inviteUrl: 'https://discord.gg/abc' },
+    }
+    expect((await verifySocialAction('discord', 'join_server', 0, ctx)).valid).toBe(true)
+  })
+
+  it('Discord join_server: error when neither guildId nor valid inviteUrl', async () => {
+    const r = await verifySocialAction('discord', 'join_server', 0, {
+      ...baseCtx, discordId: 'd1',
+      params: {},
+    })
+    expect(r.valid).toBe(false)
+    expect(r.error).toContain('missing guildId')
+  })
+
   // ── Unknown platform ──
   it('returns valid for unknown platform', async () => {
     expect((await verifySocialAction('tiktok', 'follow', 0, baseCtx)).valid).toBe(true)

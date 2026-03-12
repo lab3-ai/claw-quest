@@ -58,7 +58,7 @@ export async function createTestAgent(
   overrides: Partial<{ agentname: string }> = {}
 ): Promise<TestAgent> {
   const agentname = overrides.agentname || `test-agent-${Date.now()}`;
-  const agentApiKey = `agent_key_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const agentApiKey = `cq_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
   const agent = await prisma.agent.create({
     data: {

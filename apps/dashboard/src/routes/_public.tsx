@@ -51,6 +51,12 @@ export function PublicLayout() {
                             Quests
                         </Link>
                         <Link
+                            to="/web3-skills"
+                            className="py-1.5 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
+                        >
+                            Web3 Skills
+                        </Link>
+                        <Link
                             to="/github-bounties"
                             className="py-1.5 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
                         >
@@ -63,7 +69,7 @@ export function PublicLayout() {
                         <SheetTrigger asChild>
                             <Button
                                 variant="ghost"
-                                size="icon"
+                                iconOnly
                                 className="ml-auto sm:hidden"
                                 aria-label="Menu"
                             >
@@ -89,6 +95,13 @@ export function PublicLayout() {
                                     className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
                                 >
                                     Quests
+                                </Link>
+                                <Link
+                                    to="/web3-skills"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted"
+                                >
+                                    Web3 Skills
                                 </Link>
                                 <Link
                                     to="/github-bounties"
@@ -147,7 +160,7 @@ export function PublicLayout() {
                         {/* Theme picker */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon" aria-label="Theme" className="data-[state=open]:bg-muted">
+                                <Button variant="outline" iconOnly aria-label="Theme" className="data-[state=open]:bg-muted">
                                     <Palette2Line size={16} />
                                 </Button>
                             </DropdownMenuTrigger>

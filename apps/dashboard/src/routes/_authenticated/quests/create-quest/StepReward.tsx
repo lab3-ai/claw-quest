@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { NETWORKS_PRIMARY, NETWORKS_OTHER, NATIVE_TOKENS, TOKEN_CONTRACTS, TOKEN_COLORS, getTokenSymbol, calcLbPayouts } from "./constants"
 
@@ -128,12 +129,20 @@ export function StepReward({
                                 >
                                     <span className="text-base leading-none">⛓</span> Crypto
                                 </button>
-                                <button
-                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none border-r border-border bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-bg-secondary hover:text-foreground", form.rail === "fiat" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
-                                    onClick={() => onFieldChange("rail", "fiat")}
-                                >
-                                    <span className="text-base leading-none">💳</span> Fiat (USD)
-                                </button>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span
+                                            className={cn(
+                                                "inline-flex items-center gap-1.5 py-1.5 px-3.5 text-xs font-medium border-none border-r border-border bg-background text-muted-foreground opacity-60 cursor-not-allowed",
+                                                form.rail === "fiat" && "bg-(--tag-bg) text-(--tag-fg) font-semibold"
+                                            )}
+                                            aria-disabled
+                                        >
+                                            <span className="text-base leading-none">💳</span> Fiat (USD)
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Coming Soon</TooltipContent>
+                                </Tooltip>
                                 <button
                                     className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none bg-background text-muted-foreground transition-all flex items-center gap-1.5 hover:bg-bg-secondary hover:text-foreground", form.rail === "llm" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
                                     onClick={() => onFieldChange("rail", "llm")}

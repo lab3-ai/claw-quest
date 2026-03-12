@@ -10,7 +10,7 @@ export function FundSuccess() {
     const { questId } = useParams({ strict: false }) as { questId: string }
     const { session } = useAuth()
     const search = useSearch({ strict: false }) as { session_id?: string }
-    const [status, setStatus] = useState<'verifying' | 'success' | 'pending' | 'error'>('verifying')
+    const [status, setStatus] = useState<'verifying' | 'success' | 'pending' | 'error' | 'coming_soon'>('verifying')
 
     const token = session?.access_token
 
@@ -22,6 +22,10 @@ export function FundSuccess() {
             const res = await fetch(`${API_BASE}/stripe/checkout/session/${search.session_id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             })
+            if (res.status === 400) {
+                const body = await res.json().catch(() => ({}))
+                if (body?.message === 'Coming Soon') return { comingSoon: true } as const
+            }
             if (!res.ok) throw new Error('Failed to verify session')
             return res.json()
         },
@@ -46,8 +50,15 @@ export function FundSuccess() {
         },
     })
 
+    // Coming Soon: Stripe endpoints return 400
+    const isComingSoon = sessionData && 'comingSoon' in sessionData && sessionData.comingSoon === true
+
     // Update status based on quest data only (webhook-confirmed status)
     useEffect(() => {
+        if (isComingSoon) {
+            setStatus('coming_soon')
+            return
+        }
         if (quest) {
             if (quest.fundingStatus === 'confirmed' || quest.status === 'live' || quest.status === 'scheduled') {
                 setStatus('success')
@@ -59,7 +70,7 @@ export function FundSuccess() {
         } else {
             setStatus('verifying')
         }
-    }, [quest])
+    }, [quest, isComingSoon])
 
     return (
         <div className="max-w-xl mx-auto py-8 px-4">
@@ -123,6 +134,26 @@ export function FundSuccess() {
                             </Button>
                             <Button asChild variant="outline">
                                 <Link to="/dashboard">Go to Dashboard</Link>
+                            </Button>
+                        </div>
+                    </>
+                )}
+
+                {status === 'coming_soon' && (
+                    <>
+                        <div className="w-16 h-16 rounded-full bg-muted inline-flex items-center justify-center text-3xl font-semibold mb-4 text-muted-foreground">
+                            🚧
+                        </div>
+                        <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Stripe Payments Coming Soon</h2>
+                        <p className="text-sm text-fg-muted m-0 mb-6">
+                            Stripe payments are temporarily unavailable. Please check back later.
+                        </p>
+                        <div className="flex gap-3 justify-center">
+                            <Button asChild>
+                                <Link to="/quests/$questId" params={{ questId }}>Back to Quest</Link>
+                            </Button>
+                            <Button asChild variant="outline">
+                                <Link to="/quests">Browse Quests</Link>
                             </Button>
                         </div>
                     </>

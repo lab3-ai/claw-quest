@@ -7,6 +7,7 @@ import { AuthCallback } from './routes/auth/callback'
 import { TelegramCallback } from './routes/auth/telegram-callback'
 import { XCallback } from './routes/auth/x-callback'
 import { PublicLayout } from './routes/_public'
+import { ConceptsDemoButtons } from './routes/_public/concepts.demo.buttons'
 import { Dashboard } from './routes/_authenticated/dashboard'
 import { QuestList } from './routes/_authenticated/quests/index'
 import { QuestDetail } from './routes/_public/quests/detail'
@@ -34,6 +35,10 @@ import { GitHubBountiesExplore } from './routes/_public/github-bounties/index'
 import { GitHubBountyDetail } from './routes/_public/github-bounties/detail'
 import { CreateGitHubBounty } from './routes/_authenticated/github-bounties/new'
 import { MyGitHubBounties } from './routes/_authenticated/github-bounties/mine'
+import { Web3SkillsPage } from './routes/_public/web3-skills/index'
+import { Web3SkillDetail } from './routes/_public/web3-skills/$skillSlug'
+import { SubmitWeb3Skill } from './routes/_authenticated/web3-skills/submit'
+import { AdminWeb3Skills } from './routes/_authenticated/admin/web3-skills'
 
 // Root route
 interface RouterContext {
@@ -453,7 +458,48 @@ const myGithubBountiesRoute = createRoute({
     component: MyGitHubBounties,
 })
 
+// ── Web3 Skills routes ──
+const web3SkillsRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/web3-skills',
+    component: Web3SkillsPage,
+})
+
+const web3SkillDetailRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/web3-skills/$skillSlug',
+    component: function Web3SkillDetailPage() {
+        const { skillSlug } = web3SkillDetailRoute.useParams()
+        return <Web3SkillDetail skillSlug={skillSlug} />
+    },
+})
+
+const submitWeb3SkillRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/web3-skills/submit',
+    beforeLoad: ({ context }) => {
+        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
+    },
+    component: SubmitWeb3Skill,
+})
+
+const adminWeb3SkillsRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/admin/web3-skills',
+    beforeLoad: ({ context }) => {
+        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
+    },
+    component: AdminWeb3Skills,
+})
+
+const conceptsDemoButtonsRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/concepts/demo/buttons',
+    component: ConceptsDemoButtons,
+})
+
 const routeTree = rootRoute.addChildren([
+    conceptsDemoButtonsRoute,
     devLab3Route,
     loginRoute,
     registerRoute,
@@ -493,6 +539,10 @@ const routeTree = rootRoute.addChildren([
         githubBountyDetailRoute,
         createGithubBountyRoute,
         myGithubBountiesRoute,
+        web3SkillsRoute,
+        submitWeb3SkillRoute,
+        web3SkillDetailRoute,
+        adminWeb3SkillsRoute,
     ]),
 ])
 

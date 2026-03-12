@@ -1,5 +1,43 @@
 # Changelog
 
+## v0.15.1 — Stripe Coming Soon (2026-03-12)
+
+### Stripe — Disabled with "Coming Soon"
+- [Change] All Stripe API routes return **400** with body `{ message: "Coming Soon" }` via `onRequest` hook (no handler runs).
+- [Change] FE: Quest fund page — "Pay with Card" button disabled, tooltip "Coming Soon".
+- [Change] FE: Create/Edit Quest — Fiat (USD) reward pill disabled with tooltip "Coming Soon"; "Save & Pay with Card" / "Update & Pay with Card" disabled with tooltip.
+- [Change] FE: Stripe Connect page — banner "Stripe Connect — Coming Soon"; Connect/Complete Onboarding and Open Stripe Dashboard buttons disabled with tooltip.
+- [Change] FE: Quest manage — when quest is fiat-funded, Distribute Payout and Refund buttons disabled with tooltip "Coming Soon".
+- [Change] FE: Account Fiat Payout section — Connect/Complete Setup and Open Stripe Dashboard disabled with tooltip.
+- [Change] FE: GitHub Bounties (My Bounties) — "Fund" button for USD bounties disabled with tooltip "Coming Soon".
+- [Change] FE: Fund success page — when session API returns 400 "Coming Soon", shows "Stripe Payments Coming Soon" message with links back to quest/browse.
+- [Change] Root `TooltipProvider` added in `main.tsx` for global tooltips.
+
+---
+
+## v0.15.0 — Web3 Skills Marketplace (2026-03-12)
+
+### Quests API — Production schema fix
+- [Fix] GET /quests 500 "Response doesn't match the schema": normalize `llmKeyTokenLimit` so 0 or non-positive is returned as `null` (QuestSchema expects positive or null); strip `creatorTelegramId` (BigInt) from response to avoid serialization/schema issues.
+
+### Web3 Skills — Curated Skill Marketplace
+- [New] Web3 keyword classification job: auto-detects web3 skills from ClawHub data using 60+ keywords
+- [New] Category auto-assignment (DeFi, NFT, L1/L2, Wallet, Bridge, DAO, Infrastructure, Storage, Gaming, Data/Analytics, Security, Social, Other)
+- [New] False-positive handling for ambiguous "token" keyword (auth/jwt/api tokens excluded)
+- [New] `web3_skill_submissions` model for community-submitted skills
+- [New] 7 API endpoints: GET /web3-skills (paginated list), GET /web3-skills/categories, GET /web3-skills/:slug (detail), POST /web3-skills/submit (auth), GET /web3-skills/submissions/mine (auth), GET /web3-skills/admin/pending (admin), PATCH /web3-skills/admin/:id/review (admin)
+- [New] Browse page at `/web3-skills` — grid cards, search, category filter pills, sort, pagination
+- [New] Detail page at `/web3-skills/:slug` — full skill info, stats, tags, links
+- [New] Submit form at `/web3-skills/submit` — authenticated community submission with pending approval
+- [New] Admin panel at `/admin/web3-skills` — approve/reject submissions, override classification
+- [New] Navigation: "Web3 Skills" link added to public nav bar (desktop + mobile)
+- [New] Shared Zod schemas: Web3SkillSubmissionSchema, Web3SkillListQuerySchema, Web3AdminReviewSchema
+- [New] Classification hooks into ClawHub sync job for auto-classifying new skills
+- [DB] Added web3 classification fields to clawhub_skills: is_web3, web3_auto_detected, web3_admin_override, web3_category, featured, featured_order
+- [DB] New index on clawhub_skills(is_web3, downloads DESC)
+
+---
+
 ## v0.14.0 — GitHub Bounty MVP (2026-03-11)
 
 ### GitHub Bounty — Independent Bounty Module

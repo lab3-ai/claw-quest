@@ -8,7 +8,14 @@ import { stripeWebhookRoute } from './stripe.webhook';
 
 // ─── Stripe Routes ──────────────────────────────────────────────────────────
 
+const COMING_SOON_MESSAGE = 'Coming Soon';
+
 export async function stripeRoutes(server: FastifyInstance) {
+    // All Stripe routes disabled — return 400 before any handler runs
+    server.addHook('onRequest', async (_request, reply) => {
+        return reply.status(400).send({ message: COMING_SOON_MESSAGE });
+    });
+
     // Register webhook sub-route (no auth — Stripe signs it)
     server.register(stripeWebhookRoute);
 

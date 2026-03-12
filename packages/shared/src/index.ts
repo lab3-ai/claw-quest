@@ -276,6 +276,9 @@ export interface AuthResponse {
     user: UserDto;
 }
 
+// --- Web3 Skills ---
+export * from './web3-skills';
+
 // --- Escrow / Chain Configs ---
 export * from './chains';
 export * from './escrow-utils';

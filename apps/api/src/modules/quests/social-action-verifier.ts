@@ -7,7 +7,7 @@ import { PrismaClient } from '@prisma/client'
 import { ensureFreshToken, getTweet, checkFollowing, lookupUserByUsername, checkUserLikedTweet, getRetweetedBy, getAppBearerToken } from '../x/x-rest-client'
 import { fetchTweetById, checkUserFollows, fetchTweetForQuoteVerify, checkUserLikedTweet as checkUserLikedTweetRapid, checkUserRetweeted } from '../x/x-rapidapi-client'
 import { extractTweetId, normaliseHandle } from '../x/x-utils'
-import { getGuildMember, getUserGuildMember } from '../discord/discord-rest-client'
+import { getGuildMember, getUserGuildMember, resolveInvite } from '../discord/discord-rest-client'
 import { validateSocialTarget, type SocialValidationResult } from './social-validator'
 
 export interface VerificationContext {
@@ -100,11 +100,6 @@ async function verifyXAction(
     case 'follow_account': {
       const targetHandle = targetValue.replace(/^@/, '').replace(/^https?:\/\/(x|twitter)\.com\//, '')
 
-      // If user has xId but no valid tokens, return token expired error
-      if (ctx.xId && !ctx.xAccessToken && !ctx.xRefreshToken) {
-        return { valid: false, error: 'X account token expired — please re-link your X account' }
-      }
-
       // Prefer OAuth path when user has linked X (official API); fallback to RapidAPI when no token
       if (ctx.xId && (ctx.xAccessToken || ctx.xRefreshToken)) {
         const token = await ensureFreshToken(
@@ -169,7 +164,15 @@ async function verifyDiscordAction(
   if (!ctx.discordId) return { valid: false, error: 'Link your Discord account to verify this task' }
 
   if (actionType === 'join_server') {
-    const guildId = ctx.params?.guildId
+    let guildId = ctx.params?.guildId
+    // Fallback: resolve inviteUrl → guildId (handles legacy quests or when createQuest/updateQuest did not resolve)
+    if (!guildId && ctx.params?.inviteUrl) {
+      const code = ctx.params.inviteUrl.replace(/^https?:\/\/(discord\.gg|discord\.com\/invite)\//i, '').trim()
+      if (code) {
+        const guild = await resolveInvite(code)
+        if (guild) guildId = guild.guildId
+      }
+    }
     if (!guildId) return { valid: false, error: 'Quest task missing guildId — contact quest creator' }
 
     // Prefer OAuth user token (no bot needed)

@@ -66,8 +66,8 @@ export async function createTestServer(prisma: PrismaClient, supabase?: any) {
 
     const token = authHeader.slice(7);
 
-    // Check if it's an agent API key format
-    if (token.startsWith('agent_key_')) {
+    // Check if it's an agent API key format (cq_ prefix or legacy agent_key_ prefix)
+    if (token.startsWith('cq_') || token.startsWith('agent_key_')) {
       const agent = await prisma.agent.findUnique({
         where: { agentApiKey: token },
         include: { owner: true },

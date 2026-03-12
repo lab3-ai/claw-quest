@@ -48,6 +48,7 @@ interface AgentSkillInfo {
 }
 
 type QuestFilter = "all" | "draft" | "live" | "scheduled" | "completed"
+type AcceptedFilter = "all" | "active" | "ended"
 type AgentFilter = "all" | "claimed" | "pending"
 type MainTab = "my-quest" | "accepted" | "agents"
 
@@ -160,6 +161,7 @@ export function Dashboard() {
     }, [])
     const [questFilter, setQuestFilter] = useState<QuestFilter>("all")
     const [questView, setQuestView] = useState<"card" | "list">("card")
+    const [acceptedFilter, setAcceptedFilter] = useState<AcceptedFilter>("all")
     const [agentFilter] = useState<AgentFilter>("all")
     const [expandedAgent, setExpandedAgent] = useState<string | null>(null)
     const [popupQuest, setPopupQuest] = useState<{ id: string; title: string } | null>(null)
@@ -291,6 +293,18 @@ export function Dashboard() {
     const filteredQuests = questFilter === "all" ? quests
         : questFilter === "completed" ? quests.filter(q => q.status === "completed" || q.status === "expired" || q.status === "cancelled")
             : quests.filter(q => q.status === questFilter)
+
+    // Accepted quests filter
+    const isEndedStatus = (s: string) => s === "completed" || s === "expired" || s === "cancelled"
+    const allAccepted = acceptedQuests.data ?? []
+    const acceptedCounts = {
+        all: allAccepted.length,
+        active: allAccepted.filter(q => q.status === "live" || q.status === "scheduled").length,
+        ended: allAccepted.filter(q => isEndedStatus(q.status)).length,
+    }
+    const filteredAcceptedQuests = acceptedFilter === "all" ? allAccepted
+        : acceptedFilter === "active" ? allAccepted.filter(q => q.status === "live" || q.status === "scheduled")
+            : allAccepted.filter(q => isEndedStatus(q.status))
 
     // Agent filter counts
     const claimedAgents = agents.filter(a => !a.activationCode)
@@ -495,8 +509,8 @@ export function Dashboard() {
                 description={<>{displayName ? handle : `@${handle}`} · {agents.length} agents · {quests.length} quests</>}
                 border
                 actions={<>
-                    <Button variant="agent" onClick={() => setShowRegisterModal(true)}>+ Register Agent</Button>
-                    <Button asChild variant="quest">
+                    <Button onClick={() => setShowRegisterModal(true)}>+ Register Agent</Button>
+                    <Button asChild>
                         <Link to="/quests/new">+ Create Quest</Link>
                     </Button>
                 </>}
@@ -908,9 +922,23 @@ export function Dashboard() {
                     {/* Filter + view toggle */}
                     <div className="flex items-center justify-between py-2.5 border-b border-border max-sm:flex-col max-sm:items-stretch">
                         <div className="flex items-center text-xs text-muted-foreground px-1 max-sm:flex-wrap">
-                            <span className="text-xs text-muted-foreground">
-                                Quests your agents have accepted and are participating in
-                            </span>
+                            {(["all", "active", "ended"] as AcceptedFilter[]).map((f, i, arr) => (
+                                <>
+                                    {acceptedCounts[f] > 0 && (
+                                        <button
+                                            key={f}
+                                            className={cn(
+                                                "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-muted-foreground whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-foreground",
+                                                acceptedFilter === f && "text-foreground font-semibold"
+                                            )}
+                                            onClick={() => setAcceptedFilter(f)}
+                                        >
+                                            {acceptedCounts[f]} {f}
+                                        </button>
+                                    )}
+                                    {i < arr.length - 1 && acceptedCounts[f] > 0 && <span key={`dot-${f}`} className="px-1 text-border select-none text-xs self-center">·</span>}
+                                </>
+                            ))}
                         </div>
                         <div className="inline-flex border border-input rounded overflow-hidden ml-3 shrink-0">
                             <button
@@ -966,17 +994,19 @@ export function Dashboard() {
                         </div>
                     )}
 
-                    {!acceptedQuests.isLoading && (!acceptedQuests.data || acceptedQuests.data.length === 0) && (
+                    {!acceptedQuests.isLoading && filteredAcceptedQuests.length === 0 && (
                         <div className="p-10 text-center text-muted-foreground">
-                            No accepted quests yet.{" "}
-                            <Link to="/quests">Browse available quests →</Link>
+                            {allAccepted.length === 0
+                                ? <><span>No accepted quests yet. </span><Link to="/quests">Browse available quests →</Link></>
+                                : <span>No {acceptedFilter === "active" ? "active" : acceptedFilter === "ended" ? "ended" : ""} quests in this filter.</span>
+                            }
                         </div>
                     )}
 
                     {/* Card View */}
-                    {questView === "card" && acceptedQuests.data && acceptedQuests.data.length > 0 && (
+                    {questView === "card" && filteredAcceptedQuests.length > 0 && (
                         <ul className="list-none">
-                            {acceptedQuests.data.map(quest => {
+                            {filteredAcceptedQuests.map(quest => {
                                 const time = formatTimeLeft(quest.expiresAt ?? null)
                                 const slotsLeft = quest.totalSlots - quest.filledSlots
                                 const participation = agents
@@ -1081,7 +1111,7 @@ export function Dashboard() {
                     )}
 
                     {/* List View */}
-                    {questView === "list" && acceptedQuests.data && acceptedQuests.data.length > 0 && (
+                    {questView === "list" && filteredAcceptedQuests.length > 0 && (
                         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                             <table className="w-full border-collapse">
                                 <thead>
@@ -1095,7 +1125,7 @@ export function Dashboard() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {acceptedQuests.data.map(quest => {
+                                    {filteredAcceptedQuests.map(quest => {
                                         const time = formatTimeLeft(quest.expiresAt ?? null)
                                         const slotsLeft = quest.totalSlots - quest.filledSlots
                                         const participation = agents

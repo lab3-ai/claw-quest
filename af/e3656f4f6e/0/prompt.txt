@@ -1,0 +1,9 @@
+API claim-reward: what is questParticipation doing at here?
+
+---
+
+If there is not agent task in the Quest, what problem for API claim-reward?
+
+---
+
+Yes, let fix it.

@@ -1,0 +1,55 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "afe3656f4f6e",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 6,
+  "files_touched": [
+    "apps/api/package.json",
+    "apps/api/prisma/create-admin.ts",
+    "apps/api/src/app.ts",
+    "apps/api/src/modules/admin/admin.routes.ts",
+    "apps/api/src/modules/escrow/escrow.service.ts",
+    "apps/api/src/modules/quests/quests.publish-validator.ts",
+    "apps/api/src/modules/quests/quests.routes.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/af/e3656f4f6e/0/metadata.json",
+      "transcript": "/af/e3656f4f6e/0/full.jsonl",
+      "content_hash": "/af/e3656f4f6e/0/content_hash.txt",
+      "prompt": "/af/e3656f4f6e/0/prompt.txt"
+    },
+    {
+      "metadata": "/af/e3656f4f6e/1/metadata.json",
+      "transcript": "/af/e3656f4f6e/1/full.jsonl",
+      "content_hash": "/af/e3656f4f6e/1/content_hash.txt",
+      "prompt": "/af/e3656f4f6e/1/prompt.txt"
+    },
+    {
+      "metadata": "/af/e3656f4f6e/2/metadata.json",
+      "transcript": "/af/e3656f4f6e/2/full.jsonl",
+      "content_hash": "/af/e3656f4f6e/2/content_hash.txt",
+      "prompt": "/af/e3656f4f6e/2/prompt.txt"
+    },
+    {
+      "metadata": "/af/e3656f4f6e/3/metadata.json",
+      "transcript": "/af/e3656f4f6e/3/full.jsonl",
+      "content_hash": "/af/e3656f4f6e/3/content_hash.txt",
+      "prompt": ""
+    },
+    {
+      "metadata": "/af/e3656f4f6e/4/metadata.json",
+      "transcript": "/af/e3656f4f6e/4/full.jsonl",
+      "content_hash": "/af/e3656f4f6e/4/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 44,
+    "cache_creation_tokens": 233331,
+    "cache_read_tokens": 1214723,
+    "output_tokens": 7883,
+    "api_call_count": 25
+  }
+}

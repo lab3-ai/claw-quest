@@ -703,7 +703,9 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const [requiredSkills, setRequiredSkills] = useState<Pick<ClawHubSkill, "id" | "name" | "desc" | "agents" | "version">[]>([])
     const [requireVerified, setRequireVerified] = useState(false)
     const [llmKeyRewardEnabled, setLlmKeyRewardEnabled] = useState(false)
-    const [llmKeyTokenLimit, setLlmKeyTokenLimit] = useState("1000000")
+    const [llmKeyTokenLimit] = useState("1000000")
+    const [llmModelId, setLlmModelId] = useState("")
+    const [tokenBudgetPerWinner, setTokenBudgetPerWinner] = useState("")
     const { query: skillSearch, setQuery: setSkillSearch, results: skillSearchResults, isLoading: skillSearchLoading } = useSkillSearch()
     const [showSkillResults, setShowSkillResults] = useState(false)
     const [expandedDescs, setExpandedDescs] = useState<Set<string>>(new Set())
@@ -909,20 +911,19 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
             const method = isEditMode ? "PATCH" : "POST"
 
             // Always calculate fundingMethod from current rail value
-            const fundingMethod = form.rail === "fiat" ? "stripe" : form.rail === "llm" ? undefined : "crypto"
-            const rewardType = form.rail === "fiat" ? REWARD_TYPE.USD : form.rail === "llm" ? REWARD_TYPE.LLM_KEY : form.token
+            const fundingMethod = form.rail === "fiat" ? "stripe" : form.rail === "llm" ? "crypto" : "crypto"
+            const rewardType = form.rail === "fiat" ? REWARD_TYPE.USD : form.rail === "llm" ? REWARD_TYPE.LLMTOKEN_OPENROUTER : form.token
 
             const payload: any = {
                 title: form.title,
                 description: form.description || undefined,
                 type: form.type,
-                rewardAmount: form.rail === "llm" ? 0 : total,
                 rewardType,
                 totalSlots: slots,
                 requiredSkills: requiredSkills.map(s => s.id),
                 requireVerified,
-                llmKeyRewardEnabled: form.rail === "llm" ? true : llmKeyRewardEnabled,
-                llmKeyTokenLimit: form.rail === "llm" ? (parseInt(llmKeyTokenLimit) || 1000000) : undefined,
+                llmKeyRewardEnabled: form.rail === "llm" ? false : llmKeyRewardEnabled,
+                llmKeyTokenLimit: form.rail !== "llm" ? (parseInt(llmKeyTokenLimit) || 1000000) : undefined,
                 tasks,
                 expiresAt: form.endAt ? new Date(form.endAt).toISOString() : undefined,
                 startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
@@ -930,7 +931,13 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 drawTime: form.drawTime ? new Date(form.drawTime).toISOString() : undefined,
                 fundingMethod,
             }
-            if (!isEditMode) payload.status = scheduleLlm.current ? "live" : "draft"
+            if (form.rail === "llm") {
+                payload.llmModelId = llmModelId
+                payload.tokenBudgetPerWinner = parseFloat(tokenBudgetPerWinner) || 0
+            } else {
+                payload.rewardAmount = total
+            }
+            if (!isEditMode) payload.status = "draft"
 
             const res = await fetch(url, {
                 method,
@@ -998,8 +1005,10 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
         const winners = parseInt(form.winners) || 0
         if (winners <= 0) return false
 
-        // LLM rail: no monetary total required
-        if (form.rail === "llm") return true
+        // LLM rail: require model and budget per winner
+        if (form.rail === "llm") {
+            return !!llmModelId && parseFloat(tokenBudgetPerWinner) > 0
+        }
 
         const total = parseFloat(form.total) || 0
         if (total <= 0) return false
@@ -1265,15 +1274,17 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 total: form.total,
                                 winners: form.winners,
                                 drawTime: form.drawTime,
-                                llmKeyTokenLimit,
+                                llmModelId,
+                                tokenBudgetPerWinner,
                             }}
                             stepSummary={stepSummaries.reward}
                             onToggle={() => handleStepToggle("reward")}
-                            onSetLlmKeyTokenLimit={setLlmKeyTokenLimit}
+                            onSetLlmModelId={setLlmModelId}
+                            onSetTokenBudgetPerWinner={setTokenBudgetPerWinner}
                             onFieldChange={(key, value) => {
                                 if (key === "rail") {
                                     if (value === "llm") {
-                                        setLlmKeyRewardEnabled(true)
+                                        setLlmKeyRewardEnabled(false)
                                         setForm(prev => ({ ...prev, rail: "llm" as PaymentRail }))
                                     } else {
                                         setLlmKeyRewardEnabled(false)

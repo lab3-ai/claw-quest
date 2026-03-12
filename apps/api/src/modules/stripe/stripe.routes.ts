@@ -45,6 +45,14 @@ export async function stripeRoutes(server: FastifyInstance) {
             // Verify ownership or partnership
             const quest = await server.prisma.quest.findUnique({ where: { id: questId } });
             if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any);
+
+            // LLM reward quests only support crypto funding
+            if (quest.rewardType === 'LLMTOKEN_OPENROUTER') {
+                return reply.status(400).send({
+                    error: { message: 'LLM reward quests require crypto funding, not Stripe', code: 'STRIPE_NOT_ALLOWED' },
+                } as any);
+            }
+
             const isOwner = quest.creatorUserId === request.user.id || request.user.role === 'admin';
             if (!isOwner) {
                 const partner = await server.prisma.questCollaborator.findFirst({

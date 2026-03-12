@@ -53,16 +53,19 @@ const CreateQuestSchema = QuestSchema.omit({
     llmKeyRewardEnabled: z.boolean().default(false),
     llmKeyTokenLimit: z.number().int().positive().optional(),
     creatorTelegramId: z.coerce.bigint().optional(),
+    // LLM Model Reward (LLMTOKEN_OPENROUTER) — server computes rewardAmount from these
+    llmModelId: z.string().uuid().optional(),
+    tokenBudgetPerWinner: z.number().positive().optional(),
 }).refine(
     (data) => {
-        // If rewardType is LLMTOKEN_OPENROUTER, tokenProvider and tokenAmount are required
+        // If rewardType is LLMTOKEN_OPENROUTER, llmModelId and tokenBudgetPerWinner are required
         if (data.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER) {
-            return data.tokenProvider && data.tokenAmount && data.tokenAmount > 0;
+            return !!data.llmModelId && !!data.tokenBudgetPerWinner && data.tokenBudgetPerWinner > 0;
         }
         return true;
     },
     {
-        message: 'tokenProvider and tokenAmount are required when rewardType is LLMTOKEN_OPENROUTER',
+        message: 'llmModelId and tokenBudgetPerWinner are required when rewardType is LLMTOKEN_OPENROUTER',
     }
 );
 
@@ -109,6 +112,7 @@ export async function questsRoutes(server: FastifyInstance) {
                         },
                         orderBy: { joinedAt: 'asc' },
                     },
+                    llmModel: true,
                 },
             });
 
@@ -175,6 +179,7 @@ export async function questsRoutes(server: FastifyInstance) {
                         },
                         orderBy: { joinedAt: 'asc' },
                     },
+                    llmModel: true,
                 },
             });
 

@@ -553,4 +553,86 @@ export async function adminRoutes(server: FastifyInstance) {
             return getTimeseries(prisma, metric, period, fromDate, toDate);
         }
     );
+
+    // ─── LLM Model Catalog CRUD ───────────────────────────────────────────────
+
+    const llmModelBodySchema = z.object({
+        openrouterId: z.string().min(1),
+        name: z.string().min(1),
+        provider: z.string().min(1),
+        tier: z.enum(['budget', 'mid', 'premium']),
+        inputPricePer1M: z.number().positive(),
+        outputPricePer1M: z.number().positive(),
+        contextWindow: z.number().int().positive(),
+        isActive: z.boolean().optional(),
+    });
+
+    server.get('/llm-models', {
+        preHandler: [requireAdmin],
+        schema: { tags: ['Admin - LLM Models'], summary: 'List all LLM models (including inactive)' },
+    }, async () => {
+        const models = await server.prisma.llmModel.findMany({
+            orderBy: [{ tier: 'asc' }, { outputPricePer1M: 'asc' }],
+        });
+        return {
+            data: models.map(m => ({
+                ...m,
+                inputPricePer1M: Number(m.inputPricePer1M),
+                outputPricePer1M: Number(m.outputPricePer1M),
+            })),
+        };
+    });
+
+    server.post('/llm-models', {
+        preHandler: [requireAdmin],
+        schema: {
+            tags: ['Admin - LLM Models'],
+            summary: 'Create a new LLM model',
+            body: llmModelBodySchema,
+        },
+    }, async (request, reply) => {
+        const data = request.body as z.infer<typeof llmModelBodySchema>;
+        const model = await server.prisma.llmModel.create({ data: { ...data, isActive: data.isActive ?? true } });
+        return reply.status(201).send({
+            data: { ...model, inputPricePer1M: Number(model.inputPricePer1M), outputPricePer1M: Number(model.outputPricePer1M) },
+        });
+    });
+
+    server.patch('/llm-models/:id', {
+        preHandler: [requireAdmin],
+        schema: {
+            tags: ['Admin - LLM Models'],
+            summary: 'Update an LLM model pricing/active state',
+            params: z.object({ id: z.string() }),
+            body: llmModelBodySchema.partial(),
+        },
+    }, async (request, reply) => {
+        const { id } = request.params as { id: string };
+        const data = request.body as Partial<z.infer<typeof llmModelBodySchema>>;
+        try {
+            const model = await server.prisma.llmModel.update({ where: { id }, data });
+            return reply.send({
+                data: { ...model, inputPricePer1M: Number(model.inputPricePer1M), outputPricePer1M: Number(model.outputPricePer1M) },
+            });
+        } catch {
+            return reply.status(404).send({ error: { message: 'LLM model not found', code: 'NOT_FOUND' } });
+        }
+    });
+
+    server.delete('/llm-models/:id', {
+        preHandler: [requireAdmin],
+        schema: {
+            tags: ['Admin - LLM Models'],
+            summary: 'Deactivate an LLM model (soft delete)',
+            params: z.object({ id: z.string() }),
+        },
+    }, async (request, reply) => {
+        const { id } = request.params as { id: string };
+        try {
+            await server.prisma.llmModel.update({ where: { id }, data: { isActive: false } });
+            return reply.send({ data: { success: true } });
+        } catch {
+            return reply.status(404).send({ error: { message: 'LLM model not found', code: 'NOT_FOUND' } });
+        }
+    });
 }

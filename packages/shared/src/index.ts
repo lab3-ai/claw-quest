@@ -88,6 +88,21 @@ export const QuestTaskSchema = z.object({
 });
 export type QuestTask = z.infer<typeof QuestTaskSchema>;
 
+export const LlmModelSchema = z.object({
+    id: z.string().uuid(),
+    openrouterId: z.string(),
+    name: z.string(),
+    provider: z.string(),
+    tier: z.string(),
+    inputPricePer1M: z.number(),
+    outputPricePer1M: z.number(),
+    contextWindow: z.number(),
+    isActive: z.boolean(),
+    createdAt: z.string().datetime().optional(),
+    updatedAt: z.string().datetime().optional(),
+});
+export type LlmModel = z.infer<typeof LlmModelSchema>;
+
 export const QuestSchema = z.object({
     id: z.string().uuid(),
     title: z.string(),
@@ -130,6 +145,20 @@ export const QuestSchema = z.object({
     // LLM Key Bonus Reward
     llmKeyRewardEnabled: z.boolean().default(false),
     llmKeyTokenLimit: z.number().int().positive().nullable().optional(),
+    // LLM Model Reward (LLMTOKEN_OPENROUTER)
+    llmModelId: z.string().uuid().nullable().optional(),
+    tokenBudgetPerWinner: z.number().nullable().optional(),
+    llmModel: z.object({
+        id: z.string().uuid(),
+        openrouterId: z.string(),
+        name: z.string(),
+        provider: z.string(),
+        tier: z.string(),
+        inputPricePer1M: z.number(),
+        outputPricePer1M: z.number(),
+        contextWindow: z.number(),
+        isActive: z.boolean(),
+    }).nullable().optional(),
 });
 
 // --- Quest Collaboration ---

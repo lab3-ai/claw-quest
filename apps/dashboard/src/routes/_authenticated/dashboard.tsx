@@ -515,7 +515,7 @@ export function Dashboard() {
                 if (paidUsd.length === 0 && pendingUsd.length === 0) return null
 
                 return (
-                    <div className="flex flex-wrap gap-3 mt-4">
+                    <div className="flex flex-wrap gap-3 mt-4 max-sm:mt-3 max-sm:gap-2">
                         {totalEarned > 0 && (
                             <div className="flex items-center gap-2 rounded border border-border bg-background px-4 py-2.5">
                                 <span className="text-xs font-semibold text-muted-foreground">Total USD Earned</span>
@@ -533,34 +533,34 @@ export function Dashboard() {
             })()}
 
             {/* Main tabs */}
-            <div className="flex items-center border-b border-border">
+            <div className="flex items-center border-b border-border overflow-x-auto scrollbar-hide">
                 <div className="flex">
                     <button
                         className={cn(
-                            "px-3.5 py-2.5 text-sm font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground",
+                            "px-3.5 max-sm:px-3 py-2.5 max-sm:py-3 text-sm max-sm:text-xs font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground whitespace-nowrap max-sm:min-h-[44px]",
                             mainTab === "my-quest" && "text-foreground font-semibold border-b-(--tone-quest)"
                         )}
                         onClick={() => setMainTab("my-quest")}
                     >
-                        My Quests <span className={cn("text-xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "my-quest" && "bg-(--tone-quest)")}>{quests.length}</span>
+                        My Quests <span className={cn("text-xs max-sm:text-[10px] font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "my-quest" && "bg-(--tone-quest)")}>{quests.length}</span>
                     </button>
                     <button
                         className={cn(
-                            "px-3.5 py-2.5 text-sm font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground",
+                            "px-3.5 max-sm:px-3 py-2.5 max-sm:py-3 text-sm max-sm:text-xs font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground whitespace-nowrap max-sm:min-h-[44px]",
                             mainTab === "accepted" && "text-foreground font-semibold border-b-(--tone-quest)"
                         )}
                         onClick={() => setMainTab("accepted")}
                     >
-                        Accepted Quests <span className={cn("text-xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "accepted" && "bg-(--tone-quest)")}>{acceptedQuests.data?.length ?? 0}</span>
+                        Accepted Quests <span className={cn("text-xs max-sm:text-[10px] font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "accepted" && "bg-(--tone-quest)")}>{acceptedQuests.data?.length ?? 0}</span>
                     </button>
                     <button
                         className={cn(
-                            "px-3.5 py-2.5 text-sm font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground",
+                            "px-3.5 max-sm:px-3 py-2.5 max-sm:py-3 text-sm max-sm:text-xs font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground whitespace-nowrap max-sm:min-h-[44px]",
                             mainTab === "agents" && "text-foreground font-semibold border-b-(--tone-agent)"
                         )}
                         onClick={() => setMainTab("agents")}
                     >
-                        My Agents <span className={cn("text-xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "agents" && "bg-(--tone-agent)")}>{agents.length}</span>
+                        My Agents <span className={cn("text-xs max-sm:text-[10px] font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "agents" && "bg-(--tone-agent)")}>{agents.length}</span>
                     </button>
                 </div>
             </div>

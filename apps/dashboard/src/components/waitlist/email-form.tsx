@@ -11,6 +11,7 @@ interface EmailFormProps {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
 export function EmailForm({ onSuccess, onError, className = "", compact, buttonText }: EmailFormProps) {
     const [email, setEmail] = useState("")
@@ -35,8 +36,20 @@ export function EmailForm({ onSuccess, onError, className = "", compact, buttonT
         setError("")
 
         try {
-            /* TODO: Replace with actual API call (Loops / Resend / DB) */
-            await new Promise((r) => setTimeout(r, 800))
+            const response = await fetch(`${API_BASE}/api/waitlist`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            })
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                setError(data.message || "Something went wrong. Please try again.")
+                onError?.()
+                return
+            }
+
             onSuccess?.(email)
         } catch {
             setError("Something went wrong. Please try again.")

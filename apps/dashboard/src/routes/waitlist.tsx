@@ -3,6 +3,7 @@ import { CountdownTimer } from "@/components/waitlist/countdown-timer"
 import { TelegramJoinButton, WAITLIST_TOKEN_KEY } from "@/components/waitlist/telegram-join-button"
 import { WaitlistSuccessModal } from "@/components/waitlist/waitlist-success-modal"
 import { DraftQuestModal } from "@/components/waitlist/draft-quest-modal"
+import { EmailForm } from "@/components/waitlist/email-form"
 import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 import { AnimatedCounter } from "@/components/waitlist/animated-counter"
 import { TierProgress } from "@/components/waitlist/tier-progress"
@@ -373,17 +374,54 @@ export function Waitlist() {
                         }
                     </div>
                     {/* CTA */}
-                    <div
-                        id="telegram-join-button"
-                        className="relative z-10 w-full flex justify-center"
-                        onMouseEnter={() => setMascotMood("happy")}
-                        onMouseLeave={() => setMascotMood("normal")}
-                    >
-                        {entry
-                            ? <WaitlistShareButton onClick={openModal} />
-                            : <TelegramJoinButton referralCode={referralCode ?? undefined} />
-                        }
-                    </div>
+                    {!entry && (
+                        <div className="relative z-10 w-full flex flex-col items-center gap-6">
+                            {/* Email form option */}
+                            <div className="w-full flex flex-col items-center gap-3">
+                                <p className="font-mono text-xs text-muted-foreground">
+                                    Join with email
+                                </p>
+                                <EmailForm
+                                    onSuccess={(email) => {
+                                        console.log("Waitlist email submitted:", email)
+                                        // TODO: Show success message or trigger modal
+                                    }}
+                                    compact
+                                    buttonText="Join Waitlist"
+                                />
+                            </div>
+
+                            {/* Divider */}
+                            <div className="flex w-full max-w-lg items-center gap-3">
+                                <div className="h-px flex-1 bg-neutral-800" />
+                                <p className="font-mono text-xs text-muted-foreground">or</p>
+                                <div className="h-px flex-1 bg-neutral-800" />
+                            </div>
+
+                            {/* Telegram option */}
+                            <div className="w-full flex flex-col items-center gap-3">
+                                <p className="font-mono text-xs text-muted-foreground">
+                                    Join with Telegram
+                                </p>
+                                <div
+                                    id="telegram-join-button"
+                                    onMouseEnter={() => setMascotMood("happy")}
+                                    onMouseLeave={() => setMascotMood("normal")}
+                                >
+                                    <TelegramJoinButton referralCode={referralCode ?? undefined} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {entry && (
+                        <div
+                            className="relative z-10 w-full flex justify-center"
+                            onMouseEnter={() => setMascotMood("happy")}
+                            onMouseLeave={() => setMascotMood("normal")}
+                        >
+                            <WaitlistShareButton onClick={openModal} />
+                        </div>
+                    )}
 
                 </section>
 

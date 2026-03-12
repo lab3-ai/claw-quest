@@ -11,6 +11,61 @@ export async function waitlistRoutes(server: FastifyInstance) {
     const s = server.withTypeProvider<ZodTypeProvider>();
 
     /**
+     * POST /waitlist
+     * Simple email collection endpoint for MVP.
+     * Stores email in WaitlistEntry with unique constraint.
+     */
+    s.post(
+        '/',
+        {
+            schema: {
+                tags: ['Waitlist'],
+                summary: 'Add email to waitlist',
+                body: z.object({
+                    email: z.string().email(),
+                }),
+                response: {
+                    200: z.object({
+                        success: z.boolean(),
+                        message: z.string(),
+                    }),
+                    409: z.object({
+                        success: z.boolean(),
+                        message: z.string(),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const { email } = request.body;
+
+            try {
+                const referralCode = generateReferralCode();
+
+                await server.prisma.waitlistEntry.create({
+                    data: {
+                        email: email.toLowerCase().trim(),
+                        referralCode,
+                        position: 0,
+                        effectivePosition: 0,
+                    },
+                });
+
+                return { success: true, message: 'Successfully added to waitlist!' };
+            } catch (error: any) {
+                // Prisma unique constraint violation
+                if (error.code === 'P2002') {
+                    return reply.status(409).send({
+                        success: false,
+                        message: 'This email is already on the waitlist.',
+                    });
+                }
+                throw error;
+            }
+        }
+    );
+
+    /**
      * POST /waitlist/token
      * Called when user clicks "Join via Telegram" on the web.
      * Creates a pending WaitlistEntry with just the accessToken (no telegramId yet).

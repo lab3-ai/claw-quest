@@ -129,7 +129,7 @@ function PendingCard({ item, onReview }: {
         />
 
         <div className="flex gap-2">
-          <Button size="sm" variant="default" onClick={() => onReview(item.id, "approve", category, note || undefined)}>
+          <Button size="sm" variant="primary" onClick={() => onReview(item.id, "approve", category, note || undefined)}>
             <CheckLine size={14} />
             Approve
           </Button>

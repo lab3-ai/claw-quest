@@ -421,7 +421,7 @@ export function ManageQuest() {
                                 <span className={statusBadgeClass(quest.status)}>{quest.status}</span>
                                 {quest.status === 'draft' && (
                                     <Button
-                                        variant="default"
+                                        variant="primary"
                                         size="sm"
                                         disabled={!isFunded || publishMutation.isPending}
                                         onClick={() => {
@@ -436,7 +436,7 @@ export function ManageQuest() {
                                 )}
                                 {quest.status === 'live' && (
                                     <Button
-                                        variant="destructive"
+                                        variant="danger"
                                         size="sm"
                                         disabled={closeMutation.isPending}
                                         onClick={() => {
@@ -568,7 +568,7 @@ export function ManageQuest() {
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <span className="inline-block">
-                                                <Button variant="default" size="sm" disabled className="max-sm:w-full max-sm:min-h-[44px] opacity-60 cursor-not-allowed">
+                                                <Button variant="primary" size="sm" disabled className="max-sm:w-full max-sm:min-h-[44px] opacity-60 cursor-not-allowed">
                                                     Distribute Payout
                                                 </Button>
                                             </span>
@@ -589,7 +589,7 @@ export function ManageQuest() {
                             ) : (
                                 <>
                                     <Button
-                                        variant="default"
+                                        variant="primary"
                                         size="sm"
                                         disabled={!isFunded || !hasVerified || distributeMutation.isPending}
                                         onClick={() => {

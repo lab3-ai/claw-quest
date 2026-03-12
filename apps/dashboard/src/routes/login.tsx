@@ -147,7 +147,7 @@ export function Login() {
                     <Button
                         type="button"
                         variant="outline"
-                        size="md"
+                        size="lg"
                         className="mb-3 flex w-full items-center justify-center gap-2"
                         onClick={handleGoogleLogin}
                         disabled={googleLoading}
@@ -164,7 +164,7 @@ export function Login() {
                     <Button
                         type="button"
                         variant="outline"
-                        size="md"
+                        size="lg"
                         className="mb-3 flex w-full items-center justify-center gap-2"
                         onClick={async () => {
                             setTelegramLoading(true)
@@ -190,7 +190,7 @@ export function Login() {
                     <Button
                         type="button"
                         variant="outline"
-                        size="md"
+                        size="lg"
                         className="mb-3 flex w-full items-center justify-center gap-2"
                         onClick={handleTwitterLogin}
                         disabled={twitterLoading}
@@ -207,7 +207,7 @@ export function Login() {
                     <Button
                         type="button"
                         variant="outline"
-                        size="md"
+                        size="lg"
                         className="mb-3 flex w-full items-center justify-center gap-2"
                         onClick={handleDiscordLogin}
                         disabled={discordLoading}
@@ -267,7 +267,7 @@ export function Login() {
                             />
                         </div>
 
-                        <Button type="submit" size="md" className="mt-2 w-full" disabled={loading}>
+                        <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
                             {loading ? "Signing in..." : "Sign in"}
                         </Button>
                     </form>

@@ -7,6 +7,7 @@ import { AuthCallback } from './routes/auth/callback'
 import { TelegramCallback } from './routes/auth/telegram-callback'
 import { XCallback } from './routes/auth/x-callback'
 import { PublicLayout } from './routes/_public'
+import { ConceptsDemoButtons } from './routes/_public/concepts.demo.buttons'
 import { Dashboard } from './routes/_authenticated/dashboard'
 import { QuestList } from './routes/_authenticated/quests/index'
 import { QuestDetail } from './routes/_public/quests/detail'
@@ -491,7 +492,14 @@ const adminWeb3SkillsRoute = createRoute({
     component: AdminWeb3Skills,
 })
 
+const conceptsDemoButtonsRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/concepts/demo/buttons',
+    component: ConceptsDemoButtons,
+})
+
 const routeTree = rootRoute.addChildren([
+    conceptsDemoButtonsRoute,
     devLab3Route,
     loginRoute,
     registerRoute,

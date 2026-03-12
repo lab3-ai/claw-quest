@@ -1,9 +1,11 @@
 {
   "cli_version": "0.5.0",
   "checkpoint_id": "98b0991a85e7",
+  "session_id": "93d17f90-3ef0-454c-8f35-fc3843584275",
   "strategy": "manual-commit",
+  "created_at": "2026-03-12T08:40:57.813097Z",
   "branch": "refactore/filter-and-stripe",
-  "checkpoints_count": 4,
+  "checkpoints_count": 2,
   "files_touched": [
     ".team/sessions/stripe-coming-soon-2026-03-12.md",
     "apps/api/src/modules/quests/quests.routes.ts",
@@ -20,25 +22,19 @@
     "apps/dashboard/src/routes/_authenticated/stripe-connect.tsx",
     "docs/CHANGELOG.md"
   ],
-  "sessions": [
-    {
-      "metadata": "/98/b0991a85e7/0/metadata.json",
-      "transcript": "/98/b0991a85e7/0/full.jsonl",
-      "content_hash": "/98/b0991a85e7/0/content_hash.txt",
-      "prompt": "/98/b0991a85e7/0/prompt.txt"
-    },
-    {
-      "metadata": "/98/b0991a85e7/1/metadata.json",
-      "transcript": "/98/b0991a85e7/1/full.jsonl",
-      "content_hash": "/98/b0991a85e7/1/content_hash.txt",
-      "prompt": "/98/b0991a85e7/1/prompt.txt"
-    }
-  ],
-  "token_usage": {
-    "input_tokens": 29,
-    "cache_creation_tokens": 72269,
-    "cache_read_tokens": 1721766,
-    "output_tokens": 8172,
-    "api_call_count": 25
+  "agent": "Cursor",
+  "model": "default",
+  "turn_id": "dc5f62d6d364",
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-12T08:40:57.806905Z",
+    "agent_lines": 296,
+    "human_added": 2520,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2816,
+    "agent_percentage": 10.511363636363637
   }
 }

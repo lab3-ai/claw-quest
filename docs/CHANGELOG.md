@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.15.0 — Web3 Skills Marketplace (2026-03-12)
+
+### Web3 Skills — Curated Skill Marketplace
+- [New] Web3 keyword classification job: auto-detects web3 skills from ClawHub data using 60+ keywords
+- [New] Category auto-assignment (DeFi, NFT, L1/L2, Wallet, Bridge, DAO, Infrastructure, Storage, Gaming, Data/Analytics, Security, Social, Other)
+- [New] False-positive handling for ambiguous "token" keyword (auth/jwt/api tokens excluded)
+- [New] `web3_skill_submissions` model for community-submitted skills
+- [New] 7 API endpoints: GET /web3-skills (paginated list), GET /web3-skills/categories, GET /web3-skills/:slug (detail), POST /web3-skills/submit (auth), GET /web3-skills/submissions/mine (auth), GET /web3-skills/admin/pending (admin), PATCH /web3-skills/admin/:id/review (admin)
+- [New] Browse page at `/web3-skills` — grid cards, search, category filter pills, sort, pagination
+- [New] Detail page at `/web3-skills/:slug` — full skill info, stats, tags, links
+- [New] Submit form at `/web3-skills/submit` — authenticated community submission with pending approval
+- [New] Admin panel at `/admin/web3-skills` — approve/reject submissions, override classification
+- [New] Navigation: "Web3 Skills" link added to public nav bar (desktop + mobile)
+- [New] Shared Zod schemas: Web3SkillSubmissionSchema, Web3SkillListQuerySchema, Web3AdminReviewSchema
+- [New] Classification hooks into ClawHub sync job for auto-classifying new skills
+- [DB] Added web3 classification fields to clawhub_skills: is_web3, web3_auto_detected, web3_admin_override, web3_category, featured, featured_order
+- [DB] New index on clawhub_skills(is_web3, downloads DESC)
+
+---
+
 ## v0.14.0 — GitHub Bounty MVP (2026-03-11)
 
 ### GitHub Bounty — Independent Bounty Module

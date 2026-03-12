@@ -232,6 +232,15 @@ GET  /github-bounties/:id/submissions → list PR submissions (public)
 POST /github-bounties/:id/submit     → submit PR to bounty (JWT)
 PATCH /github-bounties/:id/submissions/:submissionId/approve → approve PR submission (JWT, creator only)
 DELETE /github-bounties/:id/submissions/:submissionId → reject/delete submission (JWT)
+
+── Web3 Skills (v0.15.0) ──────────────────────────────────
+GET  /web3-skills                → list web3 skills (public, paginated)
+GET  /web3-skills/categories     → categories with counts (public)
+GET  /web3-skills/:slug          → skill detail (public)
+POST /web3-skills/submit         → submit skill (JWT)
+GET  /web3-skills/submissions/mine → user's submissions (JWT)
+GET  /web3-skills/admin/pending  → pending reviews (admin)
+PATCH /web3-skills/admin/:id/review → approve/reject/override (admin)
 ```
 
 ---

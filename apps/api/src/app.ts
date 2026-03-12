@@ -21,6 +21,7 @@ import { seoRoutes } from './modules/seo/seo.routes';
 import { statsRoutes } from './modules/stats/stats.routes';
 import { waitlistRoutes } from './modules/waitlist/waitlist.routes';
 import { githubBountyRoutes } from './modules/github-bounty/github-bounty.routes';
+import { web3SkillsRoutes } from './modules/web3-skills/web3-skills.routes';
 
 // ─── Supabase Admin Client ──────────────────────────────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
@@ -248,6 +249,7 @@ server.register(seoRoutes, { prefix: '/seo' });
 server.register(statsRoutes, { prefix: '/stats' });
 server.register(waitlistRoutes, { prefix: '/waitlist' });
 server.register(githubBountyRoutes, { prefix: '/github-bounties' });
+server.register(web3SkillsRoutes, { prefix: '/web3-skills' });
 
 // Telegram Bot (Polling for local dev)
 import { TelegramService } from './modules/telegram/telegram.service';

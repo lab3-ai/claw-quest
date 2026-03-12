@@ -54,6 +54,8 @@ model User {
   githubBounties GitHubBounty[]
   githubBountySubmissions GitHubBountySubmission[]
   sponsoredQuests Quest[]  @relation("SponsoredQuests")
+  skillSubmissions    web3_skill_submissions[] @relation("SkillSubmitter")
+  skillReviews        web3_skill_submissions[] @relation("SkillReviewer")
 }
 
 model Agent {
@@ -488,10 +490,47 @@ model clawhub_skills {
   clawhub_updated_at  DateTime? @db.Timestamptz
   crawled_at          DateTime  @default(now()) @db.Timestamptz
 
+  // Web3 classification
+  is_web3             Boolean   @default(false)
+  web3_auto_detected  Boolean   @default(false)
+  web3_admin_override Boolean?
+  web3_category       String?
+  featured            Boolean   @default(false)
+  featured_order      Int?
+
   @@index([downloads(sort: Desc)])
   @@index([stars(sort: Desc)])
   @@index([owner_handle])
   @@index([crawled_at])
+  @@index([is_web3, downloads(sort: Desc)])
 
   @@map("clawhub_skills")
+}
+
+model web3_skill_submissions {
+  id              String    @id @default(uuid()) @db.Uuid
+  name            String
+  slug            String    @unique
+  summary         String
+  description     String?
+  website_url     String?
+  github_url      String?
+  logo_url        String?
+  category        String
+  tags            String[]  @default([])
+  submitted_by    String
+  status          String    @default("pending")   // pending | approved | rejected
+  review_note     String?
+  reviewed_by     String?
+  reviewed_at     DateTime? @db.Timestamptz
+  created_at      DateTime  @default(now()) @db.Timestamptz
+  updated_at      DateTime  @updatedAt @db.Timestamptz
+
+  submitter       User      @relation("SkillSubmitter", fields: [submitted_by], references: [id])
+  reviewer        User?     @relation("SkillReviewer", fields: [reviewed_by], references: [id])
+
+  @@index([status])
+  @@index([category])
+  @@index([submitted_by])
+  @@map("web3_skill_submissions")
 }

@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { classifySingleSkill } from '../web3-skills/web3-classify.job';
 
 const CLAWHUB_BASE = 'https://wry-manatee-359.convex.site/api/v1/skills';
 const SYNC_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -112,6 +113,10 @@ async function ensurePrioritySlugs(server: FastifyInstance): Promise<void> {
             },
         });
         server.log.info(`[clawhub:sync] Priority slug inserted: ${slug}`);
+
+        // Auto-classify web3 skills
+        const inserted = await server.prisma.clawhub_skills.findUnique({ where: { slug }, select: { id: true } });
+        if (inserted) await classifySingleSkill(server, inserted.id);
     }
 }
 
@@ -173,6 +178,11 @@ async function runSync(server: FastifyInstance): Promise<void> {
             });
 
             server.log.info(`[clawhub:sync] Inserted: ${item.slug}`);
+
+            // Auto-classify web3 skills
+            const newSkill = await server.prisma.clawhub_skills.findUnique({ where: { slug: item.slug }, select: { id: true } });
+            if (newSkill) await classifySingleSkill(server, newSkill.id);
+
             inserted++;
         }
 

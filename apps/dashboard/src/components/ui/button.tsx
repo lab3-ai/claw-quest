@@ -9,30 +9,50 @@ const buttonVariants = cva(
     {
         variants: {
             variant: {
-                default: "bg-primary text-primary-foreground hover:bg-primary/80",
-                destructive:
-                    "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-                outline:
-                    "border border-input bg-background hover:bg-bg-secondary",
-                "outline-primary":
-                    "border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20",
-                secondary:
-                    "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                /* Fill: solid bg + contrast text */
+                default: "bg-foreground text-background hover:bg-foreground/80",
+                primary: "bg-primary text-primary-foreground hover:bg-primary/80",
+                danger: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+                success: "bg-emerald-600 text-white hover:bg-emerald-600/80",
+                warning: "bg-amber-500 text-white hover:bg-amber-500/80",
+                info: "bg-sky-500 text-white hover:bg-sky-500/80",
+                /* Tonal: 20% opacity bg + colored text */
+                "default-tonal": "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                "primary-tonal": "bg-primary/20 text-primary hover:bg-primary/30",
+                "danger-tonal": "bg-destructive/20 text-destructive hover:bg-destructive/30",
+                "success-tonal": "bg-emerald-600/20 text-emerald-600 hover:bg-emerald-600/30",
+                "warning-tonal": "bg-amber-500/20 text-amber-500 hover:bg-amber-500/30",
+                "info-tonal": "bg-sky-500/20 text-sky-500 hover:bg-sky-500/30",
+                /* Outline: border + transparent bg + colored text */
+                outline: "border border-input bg-background hover:bg-bg-secondary",
+                "default-outline": "border border-input bg-background hover:bg-bg-secondary",
+                "primary-outline": "border border-primary/30 bg-transparent text-primary hover:bg-primary/10",
+                "danger-outline": "border border-destructive/30 bg-transparent text-destructive hover:bg-destructive/10",
+                "success-outline": "border border-emerald-600/30 bg-transparent text-emerald-600 hover:bg-emerald-600/10",
+                "warning-outline": "border border-amber-500/30 bg-transparent text-amber-500 hover:bg-amber-500/10",
+                "info-outline": "border border-sky-500/30 bg-transparent text-sky-500 hover:bg-sky-500/10",
+                /* Utility */
+                secondary: "bg-foreground text-background hover:bg-foreground/80", /* @deprecated use "default" */
                 ghost: "hover:bg-bg-secondary",
                 link: "text-foreground underline-offset-4 hover:underline",
-                /* ClawQuest domain variants */
-                quest: "bg-primary text-primary-foreground border border-(--border-heavy) hover:bg-primary/80",
-                agent: "bg-(--tone-agent) text-(--accent-fg) border border-(--tone-agent-dark) hover:bg-(--tone-agent-dark)",
-                danger: "bg-background text-(--error) border border-(--error) hover:bg-error-light",
             },
             size: {
-                default: "h-9 px-4 py-2",
-                sm: "h-8 rounded-button px-3 text-xs",
-                md: "h-10 px-5 py-2",
-                lg: "h-11 rounded-button px-8",
-                icon: "h-9 w-9",
+                sm: "h-[26px] px-2.5 text-xs",
+                default: "h-9 px-4",
+                lg: "h-11 px-6",
+                xl: "h-[52px] px-8 text-base",
+            },
+            /* Icon-only: square button, w = h */
+            iconOnly: {
+                true: "!p-0 !gap-0 shrink-0",
             },
         },
+        compoundVariants: [
+            { iconOnly: true, size: "sm", className: "!w-[26px] !px-0" },
+            { iconOnly: true, size: "default", className: "!w-9 !px-0" },
+            { iconOnly: true, size: "lg", className: "!w-11 !px-0" },
+            { iconOnly: true, size: "xl", className: "!w-[52px] !px-0" },
+        ],
         defaultVariants: {
             variant: "default",
             size: "default",
@@ -47,11 +67,11 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, asChild = false, ...props }, ref) => {
+    ({ className, variant, size, iconOnly, asChild = false, ...props }, ref) => {
         const Comp = asChild ? Slot : "button"
         return (
             <Comp
-                className={cn(buttonVariants({ variant, size, className }))}
+                className={cn(buttonVariants({ variant, size, iconOnly, className }))}
                 ref={ref}
                 {...props}
             />

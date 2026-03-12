@@ -72,7 +72,7 @@ export function AuthenticatedLayout() {
                         <SheetTrigger asChild>
                             <Button
                                 variant="ghost"
-                                size="icon"
+                                iconOnly
                                 className="ml-auto sm:hidden"
                                 aria-label="Menu"
                             >

@@ -69,7 +69,7 @@ export function PublicLayout() {
                         <SheetTrigger asChild>
                             <Button
                                 variant="ghost"
-                                size="icon"
+                                iconOnly
                                 className="ml-auto sm:hidden"
                                 aria-label="Menu"
                             >
@@ -160,7 +160,7 @@ export function PublicLayout() {
                         {/* Theme picker */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon" aria-label="Theme" className="data-[state=open]:bg-muted">
+                                <Button variant="outline" iconOnly aria-label="Theme" className="data-[state=open]:bg-muted">
                                     <Palette2Line size={16} />
                                 </Button>
                             </DropdownMenuTrigger>

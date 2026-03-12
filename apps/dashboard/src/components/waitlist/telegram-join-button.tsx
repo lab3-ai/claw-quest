@@ -56,7 +56,7 @@ export function TelegramJoinButton({
     return (
         <div className="flex w-full max-w-md flex-col gap-3">
             <Button
-                variant="default"
+                variant="primary"
                 size={compact ? "default" : "lg"}
                 className={`group w-full font-mono ${compact ? "" : "min-h-12"}`}
                 disabled={loading}

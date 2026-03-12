@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.15.1 — Stripe Coming Soon (2026-03-12)
+
+### Stripe — Disabled with "Coming Soon"
+- [Change] All Stripe API routes return **400** with body `{ message: "Coming Soon" }` via `onRequest` hook (no handler runs).
+- [Change] FE: Quest fund page — "Pay with Card" button disabled, tooltip "Coming Soon".
+- [Change] FE: Create/Edit Quest — Fiat (USD) reward pill disabled with tooltip "Coming Soon"; "Save & Pay with Card" / "Update & Pay with Card" disabled with tooltip.
+- [Change] FE: Stripe Connect page — banner "Stripe Connect — Coming Soon"; Connect/Complete Onboarding and Open Stripe Dashboard buttons disabled with tooltip.
+- [Change] FE: Quest manage — when quest is fiat-funded, Distribute Payout and Refund buttons disabled with tooltip "Coming Soon".
+- [Change] FE: Account Fiat Payout section — Connect/Complete Setup and Open Stripe Dashboard disabled with tooltip.
+- [Change] FE: GitHub Bounties (My Bounties) — "Fund" button for USD bounties disabled with tooltip "Coming Soon".
+- [Change] FE: Fund success page — when session API returns 400 "Coming Soon", shows "Stripe Payments Coming Soon" message with links back to quest/browse.
+- [Change] Root `TooltipProvider` added in `main.tsx` for global tooltips.
+
+---
+
 ## v0.15.0 — Web3 Skills Marketplace (2026-03-12)
 
 ### Web3 Skills — Curated Skill Marketplace

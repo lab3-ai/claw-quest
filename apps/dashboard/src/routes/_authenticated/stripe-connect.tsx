@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
@@ -49,19 +50,6 @@ export function StripeConnect() {
         },
     })
 
-    const dashboardMutation = useMutation({
-        mutationFn: async () => {
-            const res = await fetch(`${API_BASE}/stripe/connect/dashboard`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            if (!res.ok) throw new Error('Failed to get dashboard link')
-            return res.json()
-        },
-        onSuccess: (data: { dashboardUrl: string }) => {
-            window.open(data.dashboardUrl, '_blank')
-        },
-    })
-
     if (isLoading) {
         return (
             <div className="max-w-xl mx-auto py-8 px-4">
@@ -75,6 +63,10 @@ export function StripeConnect() {
     return (
         <div className="max-w-xl mx-auto py-8 px-4">
             <div className="bg-background border border-border rounded-lg p-8">
+                {/* Coming Soon banner */}
+                <div className="mb-6 rounded-md border border-warning/30 bg-warning/10 px-4 py-3 text-sm font-medium text-foreground">
+                    Stripe Connect — Coming Soon
+                </div>
                 {/* Header */}
                 <div className="flex gap-4 items-start mb-6">
                     <div className="w-10 h-10 rounded-lg bg-(--stripe-fg) text-white flex items-center justify-center font-semibold text-lg shrink-0">S</div>
@@ -108,30 +100,35 @@ export function StripeConnect() {
                     <p className="text-error text-xs mb-4">{(onboardMutation.error as Error).message}</p>
                 )}
 
-                {/* Actions */}
+                {/* Actions — disabled, Coming Soon */}
                 <div className="flex gap-2 mb-6">
                     {!status?.isOnboarded && (
-                        <Button
-                            className="bg-(--stripe-fg) hover:bg-(--stripe-fg)/90 text-white"
-                            disabled={onboardMutation.isPending}
-                            onClick={() => onboardMutation.mutate()}
-                        >
-                            {onboardMutation.isPending
-                                ? 'Redirecting…'
-                                : status?.hasAccount
-                                    ? 'Complete Onboarding →'
-                                    : 'Connect Stripe Account →'}
-                        </Button>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="inline-block">
+                                    <Button
+                                        className="bg-(--stripe-fg) text-white opacity-60 cursor-not-allowed"
+                                        disabled
+                                    >
+                                        {status?.hasAccount ? 'Complete Onboarding →' : 'Connect Stripe Account →'}
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>Coming Soon</TooltipContent>
+                        </Tooltip>
                     )}
 
                     {status?.isOnboarded && (
-                        <Button
-                            variant="secondary"
-                            disabled={dashboardMutation.isPending}
-                            onClick={() => dashboardMutation.mutate()}
-                        >
-                            {dashboardMutation.isPending ? 'Opening…' : 'Open Stripe Dashboard'}
-                        </Button>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="inline-block">
+                                    <Button variant="secondary" disabled className="opacity-60 cursor-not-allowed">
+                                        Open Stripe Dashboard
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>Coming Soon</TooltipContent>
+                        </Tooltip>
                     )}
                 </div>
 

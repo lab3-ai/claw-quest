@@ -90,7 +90,14 @@ export async function questsRoutes(server: FastifyInstance) {
 
             const where: any = {};
             if (status) where.status = status;
-            else where.status = { not: 'draft' }; // As default, don't show drafts publicly
+            else {
+                // Default: only show active/upcoming quests, exclude drafts and terminal states
+                where.status = { in: ['live', 'scheduled'] };
+                where.OR = [
+                    { expiresAt: null },
+                    { expiresAt: { gt: new Date() } },
+                ];
+            }
 
             if (type) where.type = type;
 

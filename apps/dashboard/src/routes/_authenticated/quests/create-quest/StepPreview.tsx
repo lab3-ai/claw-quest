@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { QuestTypeBadge, QuestStatusBadge } from "@/components/quest-badges"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { getTokenSymbol, calcLbPayouts } from "./constants"
 
@@ -351,12 +352,19 @@ export function StepPreview({
                                         </Button>
                                     )}
                                     {form.rail === "fiat" && (
-                                        <Button
-                                            className="bg-(--stripe-fg) hover:bg-(--stripe-fg)/90 text-white"
-                                            onClick={onSaveAndFund}
-                                        >
-                                            {isEditMode ? "Update & Pay with Card →" : "Save & Pay with Card →"}
-                                        </Button>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <span className="inline-block">
+                                                    <Button
+                                                        className="bg-(--stripe-fg) text-white opacity-60 cursor-not-allowed"
+                                                        disabled
+                                                    >
+                                                        {isEditMode ? "Update & Pay with Card →" : "Save & Pay with Card →"}
+                                                    </Button>
+                                                </span>
+                                            </TooltipTrigger>
+                                            <TooltipContent>Coming Soon</TooltipContent>
+                                        </Tooltip>
                                     )}
                                 </>
                             )}

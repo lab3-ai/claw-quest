@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "98b0991a85e7",
+  "strategy": "manual-commit",
+  "branch": "refactore/filter-and-stripe",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/api/src/modules/quests/quests.routes.ts",
+    "apps/dashboard/src/routes/_authenticated/dashboard.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/98/b0991a85e7/0/metadata.json",
+      "transcript": "/98/b0991a85e7/0/full.jsonl",
+      "content_hash": "/98/b0991a85e7/0/content_hash.txt",
+      "prompt": "/98/b0991a85e7/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 29,
+    "cache_creation_tokens": 72269,
+    "cache_read_tokens": 1721766,
+    "output_tokens": 8172,
+    "api_call_count": 25
+  }
+}

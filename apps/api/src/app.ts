@@ -64,8 +64,9 @@ server.register(rawBody, {
 });
 
 // Plugins
-server.register(cors, {
-    origin: [
+const corsOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+    : [
         'http://localhost:5173',
         'http://127.0.0.1:5173',
         'http://localhost:5174',
@@ -75,7 +76,11 @@ server.register(cors, {
         'https://clawquest.ai',
         'https://www.clawquest.ai',
         'https://admin.clawquest.ai',
-    ],
+    ];
+
+server.register(cors, {
+    origin: corsOrigins,
+    credentials: true,
 });
 
 // ─── Supabase Auth Middleware ────────────────────────────────────────────────
@@ -206,8 +211,29 @@ server.register(scalarPlugin, {
 });
 
 // Routes
-// ─── Health check (Railway healthcheck) ─────────────────────────────────────
+// ─── Health check endpoints ─────────────────────────────────────────────────
+// Legacy endpoint (keep for backwards compatibility)
 server.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
+
+// Liveness probe - simple check that app is running
+server.get('/healthz/live', async (_request, reply) => {
+    reply.code(204).send();
+});
+
+// Readiness probe - tests database connectivity
+server.get('/healthz/ready', async (_request, reply) => {
+    try {
+        await prisma.$queryRaw`SELECT 1`;
+        reply.code(200).send({ status: 'ready', timestamp: new Date().toISOString() });
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        reply.code(503).send({
+            status: 'not_ready',
+            error: errorMessage,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
 
 server.register(authRoutes, { prefix: '/auth' });
 server.register(agentsRoutes, { prefix: '/agents' });
@@ -283,7 +309,8 @@ const start = async () => {
         // });
 
         const port = parseInt(process.env.PORT || '3000', 10);
-        await server.listen({ port, host: '0.0.0.0' });
+        // Railway requires :: (IPv6) to expose service on public/private network
+        await server.listen({ port, host: '::' });
         console.log(`Server listening on http://localhost:${port}`);
         console.log(`Docs available at http://localhost:${port}/docs`);
     } catch (err) {

@@ -15,6 +15,7 @@ import { useFundQuest } from '@/hooks/use-fund-quest'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
@@ -120,16 +121,23 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
                 </p>
             )}
 
-            <button
-                className={cn(
-                    'w-full inline-flex items-center justify-center gap-1 py-[0.55rem] px-5 text-sm font-semibold border-none rounded-md text-white cursor-pointer transition-colors',
-                    'bg-[#635bff] hover:bg-[#4b45c7] disabled:opacity-60 disabled:cursor-not-allowed'
-                )}
-                disabled={checkoutMutation.isPending}
-                onClick={() => checkoutMutation.mutate()}
-            >
-                {checkoutMutation.isPending ? 'Redirecting to Stripe…' : 'Pay with Card →'}
-            </button>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <span className="inline-block w-full">
+                        <button
+                            type="button"
+                            className={cn(
+                                'w-full inline-flex items-center justify-center gap-1 py-[0.55rem] px-5 text-sm font-semibold border-none rounded-md text-white cursor-not-allowed transition-colors opacity-60',
+                                'bg-[#635bff]'
+                            )}
+                            disabled
+                        >
+                            Pay with Card →
+                        </button>
+                    </span>
+                </TooltipTrigger>
+                <TooltipContent>Coming Soon</TooltipContent>
+            </Tooltip>
         </div>
     )
 }

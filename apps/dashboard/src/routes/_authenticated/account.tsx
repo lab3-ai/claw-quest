@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { PageTitle } from "@/components/page-title"
 import { Input } from "@/components/ui/input"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { PlatformIcon } from "@/components/PlatformIcon"
 
@@ -795,19 +796,6 @@ function FiatPayoutSection({ token }: { token: string | undefined }) {
         },
     })
 
-    const dashboardMutation = useMutation({
-        mutationFn: async () => {
-            const res = await fetch(`${API_BASE}/stripe/connect/dashboard`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            if (!res.ok) throw new Error("Failed to get dashboard link")
-            return res.json()
-        },
-        onSuccess: (data: { dashboardUrl: string }) => {
-            window.open(data.dashboardUrl, "_blank")
-        },
-    })
-
     return (
         <div className="border border-border rounded mb-5 bg-background overflow-hidden">
             <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-secondary text-foreground">Fiat Payout</div>
@@ -836,27 +824,28 @@ function FiatPayoutSection({ token }: { token: string | undefined }) {
                         )}
                         <div className="flex gap-2">
                             {!status?.isOnboarded && (
-                                <Button
-                                    size="sm"
-                                    disabled={onboardMutation.isPending}
-                                    onClick={() => onboardMutation.mutate()}
-                                >
-                                    {onboardMutation.isPending
-                                        ? "Redirecting\u2026"
-                                        : status?.hasAccount
-                                            ? "Complete Setup"
-                                            : "Connect Stripe Account"}
-                                </Button>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="inline-block">
+                                            <Button size="sm" disabled className="opacity-60 cursor-not-allowed">
+                                                {status?.hasAccount ? "Complete Setup" : "Connect Stripe Account"}
+                                            </Button>
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Coming Soon</TooltipContent>
+                                </Tooltip>
                             )}
                             {status?.isOnboarded && (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={dashboardMutation.isPending}
-                                    onClick={() => dashboardMutation.mutate()}
-                                >
-                                    {dashboardMutation.isPending ? "Opening\u2026" : "Open Stripe Dashboard"}
-                                </Button>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="inline-block">
+                                            <Button variant="outline" size="sm" disabled className="opacity-60 cursor-not-allowed">
+                                                Open Stripe Dashboard
+                                            </Button>
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Coming Soon</TooltipContent>
+                                </Tooltip>
                             )}
                             <Button variant="outline" size="sm" asChild>
                                 <Link to="/stripe-connect" className="no-underline">Details</Link>

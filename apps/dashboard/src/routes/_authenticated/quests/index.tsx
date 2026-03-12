@@ -12,13 +12,13 @@ import { formatTimeShort, typeColorClass } from "@/components/quest-utils"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/context/ThemeContext"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { FlashFill, FlashLine, TrophyFill, TrophyLine, ClockFill, ClockLine, StarFill, StarLine, CalendarFill, CalendarLine, Rows3Line, RunLine, RandomLine } from "@mingcute/react"
+import { FlashFill, FlashLine, TrophyFill, TrophyLine, ClockFill, ClockLine, StarFill, StarLine, CalendarFill, CalendarLine, HistoryFill, HistoryLine, Rows3Line, RunLine, RandomLine } from "@mingcute/react"
 import { SponsorLogo } from "@/components/sponsor-logo"
 import { PageTitle } from "@/components/page-title"
 import { TokenIcon } from "@/components/token-icon"
 import type { Quest } from "@clawquest/shared"
 
-type Tab = "featured" | "highest-reward" | "ending-soon" | "new" | "upcoming"
+type Tab = "featured" | "highest-reward" | "ending-soon" | "new" | "upcoming" | "ended"
 type View = "grid" | "list" | "compact"
 
 function isEnded(quest: Quest): boolean {
@@ -63,6 +63,11 @@ function filterAndSortQuests(quests: Quest[], tab: Tab): Quest[] {
                     const tb = b.startAt ? new Date(b.startAt).getTime() : Infinity
                     return ta - tb
                 })
+        case "ended":
+            // Ended quests come from a separate query; just sort by most recently ended
+            return [...quests].sort((a, b) =>
+                new Date(b.updatedAt ?? b.createdAt).getTime() - new Date(a.updatedAt ?? a.createdAt).getTime()
+            )
         default:
             return live
     }
@@ -74,7 +79,7 @@ export function QuestList() {
     const navigate = useNavigate()
     const searchParams = useSearch({ strict: false }) as { tab?: string }
     const [tab, setTab] = useState<Tab>(() => {
-        const validTabs = ["featured", "highest-reward", "ending-soon", "new", "upcoming"]
+        const validTabs = ["featured", "highest-reward", "ending-soon", "new", "upcoming", "ended"]
         // URL ?tab param takes priority, then session storage, then default
         if (searchParams.tab && validTabs.includes(searchParams.tab)) return searchParams.tab as Tab
         const stored = sessionStorage.getItem("cq-quest-tab")
@@ -91,7 +96,7 @@ export function QuestList() {
     const [tabIndicatorStyle, setTabIndicatorStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 })
     const [viewIndicatorStyle, setViewIndicatorStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 })
 
-    const tabIds: Tab[] = ["featured", "highest-reward", "ending-soon", "new", "upcoming"]
+    const tabIds: Tab[] = ["featured", "highest-reward", "ending-soon", "new", "upcoming", "ended"]
     const slideDir = tabIds.indexOf(tab) >= tabIds.indexOf(prevTab) ? "right" : "left"
 
     const handleTabChange = (newTab: Tab) => {
@@ -134,6 +139,19 @@ export function QuestList() {
         staleTime: 60_000,
     })
 
+    const { data: endedQuests = [], isLoading: endedLoading } = useQuery({
+        queryKey: ["quests-ended"],
+        queryFn: async () => {
+            const headers: HeadersInit = {}
+            if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/quests?status=ended&limit=100`, { headers })
+            if (!res.ok) throw new Error("Failed to fetch ended quests")
+            return res.json() as Promise<Quest[]>
+        },
+        staleTime: 5 * 60_000,
+        enabled: tab === "ended",
+    })
+
     // Recalculate indicators on theme/mode change, data load, font load, and resize
     useEffect(() => {
         const recalc = () => {
@@ -143,15 +161,17 @@ export function QuestList() {
         document.fonts.ready.then(recalc)
         window.addEventListener('resize', recalc)
         return () => window.removeEventListener('resize', recalc)
-    }, [theme, colorMode, isLoading, updateTabIndicator, updateViewIndicator])
+    }, [theme, colorMode, isLoading, endedLoading, updateTabIndicator, updateViewIndicator])
 
-    const sorted = filterAndSortQuests(quests, tab)
+    const activeData = tab === "ended" ? endedQuests : quests
+    const sorted = filterAndSortQuests(activeData, tab)
     const tabCounts: Record<Tab, number> = {
         featured: filterAndSortQuests(quests, "featured").length,
         "highest-reward": filterAndSortQuests(quests, "highest-reward").length,
         "ending-soon": filterAndSortQuests(quests, "ending-soon").length,
         new: filterAndSortQuests(quests, "new").length,
         upcoming: filterAndSortQuests(quests, "upcoming").length,
+        ended: endedQuests.length,
     }
     const tabIconMap: Record<Tab, { line: typeof FlashLine; fill: typeof FlashFill }> = {
         featured: { line: FlashLine, fill: FlashFill },
@@ -159,6 +179,7 @@ export function QuestList() {
         "ending-soon": { line: ClockLine, fill: ClockFill },
         new: { line: StarLine, fill: StarFill },
         upcoming: { line: CalendarLine, fill: CalendarFill },
+        ended: { line: HistoryLine, fill: HistoryFill },
     }
     const tabs: { id: Tab; label: string }[] = [
         { id: "featured", label: "Featured" },
@@ -166,9 +187,13 @@ export function QuestList() {
         { id: "ending-soon", label: "Ending Soon" },
         { id: "new", label: "New" },
         { id: "upcoming", label: "Upcoming" },
+        { id: "ended", label: "Ended" },
     ]
 
-    const emptyMessage = tab === "upcoming" ? "No upcoming quests scheduled." : "No active quests found."
+    const activeIsLoading = tab === "ended" ? endedLoading : isLoading
+    const emptyMessage = tab === "upcoming" ? "No upcoming quests scheduled."
+        : tab === "ended" ? "No ended quests found."
+            : "No active quests found."
 
     return (
         <div className="quest-explore-page">
@@ -291,7 +316,7 @@ export function QuestList() {
             </div>
 
             {/* Loading skeletons — match active view */}
-            {isLoading && view === "grid" && (
+            {activeIsLoading && view === "grid" && (
                 <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4 py-4">
                     {[1, 2, 3, 4, 5, 6].map(i => (
                         <div key={i} className="flex flex-col border border-border rounded p-4 pointer-events-none">
@@ -317,7 +342,7 @@ export function QuestList() {
                     ))}
                 </div>
             )}
-            {isLoading && view !== "grid" && (
+            {activeIsLoading && view !== "grid" && (
                 <div className="block">
                     {[1, 2, 3, 4].map(i => (
                         <div key={i} className="flex gap-4 py-3.5 border-b border-border items-start pointer-events-none">
@@ -348,7 +373,7 @@ export function QuestList() {
                 )}
             >
                 {/* Grid view */}
-                {!isLoading && view === "grid" && (
+                {!activeIsLoading && view === "grid" && (
                     sorted.length === 0 ? (
                         <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>
                     ) : (
@@ -361,7 +386,7 @@ export function QuestList() {
                 )}
 
                 {/* List view (card rows) */}
-                {!isLoading && view === "list" && (
+                {!activeIsLoading && view === "list" && (
                     <div className="block">
                         {sorted.length === 0 ? (
                             <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>
@@ -376,7 +401,7 @@ export function QuestList() {
                 )}
 
                 {/* Compact list (table) view */}
-                {!isLoading && view === "compact" && (
+                {!activeIsLoading && view === "compact" && (
                     <div className="block overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 max-sm:pb-2">
                         <div className="sm:hidden text-xs text-muted-foreground mb-2 text-center">
                             ← Swipe to view all columns →

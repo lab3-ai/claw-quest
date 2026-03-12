@@ -75,7 +75,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 tags: ['Quests'],
                 summary: 'List available quests',
                 querystring: z.object({
-                    status: z.nativeEnum(QUEST_STATUS).optional(),
+                    status: z.union([z.nativeEnum(QUEST_STATUS), z.literal('ended')]).optional(),
                     type: z.nativeEnum(QUEST_TYPE).optional(),
                     limit: z.coerce.number().int().min(1).max(100).default(50),
                     offset: z.coerce.number().int().min(0).default(0),
@@ -89,8 +89,19 @@ export async function questsRoutes(server: FastifyInstance) {
             const { status, type, limit, offset } = request.query as any;
 
             const where: any = {};
-            if (status) where.status = status;
-            else where.status = { not: 'draft' }; // As default, don't show drafts publicly
+            if (status === 'ended') {
+                // Special alias: return all terminal-state quests
+                where.status = { in: ['completed', 'expired', 'cancelled'] };
+            } else if (status) {
+                where.status = status;
+            } else {
+                // Default: only show active/upcoming quests, exclude drafts and terminal states
+                where.status = { in: ['live', 'scheduled'] };
+                where.OR = [
+                    { expiresAt: null },
+                    { expiresAt: { gt: new Date() } },
+                ];
+            }
 
             if (type) where.type = type;
 
@@ -1491,14 +1502,16 @@ export async function questsRoutes(server: FastifyInstance) {
         }
     );
 
-    // ── GET /quests/accepted — Quests accepted by user's agents ────────────────
+    // ── GET /quests/accepted — Quests accepted by user (human or via agents) ────
     // NOTE: registered BEFORE /:id to avoid route conflict
+    // REQUIRES: authenticated user (JWT). To see agent participations, user must
+    //           have at least one registered agent. Human participations are always included.
     server.get(
         '/accepted',
         {
             schema: {
                 tags: ['Quests'],
-                summary: 'List quests accepted by the authenticated user\'s agents',
+                summary: 'List quests accepted by the authenticated user or their agents',
                 security: [{ bearerAuth: [] }],
                 response: {
                     200: z.array(QuestSchema),
@@ -1509,21 +1522,23 @@ export async function questsRoutes(server: FastifyInstance) {
         async (request) => {
             const userId = (request as any).user?.id;
 
-            // Get all agents owned by user
+            // Get all agents owned by user (may be empty — humans can participate without agents)
             const userAgents = await server.prisma.agent.findMany({
                 where: { ownerId: userId },
                 select: { id: true },
             });
-
-            if (userAgents.length === 0) {
-                return [];
-            }
-
             const agentIds = userAgents.map(a => a.id);
 
-            // Get all participations for user's agents
+            // Query participations for BOTH the human user AND all their agents
+            // - userId match: human participated directly
+            // - agentId match: agent participated on behalf of user
             const participations = await server.prisma.questParticipation.findMany({
-                where: { agentId: { in: agentIds } },
+                where: {
+                    OR: [
+                        ...(userId ? [{ userId }] : []),
+                        ...(agentIds.length > 0 ? [{ agentId: { in: agentIds } }] : []),
+                    ],
+                },
                 select: { questId: true },
                 distinct: ['questId'],
             });
@@ -1547,8 +1562,13 @@ export async function questsRoutes(server: FastifyInstance) {
             };
 
             const quests = await server.prisma.quest.findMany({
-                where: { id: { in: questIds } },
-                orderBy: { createdAt: 'desc' },
+                where: {
+                    id: { in: questIds },
+                    // Show all non-draft quests: live, scheduled, completed, expired, cancelled
+                    status: { not: 'draft' },
+                },
+                // Most recently active first: ended quests by updatedAt, live quests by createdAt
+                orderBy: { updatedAt: 'desc' },
                 include: questInclude,
             });
 

@@ -16,6 +16,7 @@ import { router } from './router'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { Toaster } from '@/components/ui/sonner'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -45,10 +46,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                         fontStack: 'system',
                     })}>
                         <ThemeProvider>
-                            <AuthProvider>
-                                <InnerApp />
-                                <Toaster richColors />
-                            </AuthProvider>
+                            <TooltipProvider delayDuration={300}>
+                                <AuthProvider>
+                                    <InnerApp />
+                                    <Toaster richColors />
+                                </AuthProvider>
+                            </TooltipProvider>
                         </ThemeProvider>
                     </RainbowKitProvider>
                 </QueryClientProvider>

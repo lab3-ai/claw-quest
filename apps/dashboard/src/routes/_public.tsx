@@ -20,6 +20,7 @@ import { Palette2Line, Dashboard4Line, AddLine, DownLine } from "@mingcute/react
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { useState } from "react"
 import { BrandLogo } from "@/components/brand-logo"
+import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 
 export function PublicLayout() {
     const { isAuthenticated, logout, user } = useAuth()
@@ -35,19 +36,25 @@ export function PublicLayout() {
             <header className="sticky top-0 z-50 bg-background">
                 <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-6">
                     <Link
-                        to="/home"
+                        to="/quests"
                         className="mr-5 flex items-center gap-2 no-underline"
                     >
                         <BrandLogo />
                     </Link>
 
                     {/* Desktop nav */}
-                    <nav className="hidden items-center gap-1 sm:flex">
+                    <nav className="hidden items-center gap-4 sm:flex">
                         <Link
                             to="/quests"
                             className="py-1.5 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
                         >
                             Quests
+                        </Link>
+                        <Link
+                            to="/github-bounties"
+                            className="py-1.5 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
+                        >
+                            Bounties
                         </Link>
                     </nav>
 
@@ -82,6 +89,13 @@ export function PublicLayout() {
                                     className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
                                 >
                                     Quests
+                                </Link>
+                                <Link
+                                    to="/github-bounties"
+                                    onClick={() => setMobileOpen(false)}
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-muted"
+                                >
+                                    Bounties
                                 </Link>
                                 <div className="my-1 h-px bg-border" />
                                 <div className="px-3 py-2">
@@ -229,7 +243,7 @@ export function PublicLayout() {
                     API Docs
                 </a>
                 <a
-                    href="https://t.me/ClawQuest_aibot"
+                    href={`https://t.me/${TELEGRAM_BOT_USERNAME}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground no-underline hover:text-foreground"

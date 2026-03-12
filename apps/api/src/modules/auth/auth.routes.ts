@@ -92,6 +92,9 @@ export async function authRoutes(app: FastifyInstance) {
                 discordId: user.discordId ?? null,
                 discordHandle: user.discordHandle ?? null,
                 hasDiscordToken: !!user.discordAccessToken,
+                githubId: user.githubId ?? null,
+                githubHandle: user.githubHandle ?? null,
+                hasGithubToken: !!user.githubAccessToken,
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt,
             };
@@ -373,6 +376,103 @@ export async function authRoutes(app: FastifyInstance) {
         }
     );
 
+    // ── GET /github/authorize — Get GitHub OAuth authorize URL ──
+    const GitHubAuthorizeQuery = z.object({
+        scope: z.enum(['repo', 'read:user']).default('read:user'),
+    });
+
+    app.get(
+        '/github/authorize',
+        {
+            onRequest: [app.authenticate],
+            schema: {
+                tags: ['Auth'],
+                summary: 'Get GitHub OAuth authorize URL (repo scope for creators, read:user for submitters)',
+                security: [{ bearerAuth: [] }],
+                querystring: GitHubAuthorizeQuery,
+            },
+        },
+        async (request, reply) => {
+            const { scope } = GitHubAuthorizeQuery.parse(request.query);
+            const clientId = process.env.GITHUB_CLIENT_ID;
+            if (!clientId) {
+                return reply.status(500).send({ error: { message: 'GITHUB_CLIENT_ID not configured', code: 'GITHUB_NOT_CONFIGURED' } });
+            }
+            const state = crypto.randomBytes(16).toString('hex');
+            const redirectUri = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/github/callback`;
+            const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&state=${state}`;
+            return { url, state };
+        }
+    );
+
+    // ── POST /github/callback — Exchange GitHub OAuth code for access token ──
+    const GitHubCallbackBody = z.object({
+        code: z.string(),
+        redirectUri: z.string().url(),
+    });
+
+    app.post(
+        '/github/callback',
+        {
+            onRequest: [app.authenticate],
+            schema: {
+                tags: ['Auth'],
+                summary: 'Exchange GitHub OAuth code for access token',
+                security: [{ bearerAuth: [] }],
+                body: GitHubCallbackBody,
+            },
+        },
+        async (request, reply) => {
+            const { code, redirectUri } = GitHubCallbackBody.parse(request.body);
+            const clientId = process.env.GITHUB_CLIENT_ID;
+            const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+            if (!clientId || !clientSecret) {
+                return reply.status(500).send({ error: { message: 'GitHub OAuth not configured', code: 'GITHUB_NOT_CONFIGURED' } });
+            }
+
+            // Exchange code for access token
+            const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code, redirect_uri: redirectUri }),
+            });
+            if (!tokenRes.ok) {
+                return reply.status(400).send({ error: { message: 'GitHub token exchange failed', code: 'GITHUB_TOKEN_EXCHANGE_FAILED' } });
+            }
+            const tokenData = await tokenRes.json() as { access_token?: string; error?: string };
+            if (!tokenData.access_token || tokenData.error) {
+                return reply.status(400).send({ error: { message: tokenData.error ?? 'GitHub token exchange failed', code: 'GITHUB_TOKEN_EXCHANGE_FAILED' } });
+            }
+
+            // Fetch GitHub user info to get ID + handle
+            const userRes = await fetch('https://api.github.com/user', {
+                headers: { 'Authorization': `Bearer ${tokenData.access_token}`, 'Accept': 'application/vnd.github+json' },
+            });
+            if (!userRes.ok) {
+                return reply.status(400).send({ error: { message: 'Failed to fetch GitHub user', code: 'GITHUB_USER_FETCH_FAILED' } });
+            }
+            const ghUser = await userRes.json() as { id: number; login: string };
+
+            try {
+                await app.prisma.user.update({
+                    where: { id: request.user.id },
+                    data: {
+                        githubId: String(ghUser.id),
+                        githubHandle: ghUser.login,
+                        githubAccessToken: tokenData.access_token,
+                    },
+                });
+            } catch (err: any) {
+                if (err?.code === 'P2002') {
+                    return reply.status(409).send({ error: { message: 'This GitHub account is already linked to another user', code: 'GITHUB_ALREADY_LINKED' } });
+                }
+                throw err;
+            }
+
+            return { ok: true, githubHandle: ghUser.login };
+        }
+    );
+
     // ── POST /x/callback — Exchange X OAuth code for read tokens ──
     const XCallbackBody = z.object({
         code: z.string(),
@@ -420,6 +520,7 @@ export async function authRoutes(app: FastifyInstance) {
                     return reply.status(400).send({ error: { message: 'X token exchange failed', code: 'X_TOKEN_EXCHANGE_FAILED' } });
                 }
                 const data = await res.json() as { access_token: string; refresh_token: string; expires_in: number };
+                console.log('X token exchange data', data)
                 await app.prisma.user.update({
                     where: { id: request.user.id },
                     data: {

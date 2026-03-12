@@ -7,7 +7,6 @@ import { questsCommand } from './commands/quests';
 import { skillsCommand } from './commands/skills';
 import { logsCommand } from './commands/logs';
 import { statusCommand } from './commands/status';
-import { configCommand } from './commands/config';
 import { quickstartCommand } from './commands/quickstart';
 import { updateCommand } from './commands/update';
 
@@ -26,7 +25,6 @@ questsCommand(program);
 skillsCommand(program);
 logsCommand(program);
 statusCommand(program);
-configCommand(program);
 quickstartCommand(program);
 updateCommand(program);
 

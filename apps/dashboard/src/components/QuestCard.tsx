@@ -84,9 +84,22 @@ export function QuestCard({ quest }: QuestCardProps) {
         <Link
             to="/quests/$questId"
             params={{ questId: quest.id }}
-            className="hover-shadow flex gap-6 p-4 border border-border rounded items-start no-underline text-foreground hover:border-foreground bg-background"
+            className="hover-shadow flex gap-6 max-sm:gap-3 max-sm:flex-col p-4 max-sm:p-3 border border-border rounded items-start no-underline text-foreground hover:border-foreground bg-background"
         >
-            {/* Stats column */}
+            {/* Mobile-only stats row */}
+            <div className="sm:hidden flex items-center justify-between gap-3 pb-2 mb-2 border-b border-border w-full text-xs">
+                <span className="inline-flex items-center gap-1 text-sm font-semibold text-success">
+                    <TokenIcon token={quest.rewardType} size={14} />
+                    {quest.rewardAmount.toLocaleString()} {quest.rewardType}
+                </span>
+                <span className={cn(
+                    "font-mono text-sm font-semibold",
+                    time.cls === "urgent" && "text-error",
+                    time.cls === "warning" && "text-warning",
+                )}>{time.label}</span>
+            </div>
+
+            {/* Stats column (desktop only) */}
             <div className="hidden sm:flex flex-col items-end gap-1.5 w-[140px] shrink-0 text-xs text-muted-foreground text-right pt-0.5">
                 <span className="inline-flex items-center gap-1 text-sm font-semibold text-success">
                     <TokenIcon token={quest.rewardType} size={16} />
@@ -132,12 +145,12 @@ export function QuestCard({ quest }: QuestCardProps) {
                         by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-foreground font-semibold">{quest.sponsor}</strong>
                     </span>
                 </div>
-                <div className="text-base font-semibold mb-1 leading-snug">{quest.title}</div>
-                <div className="text-sm text-muted-foreground mb-2 leading-relaxed line-clamp-2">{quest.description}</div>
+                <div className="text-base max-sm:text-sm font-semibold mb-1 leading-snug">{quest.title}</div>
+                <div className="text-sm max-sm:text-xs text-muted-foreground mb-2 leading-relaxed line-clamp-2">{quest.description}</div>
                 {quest.tags && quest.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 items-center text-xs">
+                    <div className="flex flex-wrap gap-1.5 max-sm:gap-1 items-center text-xs">
                         {quest.tags.map(tag => (
-                            <span key={tag} className="border border-border text-fg-secondary px-2 py-0.5 rounded text-xs no-underline whitespace-nowrap">{tag}</span>
+                            <span key={tag} className="border border-border text-fg-secondary px-2 py-0.5 rounded text-xs max-sm:text-[11px] no-underline whitespace-nowrap">{tag}</span>
                         ))}
                     </div>
                 )}

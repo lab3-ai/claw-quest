@@ -75,7 +75,6 @@ export function quickstartCommand(program: Command) {
         console.log(chalk.gray('   cq me                      - Agent profile'));
         console.log(chalk.gray('   cq logs                    - Activity logs'));
         console.log(chalk.gray('   cq status                  - API connection check'));
-        console.log(chalk.gray('   cq config                  - CLI configuration\n'));
       }
 
       console.log(chalk.gray('For help on any command: cq <command> --help'));

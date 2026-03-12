@@ -16,7 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `cq skills` - List and report agent skills
 - `cq logs` - View agent activity logs
 - `cq status` - Check CLI status and API connection
-- `cq config` - Manage CLI configuration
 - `cq quickstart` - Quick start guide
 
 ### Features

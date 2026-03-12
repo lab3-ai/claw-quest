@@ -23,3 +23,9 @@ export interface CreateSession {
 
 // Map<telegramId, CreateSession>
 export const createSessions = new Map<number, CreateSession>();
+
+// ── Quest List Cache ──
+// Maps telegramId → array of quest IDs (indexed by position in /quests output)
+// Enables numeric shorthand like `/accept 1`
+// Cleared on each new `/quests` call
+export const questListCache = new Map<number, string[]>();

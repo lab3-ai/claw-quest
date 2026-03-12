@@ -28,6 +28,9 @@ model User {
   discordAccessToken  String?                 // Discord OAuth access token (guilds.members.read)
   discordRefreshToken String?                 // Discord OAuth refresh token
   discordTokenExpiry  DateTime?               // When the access token expires
+  githubId            String?  @unique        // GitHub user numeric ID
+  githubHandle        String?                 // GitHub @username
+  githubAccessToken   String?                 // GitHub OAuth access token (repo scope for creators)
 
   xp                Int      @default(0)        // experience points — used for quest ranking
   rank              Int      @default(0)        // leaderboard rank derived from xp
@@ -48,6 +51,9 @@ model User {
   collaborations QuestCollaborator[]
   questDeposits  QuestDeposit[]
   waitlistEntry  WaitlistEntry?
+  githubBounties GitHubBounty[]
+  githubBountySubmissions GitHubBountySubmission[]
+  sponsoredQuests Quest[]  @relation("SponsoredQuests")
 }
 
 model Agent {
@@ -69,6 +75,7 @@ model Agent {
   logs           AgentLog[]
   participations QuestParticipation[]
   skills         AgentSkill[]
+  githubBountySubmissions GitHubBountySubmission[]
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -97,6 +104,8 @@ model Quest {
   title       String
   description String
   sponsor     String   @default("System")
+  sponsorId   String?  @db.Uuid
+  sponsorUser User?    @relation("SponsoredQuests", fields: [sponsorId], references: [id])
 
   type        String   @default("FCFS") // FCFS, LEADERBOARD, LUCKY_DRAW
   status      String   @default("draft") // draft, live, scheduled, completed, cancelled, expired
@@ -391,6 +400,67 @@ model BotChatLog {
 
   @@index([telegramId, createdAt])
   @@index([type])
+}
+
+// ─── GitHub Bounty ────────────────────────────────────────────────────────────
+
+model GitHubBounty {
+  id            String    @id @default(uuid())
+  creatorUserId String
+  creator       User      @relation(fields: [creatorUserId], references: [id])
+  repoOwner     String                        // e.g. "facebook"
+  repoName      String                        // e.g. "react"
+  issueNumber   Int?                          // optional linked GitHub issue
+  issueUrl      String?                       // https://github.com/owner/repo/issues/123
+  title         String
+  description   String    @db.Text
+  rewardAmount  Decimal   @db.Decimal(18, 6)
+  rewardType    String                        // USDC | USD | LLM_KEY
+  status        String    @default("draft")   // draft | live | completed | cancelled
+  questType     String    @default("fcfs")    // fcfs | leaderboard
+  maxWinners    Int       @default(1)
+  deadline      DateTime?
+
+  // Funding — Stripe (USD) or escrow (USDC)
+  fundingStatus       String   @default("unfunded") // unfunded | pending | confirmed
+  stripeSessionId     String?  @unique
+  stripePaymentId     String?
+  escrowQuestId       String?                 // bytes32 hex for on-chain reference
+
+  // LLM Key reward (issued on approve)
+  llmKeyTokenLimit    Int?     @default(1000000)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  submissions   GitHubBountySubmission[]
+
+  @@index([creatorUserId])
+  @@index([status])
+  @@index([repoOwner, repoName])
+}
+
+model GitHubBountySubmission {
+  id        String    @id @default(uuid())
+  bountyId  String
+  bounty    GitHubBounty @relation(fields: [bountyId], references: [id], onDelete: Cascade)
+  userId    String?                           // null if submitted by agent
+  user      User?     @relation(fields: [userId], references: [id])
+  agentId   String?                           // null if submitted by human
+  agent     Agent?    @relation(fields: [agentId], references: [id])
+  prUrl     String
+  prNumber  Int
+  status    String    @default("pending")     // pending | approved | rejected
+
+  // Reward payout
+  llmRewardApiKey   String?
+  llmRewardIssuedAt DateTime?
+
+  createdAt DateTime  @default(now())
+
+  @@unique([bountyId, userId])   // one submission per user per bounty
+  @@unique([bountyId, agentId])  // one submission per agent per bounty
+  @@index([bountyId])
+  @@index([userId])
 }
 
 // External data — crawled from ClawHub registry

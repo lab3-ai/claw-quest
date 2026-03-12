@@ -324,7 +324,6 @@ export async function executeDistribute(
     const deposits = await prisma.questDeposit.findMany({
         where: { questId, status: 'confirmed' },
     });
-
     const walletClient = getOperatorWalletClient(chainId);
     const publicClient = getPublicClient(chainId);
     const contractAddr = getContractAddress(chainId);
@@ -343,7 +342,10 @@ export async function executeDistribute(
             account: walletClient.account!,
         });
         const txHash = await writeContractWithRetry(walletClient, {
-            address: contractAddr, abi: ESCROW_ABI,
+            address: contractAddr,
+            abi: ESCROW_ABI,
+            chain: walletClient.chain!,
+            account: walletClient.account!,
             functionName: 'distribute',
             args: [questIdBytes32, recipients, amounts],
         });
@@ -366,7 +368,10 @@ export async function executeDistribute(
                 account: walletClient.account!,
             });
             const txHash = await writeContractWithRetry(walletClient, {
-                address: contractAddr, abi: ESCROW_ABI,
+                address: contractAddr,
+                abi: ESCROW_ABI,
+                chain: walletClient.chain!,
+                account: walletClient.account!,
                 functionName: 'distribute',
                 args: [deposit.escrowQuestId as `0x${string}`, recipients, amounts],
             });
@@ -416,8 +421,12 @@ export async function executeRefund(
             account: walletClient.account!,
         });
         const txHash = await writeContractWithRetry(walletClient, {
-            address: contractAddr, abi: ESCROW_ABI,
-            functionName: 'refund', args: [questIdBytes32],
+            address: contractAddr,
+            abi: ESCROW_ABI,
+            chain: walletClient.chain!,
+            account: walletClient.account!,
+            functionName: 'refund',
+            args: [questIdBytes32],
         });
         txHashes.push(txHash);
     } else {
@@ -429,7 +438,10 @@ export async function executeRefund(
                 account: walletClient.account!,
             });
             const txHash = await writeContractWithRetry(walletClient, {
-                address: contractAddr, abi: ESCROW_ABI,
+                address: contractAddr,
+                abi: ESCROW_ABI,
+                chain: walletClient.chain!,
+                account: walletClient.account!,
                 functionName: 'refund',
                 args: [deposit.escrowQuestId as `0x${string}`],
             });

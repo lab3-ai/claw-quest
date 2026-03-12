@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react"
+import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 import { useNavigate, Link } from "@tanstack/react-router"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
@@ -674,7 +675,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                         chipStatus={chipStatus}
                     />
                     <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginTop: 6 }}>
-                        ⚠ Add <strong>@ClawQuest_aibot</strong> as admin to your group/channel for auto-verification to work.
+                        ⚠ Add <strong>@{TELEGRAM_BOT_USERNAME}</strong> as admin to your group/channel for auto-verification to work.
                     </div>
                 </div>
             )}
@@ -1091,8 +1092,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const blockedStatus = editQuest && ["live", "completed", "expired", "cancelled"].includes(editQuest.status)
     if (isEditMode && blockedStatus) {
         return (
-            <div className="max-w-5xl mx-auto w-full py-5 px-6">
-                <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
+            <div className="max-w-3xl mx-auto w-full py-5 max-sm:py-4 px-6 max-sm:px-3">
+                <nav className="flex items-center gap-1.5 py-3 max-sm:py-2 text-xs max-sm:text-[11px] text-muted-foreground">
                     <Link to="/quests/$questId" params={{ questId: editQuestId! }}>Quest</Link>
                     <span>›</span>
                     <span>Edit</span>
@@ -1131,8 +1132,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const topUpAmount = rewardIncreased ? newTotal - originalRewardAmount : 0
 
     return (
-        <div className="">
-            <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
+        <div className="max-w-3xl mx-auto px-4 max-sm:px-3">
+            <nav className="flex items-center gap-1.5 py-3 max-sm:py-2 text-xs max-sm:text-[11px] text-muted-foreground">
                 {isEditMode ? (
                     <>
                         <Link to="/quests/$questId" params={{ questId: editQuestId! }}>Quest</Link>

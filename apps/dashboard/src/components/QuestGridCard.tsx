@@ -25,16 +25,16 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
         <Link
             to="/quests/$questId"
             params={{ questId: quest.id }}
-            className="hover-shadow flex flex-col border border-border rounded p-4 no-underline text-foreground hover:border-foreground bg-background"
+            className="hover-shadow flex flex-col border border-border rounded p-4 max-sm:p-3 no-underline text-foreground hover:border-foreground bg-background"
         >
             {/* Top row: type badge + time */}
             <div className="flex justify-between items-center mb-3">
-                <span className={cn("inline-flex items-center gap-1 text-xs font-semibold uppercase", typeColorClass(quest.type))}>
-                    {TYPE_ICON[quest.type] && (() => { const Icon = TYPE_ICON[quest.type]; return <Icon size={14} /> })()}
+                <span className={cn("inline-flex items-center gap-1 text-xs max-sm:text-[11px] font-semibold uppercase", typeColorClass(quest.type))}>
+                    {TYPE_ICON[quest.type] && (() => { const Icon = TYPE_ICON[quest.type]; return <Icon size={14} className="max-sm:w-3 max-sm:h-3" /> })()}
                     {quest.type}
                 </span>
                 <span className={cn(
-                    "font-mono text-xs font-semibold",
+                    "font-mono text-xs max-sm:text-[11px] font-semibold",
                     time.cls === "urgent" && "text-error",
                     time.cls === "warning" && "text-warning",
                     time.cls === "normal" && "text-muted-foreground",
@@ -42,10 +42,10 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
             </div>
 
             {/* Title */}
-            <h3 className="text-md font-semibold leading-snug mb-2 line-clamp-2">{quest.title}</h3>
+            <h3 className="text-md max-sm:text-sm font-semibold leading-snug mb-2 line-clamp-2">{quest.title}</h3>
 
             {/* Description excerpt */}
-            <p className="flex-1 text-sm text-muted-foreground leading-relaxed mb-3 line-clamp-2">{quest.description}</p>
+            <p className="flex-1 text-sm max-sm:text-xs text-muted-foreground leading-relaxed mb-3 line-clamp-2">{quest.description}</p>
 
             {/* Tags */}
             {quest.tags && quest.tags.length > 0 && (

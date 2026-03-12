@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { CountdownTimer } from "@/components/waitlist/countdown-timer"
 import { TelegramJoinButton, WAITLIST_TOKEN_KEY } from "@/components/waitlist/telegram-join-button"
 import { WaitlistSuccessModal } from "@/components/waitlist/waitlist-success-modal"
+import { DraftQuestModal } from "@/components/waitlist/draft-quest-modal"
+import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 import { AnimatedCounter } from "@/components/waitlist/animated-counter"
 import { TierProgress } from "@/components/waitlist/tier-progress"
 import { HeroGridBg } from "@/components/waitlist/hero-grid-bg"
@@ -61,6 +63,7 @@ interface WaitlistEntry {
     referralCode: string
     role: string | null
     firstName: string | null
+    telegramId: string | null
 }
 
 /**
@@ -70,6 +73,7 @@ interface WaitlistEntry {
 function useWaitlistPolling() {
     const [entry, setEntry] = useState<WaitlistEntry | null>(null)
     const [showModal, setShowModal] = useState(false)
+    const [showDraftModal, setShowDraftModal] = useState(false)
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
     const tokenRef = useRef<string | null>(null)
 
@@ -89,6 +93,7 @@ function useWaitlistPolling() {
                         referralCode: data.referralCode,
                         role: data.role ?? null,
                         firstName: data.firstName ?? null,
+                        telegramId: data.telegramId ?? null,
                     })
                     const seenKey = `cq_waitlist_seen_${token}`
                     if (!localStorage.getItem(seenKey)) {
@@ -128,7 +133,7 @@ function useWaitlistPolling() {
         setEntry((prev) => (prev ? { ...prev, role: nextRole } : prev))
     }
 
-    return { entry, showModal, closeModal, openModal, setRole }
+    return { entry, showModal, closeModal, openModal, setRole, showDraftModal, setShowDraftModal }
 }
 
 const NAV_LINKS = [
@@ -279,7 +284,7 @@ export function Waitlist() {
     const [mascotMood, setMascotMood] = useState<MascotMood>("normal")
     const { stats, isLoading: statsLoading } = usePlatformStats()
     const referralCode = useReferralCode()
-    const { entry, showModal, closeModal, openModal, setRole } = useWaitlistPolling()
+    const { entry, showModal, closeModal, openModal, setRole, showDraftModal, setShowDraftModal } = useWaitlistPolling()
 
     return (
         <div
@@ -298,6 +303,12 @@ export function Waitlist() {
                     firstName={entry.firstName}
                     onClose={closeModal}
                     onRoleSaved={setRole}
+                />
+            )}
+            {showDraftModal && entry?.telegramId && (
+                <DraftQuestModal
+                    telegramId={entry.telegramId}
+                    onClose={() => setShowDraftModal(false)}
                 />
             )}
             <WaitlistNavbar />
@@ -363,6 +374,7 @@ export function Waitlist() {
                     </div>
                     {/* CTA */}
                     <div
+                        id="telegram-join-button"
                         className="relative z-10 w-full flex justify-center"
                         onMouseEnter={() => setMascotMood("happy")}
                         onMouseLeave={() => setMascotMood("normal")}
@@ -489,13 +501,40 @@ export function Waitlist() {
 
                                 {/* CTA side */}
                                 <div className="flex shrink-0 flex-col items-start gap-2 sm:items-center">
-                                    <a
-                                        href="/dashboard"
-                                        className="group inline-flex items-center gap-2 rounded-lg bg-[var(--wl-accent)] px-6 py-3 font-mono text-sm font-semibold text-white no-underline transition-colors hover:bg-[var(--wl-accent-hover)] active:scale-95"
-                                    >
-                                        List Your First Quest
-                                        <span className="transition-transform group-hover:translate-x-0.5">→</span>
-                                    </a>
+                                    {entry?.telegramId ? (
+                                        <button
+                                            onClick={() => setShowDraftModal(true)}
+                                            className="group inline-flex items-center gap-2 rounded-lg bg-[var(--wl-accent)] px-6 py-3 font-mono text-sm font-semibold text-white transition-colors hover:bg-[var(--wl-accent-hover)] active:scale-95"
+                                        >
+                                            List Your First Quest
+                                            <span className="transition-transform group-hover:translate-x-0.5">→</span>
+                                        </button>
+                                    ) : (
+                                        <div className="flex flex-col items-start gap-2 sm:items-center w-full sm:w-auto">
+                                            <button
+                                                disabled
+                                                className="group inline-flex items-center gap-2 rounded-lg bg-neutral-800/50 border border-neutral-700 px-6 py-3 font-mono text-sm font-semibold text-neutral-500 cursor-not-allowed opacity-60"
+                                                title="Join the waitlist via Telegram first"
+                                            >
+                                                List Your First Quest
+                                                <span>→</span>
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    const element = document.getElementById('telegram-join-button')
+                                                    if (element) {
+                                                        element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                                                    }
+                                                }}
+                                                className="flex items-center gap-1.5 rounded-md border border-[var(--wl-accent)]/20 bg-[var(--wl-accent)]/5 px-3 py-1.5 transition-colors hover:bg-[var(--wl-accent)]/10 hover:border-[var(--wl-accent)]/30 cursor-pointer"
+                                            >
+                                                <ArrowUpLine size={14} className="text-[var(--wl-accent)]" />
+                                                <p className="font-mono text-xs text-[var(--wl-accent)]">
+                                                    Join Telegram waitlist first
+                                                </p>
+                                            </button>
+                                        </div>
+                                    )}
                                     <p className="font-mono text-xs text-muted-foreground">
                                         Early sponsor spots are limited
                                     </p>
@@ -568,7 +607,7 @@ export function Waitlist() {
                         <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1">
                             {[
                                 { label: "Twitter / X", href: "https://twitter.com/ClawQuestAI" },
-                                { label: "Telegram", href: "https://t.me/ClawQuest_aibot" },
+                                { label: "Telegram", href: `https://t.me/${TELEGRAM_BOT_USERNAME}` },
                                 { label: "Discord", href: "https://discord.gg/clawquest" },
                                 { label: "GitHub", href: "https://github.com/clawquest" },
                                 { label: "Docs", href: "https://api.clawquest.ai/docs" },

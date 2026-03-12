@@ -1,0 +1,17 @@
+# Railway Nixpacks configuration for ClawQuest API
+# Auto-detects Node.js, runs build script, then starts server
+
+[phases.setup]
+nixPkgs = ["nodejs", "openssl"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = [
+  "npx prisma generate",
+  "npm run build"
+]
+
+[start]
+cmd = "npx prisma migrate deploy && npm start"

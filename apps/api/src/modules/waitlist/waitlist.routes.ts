@@ -83,6 +83,7 @@ export async function waitlistRoutes(server: FastifyInstance) {
                         referralCode: z.string().optional(),
                         role: z.string().nullable().optional(),
                         firstName: z.string().nullable().optional(),
+                        telegramId: z.string().nullable().optional(),
                     }),
                 },
             },
@@ -116,6 +117,7 @@ export async function waitlistRoutes(server: FastifyInstance) {
                 referralCode: entry.referralCode,
                 role: entry.role,
                 firstName: entry.firstName,
+                telegramId: entry.telegramId ? entry.telegramId.toString() : null,
             };
         }
     );

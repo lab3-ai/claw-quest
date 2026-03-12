@@ -14,12 +14,13 @@ import { agentsRoutes } from './modules/agents/agents.routes';
 import { questsRoutes } from './modules/quests/quests.routes';
 import { escrowRoutes } from './modules/escrow/escrow.routes';
 import { walletsRoutes } from './modules/wallets/wallets.routes';
-import { adminRoutes } from './modules/admin/admin.routes';
+import { adminRoutes, adminLoginRoutes, verifyAdminJwt } from './modules/admin/admin.routes';
 import { discordRoutes } from './modules/discord/discord.routes';
 import { stripeRoutes } from './modules/stripe/stripe.routes';
 import { seoRoutes } from './modules/seo/seo.routes';
 import { statsRoutes } from './modules/stats/stats.routes';
 import { waitlistRoutes } from './modules/waitlist/waitlist.routes';
+import { githubBountyRoutes } from './modules/github-bounty/github-bounty.routes';
 
 // ─── Supabase Admin Client ──────────────────────────────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
@@ -63,8 +64,9 @@ server.register(rawBody, {
 });
 
 // Plugins
-server.register(cors, {
-    origin: [
+const corsOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+    : [
         'http://localhost:5173',
         'http://127.0.0.1:5173',
         'http://localhost:5174',
@@ -74,7 +76,11 @@ server.register(cors, {
         'https://clawquest.ai',
         'https://www.clawquest.ai',
         'https://admin.clawquest.ai',
-    ],
+    ];
+
+server.register(cors, {
+    origin: corsOrigins,
+    credentials: true,
 });
 
 // ─── Supabase Auth Middleware ────────────────────────────────────────────────
@@ -89,7 +95,21 @@ server.decorate('authenticate', async (request: FastifyRequest, reply: FastifyRe
 
     const token = authHeader.slice(7);
 
-    // Verify the token with Supabase Auth API
+    // ── Try admin JWT first (admin dashboard tokens) ──────────────────────────
+    const adminPayload = verifyAdminJwt(token);
+    if (adminPayload) {
+        request.user = {
+            id: adminPayload.id,
+            email: adminPayload.email,
+            role: adminPayload.role,
+            username: null,
+            displayName: null,
+            supabaseId: '',
+        };
+        return;
+    }
+
+    // ── Fall back to Supabase token verification ──────────────────────────────
     const { data, error } = await supabaseAdmin.auth.getUser(token);
 
     if (error || !data.user) {
@@ -137,6 +157,19 @@ server.decorate('authenticate', async (request: FastifyRequest, reply: FastifyRe
         });
     }
 
+    // Sync GitHub handle/id from Supabase identity (set on first GitHub login)
+    const githubIdentity = supabaseUser.identities?.find(i => i.provider === 'github');
+    if (githubIdentity && !user.githubHandle) {
+        const handle = (githubIdentity.identity_data?.user_name as string) || null;
+        const ghId = githubIdentity.identity_data?.sub ? String(githubIdentity.identity_data.sub) : null;
+        if (handle || ghId) {
+            user = await server.prisma.user.update({
+                where: { id: user.id },
+                data: { githubHandle: handle, githubId: ghId },
+            });
+        }
+    }
+
     request.user = {
         id: user.id,
         email: user.email,
@@ -178,20 +211,43 @@ server.register(scalarPlugin, {
 });
 
 // Routes
-// ─── Health check (Railway healthcheck) ─────────────────────────────────────
+// ─── Health check endpoints ─────────────────────────────────────────────────
+// Legacy endpoint (keep for backwards compatibility)
 server.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }));
+
+// Liveness probe - simple check that app is running
+server.get('/healthz/live', async (_request, reply) => {
+    reply.code(204).send();
+});
+
+// Readiness probe - tests database connectivity
+server.get('/healthz/ready', async (_request, reply) => {
+    try {
+        await prisma.$queryRaw`SELECT 1`;
+        reply.code(200).send({ status: 'ready', timestamp: new Date().toISOString() });
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        reply.code(503).send({
+            status: 'not_ready',
+            error: errorMessage,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
 
 server.register(authRoutes, { prefix: '/auth' });
 server.register(agentsRoutes, { prefix: '/agents' });
 server.register(questsRoutes, { prefix: '/quests' });
 server.register(escrowRoutes, { prefix: '/escrow' });
 server.register(walletsRoutes, { prefix: '/wallets' });
+server.register(adminLoginRoutes); // public, no prefix
 server.register(adminRoutes, { prefix: '/admin' });
 server.register(discordRoutes, { prefix: '/discord' });
 server.register(stripeRoutes, { prefix: '/stripe' });
 server.register(seoRoutes, { prefix: '/seo' });
 server.register(statsRoutes, { prefix: '/stats' });
 server.register(waitlistRoutes, { prefix: '/waitlist' });
+server.register(githubBountyRoutes, { prefix: '/github-bounties' });
 
 // Telegram Bot (Polling for local dev)
 import { TelegramService } from './modules/telegram/telegram.service';
@@ -247,13 +303,14 @@ const start = async () => {
             console.warn('⚠️  Escrow not configured (missing contract address or operator key) — poller will not start');
         }
 
-        // ClawHub skill catalog sync (runs on startup + every 24h)
-        startClawhubSyncJob(server).catch((err) => {
-            console.error('⚠️  ClawHub sync job failed (non-fatal):', err.message);
-        });
+        // // ClawHub skill catalog sync (runs on startup + every 24h)
+        // startClawhubSyncJob(server).catch((err) => {
+        //     console.error('⚠️  ClawHub sync job failed (non-fatal):', err.message);
+        // });
 
         const port = parseInt(process.env.PORT || '3000', 10);
-        await server.listen({ port, host: '0.0.0.0' });
+        // Railway requires :: (IPv6) to expose service on public/private network
+        await server.listen({ port, host: '::' });
         console.log(`Server listening on http://localhost:${port}`);
         console.log(`Docs available at http://localhost:${port}/docs`);
     } catch (err) {

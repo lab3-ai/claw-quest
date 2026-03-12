@@ -1,8 +1,9 @@
 import { useState } from "react"
 import { PlatformIcon } from "@/components/PlatformIcon"
 import { ArrowRightLine, LoadingLine } from "@mingcute/react"
+import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 
-const BOT_USERNAME = "ClawQuest_aibot"
+const BOT_USERNAME = TELEGRAM_BOT_USERNAME
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 export const WAITLIST_TOKEN_KEY = "cq_waitlist_token"
 

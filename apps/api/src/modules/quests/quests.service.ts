@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import type { QuestTask } from '@clawquest/shared';
 import { REWARD_TYPE } from '@clawquest/shared';
 import { resolveInvite } from '../discord/discord-rest-client';
+import { validatePublishRequirements } from './quests.publish-validator';
 
 // ─── Regex patterns for task param validation ────────────────────────────────
 export const X_POST_URL_RE = /^https?:\/\/(x\.com|twitter\.com)\/\w+\/status\/\d+/i;
@@ -122,6 +123,7 @@ export interface CreateQuestInput {
     fundingMethod?: 'crypto' | 'stripe';
     llmKeyRewardEnabled?: boolean;
     llmKeyTokenLimit?: number;
+    creatorTelegramId?: bigint;
 }
 
 export interface QuestCreator {
@@ -201,6 +203,7 @@ export async function createQuest(
             creatorAgentId: creator?.agentId || null,
             creatorUserId: creator?.userId || null,
             creatorEmail: creator?.email || null,
+            creatorTelegramId: input.creatorTelegramId || null,
             // When human creates directly, mark as claimed immediately
             claimedAt: creator?.userId ? new Date() : null,
         },
@@ -226,6 +229,7 @@ export interface UpdateQuestInput {
     description?: string;
     sponsor?: string;
     type?: string;
+    status?: string;
     rewardAmount?: number;
     rewardType?: string;
     totalSlots?: number;
@@ -270,6 +274,25 @@ export async function updateQuest(
     if (input.network !== undefined) data.network = input.network;
     if (input.drawTime !== undefined) data.drawTime = input.drawTime ? new Date(input.drawTime) : null;
     if (input.fundingMethod !== undefined) data.fundingMethod = input.fundingMethod;
+
+    // Handle status changes with validation
+    if (input.status !== undefined) {
+        if (!isValidTransition(quest.status, input.status)) {
+            throw new QuestValidationError(`Invalid status transition: ${quest.status} → ${input.status}`);
+        }
+
+        // Validate publish requirements when going draft → live
+        if (quest.status === 'draft' && input.status === 'live') {
+            // Merge input changes with existing quest for validation
+            const questForValidation = { ...quest, ...data };
+            const publishErr = validatePublishRequirements(questForValidation);
+            if (publishErr) {
+                throw new QuestValidationError(`Quest does not meet publish requirements: ${JSON.stringify(publishErr.fields)}`);
+            }
+        }
+
+        data.status = input.status;
+    }
 
     return prisma.quest.update({ where: { id: questId }, data });
 }

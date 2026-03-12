@@ -188,8 +188,8 @@ export function QuestList() {
             <PageTitle title="Quests" description="Agent-executable tasks with on-chain rewards" />
 
             {/* Tabs row + view toggle */}
-            <div className="flex items-center gap-3 py-3">
-                <div className="relative flex flex-1 min-w-0 items-center gap-0.5 p-0.5">
+            <div className="flex items-center gap-3 py-3 max-sm:flex-col max-sm:gap-2 max-sm:items-stretch">
+                <div className="relative flex flex-1 min-w-0 items-center gap-0.5 p-0.5 max-sm:overflow-x-auto max-sm:scrollbar-hide">
                     {/* Sliding highlight */}
                     <span
                         className="absolute top-0.5 bottom-0.5 rounded-button bg-primary transition-all duration-200 ease-out z-0"
@@ -204,24 +204,25 @@ export function QuestList() {
                                 ref={el => { tabRefs.current[t.id] = el }}
                                 className={cn(
                                     "relative z-10 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-button cursor-pointer transition-all duration-200 ease-out",
-                                    "font-semibold",
+                                    "font-semibold whitespace-nowrap",
+                                    "max-sm:px-2 max-sm:text-xs max-sm:gap-1 max-sm:min-h-[44px]",
                                     isActive
                                         ? "text-primary-foreground"
                                         : "text-foreground hover:text-primary"
                                 )}
                                 onClick={() => handleTabChange(t.id)}
                             >
-                                <Icon size={16} />
+                                <Icon size={16} className="max-sm:w-3.5 max-sm:h-3.5" />
                                 {t.label}
                                 {tabCounts[t.id] > 0 && (
-                                    <span className="text-xs opacity-70">({tabCounts[t.id]})</span>
+                                    <span className="text-xs opacity-70 max-sm:text-[10px]">({tabCounts[t.id]})</span>
                                 )}
                             </button>
                         )
                     })}
                 </div>
                 <TooltipProvider delayDuration={300}>
-                    <div className="relative inline-flex border border-border p-0.5 gap-0.5 rounded-button overflow-hidden ml-auto shrink-0">
+                    <div className="relative inline-flex border border-border p-0.5 gap-0.5 rounded-button overflow-hidden ml-auto shrink-0 max-sm:ml-0 max-sm:w-full">
                         {/* Sliding highlight */}
                         <span
                             className="absolute top-0.5 bottom-0.5 rounded-button bg-primary transition-all duration-200 ease-out z-0"
@@ -233,6 +234,7 @@ export function QuestList() {
                                     ref={el => { viewRefs.current["grid"] = el }}
                                     className={cn(
                                         "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
+                                        "max-sm:flex-1 max-sm:w-auto max-sm:h-[44px]",
                                         view === "grid" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                                     )}
                                     onClick={() => handleViewChange("grid")}
@@ -253,6 +255,7 @@ export function QuestList() {
                                     ref={el => { viewRefs.current["list"] = el }}
                                     className={cn(
                                         "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
+                                        "max-sm:flex-1 max-sm:w-auto max-sm:h-[44px]",
                                         view === "list" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                                     )}
                                     onClick={() => handleViewChange("list")}
@@ -268,6 +271,7 @@ export function QuestList() {
                                     ref={el => { viewRefs.current["compact"] = el }}
                                     className={cn(
                                         "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
+                                        "max-sm:flex-1 max-sm:w-auto max-sm:h-[44px]",
                                         view === "compact" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                                     )}
                                     onClick={() => handleViewChange("compact")}
@@ -348,7 +352,7 @@ export function QuestList() {
                     sorted.length === 0 ? (
                         <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4 py-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4 max-sm:gap-3 py-4">
                             {sorted.map(quest => (
                                 <QuestGridCard key={quest.id} quest={quest} />
                             ))}
@@ -373,8 +377,11 @@ export function QuestList() {
 
                 {/* Compact list (table) view */}
                 {!isLoading && view === "compact" && (
-                    <div className="block overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                        <table className="w-full border-collapse">
+                    <div className="block overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 max-sm:pb-2">
+                        <div className="sm:hidden text-xs text-muted-foreground mb-2 text-center">
+                            ← Swipe to view all columns →
+                        </div>
+                        <table className="w-full border-collapse min-w-[640px]">
                             <thead>
                                 <tr>
                                     <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[140px]">Reward</th>

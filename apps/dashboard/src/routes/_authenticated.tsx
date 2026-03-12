@@ -19,6 +19,7 @@ import { useState } from "react"
 import { BankCardLine, Dashboard4Line, AddLine, DownLine } from "@mingcute/react"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { BrandLogo } from "@/components/brand-logo"
+import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 
 export function AuthenticatedLayout() {
     const { isAuthenticated, isLoading, logout, user } = useAuth()
@@ -48,7 +49,7 @@ export function AuthenticatedLayout() {
         <div className="flex min-h-screen flex-col">
             {/* Topbar */}
             <header className="sticky top-0 z-50 bg-background">
-                <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-6">
+                <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-6 max-sm:px-3 max-sm:gap-1">
                     <Link
                         to="/quests"
                         className="mr-5 flex items-center gap-1.5 no-underline"
@@ -199,7 +200,7 @@ export function AuthenticatedLayout() {
                     API Docs
                 </a>
                 <a
-                    href="https://t.me/ClawQuest_aibot"
+                    href={`https://t.me/${TELEGRAM_BOT_USERNAME}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-muted-foreground no-underline hover:text-foreground"

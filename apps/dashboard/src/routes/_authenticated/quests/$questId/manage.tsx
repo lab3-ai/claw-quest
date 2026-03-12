@@ -61,7 +61,7 @@ function statusBadgeClass(status: string): string {
     )
 }
 
-// ─── Participant Row ──────────────────────────────────────────────────────────
+// ─── Participant Row (Table) ──────────────────────────────────────────────────
 
 function ParticipantRow({
     p,
@@ -138,6 +138,89 @@ function ParticipantRow({
                 )}
             </td>
         </tr>
+    )
+}
+
+// ─── Participant Card (Mobile) ────────────────────────────────────────────────
+
+function ParticipantCard({
+    p,
+    onVerify,
+    isPending,
+}: {
+    p: Participation
+    onVerify: (pid: string, action: 'approve' | 'reject', reason?: string) => void
+    isPending: boolean
+}) {
+    const [showReject, setShowReject] = useState(false)
+    const [reason, setReason] = useState('')
+
+    return (
+        <div className="border-b border-border px-3 py-3 last:border-b-0">
+            <div className="flex items-start justify-between mb-2">
+                <div className="font-medium text-sm text-foreground">{p.agentName}</div>
+                <span className={statusBadgeClass(p.status)}>{p.status}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+                <div>
+                    <span className="text-muted-foreground">Tasks:</span>{' '}
+                    <span className="text-foreground font-medium">{p.tasksCompleted}/{p.tasksTotal}</span>
+                </div>
+                <div>
+                    {p.proof ? (
+                        <details className="text-[11px] text-muted-foreground">
+                            <summary className="cursor-pointer text-(--link,#0074cc) text-[11px]">View proof</summary>
+                            <pre className="mt-1 text-[10px] bg-bg-subtle border border-border rounded-sm p-[6px] overflow-auto max-h-[120px] whitespace-pre-wrap break-all">
+                                {JSON.stringify(p.proof, null, 2)}
+                            </pre>
+                        </details>
+                    ) : (
+                        <span className="text-muted-foreground">No proof</span>
+                    )}
+                </div>
+            </div>
+            {p.status === 'submitted' && (
+                <div className="flex flex-col gap-2 mt-2">
+                    <div className="flex gap-2">
+                        <button
+                            className="bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed text-white border-none rounded-sm px-3 py-2 text-xs font-semibold cursor-pointer flex-1 min-h-[44px]"
+                            disabled={isPending}
+                            onClick={() => onVerify(p.id, 'approve')}
+                        >
+                            Approve
+                        </button>
+                        <button
+                            className="bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white border-none rounded-sm px-3 py-2 text-xs font-semibold cursor-pointer flex-1 min-h-[44px]"
+                            disabled={isPending}
+                            onClick={() => setShowReject(v => !v)}
+                        >
+                            Reject
+                        </button>
+                    </div>
+                    {showReject && (
+                        <div className="flex flex-col gap-2">
+                            <input
+                                className="block text-xs border border-border rounded-sm px-3 py-2 w-full text-foreground bg-background min-h-[44px] focus:outline-hidden focus:border-(--accent,#f48024)"
+                                placeholder="Reason (optional)"
+                                value={reason}
+                                onChange={e => setReason(e.target.value)}
+                            />
+                            <button
+                                className="bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white border-none rounded-sm px-3 py-2 text-xs font-semibold cursor-pointer w-full min-h-[44px]"
+                                disabled={isPending}
+                                onClick={() => {
+                                    onVerify(p.id, 'reject', reason)
+                                    setShowReject(false)
+                                    setReason('')
+                                }}
+                            >
+                                Confirm Reject
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
     )
 }
 
@@ -260,6 +343,42 @@ export function ManageQuest() {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['quest-manage', questId] }),
     })
 
+    const publishMutation = useMutation({
+        mutationFn: async () => {
+            const res = await fetch(`${API_BASE}/quests/${questId}/publish`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session?.access_token}`,
+                },
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error((err as { message?: string }).message || 'Publish failed')
+            }
+            return res.json()
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['quest-manage', questId] }),
+    })
+
+    const closeMutation = useMutation({
+        mutationFn: async () => {
+            const res = await fetch(`${API_BASE}/quests/${questId}/close`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session?.access_token}`,
+                },
+            })
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}))
+                throw new Error((err as { message?: string }).message || 'Close failed')
+            }
+            return res.json()
+        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['quest-manage', questId] }),
+    })
+
     if (isLoading) return (
         <div className="max-w-5xl mx-auto px-4 py-6 text-muted-foreground text-center py-12">
             Loading...
@@ -278,62 +397,136 @@ export function ManageQuest() {
     const isCreator = quest.creatorUserId === user?.id
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-6">
+        <div className="max-w-5xl mx-auto px-4 max-sm:px-3 py-6 max-sm:py-4">
             {/* Breadcrumb */}
-            <nav className="flex items-center gap-1 text-xs text-muted-foreground mb-4">
-                <Link to="/quests" className="hover:text-foreground">Quests</Link>
+            <nav className="flex items-center gap-1 text-xs max-sm:text-[11px] text-muted-foreground mb-4 max-sm:mb-3 overflow-x-auto scrollbar-hide">
+                <Link to="/quests" className="hover:text-foreground whitespace-nowrap">Quests</Link>
                 <span className="text-muted-foreground">/</span>
-                <Link to="/quests/$questId" params={{ questId }} className="hover:text-foreground">{quest.title}</Link>
+                <Link to="/quests/$questId" params={{ questId }} className="hover:text-foreground truncate max-w-[120px] max-sm:max-w-[80px]" title={quest.title}>{quest.title}</Link>
                 <span className="text-muted-foreground">/</span>
-                <span className="text-foreground">Manage</span>
+                <span className="text-foreground whitespace-nowrap">Manage</span>
             </nav>
 
-            <div className="flex flex-col md:flex-row gap-6 items-start">
+            <div className="flex flex-col md:flex-row gap-6 max-sm:gap-4 items-start">
                 {/* Main column */}
                 <div className="flex-1 min-w-0">
+                    {/* Status Controls */}
+                    {isCreator && (quest.status === 'draft' || quest.status === 'live') && (
+                        <div className="bg-background border border-border rounded-lg p-5 max-sm:p-3 mb-4 max-sm:mb-3">
+                            <h3 className="text-[13px] max-sm:text-xs font-semibold text-muted-foreground uppercase tracking-[0.05em] m-0 mb-3 max-sm:mb-2">
+                                Quest Status
+                            </h3>
+                            <div className="flex flex-wrap gap-2 items-center max-sm:flex-col max-sm:items-stretch">
+                                <span className={statusBadgeClass(quest.status)}>{quest.status}</span>
+                                {quest.status === 'draft' && (
+                                    <Button
+                                        variant="default"
+                                        size="sm"
+                                        disabled={!isFunded || publishMutation.isPending}
+                                        onClick={() => {
+                                            if (window.confirm('Publish this quest and make it live?')) {
+                                                publishMutation.mutate()
+                                            }
+                                        }}
+                                        className="max-sm:w-full max-sm:min-h-[44px]"
+                                    >
+                                        {publishMutation.isPending ? 'Publishing...' : 'Publish Quest'}
+                                    </Button>
+                                )}
+                                {quest.status === 'live' && (
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        disabled={closeMutation.isPending}
+                                        onClick={() => {
+                                            if (window.confirm('Close this quest and mark it as completed?')) {
+                                                closeMutation.mutate()
+                                            }
+                                        }}
+                                        className="max-sm:w-full max-sm:min-h-[44px]"
+                                    >
+                                        {closeMutation.isPending ? 'Closing...' : 'Close Quest'}
+                                    </Button>
+                                )}
+                            </div>
+                            {publishMutation.isError && (
+                                <p className="text-error text-xs mt-2">{(publishMutation.error as Error).message}</p>
+                            )}
+                            {closeMutation.isError && (
+                                <p className="text-error text-xs mt-2">{(closeMutation.error as Error).message}</p>
+                            )}
+                            {!isFunded && quest.status === 'draft' && (
+                                <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded text-xs">
+                                    <p className="text-amber-900 dark:text-amber-200 mb-2">Quest must be funded before publishing.</p>
+                                    <Link
+                                        to="/quests/$questId/fund"
+                                        params={{ questId }}
+                                        className="inline-block bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded text-[11px] font-semibold"
+                                    >
+                                        Fund Quest
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {/* Participants */}
                     <div className="bg-background border border-border rounded-lg overflow-hidden mb-4">
-                        <h3 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.05em] m-0 px-5 py-4 border-b border-border">
+                        <h3 className="text-[13px] max-sm:text-xs font-semibold text-muted-foreground uppercase tracking-[0.05em] m-0 px-5 max-sm:px-3 py-4 max-sm:py-3 border-b border-border">
                             Participants
                         </h3>
                         {/* Status counts */}
                         {Object.keys(statusCounts).length > 0 && (
-                            <div className="flex flex-wrap gap-[6px] px-5 py-3 bg-bg-subtle border-t border-border">
+                            <div className="flex flex-wrap gap-[6px] px-5 max-sm:px-3 py-3 max-sm:py-2 bg-bg-subtle border-t border-border">
                                 {Object.entries(statusCounts).map(([s, n]) => (
-                                    <span key={s} className={cn('text-[11px] font-medium rounded-sm px-2 py-[2px]', statusBadgeClass(s))}>
+                                    <span key={s} className={cn('text-[11px] max-sm:text-[10px] font-medium rounded-sm px-2 py-[2px]', statusBadgeClass(s))}>
                                         {s}: {n}
                                     </span>
                                 ))}
                             </div>
                         )}
                         {participations.length === 0 ? (
-                            <div className="px-5 py-8 text-center text-muted-foreground text-[13px]">
+                            <div className="px-5 max-sm:px-3 py-8 max-sm:py-6 text-center text-muted-foreground text-[13px] max-sm:text-xs">
                                 No participants yet.
                             </div>
                         ) : (
-                            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                            <table className="w-full border-collapse text-xs">
-                                <thead>
-                                    <tr>
-                                        <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Agent</th>
-                                        <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Status</th>
-                                        <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Tasks</th>
-                                        <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Proof</th>
-                                        <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                            <>
+                                {/* Desktop: Table view */}
+                                <div className="max-sm:hidden overflow-x-auto">
+                                    <table className="w-full border-collapse text-xs">
+                                        <thead>
+                                            <tr>
+                                                <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Agent</th>
+                                                <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Status</th>
+                                                <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Tasks</th>
+                                                <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Proof</th>
+                                                <th className="px-4 py-[0.6rem] text-left text-[11px] font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {participations.map(p => (
+                                                <ParticipantRow
+                                                    key={p.id}
+                                                    p={p}
+                                                    onVerify={(pid, action, reason) => verifyMutation.mutate({ pid, action, reason })}
+                                                    isPending={verifyMutation.isPending}
+                                                />
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {/* Mobile: Card view */}
+                                <div className="sm:hidden">
                                     {participations.map(p => (
-                                        <ParticipantRow
+                                        <ParticipantCard
                                             key={p.id}
                                             p={p}
                                             onVerify={(pid, action, reason) => verifyMutation.mutate({ pid, action, reason })}
                                             isPending={verifyMutation.isPending}
                                         />
                                     ))}
-                                </tbody>
-                            </table>
-                            </div>
+                                </div>
+                            </>
                         )}
                     </div>
 
@@ -368,7 +561,7 @@ export function ManageQuest() {
 
                     {/* Actions */}
                     {isCreator && (
-                        <div className="flex flex-wrap gap-2 mb-4">
+                        <div className="flex flex-wrap gap-2 mb-4 max-sm:mb-3 max-sm:flex-col">
                             <Button
                                 variant="default"
                                 size="sm"
@@ -381,6 +574,7 @@ export function ManageQuest() {
                                         distributeMutation.mutate()
                                     }
                                 }}
+                                className="max-sm:w-full max-sm:min-h-[44px]"
                             >
                                 {distributeMutation.isPending ? 'Distributing...' : 'Distribute Payout'}
                             </Button>
@@ -393,6 +587,7 @@ export function ManageQuest() {
                                         refundMutation.mutate()
                                     }
                                 }}
+                                className="max-sm:w-full max-sm:min-h-[44px]"
                             >
                                 {refundMutation.isPending ? 'Refunding...' : 'Refund'}
                             </Button>
@@ -403,10 +598,21 @@ export function ManageQuest() {
                 {/* Sidebar */}
                 <div className="w-full md:min-w-2xs md:max-w-xs shrink-0">
                     {/* Quest overview */}
-                    <div className="bg-background border border-border rounded-lg p-5 mb-4">
-                        <h3 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.05em] m-0 mb-3">
-                            Quest Info
-                        </h3>
+                    <div className="bg-background border border-border rounded-lg p-5 max-sm:p-3 mb-4 max-sm:mb-3">
+                        <div className="flex items-center justify-between mb-3 max-sm:mb-2">
+                            <h3 className="text-[13px] max-sm:text-xs font-semibold text-muted-foreground uppercase tracking-[0.05em] m-0">
+                                Quest Info
+                            </h3>
+                            {isCreator && quest.status === 'draft' && (
+                                <Link
+                                    to="/quests/$questId/edit"
+                                    params={{ questId }}
+                                    className="text-[11px] text-accent hover:underline font-medium"
+                                >
+                                    Edit
+                                </Link>
+                            )}
+                        </div>
                         <div className="text-[1.1rem] font-semibold text-foreground mb-2">{quest.title}</div>
                         <div className="flex flex-wrap gap-[6px] items-center mb-3">
                             <span className={statusBadgeClass(quest.status)}>{quest.status}</span>
@@ -431,8 +637,8 @@ export function ManageQuest() {
                     </div>
 
                     {/* Escrow / Payment status */}
-                    <div className="bg-background border border-border rounded-lg p-5 mb-4">
-                        <h3 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.05em] m-0 mb-3">
+                    <div className="bg-background border border-border rounded-lg p-5 max-sm:p-3 mb-4 max-sm:mb-3">
+                        <h3 className="text-[13px] max-sm:text-xs font-semibold text-muted-foreground uppercase tracking-[0.05em] m-0 mb-3 max-sm:mb-2">
                             {isFiatFunded ? 'Stripe Payment' : 'Escrow'}
                         </h3>
                         {isFiatFunded ? (
@@ -478,3 +684,5 @@ export function ManageQuest() {
         </div>
     )
 }
+
+export default ManageQuest

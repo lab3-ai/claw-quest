@@ -52,6 +52,7 @@ const CreateQuestSchema = QuestSchema.omit({
     fundingMethod: z.enum(['crypto', 'stripe']).optional(),
     llmKeyRewardEnabled: z.boolean().default(false),
     llmKeyTokenLimit: z.number().int().positive().optional(),
+    creatorTelegramId: z.coerce.bigint().optional(),
 }).refine(
     (data) => {
         // If rewardType is LLMTOKEN_OPENROUTER, tokenProvider and tokenAmount are required
@@ -252,9 +253,9 @@ export async function questsRoutes(server: FastifyInstance) {
                                         select: { id: true },
                                     });
                                     if (partnerRecord) hasAccess = true;
-                        }
-                    }
-                } catch {
+                                }
+                            }
+                        } catch {
                             if (reply.sent) return
                             // Not authenticated — that's fine, just check token
                         }
@@ -927,6 +928,8 @@ export async function questsRoutes(server: FastifyInstance) {
                 // Try human JWT
                 try {
                     await (server as any).authenticate(request, reply);
+                    // Check if response was already sent (e.g., 401 from authenticate)
+                    if (reply.sent) return;
                     const user = (request as any).user;
                     if (user?.id) {
                         creator.userId = user.id;
@@ -1240,6 +1243,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     description: z.string().optional(),
                     sponsor: z.string().optional(),
                     type: z.nativeEnum(QUEST_TYPE).optional(),
+                    status: z.string().optional(),
                     rewardAmount: z.number().min(0).optional(),
                     rewardType: z.string().optional(),
                     totalSlots: z.number().min(1).optional(),
@@ -1363,6 +1367,130 @@ export async function questsRoutes(server: FastifyInstance) {
         }
     );
 
+    // ── POST /quests/:id/publish — Publish quest (draft → live) ─────────────────
+    server.post(
+        '/:id/publish',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Publish a quest (draft → live)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                response: {
+                    200: z.object({
+                        questId: z.string(),
+                        previousStatus: z.string(),
+                        newStatus: z.string(),
+                        message: z.string(),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id } = request.params as any;
+            const userId = (request as any).user?.id;
+            const userRole = (request as any).user?.role ?? 'user';
+
+            const quest = await server.prisma.quest.findUnique({ where: { id } });
+            if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any);
+
+            // Check ownership - sponsor or creator can publish
+            const { allowed } = await isQuestOwnerOrSponsor(
+                server.prisma, id, userId, userRole,
+            );
+            if (!allowed) return reply.status(403).send({ message: 'Forbidden' } as any);
+
+            if (quest.status !== 'draft') {
+                return reply.status(400).send({
+                    message: `Cannot publish quest in ${quest.status} status. Only draft quests can be published.`,
+                    code: 'INVALID_STATUS',
+                } as any);
+            }
+
+            // Validate publish requirements
+            const publishErr = validatePublishRequirements(quest);
+            if (publishErr) {
+                return reply.status(400).send({
+                    message: 'Quest does not meet publish requirements',
+                    ...publishErr,
+                } as any);
+            }
+
+            const previousStatus = quest.status;
+            await server.prisma.quest.update({
+                where: { id },
+                data: { status: 'live' },
+            });
+
+            return {
+                questId: id,
+                previousStatus,
+                newStatus: 'live',
+                message: 'Quest published successfully',
+            };
+        }
+    );
+
+    // ── POST /quests/:id/close — Close quest (live/scheduled → completed) ───────
+    server.post(
+        '/:id/close',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Close a quest (live/scheduled → completed)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                body: z.object({
+                    reason: z.string().optional(),
+                }),
+                response: {
+                    200: z.object({
+                        questId: z.string(),
+                        previousStatus: z.string(),
+                        newStatus: z.string(),
+                        message: z.string(),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id } = request.params as any;
+            const userId = (request as any).user?.id;
+            const userRole = (request as any).user?.role ?? 'user';
+
+            const quest = await server.prisma.quest.findUnique({ where: { id } });
+            if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any);
+
+            // Check ownership - sponsor or creator can close
+            const { allowed } = await isQuestOwnerOrSponsor(
+                server.prisma, id, userId, userRole,
+            );
+            if (!allowed) return reply.status(403).send({ message: 'Forbidden' } as any);
+
+            if (quest.status !== 'live' && quest.status !== 'scheduled') {
+                return reply.status(400).send({
+                    message: `Cannot close quest in ${quest.status} status. Only live or scheduled quests can be closed.`,
+                    code: 'INVALID_STATUS',
+                } as any);
+            }
+
+            const previousStatus = quest.status;
+            await server.prisma.quest.update({
+                where: { id },
+                data: { status: 'completed' },
+            });
+
+            return {
+                questId: id,
+                previousStatus,
+                newStatus: 'completed',
+                message: 'Quest closed successfully',
+            };
+        }
+    );
+
     // ── GET /quests/accepted — Quests accepted by user's agents ────────────────
     // NOTE: registered BEFORE /:id to avoid route conflict
     server.get(
@@ -1463,9 +1591,33 @@ export async function questsRoutes(server: FastifyInstance) {
                 },
             };
 
+            // Get user to check for telegramId
+            const user = await server.prisma.user.findUnique({
+                where: { id: userId },
+                select: { telegramId: true },
+            });
+
+            // Build where clause for quests
+            const questWhere: any = { creatorUserId: userId };
+
+            // If user has telegramId, also include quests created via waitlist (creatorTelegramId)
+            if (user?.telegramId) {
+                try {
+                    // Convert String telegramId to BigInt for comparison
+                    const telegramIdBigInt = BigInt(user.telegramId);
+                    questWhere.OR = [
+                        { creatorUserId: userId },
+                        { creatorTelegramId: telegramIdBigInt },
+                    ];
+                } catch (err) {
+                    // If telegramId is too large for BigInt, skip the OR clause
+                    server.log.debug({ err, telegramId: user.telegramId }, 'Failed to convert telegramId to BigInt');
+                }
+            }
+
             const [ownedQuests, sponsoredCollabs] = await Promise.all([
                 server.prisma.quest.findMany({
-                    where: { creatorUserId: userId },
+                    where: questWhere,
                     orderBy: { createdAt: 'desc' },
                     include: questInclude,
                 }),
@@ -1530,14 +1682,13 @@ export async function questsRoutes(server: FastifyInstance) {
             });
             const agentIds = userAgents.map(a => a.id);
 
-            if (agentIds.length === 0) {
-                return reply.status(400).send({ message: 'You have no agents participating in this quest' } as any);
-            }
-
             const participation = await server.prisma.questParticipation.findFirst({
                 where: {
                     questId: id,
-                    agentId: { in: agentIds },
+                    OR: [
+                        ...(agentIds.length > 0 ? [{ agentId: { in: agentIds } }] : []),
+                        { userId },
+                    ],
                     status: { in: ['completed', 'submitted'] },
                 },
             });

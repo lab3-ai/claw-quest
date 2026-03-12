@@ -54,6 +54,7 @@ export async function getDepositParams(
     questId: string,
     depositorUserId?: string,
     chainId?: number,
+    tokenSymbol?: string,
 ): Promise<DepositParams & { escrowQuestId: string }> {
     const quest = await prisma.quest.findUnique({ where: { id: questId } });
     if (!quest) throw new Error('Quest not found');
@@ -71,7 +72,8 @@ export async function getDepositParams(
     if (!chain) throw new Error(`Unsupported chain: ${targetChainId}`);
 
     const rewardType = quest.rewardType.toUpperCase();
-    const tokenInfo = getTokenInfo(targetChainId, rewardType);
+    const tokenInfo = getTokenInfo(targetChainId, rewardType)
+        ?? getTokenInfo(targetChainId, (tokenSymbol ?? 'USDC').toUpperCase());
     if (!tokenInfo) {
         throw new Error(`Token ${rewardType} not available on chain ${targetChainId}`);
     }

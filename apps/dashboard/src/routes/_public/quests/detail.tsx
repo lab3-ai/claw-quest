@@ -563,6 +563,19 @@ export function QuestDetail() {
     const spotsPercent = quest.totalSlots > 0 ? Math.round((quest.filledSlots / quest.totalSlots) * 100) : 0
     const isLive = quest.status === "live"
     const isCompleted = quest.status === "completed"
+
+    // Compute LLM token budget for LLMTOKEN_OPENROUTER quests
+    // Formula: total = totalFunded * inputPricePer1M * 1_000_000
+    const llmTokenBudget = (() => {
+        if (quest.rewardType !== REWARD_TYPE.LLMTOKEN_OPENROUTER) return null
+        const pricePer1M = (quest as any).llmModel?.inputPricePer1M
+        const funded = Number(quest.totalFunded ?? 0)
+        if (pricePer1M && funded > 0) {
+            const total = funded * pricePer1M * 1_000_000
+            return { perWinner: total / (quest.totalSlots ?? 1), total }
+        }
+        return null
+    })()
     const needsVerifiedScan = isAuthenticated && firstAgentId && quest.requireVerified &&
         quest.requiredSkills?.some((sk: string) => {
             const match = agentSkillsData?.skills?.find(s => s.name === sk)
@@ -664,9 +677,13 @@ export function QuestDetail() {
                             <div className="text-sm font-semibold text-accent font-mono">
                                 {quest.rewardType === REWARD_TYPE.LLM_KEY
                                     ? `${(quest.llmKeyTokenLimit ?? 0).toLocaleString()} tokens/winner`
-                                    : quest.fundingMethod === FUNDING_METHOD.STRIPE
-                                        ? `$${quest.rewardAmount.toLocaleString()} ${REWARD_TYPE.USD}`
-                                        : `${quest.rewardAmount.toLocaleString()} ${quest.rewardType}`}
+                                    : quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER
+                                        ? llmTokenBudget
+                                            ? `${Math.round(llmTokenBudget.perWinner).toLocaleString()} tokens/winner`
+                                            : `${quest.rewardAmount.toLocaleString()} USDC`
+                                        : quest.fundingMethod === FUNDING_METHOD.STRIPE
+                                            ? `$${quest.rewardAmount.toLocaleString()} ${REWARD_TYPE.USD}`
+                                            : `${quest.rewardAmount.toLocaleString()} ${quest.rewardType}`}
                             </div>
                         </div>
                         <div className="px-3 py-2.5 border border-border rounded bg-muted">
@@ -946,13 +963,19 @@ export function QuestDetail() {
                             <div className="text-[28px] font-semibold font-mono text-accent leading-tight">
                                 {quest.rewardType === REWARD_TYPE.LLM_KEY
                                     ? (quest.llmKeyTokenLimit ?? 0).toLocaleString()
-                                    : quest.rewardAmount.toLocaleString()}
+                                    : quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER && llmTokenBudget
+                                        ? Math.round(llmTokenBudget.total).toLocaleString()
+                                        : quest.rewardAmount.toLocaleString()}
                             </div>
                             <div className="flex justify-center gap-2 mt-2 text-xs">
                                 <RewardBadge type={quest.fundingMethod === FUNDING_METHOD.STRIPE ? REWARD_TYPE.USD : quest.rewardType} />
                                 <QuestTypeBadge type={quest.type} />
                             </div>
-                            <div className="text-xs text-muted-foreground mt-0.5">total reward pool</div>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                                {quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER && llmTokenBudget
+                                    ? 'total LLM tokens'
+                                    : 'total reward pool'}
+                            </div>
                         </div>
 
                         {/* Countdown */}

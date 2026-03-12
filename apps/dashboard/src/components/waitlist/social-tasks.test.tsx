@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { SocialTasks } from './social-tasks'
 
 // Mock fetch
@@ -39,14 +39,14 @@ describe('SocialTasks', () => {
     it('should render social task buttons', () => {
         render(<SocialTasks />)
 
-        expect(screen.getByText(/Follow on X/i)).toBeInTheDocument()
-        expect(screen.getByText(/Join Telegram/i)).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /Follow/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /Claim/i })).toBeInTheDocument()
     })
 
     it('should open X profile when follow button is clicked', () => {
         render(<SocialTasks />)
 
-        const followButton = screen.getByText(/Follow on X/i)
+        const followButton = screen.getByRole('button', { name: /Follow/i })
         fireEvent.click(followButton)
 
         expect(mockWindowOpen).toHaveBeenCalledWith(
@@ -59,27 +59,26 @@ describe('SocialTasks', () => {
     it('should show pending state after clicking follow', () => {
         render(<SocialTasks />)
 
-        const followButton = screen.getByText(/Follow on X/i)
+        const followButton = screen.getByRole('button', { name: /Follow/i })
         fireEvent.click(followButton)
 
         // Should show loading icon during pending state
-        expect(screen.getByText(/Follow on X/i).closest('button')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /\.\.\./i })).toBeInTheDocument()
     })
 
-    it('should mark follow as done after delay', async () => {
+    it('should mark follow as done after delay', () => {
         render(<SocialTasks />)
 
-        const followButton = screen.getByText(/Follow on X/i)
+        const followButton = screen.getByRole('button', { name: /Follow/i })
         fireEvent.click(followButton)
 
         // Fast-forward time by 5 seconds
-        vi.advanceTimersByTime(5000)
-
-        await waitFor(() => {
-            // Button should show completed state
-            const button = screen.getByText(/Follow on X/i).closest('button')
-            expect(button).toBeInTheDocument()
+        act(() => {
+            vi.advanceTimersByTime(5000)
         })
+
+        // Button should show completed state
+        expect(screen.getByRole('button', { name: /Done/i })).toBeInTheDocument()
     })
 
     it('should open Telegram bot when claim button is clicked with token', async () => {
@@ -90,7 +89,17 @@ describe('SocialTasks', () => {
 
         render(<SocialTasks />)
 
-        const claimButton = screen.getByText(/Join Telegram/i)
+        // Complete follow step first
+        const followButton = screen.getByRole('button', { name: /Follow/i })
+        fireEvent.click(followButton)
+        act(() => {
+            vi.advanceTimersByTime(5000)
+        })
+
+        // Use real timers for async operations
+        vi.useRealTimers()
+
+        const claimButton = screen.getByRole('button', { name: /Claim/i })
         fireEvent.click(claimButton)
 
         await waitFor(() => {
@@ -110,6 +119,8 @@ describe('SocialTasks', () => {
                 'noopener,noreferrer'
             )
         })
+
+        vi.useFakeTimers()
     })
 
     it('should open Telegram bot without token on API failure', async () => {
@@ -119,7 +130,17 @@ describe('SocialTasks', () => {
 
         render(<SocialTasks />)
 
-        const claimButton = screen.getByText(/Join Telegram/i)
+        // Complete follow step first
+        const followButton = screen.getByRole('button', { name: /Follow/i })
+        fireEvent.click(followButton)
+        act(() => {
+            vi.advanceTimersByTime(5000)
+        })
+
+        // Use real timers for async operations
+        vi.useRealTimers()
+
+        const claimButton = screen.getByRole('button', { name: /Claim/i })
         fireEvent.click(claimButton)
 
         await waitFor(() => {
@@ -129,6 +150,8 @@ describe('SocialTasks', () => {
                 'noopener,noreferrer'
             )
         })
+
+        vi.useFakeTimers()
     })
 
     it('should handle network errors gracefully', async () => {
@@ -136,7 +159,17 @@ describe('SocialTasks', () => {
 
         render(<SocialTasks />)
 
-        const claimButton = screen.getByText(/Join Telegram/i)
+        // Complete follow step first
+        const followButton = screen.getByRole('button', { name: /Follow/i })
+        fireEvent.click(followButton)
+        act(() => {
+            vi.advanceTimersByTime(5000)
+        })
+
+        // Use real timers for async operations
+        vi.useRealTimers()
+
+        const claimButton = screen.getByRole('button', { name: /Claim/i })
         fireEvent.click(claimButton)
 
         await waitFor(() => {
@@ -146,6 +179,8 @@ describe('SocialTasks', () => {
                 'noopener,noreferrer'
             )
         })
+
+        vi.useFakeTimers()
     })
 
     it('should use referral code when provided', async () => {
@@ -155,7 +190,17 @@ describe('SocialTasks', () => {
 
         render(<SocialTasks referralCode="REF123" />)
 
-        const claimButton = screen.getByText(/Join Telegram/i)
+        // Complete follow step first
+        const followButton = screen.getByRole('button', { name: /Follow/i })
+        fireEvent.click(followButton)
+        act(() => {
+            vi.advanceTimersByTime(5000)
+        })
+
+        // Use real timers for async operations
+        vi.useRealTimers()
+
+        const claimButton = screen.getByRole('button', { name: /Claim/i })
         fireEvent.click(claimButton)
 
         await waitFor(() => {
@@ -174,6 +219,8 @@ describe('SocialTasks', () => {
                 'noopener,noreferrer'
             )
         })
+
+        vi.useFakeTimers()
     })
 
     it('should prevent multiple simultaneous claim requests', async () => {
@@ -193,7 +240,19 @@ describe('SocialTasks', () => {
 
         render(<SocialTasks />)
 
-        const claimButton = screen.getByText(/Join Telegram/i)
+        // Complete follow step first to enable claim button
+        const followButton = screen.getByRole('button', { name: /Follow/i })
+        fireEvent.click(followButton)
+        act(() => {
+            vi.advanceTimersByTime(5000)
+        })
+
+        // Use real timers for async operations
+        vi.useRealTimers()
+
+        await waitFor(() => expect(screen.getByRole('button', { name: /Done/i })).toBeInTheDocument())
+
+        const claimButton = screen.getByRole('button', { name: /Claim/i })
 
         // Click multiple times
         fireEvent.click(claimButton)
@@ -202,12 +261,14 @@ describe('SocialTasks', () => {
 
         // Should only make one request
         expect(mockFetch).toHaveBeenCalledTimes(1)
+
+        vi.useFakeTimers()
     })
 
     it('should cleanup timer on unmount', () => {
         const { unmount } = render(<SocialTasks />)
 
-        const followButton = screen.getByText(/Follow on X/i)
+        const followButton = screen.getByRole('button', { name: /Follow/i })
         fireEvent.click(followButton)
 
         unmount()

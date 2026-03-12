@@ -55,22 +55,32 @@ describe('TierProgress', () => {
         render(<TierProgress totalSignups={50} />)
 
         // OG Pioneer: 50/100
-        expect(screen.getByText('50')).toBeInTheDocument()
-        expect(screen.getByText('/100 claimed')).toBeInTheDocument()
+        const ogText = screen.getByText((content, element) => {
+            return element?.textContent === '50/100 claimed'
+        })
+        expect(ogText).toBeInTheDocument()
 
         // Early Access: 0/1000 (since totalSignups < 100)
-        expect(screen.getByText('0')).toBeInTheDocument()
-        expect(screen.getByText('/1000 claimed')).toBeInTheDocument()
+        const earlyText = screen.getByText((content, element) => {
+            return element?.textContent === '0/1000 claimed'
+        })
+        expect(earlyText).toBeInTheDocument()
     })
 
     it('should cap tier progress at max', () => {
         render(<TierProgress totalSignups={150} />)
 
         // OG Pioneer should be capped at 100
-        expect(screen.getByText('100')).toBeInTheDocument()
+        const ogText = screen.getByText((content, element) => {
+            return element?.textContent === '100/100 claimed'
+        })
+        expect(ogText).toBeInTheDocument()
 
         // Early Access should show 50 (150 - 100 from first tier)
-        expect(screen.getByText('50')).toBeInTheDocument()
+        const earlyText = screen.getByText((content, element) => {
+            return element?.textContent === '50/1000 claimed'
+        })
+        expect(earlyText).toBeInTheDocument()
     })
 
     it('should display position indicator when position is provided', () => {

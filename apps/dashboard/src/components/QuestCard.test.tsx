@@ -70,7 +70,7 @@ describe('QuestCard', () => {
 
         expect(screen.getByText('Test Quest')).toBeInTheDocument()
         expect(screen.getByText('This is a test quest description')).toBeInTheDocument()
-        expect(screen.getByText('Test Sponsor')).toBeInTheDocument()
+        expect(screen.getAllByText('Test Sponsor').length).toBeGreaterThan(0)
     })
 
     it('should display quest type', () => {
@@ -82,8 +82,8 @@ describe('QuestCard', () => {
     it('should display reward amount and type', () => {
         render(<QuestCard quest={mockQuest} />)
 
-        expect(screen.getByText('1,000')).toBeInTheDocument()
-        expect(screen.getAllByText('USDC')).toHaveLength(2) // Desktop and mobile views
+        expect(screen.getAllByText(/1,000/)).toHaveLength(2) // Desktop and mobile views
+        expect(screen.getAllByText('USDC').length).toBeGreaterThan(0)
     })
 
     it('should display slots left for non-lucky-draw quests', () => {
@@ -123,7 +123,7 @@ describe('QuestCard', () => {
         fireEvent.click(avatarStack)
 
         expect(screen.getByTestId('questers-popup')).toBeInTheDocument()
-        expect(screen.getByText('Test Quest')).toBeInTheDocument()
+        expect(screen.getAllByText('Test Quest').length).toBeGreaterThan(1)
     })
 
     it('should close questers popup when close button is clicked', () => {

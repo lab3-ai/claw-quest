@@ -1591,9 +1591,33 @@ export async function questsRoutes(server: FastifyInstance) {
                 },
             };
 
+            // Get user to check for telegramId
+            const user = await server.prisma.user.findUnique({
+                where: { id: userId },
+                select: { telegramId: true },
+            });
+
+            // Build where clause for quests
+            const questWhere: any = { creatorUserId: userId };
+
+            // If user has telegramId, also include quests created via waitlist (creatorTelegramId)
+            if (user?.telegramId) {
+                try {
+                    // Convert String telegramId to BigInt for comparison
+                    const telegramIdBigInt = BigInt(user.telegramId);
+                    questWhere.OR = [
+                        { creatorUserId: userId },
+                        { creatorTelegramId: telegramIdBigInt },
+                    ];
+                } catch (err) {
+                    // If telegramId is too large for BigInt, skip the OR clause
+                    server.log.debug({ err, telegramId: user.telegramId }, 'Failed to convert telegramId to BigInt');
+                }
+            }
+
             const [ownedQuests, sponsoredCollabs] = await Promise.all([
                 server.prisma.quest.findMany({
-                    where: { creatorUserId: userId },
+                    where: questWhere,
                     orderBy: { createdAt: 'desc' },
                     include: questInclude,
                 }),

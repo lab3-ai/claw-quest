@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { AddLine } from "@mingcute/react"
 import { cn } from "@/lib/utils"
+import { statusBadgeClass, submissionStatusClass, rewardLabel } from "@/components/bounty-utils"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
@@ -47,23 +49,6 @@ async function getAccessToken() {
     return data.session?.access_token ?? null
 }
 
-function statusBadgeClass(status: string) {
-    if (status === "live") return "text-green-400 border-green-500/30"
-    if (status === "completed") return "text-muted-foreground border-muted"
-    if (status === "cancelled") return "text-destructive border-destructive/30"
-    return "text-yellow-400 border-yellow-500/30" // draft
-}
-
-function submissionStatusClass(status: string) {
-    if (status === "approved") return "text-green-400 border-green-500/30"
-    if (status === "rejected") return "text-destructive border-destructive/30"
-    return "text-yellow-400 border-yellow-500/30"
-}
-
-function rewardLabel(type: string, amount: string) {
-    if (type === "LLM_KEY") return "LLM Key"
-    return `$${Number(amount).toLocaleString()} ${type}`
-}
 
 // ─── Created bounties tab ──────────────────────────────────────────────────────
 
@@ -271,8 +256,8 @@ export function MyGitHubBounties() {
                     <h1 className="text-2xl font-semibold">My Bounties</h1>
                     <p className="text-sm text-muted-foreground mt-1">Bounties you created and PRs you submitted</p>
                 </div>
-                <Button asChild size="sm">
-                    <Link to="/github-bounties/new">+ Post Bounty</Link>
+                <Button asChild size="sm" className="gap-1.5">
+                    <Link to="/github-bounties/new"><AddLine size={14} /> Post Bounty</Link>
                 </Button>
             </div>
 

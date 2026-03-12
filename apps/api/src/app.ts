@@ -85,6 +85,14 @@ server.register(cors, {
     credentials: true,
 });
 
+// ─── Rate Limiting (security) ────────────────────────────────────────────────
+import rateLimit from '@fastify/rate-limit';
+server.register(rateLimit, {
+    global: false, // Opt-in per route via config.rateLimit
+    max: 100,
+    timeWindow: '1 minute',
+});
+
 // ─── Supabase Auth Middleware ────────────────────────────────────────────────
 // Verifies the Supabase access_token sent by the frontend,
 // then finds-or-creates a Prisma User row so route handlers get `request.user.id`.

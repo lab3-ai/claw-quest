@@ -520,7 +520,6 @@ export async function authRoutes(app: FastifyInstance) {
                     return reply.status(400).send({ error: { message: 'X token exchange failed', code: 'X_TOKEN_EXCHANGE_FAILED' } });
                 }
                 const data = await res.json() as { access_token: string; refresh_token: string; expires_in: number };
-                console.log('X token exchange data', data)
                 await app.prisma.user.update({
                     where: { id: request.user.id },
                     data: {

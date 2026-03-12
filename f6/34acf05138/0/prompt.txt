@@ -1,0 +1,2 @@
+@social-action-verifier.ts (166-168)  đang dính lỗi này?
+hãy report tôi vì sao?

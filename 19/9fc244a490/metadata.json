@@ -1,0 +1,20 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "199fc244a490",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "apps/api/src/app.ts",
+    "apps/api/src/modules/quests/quests.service.ts",
+    "docs/CHANGELOG.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/19/9fc244a490/0/metadata.json",
+      "transcript": "/19/9fc244a490/0/full.jsonl",
+      "content_hash": "/19/9fc244a490/0/content_hash.txt",
+      "prompt": "/19/9fc244a490/0/prompt.txt"
+    }
+  ]
+}

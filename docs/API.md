@@ -71,6 +71,15 @@ Standardized error response:
 }
 ```
 
+### Web3 Skills (prefix: `/web3-skills`)
+- `GET /web3-skills` — list web3 skills (paginated, filter by category/q/sort/source)
+- `GET /web3-skills/categories` — list categories with counts
+- `GET /web3-skills/:slug` — single skill detail
+- `POST /web3-skills/submit` — submit a new skill (auth required)
+- `GET /web3-skills/submissions/mine` — list current user's submissions (auth required)
+- `GET /web3-skills/admin/pending` — list pending reviews (admin only)
+- `PATCH /web3-skills/admin/:id/review` — approve/reject/override (admin only)
+
 ### Admin Endpoints
 All admin endpoints are rate-limited and require both:
 1. Valid Supabase JWT

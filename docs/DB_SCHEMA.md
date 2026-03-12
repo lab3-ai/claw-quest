@@ -177,6 +177,35 @@ export function computeLuckyDraw(
 ### Reuse for Fiat (Stripe)
 The distribution calculator is reused for fiat payments. For crypto, `totalAmount` is in token smallest units (e.g., 10^18 for 1 ETH). For fiat, it's in cents (e.g., 10000 = $100.00). The `wallet` field in `Participant` holds a Stripe connected account ID (`acct_xxx`) instead of a blockchain address. The `payoutTxHash` field stores Stripe transfer IDs — differentiated by `Quest.fundingMethod`.
 
+### Web3 Skills Classification (added to `clawhub_skills`)
+| Field | Type | Description |
+|-------|------|-------------|
+| is_web3 | Boolean | Final web3 classification (auto OR admin override) |
+| web3_auto_detected | Boolean | Auto-detected by keyword matching |
+| web3_admin_override | Boolean? | Admin manual override (null = use auto) |
+| web3_category | String? | DeFi, NFT, L1/L2, Wallet, Bridge, DAO, etc. |
+| featured | Boolean | Admin-pinned skill |
+| featured_order | Int? | Display order for featured skills |
+
+### `web3_skill_submissions`
+| Field | Type | Description |
+|-------|------|-------------|
+| id | UUID (PK) | |
+| name | String | Skill/project name |
+| slug | String (unique) | URL-friendly identifier |
+| summary | String | Brief description |
+| description | String? | Detailed description (markdown) |
+| website_url | String? | Project website |
+| github_url | String? | Source code URL |
+| logo_url | String? | Logo URL |
+| category | String | Web3 category |
+| tags | String[] | Free-form tags |
+| submitted_by | String (FK→User) | Submitter |
+| status | String | pending / approved / rejected |
+| review_note | String? | Admin review note |
+| reviewed_by | String? (FK→User) | Reviewer |
+| reviewed_at | DateTime? | Review timestamp |
+
 ### Testing
 - 24 unit tests in `apps/api/src/modules/escrow/__tests__/distribution-calculator.test.ts`
 - Coverage: empty participants, single participant, dust distribution, large amounts (10^18), tier edge cases

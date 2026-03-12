@@ -295,15 +295,15 @@ server.get('/skill.md', async (_request, reply) => {
 const start = async () => {
     try {
         // Load RPC registry from DB before starting escrow poller or accepting requests
-        if (isEscrowConfigured()) {
-            await rpcManager.load(prisma);
-            invalidateClientCache(); // ensure clients are rebuilt with DB-sourced RPCs
-            startEscrowPoller(server).catch((err) => {
-                console.error('⚠️  Escrow poller failed (non-fatal):', err.message);
-            });
-        } else {
-            console.warn('⚠️  Escrow not configured (missing contract address or operator key) — poller will not start');
-        }
+        // if (isEscrowConfigured()) {
+        //     await rpcManager.load(prisma);
+        //     invalidateClientCache(); // ensure clients are rebuilt with DB-sourced RPCs
+        //     startEscrowPoller(server).catch((err) => {
+        //         console.error('⚠️  Escrow poller failed (non-fatal):', err.message);
+        //     });
+        // } else {
+        //     console.warn('⚠️  Escrow not configured (missing contract address or operator key) — poller will not start');
+        // }
 
         // // ClawHub skill catalog sync (runs on startup + every 24h)
         // startClawhubSyncJob(server).catch((err) => {

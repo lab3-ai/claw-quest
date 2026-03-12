@@ -2,6 +2,9 @@
 
 ## v0.15.0 — Web3 Skills Marketplace (2026-03-12)
 
+### Quests API — Production schema fix
+- [Fix] GET /quests 500 "Response doesn't match the schema": normalize `llmKeyTokenLimit` so 0 or non-positive is returned as `null` (QuestSchema expects positive or null); strip `creatorTelegramId` (BigInt) from response to avoid serialization/schema issues.
+
 ### Web3 Skills — Curated Skill Marketplace
 - [New] Web3 keyword classification job: auto-detects web3 skills from ClawHub data using 60+ keywords
 - [New] Category auto-assignment (DeFi, NFT, L1/L2, Wallet, Bridge, DAO, Infrastructure, Storage, Gaming, Data/Analytics, Security, Social, Other)

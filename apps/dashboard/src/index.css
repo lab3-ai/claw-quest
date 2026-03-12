@@ -415,3 +415,242 @@ summary {
     display: none;
     /* Chrome, Safari, and Opera */
 }
+
+/* ═══════════════════════════════════════════
+   Animated Banner (.ab-*)
+   ═══════════════════════════════════════════ */
+/* Illustration container — relative box, flex child, scales with breakpoints */
+.ab-illu {
+    position: relative;
+    width: 320px;
+    height: 180px;
+    flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+    .ab-illu {
+        width: 320px;
+        height: 180px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .ab-illu {
+        width: 420px;
+        height: 200px;
+    }
+}
+
+/* Floating elements: absolute within .ab-illu, sized in % so they scale */
+.ab-el {
+    position: absolute;
+}
+
+.ab-el:not(.ab-robot)>img {
+    width: 100%;
+    display: block;
+}
+
+.ab-cup {
+    left: 15%;
+    top: 0;
+    width: 14%;
+    z-index: 5;
+}
+
+.ab-robot {
+    left: 30%;
+    top: 8%;
+    width: 38%;
+    z-index: 6;
+}
+
+.ab-coin-silver {
+    left: 3%;
+    top: 55%;
+    width: 16%;
+    z-index: 4;
+}
+
+.ab-coin-blue {
+    right: 3%;
+    top: 3%;
+    width: 15%;
+    z-index: 4;
+}
+
+.ab-pyramid {
+    right: 15%;
+    bottom: 15%;
+    width: 5%;
+    z-index: 5;
+}
+
+/* Robot assembly */
+.ab-robot-body {
+    width: 100%;
+    display: block;
+    filter: drop-shadow(0 4px 16px rgba(243, 74, 66, 0.2));
+    position: relative;
+    z-index: 2;
+}
+
+.ab-robot-eyes {
+    position: absolute;
+    left: 49%;
+    top: 41%;
+    width: 27%;
+    z-index: 4;
+    pointer-events: none;
+    transition: transform 0.1s ease-out;
+}
+
+.ab-robot-arm {
+    position: absolute;
+    right: -28%;
+    top: 18%;
+    width: 48%;
+    z-index: 1;
+    transform-origin: 12% 85%;
+    animation: ab-armSway 3.2s ease-in-out infinite;
+}
+
+/* Keyframes — entrance */
+@keyframes ab-slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-22px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ab-slideRight {
+    from {
+        opacity: 0;
+        transform: translateX(22px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes ab-slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Keyframes — gentle float loops */
+@keyframes ab-floatB {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4%);
+    }
+}
+
+@keyframes ab-floatCup {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5%) rotate(1.5deg);
+    }
+}
+
+@keyframes ab-coinSilver {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5%) rotate(2deg);
+    }
+}
+
+@keyframes ab-coinBlue {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4%) rotate(-1.5deg);
+    }
+}
+
+@keyframes ab-pyramidWobble {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-6%) rotate(4deg);
+    }
+}
+
+@keyframes ab-armSway {
+
+    0%,
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    50% {
+        transform: translate(2px, -3px) rotate(1deg);
+    }
+}
+
+/* Entrance + float assignments */
+.ab-cup {
+    animation: ab-slideDown .65s ease-out .15s both, ab-floatCup 5s ease-in-out .8s infinite;
+}
+
+.ab-robot {
+    animation: ab-slideRight .75s ease-out .25s both, ab-floatB 5.5s ease-in-out 1s infinite;
+}
+
+.ab-coin-silver {
+    animation: ab-slideUp .65s ease-out .35s both, ab-coinSilver 6s ease-in-out 1s infinite;
+}
+
+.ab-coin-blue {
+    animation: ab-slideUp .65s ease-out .45s both, ab-coinBlue 6.5s ease-in-out 1.1s infinite;
+}
+
+.ab-pyramid {
+    animation: ab-slideUp .6s ease-out .5s both, ab-pyramidWobble 7s ease-in-out 1.1s infinite;
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+
+    .ab-el,
+    .ab-robot-arm {
+        animation: none !important;
+    }
+}

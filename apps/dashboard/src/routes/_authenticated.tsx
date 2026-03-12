@@ -54,7 +54,7 @@ export function AuthenticatedLayout() {
                         to="/quests"
                         className="mr-5 flex items-center gap-1.5 no-underline"
                     >
-                        <BrandLogo size="lg" />
+                        <BrandLogo size="lg" animated />
                     </Link>
 
                     {/* Desktop nav */}

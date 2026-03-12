@@ -143,3 +143,11 @@ docs/design-system/STATUS.md
 # Claude/ClaudeKit hooks logs (whole directory)
 .claude/hooks/.logs/
 reference-skill
+# Claude Code artifacts
+.claude/worktrees/
+*.bak
+
+# Agent plans and reports
+apps/api/plans/
+plans/reports/
+plans/visuals/

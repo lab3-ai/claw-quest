@@ -215,7 +215,7 @@ export function QuestList() {
 
             {/* Tabs row + view toggle */}
             <div className="flex items-center gap-3 py-3 max-sm:flex-col max-sm:gap-2 max-sm:items-stretch">
-                <div className="relative flex flex-1 min-w-0 items-center gap-0.5 p-0.5 max-sm:overflow-x-auto max-sm:scrollbar-hide">
+                <div className="relative flex flex-1 min-w-0 items-center gap-0.5 p-0.5 max-sm:overflow-x-auto">
                     {/* Sliding highlight */}
                     <span
                         className="absolute top-0.5 bottom-0.5 rounded-button bg-primary transition-all duration-200 ease-out z-0"
@@ -318,7 +318,7 @@ export function QuestList() {
 
             {/* Loading skeletons — match active view */}
             {activeIsLoading && view === "grid" && (
-                <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4 py-4">
+                <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4 py-4">
                     {[1, 2, 3, 4, 5, 6].map(i => (
                         <div key={i} className="flex flex-col border border-border rounded p-4 pointer-events-none">
                             <div className="flex justify-between items-center mb-3">
@@ -378,7 +378,7 @@ export function QuestList() {
                     sorted.length === 0 ? (
                         <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-4 max-sm:gap-3 py-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4 max-sm:gap-3 py-4">
                             {sorted.map(quest => (
                                 <QuestGridCard key={quest.id} quest={quest} />
                             ))}
@@ -404,8 +404,8 @@ export function QuestList() {
                 {/* Compact list (table) view */}
                 {!activeIsLoading && view === "compact" && (
                     <div className="block overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 max-sm:pb-2">
-                        <div className="sm:hidden text-xs text-muted-foreground mb-2 text-center">
-                            ← Swipe to view all columns →
+                        <div className="sm:hidden text-xs text-muted-foreground mb-2 text-center flex items-center justify-center gap-1 animate-pulse">
+                            <span>←</span> Swipe to view all columns <span>→</span>
                         </div>
                         <table className="w-full border-collapse min-w-[640px]">
                             <thead>

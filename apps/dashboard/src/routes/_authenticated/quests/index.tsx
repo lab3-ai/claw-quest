@@ -16,6 +16,7 @@ import { FlashFill, FlashLine, TrophyFill, TrophyLine, ClockFill, ClockLine, Sta
 import { SponsorLogo } from "@/components/sponsor-logo"
 import { PageTitle } from "@/components/page-title"
 import { TokenIcon } from "@/components/token-icon"
+import { AnimatedBanner } from "@/components/animated-banner"
 import type { Quest } from "@clawquest/shared"
 
 type Tab = "featured" | "highest-reward" | "ending-soon" | "new" | "upcoming" | "ended"
@@ -472,6 +473,13 @@ export function QuestList() {
                     </div>
                 )}
             </div>
+
+            {/* Animated banner — only on featured tab */}
+            {tab === "featured" && (
+                <div className="mt-10">
+                    <AnimatedBanner />
+                </div>
+            )}
         </div>
     )
 }

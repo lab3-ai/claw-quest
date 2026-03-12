@@ -18,9 +18,68 @@ import {
 import { ThemeSwitcher } from "@/components/theme-switcher"
 import { Palette2Line, Dashboard4Line, AddLine, DownLine } from "@mingcute/react"
 import { getDiceBearUrl } from "@/components/avatarUtils"
-import { useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { BrandLogo } from "@/components/brand-logo"
 import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
+
+const NAV_ITEMS = [
+    { to: "/quests", label: "Quests" },
+    { to: "/web3-skills", label: "Web3 Skills" },
+    { to: "/github-bounties", label: "Bounties" },
+] as const
+
+/** Desktop nav with a sliding underline indicator that follows the active link */
+function NavTabs() {
+    const navRef = useRef<HTMLElement>(null)
+    const [indicator, setIndicator] = useState({ left: 0, width: 0 })
+    const [hasActive, setHasActive] = useState(false)
+
+    const updateIndicator = useCallback(() => {
+        const nav = navRef.current
+        if (!nav) return
+        const active = nav.querySelector<HTMLElement>("a.active")
+        if (active) {
+            const navRect = nav.getBoundingClientRect()
+            const linkRect = active.getBoundingClientRect()
+            setIndicator({ left: linkRect.left - navRect.left, width: linkRect.width })
+            setHasActive(true)
+        } else {
+            setHasActive(false)
+        }
+    }, [])
+
+    useEffect(() => {
+        updateIndicator()
+        /* Re-measure on route change — MutationObserver catches class changes on links */
+        const nav = navRef.current
+        if (!nav) return
+        const observer = new MutationObserver(updateIndicator)
+        observer.observe(nav, { attributes: true, attributeFilter: ["class"], subtree: true })
+        return () => observer.disconnect()
+    }, [updateIndicator])
+
+    const linkClass =
+        "py-1.5 text-sm font-semibold text-foreground no-underline transition-colors duration-200 hover:text-fg-secondary [&.active]:text-foreground"
+
+    return (
+        <nav ref={navRef} className="relative hidden items-center gap-6 sm:flex">
+            {NAV_ITEMS.map(({ to, label }) => (
+                <Link key={to} to={to} className={linkClass}>
+                    {label}
+                </Link>
+            ))}
+            {/* Sliding underline */}
+            <span
+                className="pointer-events-none absolute bottom-0 h-0.5 rounded-full bg-foreground transition-all duration-300 ease-in-out"
+                style={{
+                    left: indicator.left,
+                    width: indicator.width,
+                    opacity: hasActive ? 1 : 0,
+                }}
+            />
+        </nav>
+    )
+}
 
 export function PublicLayout() {
     const { isAuthenticated, logout, user } = useAuth()
@@ -39,30 +98,11 @@ export function PublicLayout() {
                         to="/quests"
                         className="mr-5 flex items-center gap-2 no-underline"
                     >
-                        <BrandLogo />
+                        <BrandLogo animated />
                     </Link>
 
-                    {/* Desktop nav */}
-                    <nav className="hidden items-center gap-4 sm:flex">
-                        <Link
-                            to="/quests"
-                            className="py-1.5 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
-                        >
-                            Quests
-                        </Link>
-                        <Link
-                            to="/web3-skills"
-                            className="py-1.5 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
-                        >
-                            Web3 Skills
-                        </Link>
-                        <Link
-                            to="/github-bounties"
-                            className="py-1.5 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
-                        >
-                            Bounties
-                        </Link>
-                    </nav>
+                    {/* Desktop nav with sliding indicator */}
+                    <NavTabs />
 
                     {/* Mobile hamburger */}
                     <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -171,7 +211,7 @@ export function PublicLayout() {
 
                         {isAuthenticated ? (
                             <>
-                                <Button asChild>
+                                <Button asChild variant="primary">
                                     <Link to="/quests/new" className="no-underline">
                                         <AddLine size={16} />
                                         Create Quest
@@ -216,7 +256,7 @@ export function PublicLayout() {
                                         Log in
                                     </Link>
                                 </Button>
-                                <Button asChild>
+                                <Button asChild variant="primary">
                                     <Link to="/quests/new" className="no-underline">
                                         <AddLine size={16} />
                                         Create Quest

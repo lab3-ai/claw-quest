@@ -188,7 +188,7 @@ function WaitlistNavbar() {
                     className="-ml-2 shrink-0"
                     aria-label="Scroll to top"
                 >
-                    <BrandLogo dark size="sm" />
+                    <BrandLogo dark size="sm" animated />
                 </button>
 
                 {/* Desktop nav */}

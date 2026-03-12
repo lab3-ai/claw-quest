@@ -24,7 +24,7 @@ import { QuestCompletePage } from './routes/_authenticated/quests/$questId/compl
 import { Account } from './routes/_authenticated/account'
 import { StripeConnect } from './routes/_authenticated/stripe-connect'
 import { QuestJoin } from './routes/_public/quests/join'
-import { HomePage } from './routes/_public/home'
+import { NotFoundPage } from './routes/not-found'
 import { Privacy } from './routes/privacy'
 import { Terms } from './routes/terms'
 import { Waitlist } from './routes/waitlist'
@@ -201,11 +201,6 @@ const appLayoutRoute = createRoute({
 // indexRoute not needed — root '/' is handled by waitlistRoute
 
 // ── Public routes (no auth required) ──
-const homeRoute = createRoute({
-    getParentRoute: () => appLayoutRoute,
-    path: '/home',
-    component: HomePage,
-})
 
 const questsRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
@@ -513,8 +508,6 @@ const routeTree = rootRoute.addChildren([
     waitlistAliasRoute,
     cliAuthRoute,
     appLayoutRoute.addChildren([
-        // indexRoute,
-        homeRoute,
         questsRoute,
         claimQuestRoute,
         myQuestsRoute,
@@ -550,7 +543,8 @@ export const router = createRouter({
     routeTree,
     context: {
         auth: undefined! as AuthContextType, // Passed from main.tsx
-    }
+    },
+    defaultNotFoundComponent: NotFoundPage,
 })
 
 declare module '@tanstack/react-router' {

@@ -2383,4 +2383,204 @@ export async function questsRoutes(server: FastifyInstance) {
             return result;
         },
     );
+
+    // ── POST /quests/:id/verify/:participationId — Verify participation (simpler path) ───
+    server.post(
+        '/:id/verify/:participationId',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Verify (approve/reject) a submitted proof',
+                security: [{ bearerAuth: [] }],
+                params: z.object({
+                    id: z.string().uuid(),
+                    participationId: z.string().uuid(),
+                }),
+                body: z.object({
+                    action: z.enum(['approve', 'reject']),
+                    reason: z.string().optional(),
+                }),
+                response: {
+                    200: z.object({
+                        message: z.string(),
+                        participation: z.object({
+                            id: z.string(),
+                            status: z.string(),
+                        }),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id: questId, participationId } = request.params as any;
+            const { action, reason } = request.body as any;
+            const userId = request.user.id;
+            const userRole = request.user.role ?? 'user';
+
+            const { allowed } = await isQuestCreatorOrAdmin(server.prisma, questId, userId, userRole);
+            if (!allowed) return reply.status(403).send({ message: 'Only quest creator or admin can verify proofs' } as any);
+
+            try {
+                const participation = await verifyParticipation(server.prisma, questId, participationId, action, reason);
+                notifyProofVerified(server, participationId, action === 'approve' ? 'approved' : 'rejected').catch(() => { });
+                return {
+                    message: `Proof ${action === 'approve' ? 'approved' : 'rejected'}`,
+                    participation: { id: participation.id, status: participation.status },
+                };
+            } catch (err: any) {
+                if (err instanceof QuestValidationError) {
+                    return reply.status(400).send({ message: err.message } as any);
+                }
+                if (err instanceof QuestNotFoundError) {
+                    return reply.status(404).send({ message: err.message } as any);
+                }
+                throw err;
+            }
+        }
+    );
+
+    // ── POST /quests/:id/payout/:participationId — Trigger payout for single participation ───
+    server.post(
+        '/:id/payout/:participationId',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Trigger payout for a single quest participation',
+                security: [{ bearerAuth: [] }],
+                params: z.object({
+                    id: z.string().uuid(),
+                    participationId: z.string().uuid(),
+                }),
+                response: {
+                    200: z.object({
+                        success: z.boolean(),
+                        participationId: z.string(),
+                        apiKey: z.string().optional(),
+                        message: z.string(),
+                        error: z.string().optional(),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            const { id: questId, participationId } = request.params as any;
+            const userId = request.user.id;
+            const userRole = request.user.role ?? 'user';
+
+            // Verify quest exists and check permissions
+            const quest = await server.prisma.quest.findUnique({ where: { id: questId } });
+            if (!quest) {
+                return reply.status(404).send({ message: 'Quest not found' } as any);
+            }
+
+            const { allowed } = await isQuestCreatorOrAdmin(server.prisma, questId, userId, userRole);
+            if (!allowed) {
+                return reply.status(403).send({
+                    message: 'Only quest creator or admin can trigger payouts'
+                } as any);
+            }
+
+            // Get the participation
+            const participation = await server.prisma.questParticipation.findUnique({
+                where: { id: participationId },
+                include: {
+                    user: { select: { id: true, email: true, username: true } },
+                    agent: { select: { id: true, agentname: true } },
+                },
+            });
+
+            if (!participation) {
+                return reply.status(404).send({ message: 'Participation not found' } as any);
+            }
+
+            if (participation.questId !== questId) {
+                return reply.status(400).send({ message: 'Participation does not belong to this quest' } as any);
+            }
+
+            if (participation.status !== 'completed') {
+                return reply.status(400).send({
+                    message: 'Participation must be completed before payout',
+                } as any);
+            }
+
+            // Check if already paid
+            if (participation.payoutTokenStatus === 'key_sent') {
+                return reply.status(400).send({
+                    message: 'Payout already processed for this participation',
+                } as any);
+            }
+
+            // Verify this is an LLM token reward quest
+            if (quest.rewardType !== REWARD_TYPE.LLMTOKEN_OPENROUTER) {
+                return reply.status(400).send({
+                    message: 'This endpoint is only for LLMTOKEN_OPENROUTER reward type'
+                } as any);
+            }
+
+            if (!quest.tokenProvider || !quest.tokenAmount) {
+                return reply.status(400).send({
+                    message: 'Quest missing tokenProvider or tokenAmount configuration'
+                } as any);
+            }
+
+            try {
+                // Generate unique key name
+                const timestamp = Date.now();
+                const identifier = participation.user?.username ||
+                    participation.agent?.agentname ||
+                    participation.id.substring(0, 8);
+                const keyName = `quest_${questId.substring(0, 8)}_${identifier}_${timestamp}`;
+
+                // Set expiry to 30 days from now
+                const expiresAt = new Date();
+                expiresAt.setDate(expiresAt.getDate() + 30);
+
+                // Create API key via OpenRouter
+                const keyResponse = await openRouterService.createApiKey({
+                    name: keyName,
+                    limit: Number(quest.tokenAmount),
+                    expiresAt: expiresAt.toISOString(),
+                });
+
+                // Update participation with key details
+                await server.prisma.questParticipation.update({
+                    where: { id: participation.id },
+                    data: {
+                        payoutTokenProvider: quest.tokenProvider,
+                        payoutTokenAmount: quest.tokenAmount,
+                        payoutTokenApiKey: keyResponse.key,
+                        payoutTokenKeyId: keyResponse.id,
+                        payoutTokenExpiresAt: expiresAt,
+                        payoutTokenStatus: 'key_sent',
+                    },
+                });
+
+                return {
+                    success: true,
+                    participationId: participation.id,
+                    apiKey: keyResponse.key,
+                    message: 'Payout processed successfully',
+                };
+            } catch (error: any) {
+                console.error(`[Payout] Failed to create key for participation ${participation.id}:`, error);
+
+                // Update status to track failure
+                await server.prisma.questParticipation.update({
+                    where: { id: participation.id },
+                    data: {
+                        payoutTokenStatus: 'pending_key_creation',
+                    },
+                });
+
+                return reply.status(500).send({
+                    success: false,
+                    participationId: participation.id,
+                    message: 'Failed to process payout',
+                    error: error.message || 'Unknown error',
+                } as any);
+            }
+        }
+    );
 }

@@ -205,7 +205,7 @@ export function DraftQuestModal({ telegramId, onClose }: DraftQuestModalProps) {
                         </p>
 
                         <Button
-                            variant="outline-primary"
+                            variant="primary-tonal"
                             className="w-full font-mono"
                             onClick={onClose}
                         >

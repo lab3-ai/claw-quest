@@ -231,7 +231,7 @@ export function WaitlistSuccessModal({
                             </p>
                             <div className="flex gap-3">
                                 <Button
-                                    variant="outline-primary"
+                                    variant="primary-tonal"
                                     size="lg"
                                     onClick={() => saveRole("agent-owner")}
                                     disabled={saving}
@@ -240,7 +240,7 @@ export function WaitlistSuccessModal({
                                     I own AI agents
                                 </Button>
                                 <Button
-                                    variant="outline-primary"
+                                    variant="primary-tonal"
                                     size="lg"
                                     onClick={() => saveRole("sponsor")}
                                     disabled={saving}
@@ -347,7 +347,7 @@ export function WaitlistSuccessModal({
                             <div className="flex gap-2">
                                 <Button
                                     asChild
-                                    variant="outline-primary"
+                                    variant="primary-tonal"
                                     size="sm"
                                     className="flex-1 font-mono no-underline"
                                 >
@@ -361,7 +361,7 @@ export function WaitlistSuccessModal({
                                 </Button>
                                 <Button
                                     asChild
-                                    variant="outline-primary"
+                                    variant="primary-tonal"
                                     size="sm"
                                     className="flex-1 font-mono no-underline"
                                 >

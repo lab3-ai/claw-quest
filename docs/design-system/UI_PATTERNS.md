@@ -123,10 +123,13 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 
 | Pattern | Rule |
 |---------|------|
-| Primary CTA | One per visible area. `bg-primary text-primary-foreground`. |
-| Destructive | Always requires confirmation dialog. `text-error` or `bg-error`. |
+| Default | `default` variant (bg-foreground). Used for most actions. |
+| Primary CTA | One per visible area. `variant="primary"`. |
+| Danger | Always requires confirmation dialog. `variant="danger"`. |
+| Tonal | Softer emphasis. `variant="*-tonal"` (e.g. `primary-tonal`). |
+| Outline | Tertiary actions. `variant="*-outline"` or `variant="outline"`. |
 | Loading | Disable + show spinner. Never allow double-click. |
-| Icon-only | Must have `aria-label`. Show tooltip on hover. 44x44px touch target. |
+| Icon-only | `iconOnly` prop. Must have `aria-label`. Tooltip on hover. Min 44px touch target (use `size="lg"`). |
 | Group | Max 3 buttons side-by-side. Primary rightmost. |
 
 ### Forms

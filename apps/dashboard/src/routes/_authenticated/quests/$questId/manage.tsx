@@ -420,7 +420,7 @@ export function ManageQuest() {
                                 <span className={statusBadgeClass(quest.status)}>{quest.status}</span>
                                 {quest.status === 'draft' && (
                                     <Button
-                                        variant="default"
+                                        variant="primary"
                                         size="sm"
                                         disabled={!isFunded || publishMutation.isPending}
                                         onClick={() => {
@@ -435,7 +435,7 @@ export function ManageQuest() {
                                 )}
                                 {quest.status === 'live' && (
                                     <Button
-                                        variant="destructive"
+                                        variant="danger"
                                         size="sm"
                                         disabled={closeMutation.isPending}
                                         onClick={() => {
@@ -563,7 +563,7 @@ export function ManageQuest() {
                     {isCreator && (
                         <div className="flex flex-wrap gap-2 mb-4 max-sm:mb-3 max-sm:flex-col">
                             <Button
-                                variant="default"
+                                variant="primary"
                                 size="sm"
                                 disabled={!isFunded || !hasVerified || distributeMutation.isPending}
                                 onClick={() => {

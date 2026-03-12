@@ -301,17 +301,31 @@ Flat design — no decorative shadows.
 
 ### Buttons
 
-| Variant | Style | Use |
-|---------|-------|-----|
-| **Default** | `bg-primary text-primary-foreground` | Main CTA |
-| **Outline** | `border-border`, hover: `bg-muted` | Secondary actions |
-| **Ghost** | No border/bg, hover: `bg-muted` | Tertiary, icon buttons |
-| **Destructive** | `bg-error text-white` | Delete, destructive |
-| **Quest** | `bg-primary border-border-heavy` | Quest-specific CTAs |
-| **Agent** | `bg-tone-agent border-tone-agent-dark` | Agent-specific CTAs |
-| **Danger** | `text-error border-error` (transparent bg) | Soft destructive |
+Each color has 3 styles: **fill** (solid bg), **tonal** (20% opacity bg), **outline** (border + transparent bg).
 
-Sizing: `sm` (32px h), `default` (36px h), `lg` (44px h), `icon` (36x36). All `font-semibold`, monospace.
+| Color | Fill | Tonal | Outline |
+|-------|------|-------|---------|
+| **default** | `bg-foreground text-background` | `bg-secondary text-secondary-foreground` | `border-input bg-background` |
+| **primary** | `bg-primary text-primary-foreground` | `bg-primary/20 text-primary` | `border-primary/30 text-primary` |
+| **danger** | `bg-destructive text-destructive-foreground` | `bg-destructive/20 text-destructive` | `border-destructive/30 text-destructive` |
+| **success** | `bg-emerald-600 text-white` | `bg-emerald-600/20 text-emerald-600` | `border-emerald-600/30 text-emerald-600` |
+| **warning** | `bg-amber-500 text-white` | `bg-amber-500/20 text-amber-500` | `border-amber-500/30 text-amber-500` |
+| **info** | `bg-sky-500 text-white` | `bg-sky-500/20 text-sky-500` | `border-sky-500/30 text-sky-500` |
+
+Utility variants: **ghost** (no bg, hover only), **link** (underline), **outline** (neutral border, alias for `default-outline`).
+
+Naming: `variant="primary"`, `variant="primary-tonal"`, `variant="primary-outline"`.
+
+| Size | Height | Padding | Font |
+|------|--------|---------|------|
+| `sm` | 26px | px-2.5 | text-xs |
+| `default` | 36px | px-4 | text-sm |
+| `lg` | 44px | px-6 | text-sm |
+| `xl` | 52px | px-8 | text-base |
+
+**Icon button**: `iconOnly` prop — square (w=h), follows size. Use with any variant.
+
+All buttons: `font-semibold`, `rounded-button`, `active:scale-95`. Demo: `/concepts/demo/buttons`.
 
 ### Cards
 

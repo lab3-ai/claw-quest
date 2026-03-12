@@ -114,7 +114,7 @@ export function Register() {
                     <Button
                         type="button"
                         variant="outline"
-                        size="md"
+                        size="lg"
                         className="mb-3 flex w-full items-center justify-center gap-2"
                         onClick={handleGoogleLogin}
                         disabled={googleLoading}
@@ -131,7 +131,7 @@ export function Register() {
                     <Button
                         type="button"
                         variant="outline"
-                        size="md"
+                        size="lg"
                         className="mb-3 flex w-full items-center justify-center gap-2"
                         onClick={async () => {
                             setTelegramLoading(true)
@@ -157,7 +157,7 @@ export function Register() {
                     <Button
                         type="button"
                         variant="outline"
-                        size="md"
+                        size="lg"
                         className="mb-3 flex w-full items-center justify-center gap-2"
                         onClick={handleTwitterLogin}
                         disabled={twitterLoading}
@@ -174,7 +174,7 @@ export function Register() {
                     <Button
                         type="button"
                         variant="outline"
-                        size="md"
+                        size="lg"
                         className="mb-3 flex w-full items-center justify-center gap-2"
                         onClick={handleDiscordLogin}
                         disabled={discordLoading}
@@ -215,7 +215,7 @@ export function Register() {
                             />
                         </div>
 
-                        <Button type="submit" size="md" className="mt-2 w-full" disabled={loading}>
+                        <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
                             {loading ? "Creating account..." : "Create account"}
                         </Button>
                     </form>

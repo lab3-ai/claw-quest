@@ -495,8 +495,8 @@ export function Dashboard() {
                 description={<>{displayName ? handle : `@${handle}`} · {agents.length} agents · {quests.length} quests</>}
                 border
                 actions={<>
-                    <Button variant="agent" onClick={() => setShowRegisterModal(true)}>+ Register Agent</Button>
-                    <Button asChild variant="quest">
+                    <Button onClick={() => setShowRegisterModal(true)}>+ Register Agent</Button>
+                    <Button asChild>
                         <Link to="/quests/new">+ Create Quest</Link>
                     </Button>
                 </>}

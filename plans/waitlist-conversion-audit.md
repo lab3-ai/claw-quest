@@ -8,7 +8,7 @@
 
 ## A. Chẩn Đoán Chính
 
-**Vấn đề #1**: Trang live đang hiện form email "Join Waitlist →" nhưng endpoint `POST /api/waitlist` trả 404. → **Không ai đăng ký được.**
+**Vấn đề #1**: Trang live đang hiện form email "Join Waitlist →" nhưng endpoint `POST /api/waitlist` trả 404. → **Không ai đăng ký được.** Bỏ hẳn luồng email, chỉ dùng Telegram bot.
 
 **Vấn đề #2**: Social-gated flow (Follow X → RT → Claim via Telegram) đã có trong code (`social-tasks.tsx`) nhưng **chưa deploy** lên production.
 
@@ -46,7 +46,7 @@
 |---|---|
 | **Vấn đề** | Trang live hiện email form → 404. `<SocialTasks>` chưa deploy. |
 | **Tại sao hại** | **100% drop-off**. Không ai signup được. |
-| **Sửa** | Deploy version có `<SocialTasks>` component. Bỏ/ẩn email input. |
+| **Sửa** | **Xoá hẳn email form.** Deploy `<SocialTasks>` component. Signup chỉ qua Telegram bot. |
 | **Impact** | Từ 0% conversion → functional. **#1 priority.** |
 
 **Flow đã duyệt:**
@@ -177,7 +177,7 @@ Your first quest — complete to unlock early access
   waitlistJoined: (position: number, referralLink: string) =>
       `🎉 You're *#${position}* in line for early access!\n\n` +
 -     `When we launch, you'll be among the first to register agents and claim quests with real rewards.\n\n` +
-+     `ClawQuest is where AI agents complete quests and earn real rewards — USDC, crypto, or giftcards.\n\n` +
++     `ClawQuest is where AI agents complete quests and earn real rewards — USDC, crypto, or fiat.\n\n` +
       `📈 Move up — share your referral link:\n` +
 ```
 
@@ -186,7 +186,7 @@ Cũng sửa `MSG.waitlistJoinedViaReferral` tương tự — thay dòng giải t
   waitlistJoinedViaReferral: (...) =>
       `🎉 You joined via *${referrerName}*'s referral!\n\n` +
 -     `You're *#${position}* in line for early access — with a *10-spot bonus* for joining via referral.\n\n` +
-+     `You're *#${position}* in line — with a *10-spot bonus*! ClawQuest: AI agents complete quests → earn USDC, crypto, giftcards.\n\n` +
++     `You're *#${position}* in line — with a *10-spot bonus*! ClawQuest: AI agents complete quests → earn USDC, crypto, fiat.\n\n` +
 ```
 
 ---
@@ -249,10 +249,9 @@ Cũng cập nhật share text cho bot — [messages.ts](file:///Users/macbookpro
   const tweetText = encodeURIComponent(
 -     `Just joined the @ClawQuestAI waitlist.\n\n` +
 -     `Real quests. Real rewards. USDC / crypto / giftcards.\n\n` +
--     `Use my link to skip ahead:\n${referralLink}`
 +     `My AI agent is about to start earning real rewards on @ClawQuestAI.\n\n` +
-+     `USDC, crypto, or giftcards — you pick.\n\n` +
-+     `Top 100 on the waitlist get OG Pioneer status. Use my link:\n${referralLink}`
++     `USDC, crypto, or fiat — you pick.\n\n` +
+      `Top 100 on the waitlist get OG Pioneer status. Use my link:\n${referralLink}`
   );
 ```
 

@@ -816,9 +816,6 @@ export async function agentsRoutes(app: FastifyInstance) {
             if (agent.verificationExpiresAt && agent.verificationExpiresAt < new Date()) {
                 return reply.status(410).send({ error: 'Verification token expired' } as any);
             }
-            console.log("verify_tweet_url", verify_tweet_url);
-            console.log("verificationToken", verificationToken);
-            console.log("agent", agent);
 
             // If verify_tweet_url is provided, verify via X (RapidAPI — no OAuth tokens needed)
             if (verify_tweet_url) {

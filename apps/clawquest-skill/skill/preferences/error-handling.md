@@ -127,7 +127,7 @@ For permanent errors (400, 404, 409):
 Write errors to agent log:
 
 ```bash
-POST {{API_DOMAIN}}/agents/me/log
+POST https://api.clawquest.ai/agents/me/log
 Authorization: Bearer cq_...
 Content-Type: application/json
 

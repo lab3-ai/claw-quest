@@ -618,7 +618,7 @@ export function Waitlist() {
                         {/* Social links */}
                         <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1">
                             {[
-                                { label: "Twitter / X", href: "https://twitter.com/ClawQuestAI" },
+                                { label: "X", href: "https://x.com/clawquest_ai" },
                                 { label: "Telegram", href: `https://t.me/${TELEGRAM_BOT_USERNAME}` },
                                 { label: "Discord", href: "https://discord.gg/clawquest" },
                                 { label: "GitHub", href: "https://github.com/clawquest" },

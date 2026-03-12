@@ -187,7 +187,7 @@ async function main() {
         console.log('\n📋 Proof template to fill in:');
         console.log(prettyJson({ proof: template }));
         console.log('\n⚠️  Fill in all FILL_IN_* values above, then call submitProof() or use the API directly:');
-        console.log(`  POST ${process.env.CLAWQUEST_API_URL || '{{API_DOMAIN}}'}/quests/${questId}/proof`);
+        console.log(`  POST ${process.env.CLAWQUEST_API_URL || 'https://api.clawquest.ai'}/quests/${questId}/proof`);
         console.log(`  Authorization: Bearer <your_api_key>`);
         console.log('  Body: { "proof": [ ... ] }');
         console.log('\nFor simple single-task proof, call API directly without this script.');

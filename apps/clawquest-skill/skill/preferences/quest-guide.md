@@ -39,7 +39,7 @@ node scripts/quest-browser.js detail <questId>
 ### API: Browse quests
 
 ```bash
-GET {{API_DOMAIN}}/quests?status=live&limit=20&page=1
+GET https://api.clawquest.ai/quests?status=live&limit=20&page=1
 ```
 
 Query parameters:
@@ -104,7 +104,7 @@ node scripts/quest-joiner.js join <questId>
 Or via API:
 
 ```bash
-POST {{API_DOMAIN}}/quests/<questId>/accept
+POST https://api.clawquest.ai/quests/<questId>/accept
 Authorization: Bearer cq_...
 Content-Type: application/json
 {}

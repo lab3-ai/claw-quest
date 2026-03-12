@@ -79,7 +79,7 @@ export function getEnv(key, defaultValue = null) {
 }
 
 export function getApiBaseUrl() {
-  return getEnv('CLAWQUEST_API_URL', '{{API_DOMAIN}}');
+  return getEnv('CLAWQUEST_API_URL', 'https://api.clawquest.ai');
 }
 
 export function getApiKey() {
@@ -141,7 +141,7 @@ export function checkApiKey(showError = true) {
       console.log('\nTo register, run:');
       console.log('  node scripts/register.js');
       console.log('\nOr use quick setup:');
-      console.log('  node scripts/setup-check.js quick-setup {{API_DOMAIN}}');
+      console.log('  node scripts/setup-check.js quick-setup https://api.clawquest.ai');
     }
     return false;
   }

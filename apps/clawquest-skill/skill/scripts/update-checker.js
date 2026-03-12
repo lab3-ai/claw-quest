@@ -50,7 +50,7 @@ export async function checkForUpdates() {
         console.log(response.changelog);
       }
 
-      info('\nTo update: reinstall via clawhub or download from {{UI_DOMAIN}}');
+      info('\nTo update: reinstall via clawhub or download from https://www.clawquest.ai');
 
       return { updateAvailable: true, currentVersion, latestVersion: latest };
     }

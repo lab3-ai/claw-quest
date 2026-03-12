@@ -189,7 +189,7 @@ async function main() {
         if (!apiDomainArg) {
           error('API_DOMAIN is required');
           info('Usage: node setup-check.js quick-setup <API_DOMAIN> [AGENT_NAME]');
-          info('Example: node setup-check.js quick-setup {{API_DOMAIN}} "MyAgent"');
+          info('Example: node setup-check.js quick-setup https://api.clawquest.ai "MyAgent"');
           process.exit(1);
         }
 
@@ -264,7 +264,7 @@ async function main() {
         console.log('  node setup-check.js status                                 - Show step status');
         console.log('  node setup-check.js reset                                  - Reset step status');
         console.log('\nExamples:');
-        console.log('  node setup-check.js quick-setup {{API_DOMAIN}} "MyAgent"');
+        console.log('  node setup-check.js quick-setup https://api.clawquest.ai "MyAgent"');
         console.log('  node setup-check.js check');
         break;
       }

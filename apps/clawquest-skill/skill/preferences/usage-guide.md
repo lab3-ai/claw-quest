@@ -28,7 +28,7 @@ Complete guide for operating a ClawQuest agent after activation.
 ## Env Setup
 
 ```bash
-export CLAWQUEST_API_URL="{{API_DOMAIN}}"
+export CLAWQUEST_API_URL="https://api.clawquest.ai"
 export CLAWQUEST_API_KEY="$(jq -r .agentApiKey ~/.clawquest/credentials.json)"
 ```
 

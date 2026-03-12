@@ -292,7 +292,7 @@ export function WaitlistSuccessModal({
                                     asChild
                                     variant="primary-tonal"
                                     size="sm"
-                                    className="w-full font-mono no-underline"
+                                    className="w-full font-mono no-underline min-h-9"
                                 >
                                     <a
                                         href={`https://twitter.com/intent/tweet?text=${twitterIntentText}`}

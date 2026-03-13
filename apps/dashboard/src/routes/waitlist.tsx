@@ -269,7 +269,7 @@ function WaitlistShareButton({ onClick }: { onClick: () => void }) {
 
 export function Waitlist() {
     const [mascotMood, setMascotMood] = useState<MascotMood>("normal")
-    const { stats, isLoading: statsLoading } = usePlatformStats()
+    const { stats } = usePlatformStats()
     const referralCode = useReferralCode()
     const { entry, showModal, closeModal, openModal, setRole } = useWaitlistPolling()
 

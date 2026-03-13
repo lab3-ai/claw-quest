@@ -325,7 +325,7 @@ Naming: `variant="primary"`, `variant="primary-tonal"`, `variant="primary-outlin
 
 **Icon button**: `iconOnly` prop — square (w=h), follows size. Use with any variant.
 
-All buttons: `font-semibold`, `rounded-button`, `active:scale-95`. Demo: `/concepts/demo/buttons`.
+All buttons: `font-semibold`, `rounded-button`, `active:scale-95`, **min `gap-2`** for icon+text spacing. Demo: `/concepts/demo/buttons`.
 
 ### Cards
 

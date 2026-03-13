@@ -16,10 +16,10 @@ function generateAgentApiKey(): string {
 // Returns { agentId, ownerId } or sends 401 and returns null.
 
 async function authenticateAgent(
-    server: FastifyInstance,
+    server: FastifyInstance & { prisma: any },
     request: FastifyRequest,
     reply: FastifyReply
-): Promise<{ agentId: string; ownerId: string | null } | null> {
+): Promise<{ agentId: string; ownerId: string | null } | null | undefined> {
     const auth = request.headers.authorization;
     if (!auth?.startsWith('Bearer cq_')) {
         reply.status(401).send({ error: 'Missing or invalid agent API key' });
@@ -91,7 +91,7 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const { agentname } = request.body;
+            const { agentname } = request.body as { agentname: string };
             const agent = await server.prisma.agent.create({
                 data: {
                     agentname,
@@ -131,7 +131,7 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const { id } = request.params;
+            const { id } = request.params as { id: string };
             const agent = await server.prisma.agent.findFirst({
                 where: { id, ownerId: request.user.id },
             });
@@ -172,14 +172,14 @@ export async function agentsRoutes(app: FastifyInstance) {
                         id: z.string(),
                         type: z.string(),
                         message: z.string(),
-                        meta: z.record(z.unknown()).nullable(),
+                        meta: z.record(z.string(), z.unknown()).nullable(),
                         createdAt: z.string(),
                     })),
                 },
             },
         },
         async (request, reply) => {
-            const { id } = request.params;
+            const { id } = request.params as { id: string };
             const { limit } = request.query as { limit: number };
 
             // Verify agent ownership
@@ -235,7 +235,7 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const { activationCode, agentname } = request.body;
+            const { activationCode, agentname } = request.body as { activationCode: string; agentname?: string };
 
             const agent = await server.prisma.agent.findUnique({
                 where: { activationCode: activationCode.toUpperCase() },
@@ -306,7 +306,7 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const ctx = await authenticateAgent(server, request, reply);
+            const ctx = await authenticateAgent(server as any, request, reply);
             if (!ctx) return;
 
             const agent = await server.prisma.agent.findUnique({
@@ -359,14 +359,14 @@ export async function agentsRoutes(app: FastifyInstance) {
                         id: z.string(),
                         type: z.string(),
                         message: z.string(),
-                        meta: z.record(z.unknown()).nullable(),
+                        meta: z.record(z.string(), z.unknown()).nullable(),
                         createdAt: z.string(),
                     })),
                 },
             },
         },
         async (request, reply) => {
-            const ctx = await authenticateAgent(server, request, reply);
+            const ctx = await authenticateAgent(server as any, request, reply);
             if (!ctx) return;
 
             const { limit } = request.query as { limit: number };
@@ -390,18 +390,18 @@ export async function agentsRoutes(app: FastifyInstance) {
                 body: z.object({
                     type: z.enum(['QUEST_START', 'QUEST_COMPLETE', 'ERROR', 'INFO']),
                     message: z.string().min(1).max(500),
-                    meta: z.record(z.unknown()).optional(),
+                    meta: z.record(z.string(), z.unknown()).optional(),
                 }),
                 response: { 201: z.object({ id: z.string(), createdAt: z.string() }) },
             },
         },
         async (request, reply) => {
-            const ctx = await authenticateAgent(server, request, reply);
+            const ctx = await authenticateAgent(server as any, request, reply);
             if (!ctx) return;
 
-            const { type, message, meta } = request.body;
+            const { type, message, meta } = request.body as { type: string; message: string; meta?: Record<string, unknown> };
             const log = await server.prisma.agentLog.create({
-                data: { agentId: ctx.agentId, type, message, meta: meta ?? null },
+                data: { agentId: ctx.agentId, type, message, meta: (meta ?? undefined) as any },
             });
             return reply.code(201).send({ id: log.id, createdAt: log.createdAt.toISOString() });
         }
@@ -415,7 +415,7 @@ export async function agentsRoutes(app: FastifyInstance) {
         version: z.string().max(20).optional(),    // e.g. "1.0.0"
         source: z.enum(['clawhub', 'mcp', 'manual', 'custom', 'openclaw', 'cloudage', 'agentforge', 'claude', 'claude_code']).default('clawhub'),
         publisher: z.string().max(100).optional(), // e.g. "paysponge"
-        meta: z.record(z.unknown()).optional(),         // tool names, descriptions, etc.
+        meta: z.record(z.string(), z.unknown()).optional(),         // tool names, descriptions, etc.
     });
 
     server.post(
@@ -441,14 +441,14 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const ctx = await authenticateAgent(server, request, reply);
+            const ctx = await authenticateAgent(server as any, request, reply);
             if (!ctx) return;
 
-            const { skills } = request.body;
+            const { skills } = request.body as { skills: Array<{ name: string; version?: string; source?: string; publisher?: string; meta?: Record<string, unknown> }> };
             const now = new Date();
 
             const results = await Promise.all(
-                skills.map(s =>
+                skills.map((s: { name: string; version?: string; source?: string; publisher?: string; meta?: Record<string, unknown> }) =>
                     server.prisma.agentSkill.upsert({
                         where: { agentId_name: { agentId: ctx.agentId, name: s.name } },
                         create: {
@@ -457,14 +457,14 @@ export async function agentsRoutes(app: FastifyInstance) {
                             version: s.version ?? null,
                             source: s.source ?? 'clawhub',
                             publisher: s.publisher ?? null,
-                            meta: s.meta ?? null,
+                            meta: (s.meta ?? undefined) as any,
                             lastSeenAt: now,
                         },
                         update: {
                             version: s.version ?? undefined,
                             source: s.source ?? undefined,
                             publisher: s.publisher ?? undefined,
-                            meta: s.meta ?? undefined,
+                            meta: (s.meta ?? undefined) as any,
                             lastSeenAt: now,
                         },
                     })
@@ -473,7 +473,7 @@ export async function agentsRoutes(app: FastifyInstance) {
 
             return {
                 synced: results.length,
-                skills: results.map(r => ({
+                skills: results.map((r: any) => ({
                     name: r.name,
                     version: r.version,
                     source: r.source,
@@ -520,14 +520,14 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const ctx = await authenticateAgent(server, request, reply);
+            const ctx = await authenticateAgent(server as any, request, reply);
             if (!ctx) return;
 
-            const { platform, skills } = request.body;
+            const { platform, skills } = request.body as { platform: string; skills: Array<{ name: string; version?: string; path?: string }> };
             const now = new Date();
 
             const results = await Promise.all(
-                skills.map(s =>
+                skills.map((s: { name: string; version?: string; path?: string }) =>
                     server.prisma.agentSkill.upsert({
                         where: { agentId_name: { agentId: ctx.agentId, name: s.name } },
                         create: {
@@ -556,7 +556,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 verified: true,
                 platform,
                 scannedAt: now.toISOString(),
-                skills: results.map(r => ({
+                skills: results.map((r: any) => ({
                     name: r.name,
                     version: r.version,
                     verified: r.verified,
@@ -580,7 +580,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                         version: z.string().nullable(),
                         source: z.string(),
                         publisher: z.string().nullable(),
-                        meta: z.record(z.unknown()).nullable(),
+                        meta: z.record(z.string(), z.unknown()).nullable(),
                         lastSeenAt: z.string(),
                         createdAt: z.string(),
                     })),
@@ -588,7 +588,7 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const ctx = await authenticateAgent(server, request, reply);
+            const ctx = await authenticateAgent(server as any, request, reply);
             if (!ctx) return;
 
             const skills = await server.prisma.agentSkill.findMany({
@@ -680,7 +680,7 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const { agentname, platform } = request.body;
+            const { agentname, platform } = request.body as { agentname?: string; platform?: string };
             const resolvedName = agentname || `agent-${randomBytes(3).toString('hex')}`;
 
             const agentApiKey = generateAgentApiKey();
@@ -743,7 +743,7 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const { token } = request.params;
+            const { token } = request.params as { token: string };
 
             const agent = await server.prisma.agent.findUnique({
                 where: { verificationToken: token },
@@ -799,7 +799,7 @@ export async function agentsRoutes(app: FastifyInstance) {
             },
         },
         async (request, reply) => {
-            const { verificationToken, verify_tweet_url } = request.body;
+            const { verificationToken, verify_tweet_url } = request.body as { verificationToken: string; verify_tweet_url?: string };
 
             const agent = await server.prisma.agent.findUnique({
                 where: { verificationToken },

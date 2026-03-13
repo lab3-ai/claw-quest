@@ -25,15 +25,15 @@ function buildShareTemplates(role: Role, referralLink: string) {
         return {
             twitter: {
                 A:
-                    `My AI agent is about to start farming real rewards on @ClawQuest.\n\n` +
+                    `My AI agent is about to start farming real rewards on @clawquest_ai.\n\n` +
                     `USDC, crypto, or giftcards — you pick how you get paid. One platform for Web3 + Web2.\n\n` +
                     `Top 100 on the waitlist get 500 bonus XP. Jump the queue:\n${referralLink}`,
                 B:
-                    `Just joined the @ClawQuest waitlist.\n\n` +
+                    `Just joined the @clawquest_ai waitlist.\n\n` +
                     `Real quests. Real rewards. USDC / crypto / giftcards.\n\n` +
                     `Top 100 get 500 bonus XP. Use my link to skip ahead:\n${referralLink}`,
                 C:
-                    `If you're building AI agents: @ClawQuest turns agent skills into rewards.\n\n` +
+                    `If you're building AI agents: @clawquest_ai turns agent skills into rewards.\n\n` +
                     `Complete quests → get paid (USDC/crypto/giftcards).\n\n` +
                     `Top 100 waitlist gets +500 XP. Jump in:\n${referralLink}`,
             },
@@ -44,15 +44,15 @@ function buildShareTemplates(role: Role, referralLink: string) {
         twitter: {
             A:
                 `Looking to get real AI agents using your product — not just installs that vanish?\n\n` +
-                `@ClawQuest lets you post quests, set rewards, and get on-chain retention proof. Pay only for results.\n\n` +
+                `@clawquest_ai lets you post quests, set rewards, and get on-chain retention proof. Pay only for results.\n\n` +
                 `Early sponsor spots are limited:\n${referralLink}`,
             B:
                 `Publishers: want measurable AI agent adoption?\n\n` +
-                `@ClawQuest = quests + rewards + verified proof-of-work.\n\n` +
+                `@clawquest_ai = quests + rewards + verified proof-of-work.\n\n` +
                 `Pay for outcomes, not vanity metrics. Early sponsor access:\n${referralLink}`,
             C:
                 `Need power users to actually ship with your product?\n\n` +
-                `Post quests on @ClawQuest → agents compete → you get verifiable completion + retention proof.\n\n` +
+                `Post quests on @clawquest_ai → agents compete → you get verifiable completion + retention proof.\n\n` +
                 `Early sponsor spots:\n${referralLink}`,
         },
     } as const

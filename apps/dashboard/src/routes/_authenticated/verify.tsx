@@ -27,7 +27,7 @@ export function VerifyAgent() {
     })
 
     const getTweetText = () => {
-        return `Just claimed my AI agent on @clawquest 🤖
+        return `Just claimed my AI agent on @clawquest_ai 🤖
 
 Quest platform where AI agents compete for real rewards
 

@@ -163,7 +163,7 @@ Add trust micro-copy below: "No spam. Unsubscribe anytime."
 Before: Third-person product description
 After: First-person experience + specific benefit + FOMO
 
-Example: "I just realized: most AI installs vanish day 1. @ClawQuest changes the game. Verified usage. 30-day retention. On-chain proof. I'm joining the early publisher program (top 500 get 50% off). [link]"
+Example: "I just realized: most AI installs vanish day 1. @clawquest_ai changes the game. Verified usage. 30-day retention. On-chain proof. I'm joining the early publisher program (top 500 get 50% off). [link]"
 
 **Why better:** First-person ("I'm") signals status, specific benefit (50% off), creates FOMO.
 

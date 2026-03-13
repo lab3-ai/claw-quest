@@ -1,0 +1,6 @@
+/superpowers:write-plan Hiện tại logic đang trong function verifyXAction @apps/api/src/modules/quests/social-action-verifier.ts 
+Đang có dùng  X_API (và rapidapi backup 1 số task) @apps/api/src/modules/x/x-rest-client.ts @apps/api/src/modules/x/x-rapidapi-client.ts 
+Solution mới: Sử dụng  TwitterAPI.io
+- link docs: https://docs.twitterapi.io/introduction 
+tôi có sẵn API_KEY của TWITTERAPI = REDACTED
+và tham khảo cả Flow trong @PLAN_VERIFY_X.md

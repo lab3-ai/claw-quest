@@ -1,0 +1,19 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "6c31293daec7",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/modules/quests/social-action-verifier.ts",
+    "apps/api/src/modules/x/x-twitter-api45-client.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/6c/31293daec7/0/metadata.json",
+      "transcript": "/6c/31293daec7/0/full.jsonl",
+      "content_hash": "/6c/31293daec7/0/content_hash.txt",
+      "prompt": "/6c/31293daec7/0/prompt.txt"
+    }
+  ]
+}

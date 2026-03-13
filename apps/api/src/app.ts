@@ -83,6 +83,7 @@ const corsOrigins = process.env.CORS_ORIGIN
 server.register(cors, {
     origin: corsOrigins,
     credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 });
 
 // ─── Rate Limiting (security) ────────────────────────────────────────────────
@@ -304,11 +305,15 @@ const start = async () => {
     try {
         // Load RPC registry from DB before starting escrow poller or accepting requests
         if (isEscrowConfigured()) {
-            await rpcManager.load(prisma);
-            invalidateClientCache(); // ensure clients are rebuilt with DB-sourced RPCs
-            startEscrowPoller(server).catch((err) => {
-                console.error('⚠️  Escrow poller failed (non-fatal):', err.message);
-            });
+            try {
+                await rpcManager.load(prisma);
+                invalidateClientCache(); // ensure clients are rebuilt with DB-sourced RPCs
+                startEscrowPoller(server).catch((err) => {
+                    console.error('⚠️  Escrow poller failed (non-fatal):', err.message);
+                });
+            } catch (err: any) {
+                console.warn('⚠️  RPC manager load failed (non-fatal) — escrow poller will not start:', err.message);
+            }
         } else {
             console.warn('⚠️  Escrow not configured (missing contract address or operator key) — poller will not start');
         }

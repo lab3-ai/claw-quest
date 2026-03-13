@@ -28,10 +28,15 @@ async function authenticateAgent(
     const apiKey = auth.slice(7); // strip "Bearer "
     const agent = await server.prisma.agent.findUnique({
         where: { agentApiKey: apiKey },
-        select: { id: true, ownerId: true },
+        select: { id: true, ownerId: true, isActive: true },
     });
     if (!agent) {
         reply.status(401).send({ error: 'Invalid agent API key' });
+        return null;
+    }
+    // Block inactive agents — only the active agent per user can call APIs
+    if (agent.ownerId && !agent.isActive) {
+        reply.status(403).send({ error: 'This agent is not active. Ask your human owner to activate it on the Dashboard.' });
         return null;
     }
     return { agentId: agent.id, ownerId: agent.ownerId as string | null };
@@ -64,6 +69,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 agentname: a.agentname,
                 status: a.status as any,
                 ownerId: a.ownerId,
+                isActive: a.isActive,
                 activationCode: a.activationCode ?? undefined,
                 agentApiKey: a.agentApiKey ?? undefined,
                 verificationToken: a.verificationToken ?? undefined,
@@ -104,6 +110,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 agentname: agent.agentname,
                 status: agent.status as any,
                 ownerId: agent.ownerId,
+                isActive: agent.isActive,
                 activationCode: agent.activationCode ?? undefined,
                 agentApiKey: agent.agentApiKey ?? undefined,
                 verificationToken: agent.verificationToken ?? undefined,
@@ -143,6 +150,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 agentname: agent.agentname,
                 status: agent.status as any,
                 ownerId: agent.ownerId,
+                isActive: agent.isActive,
                 activationCode: agent.activationCode ?? undefined,
                 agentApiKey: agent.agentApiKey ?? undefined,
                 verificationToken: agent.verificationToken ?? undefined,
@@ -153,6 +161,82 @@ export async function agentsRoutes(app: FastifyInstance) {
                 createdAt: agent.createdAt.toISOString(),
                 updatedAt: agent.updatedAt.toISOString(),
             };
+        }
+    );
+
+    // ── PATCH /agents/:id/activate — set agent as active (human JWT) ──────────
+    server.patch(
+        '/:id/activate',
+        {
+            onRequest: [app.authenticate],
+            schema: {
+                tags: ['Agents'],
+                summary: 'Set agent as active — only this agent can call questing APIs',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                response: {
+                    200: z.object({ agentId: z.string(), isActive: z.boolean(), message: z.string() }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const { id } = request.params as { id: string };
+            const userId = (request as any).user.id;
+
+            // Verify ownership and must be claimed
+            const agent = await server.prisma.agent.findFirst({
+                where: { id, ownerId: userId },
+                select: { id: true, claimedAt: true, agentname: true },
+            });
+            if (!agent) return reply.status(404).send({ error: 'Agent not found or not owned by you' } as any);
+            if (!agent.claimedAt) return reply.status(400).send({ error: 'Agent must be claimed before activating' } as any);
+
+            // Deactivate all other agents for this user, then activate this one
+            await server.prisma.$transaction([
+                server.prisma.agent.updateMany({
+                    where: { ownerId: userId, isActive: true },
+                    data: { isActive: false },
+                }),
+                server.prisma.agent.update({
+                    where: { id },
+                    data: { isActive: true },
+                }),
+            ]);
+
+            return { agentId: id, isActive: true, message: `Agent "${agent.agentname}" is now active.` };
+        }
+    );
+
+    // ── DELETE /agents/:id — delete agent (human JWT) ─────────────────────────
+    server.delete(
+        '/:id',
+        {
+            onRequest: [app.authenticate],
+            schema: {
+                tags: ['Agents'],
+                summary: 'Delete an agent (only if idle or pending claim)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.string().uuid() }),
+                response: {
+                    200: z.object({ message: z.string() }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const { id } = request.params as { id: string };
+            const userId = (request as any).user.id;
+
+            const agent = await server.prisma.agent.findFirst({
+                where: { id, ownerId: userId },
+                select: { id: true, status: true, agentname: true },
+            });
+            if (!agent) return reply.status(404).send({ error: 'Agent not found or not owned by you' } as any);
+            if (agent.status === 'questing') {
+                return reply.status(400).send({ error: 'Cannot delete an agent that is currently questing' } as any);
+            }
+
+            await server.prisma.agent.delete({ where: { id } });
+            return { message: `Agent "${agent.agentname}" deleted.` };
         }
     );
 

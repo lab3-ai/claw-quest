@@ -1062,10 +1062,11 @@ export async function questsRoutes(server: FastifyInstance) {
                 const apiKey = auth.slice(7);
                 const agent = await server.prisma.agent.findUnique({
                     where: { agentApiKey: apiKey },
-                    select: { id: true, ownerId: true },
+                    select: { id: true, ownerId: true, isActive: true },
                 });
                 if (!agent) return reply.status(401).send({ message: 'Invalid agent API key' } as any);
                 if (!agent.ownerId) return reply.status(400).send({ message: 'Agent has no owner' } as any);
+                if (!agent.isActive) return reply.status(403).send({ message: 'This agent is not active. Ask your human owner to activate it on the Dashboard.' } as any);
                 agentId = agent.id;
                 userId = agent.ownerId;
             } else {
@@ -1081,13 +1082,15 @@ export async function questsRoutes(server: FastifyInstance) {
                     if (!owned) return reply.status(403).send({ message: 'Agent not found or not owned by you' } as any);
                     agentId = bodyAgentId;
                 } else {
-                    // Auto-resolve user's first agent if none specified
-                    const defaultAgent = await server.prisma.agent.findFirst({
-                        where: { ownerId: userId },
+                    // Auto-resolve active agent — use the agent marked isActive=true
+                    const activeAgent = await server.prisma.agent.findFirst({
+                        where: { ownerId: userId, isActive: true },
                         select: { id: true },
-                        orderBy: { createdAt: 'asc' },
                     });
-                    if (defaultAgent) agentId = defaultAgent.id;
+                    if (activeAgent) {
+                        agentId = activeAgent.id;
+                    }
+                    // If no active agent, proceed without agentId (quest joins without agent link)
                 }
             }
 

@@ -9,176 +9,153 @@ datasource db {
 }
 
 model User {
-  id                String   @id @default(uuid())
-  supabaseId        String?  @unique  // Supabase Auth user UUID
-  email             String   @unique
-  username          String?  @unique
-  displayName       String?            // Human-friendly name (synced from Supabase user_metadata.full_name)
-  password          String?            // Legacy — kept for backward compat
-  role              String   @default("user") // "user" | "admin"
-  telegramId        String?  @unique          // Telegram user ID stored as string (BigInt overflows PG bigint)
-  telegramUsername  String?                   // Telegram @username
-  xId               String?  @unique          // Twitter/X user ID (from identity_data.sub)
-  xHandle           String?                   // Twitter/X username (from identity_data.user_name)
-  xAccessToken      String?                   // X OAuth2 access token (2h lifetime)
-  xRefreshToken     String?                   // X OAuth2 refresh token (one-time use, 6mo)
-  xTokenExpiry      DateTime?                 // When the X access token expires
-  discordId         String?  @unique          // Discord user ID
-  discordHandle     String?                   // Discord username
-  discordAccessToken  String?                 // Discord OAuth access token (guilds.members.read)
-  discordRefreshToken String?                 // Discord OAuth refresh token
-  discordTokenExpiry  DateTime?               // When the access token expires
-  githubId            String?  @unique        // GitHub user numeric ID
-  githubHandle        String?                 // GitHub @username
-  githubAccessToken   String?                 // GitHub OAuth access token (repo scope for creators)
+  id                       String                   @id @default(uuid())
+  email                    String                   @unique
+  password                 String?
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
+  supabaseId               String?                  @unique
+  role                     String                   @default("user")
+  username                 String?                  @unique
+  telegramId               String?                  @unique
+  telegramUsername         String?
+  discordHandle            String?
+  discordId                String?                  @unique
+  xHandle                  String?
+  xId                      String?                  @unique
+  discordAccessToken       String?
+  discordRefreshToken      String?
+  discordTokenExpiry       DateTime?
+  xAccessToken             String?
+  xRefreshToken            String?
+  xTokenExpiry             DateTime?
+  displayName              String?
+  stripeConnectedAccountId String?                  @unique
+  stripeConnectedOnboarded Boolean                  @default(false)
+  stripeCustomerId         String?                  @unique
+  xp                       Int                      @default(0)
+  rank                     Int                      @default(0)
+  userType                 String                   @default("standard")
+  githubId                 String?                  @unique
+  githubHandle             String?
+  githubAccessToken        String?
+  agents                   Agent[]
+  githubBounties           GitHubBounty[]
+  githubBountySubmissions  GitHubBountySubmission[]
+  Quest                    Quest[]
+  collaborations           QuestCollaborator[]
+  questDeposits            QuestDeposit[]
+  participations           QuestParticipation[]
+  waitlistEntry            WaitlistEntry?
+  wallets                  WalletLink[]
+  skillReviews             web3_skill_submissions[] @relation("SkillReviewer")
+  skillSubmissions         web3_skill_submissions[] @relation("SkillSubmitter")
 
-  xp                Int      @default(0)        // experience points — used for quest ranking
-  rank              Int      @default(0)        // leaderboard rank derived from xp
-  userType          String   @default("standard") // "standard" | "premium" | "og_pioneer" | "early_access"
-
-  // Stripe Connect — for receiving fiat payouts as winner
-  stripeConnectedAccountId  String?   @unique  // Stripe Express account ID (acct_xxx)
-  stripeConnectedOnboarded  Boolean   @default(false)
-  // Stripe Customer — for paying as sponsor
-  stripeCustomerId          String?   @unique  // Stripe customer ID (cus_xxx)
-
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  agents         Agent[]
-  wallets        WalletLink[]
-  participations QuestParticipation[]
-  collaborations QuestCollaborator[]
-  questDeposits  QuestDeposit[]
-  waitlistEntry  WaitlistEntry?
-  githubBounties GitHubBounty[]
-  githubBountySubmissions GitHubBountySubmission[]
-  skillSubmissions    web3_skill_submissions[] @relation("SkillSubmitter")
-  skillReviews        web3_skill_submissions[] @relation("SkillReviewer")
+  @@index([xp(sort: Desc)])
 }
 
 model Agent {
-  id                    String    @id @default(uuid())
-  ownerId               String?
-  owner                 User?     @relation(fields: [ownerId], references: [id])
-  agentname             String
-  status                String    @default("idle") // idle, questing, offline
-  activationCode        String?   @unique
-  agentApiKey           String?   @unique  // issued on /agents/register — used by agents as Bearer token
-  verificationToken     String?   @unique  // for agent-first registration claim flow
-  verificationExpiresAt DateTime?           // 48h expiry for verification token
-
-  claimedAt             DateTime?           // null = unclaimed
-  claimedVia            String?             // "telegram" | "email" | "supabase"
-  claimEmail            String?             // email used to claim (if email flow)
-
-  TelegramLink   TelegramLink?
-  logs           AgentLog[]
-  participations QuestParticipation[]
-  skills         AgentSkill[]
+  id                      String                   @id @default(uuid())
+  ownerId                 String?
+  agentname               String
+  status                  String                   @default("idle")
+  activationCode          String?                  @unique
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  agentApiKey             String?                  @unique
+  verificationToken       String?                  @unique
+  verificationExpiresAt   DateTime?
+  claimedAt               DateTime?
+  claimedVia              String?
+  claimEmail              String?
+  claimedXHandle          String?                  @unique
+  isActive                Boolean                  @default(false)
+  owner                   User?                    @relation(fields: [ownerId], references: [id])
+  logs                    AgentLog[]
+  skills                  AgentSkill[]
   githubBountySubmissions GitHubBountySubmission[]
-
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  participations          QuestParticipation[]
+  TelegramLink            TelegramLink?
 
   @@index([ownerId])
   @@index([agentApiKey])
   @@index([verificationToken])
+  @@index([ownerId, isActive])
 }
 
 model TelegramLink {
-  id          String   @id @default(uuid())
-  agentId     String   @unique
-  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  telegramId  BigInt               // one Telegram user can claim multiple agents
-  username    String?
-  firstName   String?
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(uuid())
+  agentId    String   @unique
+  telegramId BigInt
+  username   String?
+  firstName  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  agent      Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
   @@index([telegramId])
 }
 
 model Quest {
-  id          String   @id @default(uuid())
-  title       String
-  description String
-  sponsor     String   @default("System")
-
-  type        String   @default("FCFS") // FCFS, LEADERBOARD, LUCKY_DRAW
-  status      String   @default("draft") // draft, live, scheduled, completed, cancelled, expired
-
-  rewardAmount Decimal  @default(0) @db.Decimal(36, 18)
-  rewardType   String   @default("USDC") // USDC | LLMTOKEN_OPENROUTER
-  tokenProvider String?              // "openrouter" — for LLM token rewards
-  tokenAmount   Decimal? @db.Decimal(36, 18) // Token reward amount (e.g. $100.00)
-
-  totalSlots  Int      @default(100)
-  filledSlots Int      @default(0)
-
-  tags        String[] @default([])
-  requiredSkills  String[] @default([]) // skill names agent must have to accept
-  requireVerified Boolean  @default(false) // only accept agents with verified (scanned) skills
-  tasks           Json     @default("[]")  // QuestTask[] — social task definitions
-
-  rewardTiers   Json?                   // LEADERBOARD: [40, 25, 15, 20] = % per rank (last = split among rest)
-  network     String?                 // blockchain name (e.g. "Base", "BNB Smart Chain")
-  drawTime    DateTime?               // Lucky Draw deadline
-
-  expiresAt   DateTime?
-  startAt     DateTime?               // null = immediately live after funding
-
-  // Ownership / claim fields
-  creatorAgentId      String?             // Agent who created this quest (Flow B)
-  creatorTelegramId   BigInt?             // Telegram user who claimed this quest
-  creatorEmail        String?             // Email of creator (alternative identity)
-  creatorUserId       String?             // Optional — linked Supabase user
-  claimToken          String?   @unique   // Token for claiming ownership (cleared on claim)
-  claimTokenExpiresAt DateTime?           // 48h expiry
-  claimedAt           DateTime?           // null = unclaimed
-  previewToken        String?   @unique   // Permanent preview link token (survives claim)
-
-  // Funding
-  fundingMethod       String?             // "stripe" | "crypto"
-  fundingStatus       String   @default("unfunded") // unfunded, pending, confirmed, refunded
-  stripeSessionId     String?  @unique
-  stripePaymentId     String?
-  cryptoTxHash        String?
-  cryptoChainId       Int?                // e.g. 8453 (Base)
-  fundedAt            DateTime?
-  fundedAmount        Int?                // actual amount received (same unit as rewardAmount)
-
-  // Refund
-  refundStatus        String?             // pending, completed
-  refundAmount        Int?
-  refundTxHash        String?
-  refundedAt          DateTime?
-
-  // Crypto escrow — on-chain data
-  tokenAddress        String?             // ERC20 contract address on-chain (null for native)
-  tokenDecimals       Int?                // 6 for USDC, 18 for ETH
-  sponsorWallet       String?             // Sponsor's wallet address
-  escrowQuestId       String?             // bytes32 hex for contract reference
-
-  // LLM Key Bonus Reward (on-claw-llm-server)
-  llmKeyRewardEnabled Boolean @default(false)
-  llmKeyTokenLimit    Int?    @default(1000000)
-
-  // LLM Model Reward (LLMTOKEN_OPENROUTER)
+  id                   String               @id @default(uuid())
+  description          String
+  createdAt            DateTime             @default(now())
+  expiresAt            DateTime?
+  filledSlots          Int                  @default(0)
+  rewardAmount         Decimal              @default(0) @db.Decimal(36, 18)
+  rewardType           String               @default("USDC")
+  sponsor              String               @default("System")
+  status               String               @default("draft")
+  tags                 String[]             @default([])
+  title                String
+  totalSlots           Int                  @default(100)
+  type                 String               @default("FCFS")
+  updatedAt            DateTime             @updatedAt
+  requiredSkills       String[]             @default([])
+  creatorTelegramId    BigInt?
+  creatorEmail         String?
+  creatorUserId        String?
+  claimToken           String?              @unique
+  claimTokenExpiresAt  DateTime?
+  claimedAt            DateTime?
+  escrowQuestId        String?
+  sponsorWallet        String?
+  tokenAddress         String?
+  tokenDecimals        Int?
+  creatorAgentId       String?
+  cryptoChainId        Int?
+  cryptoTxHash         String?
+  fundedAmount         Int?
+  fundedAt             DateTime?
+  fundingMethod        String?
+  fundingStatus        String               @default("unfunded")
+  previewToken         String?              @unique
+  refundAmount         Int?
+  refundStatus         String?
+  refundTxHash         String?
+  refundedAt           DateTime?
+  startAt              DateTime?
+  stripePaymentId      String?
+  stripeSessionId      String?              @unique
+  tasks                Json                 @default("[]")
+  rewardTiers          Json?
+  drawTime             DateTime?
+  network              String?
+  totalFunded          Decimal              @default(0) @db.Decimal(36, 18)
+  requireVerified      Boolean              @default(false)
+  tokenProvider        String?
+  tokenAmount          Decimal?             @db.Decimal(36, 18)
+  earlyAccessAt        DateTime?
+  llmKeyRewardEnabled  Boolean              @default(false)
+  llmKeyTokenLimit     Int?                 @default(1000000)
   llmModelId           String?
-  llmModel             LlmModel? @relation(fields: [llmModelId], references: [id])
-  tokenBudgetPerWinner Decimal?  @db.Decimal(18, 6)  // USD budget per winner
-
-  // Collaboration
-  totalFunded     Decimal  @default(0) @db.Decimal(36, 18)
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  participations QuestParticipation[]
-  collaborators  QuestCollaborator[]
-  deposits       QuestDeposit[]
+  tokenBudgetPerWinner Decimal?             @db.Decimal(18, 6)
+  sponsorId            String?
+  llmModel             LlmModel?            @relation(fields: [llmModelId], references: [id])
+  User                 User?                @relation(fields: [sponsorId], references: [id])
+  collaborators        QuestCollaborator[]
+  deposits             QuestDeposit[]
+  participations       QuestParticipation[]
 
   @@index([claimToken])
   @@index([llmModelId])
@@ -187,23 +164,22 @@ model Quest {
   @@index([creatorAgentId])
   @@index([creatorUserId])
   @@index([status, createdAt])
+  @@index([earlyAccessAt])
+  @@index([sponsorId])
 }
-
-// ─── LLM Model Catalog ────────────────────────────────────────────────────────
 
 model LlmModel {
   id               String   @id @default(uuid())
-  openrouterId     String   @unique  // e.g. "anthropic/claude-sonnet-4.6"
-  name             String           // "Claude Sonnet 4.6"
-  provider         String           // "Anthropic"
-  tier             String   @default("standard") // budget | mid | premium
-  inputPricePer1M  Decimal  @db.Decimal(10, 4)   // sell price $/1M input tokens (incl. 6% markup)
-  outputPricePer1M Decimal  @db.Decimal(10, 4)   // sell price $/1M output tokens (incl. 6% markup)
-  contextWindow    Int                             // max context tokens
+  openrouterId     String   @unique
+  name             String
+  provider         String
+  tier             String   @default("standard")
+  inputPricePer1M  Decimal  @db.Decimal(10, 4)
+  outputPricePer1M Decimal  @db.Decimal(10, 4)
+  contextWindow    Int
   isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-
   quests           Quest[]
 
   @@index([isActive, outputPricePer1M])
@@ -212,34 +188,33 @@ model LlmModel {
 model QuestCollaborator {
   id          String    @id @default(uuid())
   questId     String
-  quest       Quest     @relation(fields: [questId], references: [id], onDelete: Cascade)
   userId      String?
-  user        User?     @relation(fields: [userId], references: [id])
-  inviteToken String    @unique  // "collab_<hex>"
-  invitedBy   String?            // userId of who invited
-  acceptedAt  DateTime?          // null = pending invite
-  expiresAt   DateTime           // 7-day expiry
+  inviteToken String    @unique
+  invitedBy   String?
+  acceptedAt  DateTime?
+  expiresAt   DateTime
   createdAt   DateTime  @default(now())
+  quest       Quest     @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Restrict)
 
-  @@unique([questId, userId])
   @@index([questId])
   @@index([inviteToken])
 }
 
 model QuestDeposit {
   id            String   @id @default(uuid())
-  questId       String                        // logical quest UUID
-  quest         Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
-  escrowQuestId String                        // on-chain questId bytes32 (main or sub)
+  questId       String
+  escrowQuestId String
   userId        String
-  user          User     @relation(fields: [userId], references: [id])
-  amount        Decimal  @db.Decimal(36, 18)  // human-readable (e.g. 200.00)
+  amount        Decimal  @db.Decimal(36, 18)
   tokenAddress  String
   chainId       Int
-  txHash        String?                       // filled when poller confirms
-  walletAddress String   @default("")         // depositor's wallet
-  status        String   @default("pending")  // pending | confirmed | refunded
+  txHash        String?
+  walletAddress String   @default("")
+  status        String   @default("pending")
   createdAt     DateTime @default(now())
+  quest         Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id])
 
   @@index([questId])
   @@index([escrowQuestId])
@@ -247,60 +222,52 @@ model QuestDeposit {
 }
 
 model QuestParticipation {
-  id        String   @id @default(uuid())
-  questId   String
-  quest     Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
-  userId    String?  // null for agent-only participations
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  agentId   String?  // null until user links an agent
-  agent     Agent?   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  id                   String    @id @default(uuid())
+  questId              String
+  agentId              String?
+  status               String    @default("in_progress")
+  proof                Json?
+  tasksCompleted       Int       @default(0)
+  tasksTotal           Int       @default(5)
+  payoutAmount         Float?
+  payoutStatus         String    @default("na")
+  joinedAt             DateTime  @default(now())
+  completedAt          DateTime?
+  payoutTxHash         String?
+  payoutWallet         String?
+  userId               String?
+  payoutTokenProvider  String?
+  payoutTokenAmount    Decimal?  @db.Decimal(36, 18)
+  payoutTokenApiKey    String?
+  payoutTokenKeyId     String?
+  payoutTokenExpiresAt DateTime?
+  payoutTokenStatus    String?
+  llmRewardApiKey      String?
+  llmRewardIssuedAt    DateTime?
+  agent                Agent?    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  quest                Quest     @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user                 User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  status          String   @default("in_progress") // in_progress, submitted, completed, failed
-  proof           Json?    // Store proof details
-  tasksCompleted  Int      @default(0)
-  tasksTotal      Int      @default(5)
-  payoutAmount    Float?   // null = N/A, value = paid/pending amount
-  payoutStatus    String   @default("na") // na, pending, paid
-  payoutTxHash    String?  // on-chain tx hash of distribute()
-  payoutWallet    String?  // winner's wallet address
-
-  // LLM Token payout (OpenRouter API keys)
-  payoutTokenProvider  String?   // "openrouter"
-  payoutTokenAmount    Decimal?  @db.Decimal(36, 18) // e.g. $100.00
-  payoutTokenApiKey    String?   // sk-or-v1-xxxx (generated API key)
-  payoutTokenKeyId     String?   // OpenRouter key ID (for revocation)
-  payoutTokenExpiresAt DateTime? // When key auto-expires
-  payoutTokenStatus    String?   // pending_key_creation | key_sent | used | expired
-
-  // LLM Key Bonus Reward (on-claw-llm-server)
-  llmRewardApiKey   String?
-  llmRewardIssuedAt DateTime?
-
-  joinedAt    DateTime @default(now())
-  completedAt DateTime?
-
-  @@unique([questId, userId]) // One participation per user per quest (nulls are distinct)
-  @@unique([questId, agentId]) // One participation per agent per quest
+  @@unique([questId, userId])
+  @@unique([questId, agentId])
 }
 
 model AgentSkill {
-  id        String   @id @default(uuid())
-  agentId   String
-  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  id         String    @id @default(uuid())
+  agentId    String
+  name       String
+  version    String?
+  source     String    @default("unknown")
+  publisher  String?
+  meta       Json?
+  lastSeenAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  verified   Boolean   @default(false)
+  platform   String?
+  scannedAt  DateTime?
+  agent      Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
-  name      String   // e.g. "sponge-wallet", "onchain-actions"
-  version   String?  // e.g. "1.0.0" — null if unknown (Claude Code)
-  source    String   @default("unknown") // "clawhub", "mcp", "manual"
-  publisher String?  // e.g. "paysponge", "openclaw", "leeknowsai"
-  meta      Json?    // extra metadata (tool names for MCP, description, etc.)
-  verified  Boolean  @default(false) // true when reported via scan tool
-  platform  String?  // "openclaw" | "cloudage" | "agentforge" | "claude" | "claude_code"
-  scannedAt DateTime? // last scan timestamp
-
-  lastSeenAt DateTime @default(now()) // updated each time agent re-reports
-  createdAt  DateTime @default(now())
-
-  @@unique([agentId, name]) // one record per skill per agent
+  @@unique([agentId, name])
   @@index([agentId])
   @@index([name])
 }
@@ -308,12 +275,11 @@ model AgentSkill {
 model AgentLog {
   id        String   @id @default(uuid())
   agentId   String
-  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  type      String   // QUEST_START, QUEST_COMPLETE, ERROR, INFO
+  type      String
   message   String
   meta      Json?
-
   createdAt DateTime @default(now())
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
   @@index([agentId])
   @@index([createdAt])
@@ -322,11 +288,11 @@ model AgentLog {
 model WalletLink {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  address   String   // checksummed Ethereum address
+  address   String
   chainId   Int?
   isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, address])
   @@index([userId])
@@ -339,20 +305,17 @@ model EscrowCursor {
   updatedAt DateTime @updatedAt
 }
 
-// ─── Chain & RPC Registry ────────────────────────────────────────────────────
-
 model Chain {
-  id              Int      @id         // chainId (e.g. 56, 8453)
+  id              Int              @id
   name            String
   shortName       String
-  nativeCurrency  Json                 // { symbol, name, decimals }
+  nativeCurrency  Json
   explorerUrl     String
-  isTestnet       Boolean  @default(false)
-  isEscrowEnabled Boolean  @default(false)
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
+  isTestnet       Boolean          @default(false)
+  isEscrowEnabled Boolean          @default(false)
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
   rpcs            ChainRpc[]
   contracts       EscrowContract[]
 }
@@ -360,13 +323,13 @@ model Chain {
 model ChainRpc {
   id        String   @id @default(uuid())
   chainId   Int
-  chain     Chain    @relation(fields: [chainId], references: [id])
   url       String
-  provider  String?                   // "public", "alchemy", "quicknode", "custom"
-  priority  Int      @default(10)     // lower number = higher priority
+  provider  String?
+  priority  Int      @default(10)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  chain     Chain    @relation(fields: [chainId], references: [id])
 
   @@unique([chainId, url])
   @@index([chainId, isActive, priority])
@@ -375,90 +338,81 @@ model ChainRpc {
 model EscrowContract {
   id         String    @id @default(uuid())
   chainId    Int
-  chain      Chain     @relation(fields: [chainId], references: [id])
   address    String
   isActive   Boolean   @default(true)
   deployedAt DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
+  chain      Chain     @relation(fields: [chainId], references: [id])
 
   @@unique([chainId, address])
   @@index([chainId, isActive])
 }
 
-// ─── Waitlist ─────────────────────────────────────────────────────────────────
-
 model WaitlistEntry {
-  id              String   @id @default(uuid())
-  email           String?  @unique              // Email address (for simple waitlist signup)
-  telegramId      BigInt?  @unique              // Telegram user ID — set after bot join (nullable until then)
-  telegramHandle  String?                       // @username (may be absent)
-  firstName       String?                       // First name from Telegram ctx.from
-  role            String?                       // "agent-owner" | "sponsor" (set via web popup)
-  userId          String?  @unique              // linked Prisma User.id (set when user links Telegram)
-  user            User?    @relation(fields: [userId], references: [id])
-  accessToken     String?  @unique              // UUID generated on web click — links web session to bot join
-  referralCode    String   @unique              // 8-char hex — used in referral links
-  referredBy      String?                       // referralCode of the referrer
-  referralCount   Int      @default(0)          // how many joined using this entry's code
-  referralBonus   Int      @default(0)          // total spots gained from referrals (10 per referral)
-  position        Int      @default(0)          // base waitlist rank — 0 = pending; set when user joins via Telegram
-  effectivePosition Int     @default(0)          // display rank (1-based); 0 = pending, only set for joined entries
-  createdAt       DateTime @default(now())
+  id                String   @id @default(uuid())
+  telegramId        BigInt?  @unique
+  telegramHandle    String?
+  firstName         String?
+  role              String?
+  referralCode      String   @unique
+  referredBy        String?
+  referralCount     Int      @default(0)
+  position          Int      @default(0)
+  createdAt         DateTime @default(now())
+  positionBonus     Int      @default(0)
+  referralBonus     Int      @default(0)
+  effectivePosition Int      @default(0)
+  userId            String?  @unique
+  accessToken       String?  @unique
+  email             String?  @unique
+  user              User?    @relation(fields: [userId], references: [id])
 
   @@index([referralCode])
   @@index([referredBy])
   @@index([position])
   @@index([effectivePosition])
   @@index([userId])
+  @@index([accessToken])
 }
-
-// ─── Telegram Bot Chat Logs ──────────────────────────────────────────────────
 
 model BotChatLog {
   id         String   @id @default(uuid())
   telegramId BigInt
-  direction  String   // "inbound" | "outbound"
-  type       String   // "command" | "chat" | "token" | "session" | "bot_response"
+  direction  String
+  type       String
   text       String
-  meta       Json?    // { command: "/start" } or { model: "claude-haiku", tokens: 80 }
+  meta       Json?
   createdAt  DateTime @default(now())
 
   @@index([telegramId, createdAt])
   @@index([type])
 }
 
-// ─── GitHub Bounty ────────────────────────────────────────────────────────────
-
 model GitHubBounty {
-  id            String    @id @default(uuid())
-  creatorUserId String
-  creator       User      @relation(fields: [creatorUserId], references: [id])
-  repoOwner     String                        // e.g. "facebook"
-  repoName      String                        // e.g. "react"
-  issueNumber   Int?                          // optional linked GitHub issue
-  issueUrl      String?                       // https://github.com/owner/repo/issues/123
-  title         String
-  description   String    @db.Text
-  rewardAmount  Decimal   @db.Decimal(18, 6)
-  rewardType    String                        // USDC | USD | LLM_KEY
-  status        String    @default("draft")   // draft | live | completed | cancelled
-  questType     String    @default("fcfs")    // fcfs | leaderboard
-  maxWinners    Int       @default(1)
-  deadline      DateTime?
-
-  // Funding — Stripe (USD) or escrow (USDC)
-  fundingStatus       String   @default("unfunded") // unfunded | pending | confirmed
-  stripeSessionId     String?  @unique
-  stripePaymentId     String?
-  escrowQuestId       String?                 // bytes32 hex for on-chain reference
-
-  // LLM Key reward (issued on approve)
-  llmKeyTokenLimit    Int?     @default(1000000)
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  submissions   GitHubBountySubmission[]
+  id               String                   @id @default(uuid())
+  creatorUserId    String
+  repoOwner        String
+  repoName         String
+  issueNumber      Int?
+  issueUrl         String?
+  title            String
+  description      String
+  rewardAmount     Decimal                  @db.Decimal(18, 6)
+  rewardType       String
+  status           String                   @default("draft")
+  questType        String                   @default("fcfs")
+  maxWinners       Int                      @default(1)
+  deadline         DateTime?
+  fundingStatus    String                   @default("unfunded")
+  stripeSessionId  String?                  @unique
+  stripePaymentId  String?
+  escrowQuestId    String?
+  llmKeyTokenLimit Int?                     @default(1000000)
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  creator          User                     @relation(fields: [creatorUserId], references: [id])
+  submissions      GitHubBountySubmission[]
 
   @@index([creatorUserId])
   @@index([status])
@@ -466,30 +420,26 @@ model GitHubBounty {
 }
 
 model GitHubBountySubmission {
-  id        String    @id @default(uuid())
-  bountyId  String
-  bounty    GitHubBounty @relation(fields: [bountyId], references: [id], onDelete: Cascade)
-  userId    String?                           // null if submitted by agent
-  user      User?     @relation(fields: [userId], references: [id])
-  agentId   String?                           // null if submitted by human
-  agent     Agent?    @relation(fields: [agentId], references: [id])
-  prUrl     String
-  prNumber  Int
-  status    String    @default("pending")     // pending | approved | rejected
-
-  // Reward payout
+  id                String       @id @default(uuid())
+  bountyId          String
+  userId            String?
+  agentId           String?
+  prUrl             String
+  prNumber          Int
+  status            String       @default("pending")
   llmRewardApiKey   String?
   llmRewardIssuedAt DateTime?
+  createdAt         DateTime     @default(now())
+  agent             Agent?       @relation(fields: [agentId], references: [id])
+  bounty            GitHubBounty @relation(fields: [bountyId], references: [id], onDelete: Cascade)
+  user              User?        @relation(fields: [userId], references: [id])
 
-  createdAt DateTime  @default(now())
-
-  @@unique([bountyId, userId])   // one submission per user per bounty
-  @@unique([bountyId, agentId])  // one submission per agent per bounty
+  @@unique([bountyId, userId])
+  @@unique([bountyId, agentId])
   @@index([bountyId])
   @@index([userId])
 }
 
-// External data — crawled from ClawHub registry
 model clawhub_skills {
   id                  String    @id @default(uuid()) @db.Uuid
   clawhub_id          String    @unique
@@ -510,11 +460,9 @@ model clawhub_skills {
   badges              Json      @default("{}")
   tags                Json      @default("{}")
   parsed_clawdis      Json?
-  clawhub_created_at  DateTime? @db.Timestamptz
-  clawhub_updated_at  DateTime? @db.Timestamptz
-  crawled_at          DateTime  @default(now()) @db.Timestamptz
-
-  // Web3 classification
+  clawhub_created_at  DateTime? @db.Timestamptz(6)
+  clawhub_updated_at  DateTime? @db.Timestamptz(6)
+  crawled_at          DateTime  @default(now()) @db.Timestamptz(6)
   is_web3             Boolean   @default(false)
   web3_auto_detected  Boolean   @default(false)
   web3_admin_override Boolean?
@@ -527,31 +475,29 @@ model clawhub_skills {
   @@index([owner_handle])
   @@index([crawled_at])
   @@index([is_web3, downloads(sort: Desc)])
-
   @@map("clawhub_skills")
 }
 
 model web3_skill_submissions {
-  id              String    @id @default(uuid()) @db.Uuid
-  name            String
-  slug            String    @unique
-  summary         String
-  description     String?
-  website_url     String?
-  github_url      String?
-  logo_url        String?
-  category        String
-  tags            String[]  @default([])
-  submitted_by    String
-  status          String    @default("pending")   // pending | approved | rejected
-  review_note     String?
-  reviewed_by     String?
-  reviewed_at     DateTime? @db.Timestamptz
-  created_at      DateTime  @default(now()) @db.Timestamptz
-  updated_at      DateTime  @updatedAt @db.Timestamptz
-
-  submitter       User      @relation("SkillSubmitter", fields: [submitted_by], references: [id])
-  reviewer        User?     @relation("SkillReviewer", fields: [reviewed_by], references: [id])
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  slug         String    @unique
+  summary      String
+  description  String?
+  website_url  String?
+  github_url   String?
+  logo_url     String?
+  category     String
+  tags         String[]  @default([])
+  submitted_by String
+  status       String    @default("pending")
+  review_note  String?
+  reviewed_by  String?
+  reviewed_at  DateTime? @db.Timestamptz(6)
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime  @updatedAt @db.Timestamptz(6)
+  reviewer     User?     @relation("SkillReviewer", fields: [reviewed_by], references: [id])
+  submitter    User      @relation("SkillSubmitter", fields: [submitted_by], references: [id])
 
   @@index([status])
   @@index([category])

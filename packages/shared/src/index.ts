@@ -17,6 +17,7 @@ export const AgentSchema = z.object({
     agentname: z.string().min(1).max(50),
     status: z.enum([AGENT_STATUS.IDLE, AGENT_STATUS.QUESTING, AGENT_STATUS.OFFLINE]),
     ownerId: z.string().uuid().nullable(),
+    isActive: z.boolean().default(false),
     activationCode: z.string().nullable().optional(),
     agentApiKey: z.string().nullable().optional(),
     verificationToken: z.string().nullable().optional(),

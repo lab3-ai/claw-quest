@@ -334,7 +334,16 @@ export async function executeDistribute(
 
     const totalFunded = Number(quest.totalFunded ?? quest.rewardAmount);
     const payouts = await calculateDistribution(prisma, questId, totalFunded);
-    if (payouts.length === 0) throw new Error('No eligible participants for distribution');
+
+    // No eligible participants — mark as distributed (no payouts) so refund can proceed
+    if (payouts.length === 0) {
+        await prisma.quest.update({
+            where: { id: questId },
+            data: { status: 'completed', fundingStatus: 'distributed' },
+        });
+        console.log(`[escrow:distribute] Quest ${questId}: no eligible participants — marked as distributed`);
+        return [];
+    }
 
     // Get all confirmed deposits
     const deposits = await prisma.questDeposit.findMany({

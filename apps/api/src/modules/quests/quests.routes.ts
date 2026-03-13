@@ -905,6 +905,128 @@ export async function questsRoutes(server: FastifyInstance) {
         }
     );
 
+    // Verify a single task by index — avoids calling all external APIs on every verify
+    server.post(
+        '/:id/tasks/:taskIndex/verify',
+        { onRequest: [server.authenticate] },
+        async (request, reply) => {
+            const { id: questId, taskIndex: taskIndexStr } = request.params as {
+                id: string
+                taskIndex: string
+            }
+            const { proofUrl } = (request.body as { proofUrl?: string }) ?? {}
+            const userId = request.user!.id
+
+            const taskIndex = parseInt(taskIndexStr, 10)
+            if (isNaN(taskIndex) || taskIndex < 0) {
+                return reply.status(400).send({ error: { message: 'Invalid taskIndex', code: 'INVALID_TASK_INDEX' } })
+            }
+
+            const quest = await server.prisma.quest.findUnique({
+                where: { id: questId },
+            })
+            if (!quest) {
+                return reply.status(400).send({ error: { message: 'Quest not found', code: 'QUEST_NOT_FOUND' } })
+            }
+
+            const participation = await server.prisma.questParticipation.findFirst({
+                where: { questId, userId },
+            })
+            if (!participation) {
+                return reply.status(400).send({ error: { message: 'Not participating in this quest', code: 'NOT_PARTICIPATING' } })
+            }
+
+            const tasks = quest.tasks as QuestTask[]
+            if (taskIndex >= tasks.length) {
+                return reply.status(400).send({ error: { message: 'taskIndex out of range', code: 'INVALID_TASK_INDEX' } })
+            }
+
+            const task = tasks[taskIndex]
+            const proof = participation.proof as { verifiedIndices?: number[] } | null
+            const verifiedIndices = new Set<number>(proof?.verifiedIndices ?? [])
+
+            // Already verified — return cached result immediately, no external API call
+            if (verifiedIndices.has(taskIndex)) {
+                return reply.send({
+                    taskIndex,
+                    platform: task.platform,
+                    actionType: task.actionType,
+                    valid: true,
+                    error: null,
+                    tasksCompleted: verifiedIndices.size,
+                    tasksTotal: tasks.length,
+                    status: participation.status,
+                })
+            }
+
+            const user = await server.prisma.user.findUnique({ where: { id: userId } })
+
+            const proofUrlsMap: Record<number, string> = {}
+            if (proofUrl) proofUrlsMap[taskIndex] = proofUrl
+
+            const ctx: VerificationContext = {
+                userId,
+                prisma: server.prisma,
+                xId: user?.xId,
+                xHandle: user?.xHandle,
+                xAccessToken: user?.xAccessToken,
+                xRefreshToken: user?.xRefreshToken,
+                xTokenExpiry: user?.xTokenExpiry,
+                discordId: user?.discordId,
+                discordAccessToken: user?.discordAccessToken,
+                telegramId: user?.telegramId,
+                proofUrls: proofUrlsMap,
+                params: task.params as Record<string, string>,
+                telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
+            }
+
+            const result = await verifySocialAction(task.platform, task.actionType, taskIndex, ctx)
+
+            let newStatus = participation.status
+            let newTasksCompleted = verifiedIndices.size
+
+            if (result.valid) {
+                verifiedIndices.add(taskIndex)
+                newTasksCompleted = verifiedIndices.size
+                const allDone = newTasksCompleted === tasks.length
+
+                await server.prisma.questParticipation.update({
+                    where: { id: participation.id },
+                    data: {
+                        tasksCompleted: newTasksCompleted,
+                        status: allDone ? 'completed' : participation.status,
+                        completedAt: allDone ? new Date() : participation.completedAt,
+                        proof: {
+                            ...(proof ?? {}),
+                            verifiedIndices: Array.from(verifiedIndices),
+                        },
+                    },
+                })
+
+                if (allDone) {
+                    newStatus = 'completed'
+                    if (participation.agentId) {
+                        await server.prisma.agent.update({
+                            where: { id: participation.agentId },
+                            data: { status: 'idle' },
+                        })
+                    }
+                }
+            }
+
+            return reply.send({
+                taskIndex,
+                platform: task.platform,
+                actionType: task.actionType,
+                valid: result.valid,
+                error: result.error ?? null,
+                tasksCompleted: newTasksCompleted,
+                tasksTotal: tasks.length,
+                status: newStatus,
+            })
+        }
+    );
+
     // Create Quest — supports agent API key, human JWT, or no auth (MVP)
     server.post(
         '/',

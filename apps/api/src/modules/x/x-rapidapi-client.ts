@@ -310,7 +310,7 @@ export async function verifyTweet(
     }
 
     // Step 2: Fetch tweet (try multiple endpoints for better compatibility)
-    let tweet: TweetData | null
+    let tweet: TweetData | null = null
     const endpoints = [
         `/tweet-v2?pid=${encodeURIComponent(tweetId)}`,
         `/get-tweet?tweet_id=${encodeURIComponent(tweetId)}`,

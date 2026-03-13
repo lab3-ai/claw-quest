@@ -103,7 +103,7 @@ export function SocialTasks({ referralCode }: SocialTasksProps) {
 
                     {/* Text */}
                     <div className="flex flex-1 flex-col min-w-0 text-left">
-                        <p className={`font-mono text-base font-semibold tracking-wide leading-tight transition-colors ${followDone ? "text-white" : "text-white/90"}`}>
+                        <p className={`font-mono text-sm font-semibold tracking-wide leading-tight transition-colors ${followDone ? "text-white" : "text-white/90"}`}>
                             Follow{" "}
                             <span className={followDone ? "text-[var(--wl-accent)]" : "text-white"}>
                                 @ClawQuestAI
@@ -157,7 +157,7 @@ export function SocialTasks({ referralCode }: SocialTasksProps) {
 
                     {/* Text */}
                     <div className="flex flex-1 flex-col min-w-0 text-left">
-                        <p className="font-mono text-base font-semibold text-white/90 tracking-wide leading-tight">
+                        <p className="font-mono text-sm font-semibold text-white/90 tracking-wide leading-tight">
                             Claim your spot
                         </p>
                         <p className="font-mono text-xs text-neutral-500 mt-1">

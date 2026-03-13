@@ -30,7 +30,7 @@ const SIZES = ["sm", "default", "lg", "xl"] as const
 export function ConceptsDemoButtons() {
     return (
         <div className="mx-auto max-w-4xl space-y-12 p-8">
-            <h1 className="text-2xl font-bold">Button Components</h1>
+            <h1 className="text-2xl font-semibold">Button Components</h1>
 
             {/* All variants × default size */}
             <section className="space-y-4">

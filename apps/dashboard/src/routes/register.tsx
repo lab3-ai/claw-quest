@@ -95,7 +95,7 @@ export function Register() {
                         </button>
                     </div>
                     <div className="my-6 flex flex-col gap-1">
-                        <h3 className="text-2xl font-bold">Create your account</h3>
+                        <h3 className="text-2xl font-semibold">Create your account</h3>
                         <p className="text-sm text-muted-foreground">Complete quests, earn rewards.</p>
                     </div>
 

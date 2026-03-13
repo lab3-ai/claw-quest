@@ -4,6 +4,23 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ── D-DIN Exp — heading font ── */
+@font-face {
+    font-family: "D-DIN Exp";
+    src: url("/fonts/D-DINExp.otf") format("opentype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "D-DIN Exp";
+    src: url("/fonts/D-DINExp-Bold.otf") format("opentype");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
 @theme {
     --color-background: var(--bg);
     --color-foreground: var(--fg);
@@ -84,9 +101,10 @@
     --color-surface-dark-muted: var(--surface-dark-muted);
 
     --font-sans: var(--font);
-    --font-heading: var(--font-heading);
+    --font-heading: "D-DIN Exp", "Geist Mono", ui-monospace, monospace;
     --font-mono: var(--font-mono);
 
+    --text-2xs: 10px;
     --text-xs: var(--text-xs);
     --text-sm: var(--text-sm);
     --text-base: var(--text-base);
@@ -247,10 +265,11 @@
     --sidebar-bg: #e8e8e8;
 
     /* ── Typography — monospace-first ── */
-    --font: "Roboto Mono", "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
-    --font-heading: "Roboto Mono", "Geist Mono", ui-monospace, "Cascadia Mono", monospace;
-    --font-mono: "Roboto Mono", "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    --font: "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    --font-heading: "D-DIN Exp", "Geist Mono", ui-monospace, monospace;
+    --font-mono: "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
 
+    --text-2xs: 10px;
     --text-xs: 12px;
     --text-sm: 14px;
     --text-base: 16px;
@@ -316,6 +335,19 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-heading);
+}
+
+.text-sm,
+.text-base {
+    letter-spacing: -0.02em;
+}
 
 /* All interactive elements get pointer cursor */
 button,

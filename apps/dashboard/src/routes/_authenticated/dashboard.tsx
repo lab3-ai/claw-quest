@@ -604,7 +604,7 @@ export function Dashboard() {
                             )}
                             onClick={() => setMainTab("my-quest")}
                         >
-                            My Quests <span className={cn("text-xs max-sm:text-[10px] font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "my-quest" && "bg-(--tone-quest)")}>{quests.length}</span>
+                            My Quests <span className={cn("text-xs max-sm:text-2xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "my-quest" && "bg-(--tone-quest)")}>{quests.length}</span>
                         </button>
                         <button
                             className={cn(
@@ -613,7 +613,7 @@ export function Dashboard() {
                             )}
                             onClick={() => setMainTab("accepted")}
                         >
-                            Accepted Quests <span className={cn("text-xs max-sm:text-[10px] font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "accepted" && "bg-(--tone-quest)")}>{acceptedQuests.data?.length ?? 0}</span>
+                            Accepted Quests <span className={cn("text-xs max-sm:text-2xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "accepted" && "bg-(--tone-quest)")}>{acceptedQuests.data?.length ?? 0}</span>
                         </button>
                         <button
                             className={cn(
@@ -622,7 +622,7 @@ export function Dashboard() {
                             )}
                             onClick={() => setMainTab("agents")}
                         >
-                            My Agents <span className={cn("text-xs max-sm:text-[10px] font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "agents" && "bg-(--tone-agent)")}>{agents.length}</span>
+                            My Agents <span className={cn("text-xs max-sm:text-2xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "agents" && "bg-(--tone-agent)")}>{agents.length}</span>
                         </button>
                     </div>
                 </div>
@@ -1311,10 +1311,10 @@ export function Dashboard() {
                                                             <div className="flex items-center gap-1.5">
                                                                 <span className="font-mono text-xs font-semibold text-foreground">{agent.agentname}</span>
                                                                 {agent.isActive && (
-                                                                    <span className="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">● Active</span>
+                                                                    <span className="inline-flex items-center text-2xs font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">● Active</span>
                                                                 )}
                                                                 {agent.claimedVia === "x" && (
-                                                                    <span className="inline-flex items-center text-[10px] font-semibold px-1 py-0.5 rounded bg-sky-500/15 text-sky-400">𝕏</span>
+                                                                    <span className="inline-flex items-center text-2xs font-semibold px-1 py-0.5 rounded bg-sky-500/15 text-sky-400">𝕏</span>
                                                                 )}
                                                             </div>
                                                             <div className="text-xs text-muted-foreground">id: {agent.id.slice(0, 8)}…</div>
@@ -1354,7 +1354,7 @@ export function Dashboard() {
                                                                                         : "bg-(--skill-bg) text-(--skill-fg)"
                                                                                 )}
                                                                             >
-                                                                                {s.verified && <span className="text-[10px]" title="Verified">✓</span>}
+                                                                                {s.verified && <span className="text-2xs" title="Verified">✓</span>}
                                                                                 {s.name}
                                                                             </span>
                                                                         ))}
@@ -1386,13 +1386,13 @@ export function Dashboard() {
                                                                         type="button"
                                                                         disabled={activatingAgent === agent.id}
                                                                         onClick={() => handleActivateAgent(agent.id)}
-                                                                        className="text-[11px] font-semibold px-2.5 py-1 rounded bg-orange-500/15 text-orange-400 hover:bg-orange-500/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                        className="text-xs font-semibold px-2.5 py-1 rounded bg-orange-500/15 text-orange-400 hover:bg-orange-500/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                                     >
                                                                         {activatingAgent === agent.id ? "…" : "Set Active"}
                                                                     </button>
                                                                 )}
                                                                 {agent.isActive && (
-                                                                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded bg-emerald-500/15 text-emerald-400 cursor-default select-none">
+                                                                    <span className="text-xs font-semibold px-2.5 py-1 rounded bg-emerald-500/15 text-emerald-400 cursor-default select-none">
                                                                         ● Active
                                                                     </span>
                                                                 )}
@@ -1401,7 +1401,7 @@ export function Dashboard() {
                                                                         type="button"
                                                                         disabled={deletingAgent === agent.id}
                                                                         onClick={() => handleDeleteAgent(agent.id, agent.agentname)}
-                                                                        className="text-[11px] font-semibold px-2.5 py-1 rounded bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                        className="text-xs font-semibold px-2.5 py-1 rounded bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                                     >
                                                                         {deletingAgent === agent.id ? "…" : "Delete"}
                                                                     </button>
@@ -1491,8 +1491,8 @@ export function Dashboard() {
                                                                                     <div>
                                                                                         <p className="text-sm text-muted-foreground mb-2">No skills scanned yet. Run Skill Scan to register your agent's skills.</p>
                                                                                         <div className="flex items-center gap-1.5">
-                                                                                            <code className="flex-1 bg-[#1e1e2e] text-[#cdd6f4] px-2.5 py-1.5 rounded font-mono text-[11px] select-all overflow-x-auto">{scanCmd}</code>
-                                                                                            <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-bg-secondary/80 text-[11px] font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
+                                                                                            <code className="flex-1 bg-[#1e1e2e] text-[#cdd6f4] px-2.5 py-1.5 rounded font-mono text-xs select-all overflow-x-auto">{scanCmd}</code>
+                                                                                            <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-bg-secondary/80 text-xs font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
                                                                                         </div>
                                                                                     </div>
                                                                                 ) : (
@@ -1511,7 +1511,7 @@ export function Dashboard() {
                                                                                                 </div>
                                                                                             ))}
                                                                                         </div>
-                                                                                        <div className="text-[11px] text-muted-foreground mb-1.5">
+                                                                                        <div className="text-xs text-muted-foreground mb-1.5">
                                                                                             {skillData.lastScan
                                                                                                 ? `Last scan: ${(() => {
                                                                                                     const diff = Date.now() - new Date(skillData.lastScan).getTime()
@@ -1524,8 +1524,8 @@ export function Dashboard() {
                                                                                                 : "Never scanned"}
                                                                                         </div>
                                                                                         <div className="flex items-center gap-1.5">
-                                                                                            <code className="flex-1 bg-[#1e1e2e] text-[#cdd6f4] px-2.5 py-1.5 rounded font-mono text-[11px] select-all overflow-x-auto">{scanCmd}</code>
-                                                                                            <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-bg-secondary/80 text-[11px] font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
+                                                                                            <code className="flex-1 bg-[#1e1e2e] text-[#cdd6f4] px-2.5 py-1.5 rounded font-mono text-xs select-all overflow-x-auto">{scanCmd}</code>
+                                                                                            <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-bg-secondary/80 text-xs font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
                                                                                         </div>
                                                                                     </div>
                                                                                 )}

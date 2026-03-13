@@ -76,7 +76,7 @@ export function SocialTasks({ referralCode }: SocialTasksProps) {
             {/* Header label */}
             <div className="flex items-center gap-2">
                 <div className="h-px flex-1 bg-neutral-800" />
-                <p className="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">
+                <p className="font-mono text-2xs text-neutral-500 uppercase tracking-widest">
                     Your first quest — complete to unlock early access
                 </p>
                 <div className="h-px flex-1 bg-neutral-800" />
@@ -198,7 +198,7 @@ export function SocialTasks({ referralCode }: SocialTasksProps) {
                     announcement
                 </a>
                 {" "}after joining to earn{" "}
-                <span className="text-[var(--wl-accent)]/70">+20 XP</span> bonus.
+                <span className="text-[var(--wl-accent)] font-semibold">+20 XP</span> bonus.
             </p>
         </div>
     )

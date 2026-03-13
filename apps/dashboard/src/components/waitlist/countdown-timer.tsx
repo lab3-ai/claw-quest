@@ -47,7 +47,7 @@ function DotDigit({ char }: { char: string }) {
                     return (
                         <span
                             key={`${r}-${col}`}
-                            className="rounded-full"
+                            className="rounded-sm"
                             style={{
                                 width: DOT_SIZE,
                                 height: DOT_SIZE,
@@ -75,7 +75,7 @@ function DotSeparator() {
             {[0, 1].map((i) => (
                 <span
                     key={i}
-                    className="rounded-full"
+                    className="rounded-sm"
                     style={{
                         width: DOT_SIZE,
                         height: DOT_SIZE,
@@ -91,12 +91,12 @@ function DotSeparator() {
 function Segment({ value, label }: { value: number; label: string }) {
     const str = String(value).padStart(2, "0")
     return (
-        <div className="flex flex-col items-center gap-2.5">
+        <div className="flex flex-col items-center gap-3">
             <div className="flex gap-1.5 sm:gap-2">
                 <DotDigit char={str[0]} />
                 <DotDigit char={str[1]} />
             </div>
-            <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-500">
+            <span className="font-mono text-xs uppercase tracking-widest text-neutral-500">
                 {label}
             </span>
         </div>
@@ -118,8 +118,8 @@ export function CountdownTimer() {
     }
 
     return (
-        <div className="flex flex-col items-center gap-3">
-            <p className="font-mono text-[11px] uppercase tracking-widest text-neutral-500">
+        <div className="flex flex-col items-center gap-4">
+            <p className="font-mono text-xs uppercase tracking-widest text-neutral-500">
                 Early access opens in
             </p>
             <div className="flex items-start gap-2 scale-80 sm:scale-100">

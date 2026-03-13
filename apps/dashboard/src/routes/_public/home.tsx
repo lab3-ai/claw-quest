@@ -80,7 +80,7 @@ function HeroBanner() {
                 {/* Text content */}
                 <div className="relative z-10 flex-1 min-w-0">
                     <div className="relative z-10 flex-1 min-w-0 max-w-3xl">
-                    <h1 className="mb-2 text-2xl font-bold text-foreground md:text-3xl">
+                    <h1 className="mb-2 text-2xl font-semibold text-foreground md:text-3xl">
                         Paid Distribution for AI Skills
                     </h1>
                     <p className="mb-6 text-sm leading-relaxed text-fg-secondary md:text-base">

@@ -250,7 +250,7 @@ export function WaitlistSuccessModal({
                             <div className="w-full rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
                                 <div className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2">
-                                        <span className="font-mono text-[11px] text-muted-foreground">
+                                        <span className="font-mono text-xs text-muted-foreground">
                                             Variant {variant}
                                         </span>
                                     </div>
@@ -258,14 +258,14 @@ export function WaitlistSuccessModal({
                                     <button
                                         type="button"
                                         onClick={() => copyShareText()}
-                                        className="inline-flex items-center gap-1 rounded-md border border-neutral-800 bg-neutral-950 px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:text-white"
+                                        className="inline-flex items-center gap-1 rounded-md border border-neutral-800 bg-neutral-950 px-2 py-1 font-mono text-xs text-muted-foreground transition-colors hover:text-white"
                                     >
                                         {copiedText ? <CheckLine size={12} /> : <CopyLine size={12} />}
                                         Copy
                                     </button>
                                 </div>
 
-                                <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded-md border border-neutral-800 bg-neutral-950 px-3 py-2 font-mono text-[11px] text-white/90">
+                                <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded-md border border-neutral-800 bg-neutral-950 px-3 py-2 font-mono text-xs text-white/90">
                                     {twitterText}
                                 </pre>
                             </div>

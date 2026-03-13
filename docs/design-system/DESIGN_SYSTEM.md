@@ -14,7 +14,8 @@
 | **Components** | shadcn/ui (Radix UI) | Accessible primitives |
 | **Icons** | MingCute (`@mingcute/react`) | 24x24 grid, 2px stroke |
 | **Brand icons** | Custom `<PlatformIcon>` | X, Discord, Telegram, OpenClaw SVGs |
-| **Font** | Geist Mono | Single monospace font, all weights |
+| **Body font** | Geist Mono | Monospace body/UI text |
+| **Heading font** | D-DIN Exp | Display headings (h1–h6) |
 
 ### Installed shadcn/ui Components
 
@@ -39,34 +40,34 @@ Principles:
 
 ## Typography
 
-**Single font:** Geist Mono — monospace for everything.
+**Two font families:** D-DIN Exp for headings, Geist Mono for body/UI.
 
-```html
-<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-```
+- **D-DIN Exp** — self-hosted (`/fonts/D-DINExp.otf`, `D-DINExp-Bold.otf`). Weights: 400, 700.
+- **Geist Mono** — monospace body font. All weights via system/CDN.
 
 ### CSS Variables
 
 | Token | Value | Tailwind |
 |-------|-------|----------|
 | `--font` | `"Geist Mono", ui-monospace, ...` | `font-sans` |
-| `--font-heading` | `"Geist Mono", ui-monospace, ...` | `font-heading` |
+| `--font-heading` | `"D-DIN Exp", "Geist Mono", ui-monospace, ...` | `font-heading` |
 | `--font-mono` | `"Geist Mono", ui-monospace, ...` | `font-mono` |
 
-**Note:** All three font stacks resolve to the same monospace family. `font-sans` in Tailwind outputs monospace — this is intentional.
+**Note:** `font-sans` resolves to monospace — intentional. All `h1`–`h6` tags auto-apply `font-heading` via CSS rule.
 
 ### Scale
 
-| Token | Size | Use |
-|-------|------|-----|
-| `--text-xs` | 12px | Captions, timestamps, meta |
-| `--text-sm` | 14px | Labels, secondary text, nav |
-| `--text-base` | 16px | Body text (default) |
-| `--text-md` | 16px | Alias for base |
-| `--text-lg` | 18px | Section titles |
-| `--text-xl` | 20px | Card headings |
-| `--text-2xl` | 24px | Page titles |
-| `--text-3xl` | 28px | Hero headings |
+| Token | Size | Tailwind | Use |
+|-------|------|----------|-----|
+| `--text-2xs` | 10px | `text-2xs` | Micro labels, uppercase tracking |
+| `--text-xs` | 12px | `text-xs` | Captions, timestamps, meta |
+| `--text-sm` | 14px | `text-sm` | Labels, secondary text, nav |
+| `--text-base` | 16px | `text-base` | Body text (default) |
+| `--text-md` | 16px | `text-md` | Alias for base |
+| `--text-lg` | 18px | `text-lg` | Section titles |
+| `--text-xl` | 20px | `text-xl` | Card headings |
+| `--text-2xl` | 24px | `text-2xl` | Page titles |
+| `--text-3xl` | 28px | `text-3xl` | Hero headings |
 
 ### Font weights
 
@@ -74,9 +75,13 @@ Principles:
 |--------|----------|-----|
 | 400 | `font-normal` | Body text, descriptions |
 | 500 | `font-medium` | Labels, badges, nav items |
-| 600 | `font-semibold` | Headings, titles, buttons, emphasis |
+| 600 | `font-semibold` | Headings, body emphasis, buttons — **max weight for all text** |
 
-**Max weight is `font-semibold` (600).** Do not use `font-bold` (700) or `font-extrabold` (800) anywhere in the UI.
+**Do NOT use `font-bold` (700).** Maximum weight across the entire UI is `font-semibold` (600). This applies to headings, body text, buttons, labels — everything.
+
+### Typography demo
+
+Live preview: `/concepts/demo/typography`
 
 ### Line heights
 

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react"
 import { Link } from "@tanstack/react-router"
 import type { Quest } from "@clawquest/shared"
 import { formatTimeLeft, typeColorClass } from "./quest-utils"
@@ -17,7 +18,14 @@ interface QuestGridCardProps {
 }
 
 export function QuestGridCard({ quest }: QuestGridCardProps) {
+    const [, tick] = useState(0)
     const time = formatTimeLeft(quest.expiresAt)
+
+    useEffect(() => {
+        if (!time.ticking) return
+        const id = setInterval(() => tick(n => n + 1), 1000)
+        return () => clearInterval(id)
+    }, [time.ticking])
     const isLuckyDraw = quest.type === "LUCKY_DRAW"
     const slotsLeft = isLuckyDraw ? null : quest.totalSlots - quest.filledSlots
 
@@ -29,12 +37,12 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
         >
             {/* Top row: type badge + time */}
             <div className="flex justify-between items-center mb-3">
-                <span className={cn("inline-flex items-center gap-1 text-xs max-sm:text-[11px] font-semibold uppercase", typeColorClass(quest.type))}>
+                <span className={cn("inline-flex items-center gap-1 text-xs max-sm:text-xs font-semibold uppercase", typeColorClass(quest.type))}>
                     {TYPE_ICON[quest.type] && (() => { const Icon = TYPE_ICON[quest.type]; return <Icon size={14} className="max-sm:w-3 max-sm:h-3" /> })()}
                     {quest.type}
                 </span>
                 <span className={cn(
-                    "font-mono text-xs max-sm:text-[11px] font-semibold",
+                    "font-mono text-xs max-sm:text-xs font-semibold",
                     time.cls === "urgent" && "text-error",
                     time.cls === "warning" && "text-warning",
                     time.cls === "normal" && "text-muted-foreground",
@@ -45,7 +53,7 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
             <h3 className="text-md max-sm:text-sm font-semibold leading-snug mb-2 line-clamp-2">{quest.title}</h3>
 
             {/* Description excerpt */}
-            <p className="flex-1 text-sm max-sm:text-xs text-muted-foreground leading-relaxed mb-3 line-clamp-2">{quest.description}</p>
+            <p className="flex-1 text-xs text-muted-foreground leading-relaxed mb-3 line-clamp-2">{quest.description}</p>
 
             {/* Tags */}
             {quest.tags && quest.tags.length > 0 && (
@@ -62,7 +70,7 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
             {/* Bottom stats */}
             <div className="mt-auto pt-3 border-t border-border flex justify-between items-end gap-2">
                 <div className="flex flex-col gap-1.5">
-                    <span className="inline-flex items-center gap-1 text-sm font-semibold text-success">
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-success">
                         <TokenIcon token={quest.rewardType} size={16} />
                         {quest.rewardAmount.toLocaleString()} {quest.rewardType}
                     </span>

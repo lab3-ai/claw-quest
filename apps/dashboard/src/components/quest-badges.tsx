@@ -55,7 +55,7 @@ export function QuestStatusBadge({ status }: { status: string }) {
 
 export function RewardBadge({ type, amount }: { type: string; amount?: number }) {
     return (
-        <span className="inline-flex items-center gap-1 text-sm font-semibold text-success">
+        <span className="inline-flex items-center gap-2 text-sm font-semibold text-success">
             <TokenIcon token={type} size={16} />
             {amount !== undefined && amount.toLocaleString()} {type}
         </span>

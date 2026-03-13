@@ -88,7 +88,7 @@ export function QuestCard({ quest }: QuestCardProps) {
         >
             {/* Mobile-only stats row */}
             <div className="sm:hidden flex items-center justify-between gap-3 pb-2 mb-2 border-b border-border w-full text-xs">
-                <span className="inline-flex items-center gap-1 text-sm font-semibold text-success">
+                <span className="inline-flex items-center gap-2 text-sm font-semibold text-success">
                     <TokenIcon token={quest.rewardType} size={14} />
                     {quest.rewardAmount.toLocaleString()} {quest.rewardType}
                 </span>
@@ -101,7 +101,7 @@ export function QuestCard({ quest }: QuestCardProps) {
 
             {/* Stats column (desktop only) */}
             <div className="hidden sm:flex flex-col items-end gap-1.5 w-[140px] shrink-0 text-xs text-muted-foreground text-right pt-0.5">
-                <span className="inline-flex items-center gap-1 text-sm font-semibold text-success">
+                <span className="inline-flex items-center gap-2 text-sm font-semibold text-success">
                     <TokenIcon token={quest.rewardType} size={16} />
                     {quest.rewardAmount.toLocaleString()} {quest.rewardType}
                 </span>
@@ -150,7 +150,7 @@ export function QuestCard({ quest }: QuestCardProps) {
                 {quest.tags && quest.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 max-sm:gap-1 items-center text-xs">
                         {quest.tags.map(tag => (
-                            <span key={tag} className="border border-border text-fg-secondary px-2 py-0.5 rounded text-xs max-sm:text-[11px] no-underline whitespace-nowrap">{tag}</span>
+                            <span key={tag} className="border border-border text-fg-secondary px-2 py-0.5 rounded text-xs max-sm:text-xs no-underline whitespace-nowrap">{tag}</span>
                         ))}
                     </div>
                 )}

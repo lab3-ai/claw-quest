@@ -4,11 +4,13 @@ import { useState, useEffect, useRef } from "react"
  * Full ClawQuest mascot (Figma node 45:619) — inline SVG for arm animation.
  * Eyes follow the mouse cursor. Arms sway gently up/down. Whole mascot floats.
  */
-export type MascotMood = "normal" | "error" | "happy"
+export type MascotMood = "normal" | "error" | "happy" | "shy"
 
 export function MascotEyes({ size = 280, mood = "normal" }: { size?: number; mood?: MascotMood }) {
     const ref = useRef<SVGSVGElement>(null)
     const [offset, setOffset] = useState({ x: 0, y: 0 })
+    const [hovered, setHovered] = useState(false)
+    const activeMood = mood !== "normal" ? mood : hovered ? "shy" : "normal"
 
     const VB_W = 4707, VB_H = 3090
     const width = size
@@ -69,9 +71,15 @@ export function MascotEyes({ size = 280, mood = "normal" }: { size?: number; moo
                     60% { opacity: 1; transform: scaleY(1.15); }
                     100% { opacity: 1; transform: scaleY(1); }
                 }
+                @keyframes eyeShyIn {
+                    0% { opacity: 0; transform: scaleX(0); }
+                    60% { opacity: 1; transform: scaleX(1.1); }
+                    100% { opacity: 1; transform: scaleX(1); }
+                }
                 .eye-x-in { animation: eyeXIn 0.3s ease-out forwards; }
                 .eye-circle-in { animation: eyeCircleIn 0.25s ease-out forwards; }
                 .eye-happy-in { animation: eyeHappyIn 0.3s ease-out forwards; }
+                .eye-shy-in { animation: eyeShyIn 0.3s ease-out forwards; }
             `}</style>
             <svg
                 ref={ref}
@@ -81,7 +89,9 @@ export function MascotEyes({ size = 280, mood = "normal" }: { size?: number; moo
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 overflow="visible"
-                className="mascot-float drop-shadow-lg"
+                className="mascot-float drop-shadow-lg cursor-pointer"
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
             >
                 <defs>
                     <radialGradient id="m0" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(3205.02 113.583) scale(662.669 662.645)"><stop stopColor="#E1574B"/><stop offset="1" stopColor="#81303A"/></radialGradient>
@@ -179,7 +189,7 @@ export function MascotEyes({ size = 280, mood = "normal" }: { size?: number; moo
                 </g>
 
                 {/* ── EYES (interactive, follow mouse) ── */}
-                {mood === "happy" ? (
+                {activeMood === "happy" ? (
                     <g key="eyes-happy">
                         {/* Left eye ^ arc */}
                         <g transform={`translate(${2052.64 + offset.x}, ${1484.4 + offset.y})`}>
@@ -194,7 +204,22 @@ export function MascotEyes({ size = 280, mood = "normal" }: { size?: number; moo
                             </g>
                         </g>
                     </g>
-                ) : mood === "error" ? (
+                ) : activeMood === "shy" ? (
+                    <g key="eyes-shy">
+                        {/* Left eye ^ arc (happy squint) */}
+                        <g transform={`translate(${2052.64 + offset.x}, ${1484.4 + offset.y})`}>
+                            <g className="eye-happy-in">
+                                <path d="M-130,40 Q0,-140 130,40" stroke="#FBFAFF" strokeWidth={50} strokeLinecap="round" fill="none"/>
+                            </g>
+                        </g>
+                        {/* Right eye ^ arc */}
+                        <g transform={`translate(${2701.6 + offset.x}, ${1484.4 + offset.y})`}>
+                            <g className="eye-happy-in" style={{ animationDelay: "0.05s" }}>
+                                <path d="M-130,40 Q0,-140 130,40" stroke="#FBFAFF" strokeWidth={50} strokeLinecap="round" fill="none"/>
+                            </g>
+                        </g>
+                    </g>
+                ) : activeMood === "error" ? (
                     <g key="eyes-error">
                         {/* Left eye X — outer g positions, inner g animates */}
                         <g transform={`translate(${2052.64 + offset.x}, ${1484.4 + offset.y})`}>

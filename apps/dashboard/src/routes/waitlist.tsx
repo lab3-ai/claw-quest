@@ -340,14 +340,14 @@ export function Waitlist() {
                         </div>
                         <div className="w-full grid grid-cols-3 gap-2 sm:gap-3">
                             {[
-                                { icon: <TrophyLine size={18} />, title: "Top 100", desc: "OG Pioneer badge + 500 XP head start" },
-                                { icon: <FlashLine size={18} />, title: "Top 1,000", desc: "Priority access to top quests" },
-                                { icon: <RocketLine size={18} />, title: "Every spot", desc: "Early access to the quest marketplace" },
+                                { icon: <TrophyLine size={24} />, title: "Top 100", desc: "OG Pioneer badge + 500 XP head start" },
+                                { icon: <FlashLine size={24} />, title: "Top 1,000", desc: "Priority access to top quests" },
+                                { icon: <RocketLine size={24} />, title: "Every spot", desc: "Early access to the quest marketplace" },
                             ].map(({ icon, title, desc }) => (
-                                <div key={title} className="flex flex-col items-center gap-1.5 rounded-lg border border-neutral-800 bg-neutral-900/50 p-3 sm:p-4 text-center">
+                                <div key={title} className="flex flex-col items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-900/50 p-3 sm:p-4 text-center">
                                     <span className="text-[var(--wl-accent)]">{icon}</span>
                                     <p className="font-mono text-sm font-semibold text-white">{title}</p>
-                                    <p className="font-mono text-[10px] sm:text-xs leading-snug text-muted-foreground">{desc}</p>
+                                    <p className="font-mono text-xs leading-snug text-muted-foreground">{desc}</p>
                                 </div>
                             ))}
                         </div>
@@ -464,17 +464,17 @@ export function Waitlist() {
                         <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 overflow-hidden">
                             <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:gap-8 sm:p-8">
                                 {/* Text side */}
-                                <div className="flex flex-1 flex-col gap-3">
-                                    <div className="flex items-center gap-2">
+                                <div className="flex flex-1 flex-col gap-2">
+                                    {/* <div className="flex items-center gap-2">
                                         <HornLine size={18} className="shrink-0" style={{ color: "var(--wl-accent)" }} />
                                         <span className="font-mono text-xs tracking-widest text-[var(--wl-accent)] uppercase">
                                             For Sponsors
                                         </span>
-                                    </div>
-                                    <h2 className="font-mono text-lg font-semibold text-white sm:text-xl">
-                                        Are you a project or publisher?
+                                    </div> */}
+                                    <h2 className="font-mono text-base font-semibold text-white sm:text-lg">
+                                        Are you a <span className="text-[var(--wl-accent)]">project</span> or <span className="text-[var(--wl-accent)]">publisher</span>?
                                     </h2>
-                                    <p className="font-mono text-sm leading-relaxed text-muted-foreground">
+                                    <p className="font-mono text-xs leading-relaxed text-muted-foreground">
                                         Post quests, set rewards, get on-chain proof. Pay only for verified results.
                                     </p>
                                 </div>
@@ -630,7 +630,7 @@ function HowItWorksCard({
                 <span className="font-mono text-xs text-[var(--wl-accent)] tracking-widest uppercase">
                     Step {step}
                 </span>
-                <p className="font-mono text-base font-semibold text-white">
+                <p className="font-mono text-sm font-semibold text-white">
                     {title}
                 </p>
                 <p className="font-mono text-xs leading-relaxed text-muted-foreground">

@@ -855,7 +855,7 @@ export function QuestDetail() {
                                                     Requires skill: <code className="font-mono text-xs bg-muted px-1 py-px rounded">{skill}</code>
                                                 </span>
                                                 {isAuthenticated && firstAgentId && (
-                                                    <span className={cn("text-[11px] font-semibold px-1.5 py-0.5 rounded",
+                                                    <span className={cn("text-xs font-semibold px-1.5 py-0.5 rounded",
                                                         match?.verified ? "bg-green-100 text-success"
                                                             : match ? "bg-amber-100 text-warning"
                                                                 : "bg-red-100 text-error"
@@ -879,12 +879,12 @@ export function QuestDetail() {
                                                 Run this in your terminal:
                                             </div>
                                             <div className="flex items-center gap-1.5">
-                                                <code className="flex-1 bg-muted px-2 py-1.5 rounded font-mono text-[11px] select-all overflow-x-auto">
+                                                <code className="flex-1 bg-muted px-2 py-1.5 rounded font-mono text-xs select-all overflow-x-auto">
                                                     {scanCmd}
                                                 </code>
                                                 <button
                                                     type="button"
-                                                    className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-muted/80 text-[11px] font-medium transition-colors"
+                                                    className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-muted/80 text-xs font-medium transition-colors"
                                                     onClick={() => { navigator.clipboard.writeText(scanCmd) }}
                                                 >
                                                     Copy

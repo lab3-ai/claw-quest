@@ -8,6 +8,7 @@ import { TelegramCallback } from './routes/auth/telegram-callback'
 import { XCallback } from './routes/auth/x-callback'
 import { PublicLayout } from './routes/_public'
 import { ConceptsDemoButtons } from './routes/_public/concepts.demo.buttons'
+import { TypographyDemo } from './routes/concepts.demo.typography'
 import { Dashboard } from './routes/_authenticated/dashboard'
 import { QuestList } from './routes/_authenticated/quests/index'
 import { QuestDetail } from './routes/_public/quests/detail'
@@ -47,8 +48,8 @@ interface RouterContext {
 
 const rootRoute = createRootRouteWithContext<RouterContext>()({
     beforeLoad: ({ location }) => {
-        // Allow special dev bypass route without redirect
-        if (location.pathname === '/for-dev-lab3') {
+        // Allow special dev bypass route and concept demos without redirect
+        if (location.pathname === '/for-dev-lab3' || location.pathname.startsWith('/concepts/')) {
             return
         }
         // Allow waitlist page without redirect
@@ -493,8 +494,15 @@ const conceptsDemoButtonsRoute = createRoute({
     component: ConceptsDemoButtons,
 })
 
+const conceptsDemoTypographyRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/concepts/demo/typography',
+    component: TypographyDemo,
+})
+
 const routeTree = rootRoute.addChildren([
     conceptsDemoButtonsRoute,
+    conceptsDemoTypographyRoute,
     devLab3Route,
     loginRoute,
     registerRoute,

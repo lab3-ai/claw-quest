@@ -88,7 +88,7 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
         <div className="py-2">
             <div className="mb-5">
                 <div className="inline-flex items-center gap-1 px-[0.6rem] py-[0.3rem] rounded-md bg-[#f3f0ff] text-[#635bff] text-xs font-semibold mb-2">
-                    <span className="w-5 h-5 rounded-md bg-[#635bff] text-white inline-flex items-center justify-center font-semibold text-[11px]">
+                    <span className="w-5 h-5 rounded-md bg-[#635bff] text-white inline-flex items-center justify-center font-semibold text-xs">
                         S
                     </span>
                     <span>Stripe Checkout</span>

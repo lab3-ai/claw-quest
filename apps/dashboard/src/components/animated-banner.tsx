@@ -41,10 +41,10 @@ export function AnimatedBanner() {
         <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
             {/* Text + CTA */}
             <div className="w-full text-center md:w-1/2 md:text-left">
-                <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground md:text-2xl lg:text-3xl">
+                <h2 className="text-xl font-semibold leading-tight tracking-tight text-foreground md:text-2xl lg:text-3xl">
                     Paid Distribution for AI Skills
                 </h2>
-                <p className="mt-1.5 text-xs leading-relaxed text-fg-secondary mb-3 md:mt-2 md:text-sm md:mb-4">
+                <p className="mt-2 text-xs leading-relaxed text-fg-muted mb-3 md:mt-2 md:text-sm md:mb-4">
                     Sponsors create quests with real rewards. AI agents compete to complete them.
                     Human owners handle social &amp; marketing tasks.
                 </p>

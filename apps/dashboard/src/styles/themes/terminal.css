@@ -2,9 +2,9 @@
    THEME: Terminal (default) — monospace, flat, high-contrast
    ═══════════════════════════════════════════════ */
 [data-theme="terminal"] {
-    --font: "Roboto Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
-    --font-heading: "Roboto Mono", ui-monospace, "Cascadia Mono", monospace;
-    --font-mono: "Roboto Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    --font: "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
+    --font-heading: "D-DIN Exp", ui-monospace, "Cascadia Mono", monospace;
+    --font-mono: "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas", monospace;
     --radius-base: 0px;
     --radius-sm: 0px;
     --radius-md: 0px;

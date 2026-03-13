@@ -11,7 +11,7 @@ export function NotFoundPage() {
 
             <BrandLogo variant="icon" size="lg" animated className="mb-6" />
 
-            <p className="mb-2 font-mono text-6xl font-bold text-foreground">404</p>
+            <p className="mb-2 font-mono text-6xl font-semibold text-foreground">404</p>
 
             <h1 className="mb-2 text-xl font-semibold text-foreground">
                 Page not found

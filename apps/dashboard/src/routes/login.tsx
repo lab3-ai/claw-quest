@@ -134,7 +134,7 @@ export function Login() {
                         </button>
                     </div>
                     <div className="my-6 flex flex-col gap-1">
-                        <h3 className="text-2xl font-bold">Sign in to your account</h3>
+                        <h3 className="text-2xl font-semibold">Sign in to your account</h3>
                         <p className="text-sm text-muted-foreground">Complete quests, earn rewards.</p>
                     </div>
                     {error && (

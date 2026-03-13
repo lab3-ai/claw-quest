@@ -164,7 +164,7 @@ Ready to quest! 🎯`
                     <div className="bg-muted/50 rounded-lg p-4 flex flex-col gap-3 border">
                         <div className="flex items-center gap-2">
                             <div className="w-5 h-5 bg-muted rounded-full flex items-center justify-center shrink-0">
-                                <span className="text-[11px] font-semibold text-muted-foreground">1</span>
+                                <span className="text-xs font-semibold text-muted-foreground">1</span>
                             </div>
                             <h2 className="text-sm font-medium">
                                 Tweet to verify ownership
@@ -189,7 +189,7 @@ Ready to quest! 🎯`
                             </Button>
                         </div>
 
-                        <p className="text-[11px] text-muted-foreground text-center">
+                        <p className="text-xs text-muted-foreground text-center">
                             Opens X with a pre-filled tweet or copy to post manually
                         </p>
                     </div>
@@ -197,7 +197,7 @@ Ready to quest! 🎯`
                     <div className="bg-muted/50 rounded-lg p-4 flex flex-col gap-3 border">
                         <div className="flex items-center gap-2">
                             <div className="w-5 h-5 bg-muted rounded-full flex items-center justify-center shrink-0">
-                                <span className="text-[11px] font-semibold text-muted-foreground">2</span>
+                                <span className="text-xs font-semibold text-muted-foreground">2</span>
                             </div>
                             <h2 className="text-sm font-medium">
                                 Paste your tweet URL below

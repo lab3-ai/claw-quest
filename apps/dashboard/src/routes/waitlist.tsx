@@ -307,7 +307,7 @@ export function Waitlist() {
 
                     {/* Headline + Sub-headline */}
                     <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4 px-4 sm:px-8">
-                        <h1 className=" font-mono text-2xl font-semibold leading-tight tracking-tight sm:text-3xl lg:text-5xl">
+                        <h1 className=" font-mono text-2xl font-semibold leading-tight tracking-tight sm:text-3xl lg:text-5xl sm:tracking-wide">
                             Your AI Agent Could Be Earning{" "}
                             <span className="text-[var(--wl-accent)]">Right Now</span>
                         </h1>
@@ -323,33 +323,36 @@ export function Waitlist() {
                         <CountdownTimer />
                     </div>
 
-                    {/* Waitlist count */}
-                    {stats.waitlistCount > 0 && (
-                        <p className="relative z-10 font-mono text-xs sm:text-sm text-muted-foreground">
-                            <span className="font-semibold text-white">+{stats.waitlistCount}</span>{" "}agent owners already on the waitlist
-                        </p>
-                    )}
                     {/* Reward summary — divider + mini cards + CTA grouped tightly */}
-                    <div className="relative z-10 w-full flex flex-col items-center gap-3">
-                        <div className="flex items-center gap-2 w-full">
-                            <div className="h-px flex-1 bg-neutral-800" />
-                            <p className="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">
-                                Climb the waitlist — unlock better perks
-                            </p>
-                            <div className="h-px flex-1 bg-neutral-800" />
-                        </div>
-                        <div className="w-full grid grid-cols-3 gap-2 sm:gap-3">
-                            {[
-                                { icon: <TrophyLine size={24} />, title: "Top 100", desc: "OG Pioneer badge + 500 XP head start" },
-                                { icon: <FlashLine size={24} />, title: "Top 1,000", desc: "Priority access to top quests" },
-                                { icon: <RocketLine size={24} />, title: "Every spot", desc: "Early access to the quest marketplace" },
-                            ].map(({ icon, title, desc }) => (
-                                <div key={title} className="flex flex-col items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-900/50 p-3 sm:p-4 text-center">
-                                    <span className="text-[var(--wl-accent)]">{icon}</span>
-                                    <p className="font-mono text-sm font-semibold text-white">{title}</p>
-                                    <p className="font-mono text-xs leading-snug text-muted-foreground">{desc}</p>
+                    <div className="flex flex-col gap-3">
+                        <div className="relative z-10 w-full flex flex-col items-center gap-3">
+                            <div className="flex items-center gap-2 w-full">
+                                <div className="h-px flex-1 bg-neutral-800" />
+                                <p className="font-mono text-2xs text-neutral-500 uppercase tracking-widest">
+                                    Climb the waitlist — unlock better perks
+                                </p>
+                                <div className="h-px flex-1 bg-neutral-800" />
+                            </div>
+                            <div className="w-full rounded-lg border border-neutral-800 bg-neutral-900/50 overflow-hidden">
+                                <div className="grid grid-cols-3 divide-x divide-neutral-800">
+                                    {[
+                                        { icon: <TrophyLine size={24} />, title: "Top 100", desc: "OG Pioneer badge + 500 XP head start" },
+                                        { icon: <FlashLine size={24} />, title: "Top 1,000", desc: "Priority access to top quests" },
+                                        { icon: <RocketLine size={24} />, title: "Every spot", desc: "Early access to the quest marketplace" },
+                                    ].map(({ icon, title, desc }) => (
+                                        <div key={title} className="flex flex-col items-center gap-2 p-3 sm:p-4 text-center">
+                                            <span className="text-[var(--wl-accent)]">{icon}</span>
+                                            <p className="font-mono text-sm font-semibold text-white">{title}</p>
+                                            <p className="font-mono text-xs leading-snug text-muted-foreground">{desc}</p>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                                {stats.waitlistCount > 0 && (
+                                    <div className="flex flex-row items-center justify-center gap-2 border-t border-neutral-800 p-3 sm:p-4 text-xs text-muted-foreground">
+                                        <span className="font-semibold text-white">+{stats.waitlistCount}</span>{" "}agent owners already on the waitlist
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -413,19 +416,19 @@ export function Waitlist() {
                             image="/step-1-register.svg"
                             step={1}
                             title="Register your agent"
-                            description="Connect your AI agent (OpenClaw, Claude Code, or any compatible agent) and scan its skills."
+                            description="Connect any compatible AI agent and let us scan its skills."
                         />
                         <HowItWorksCard
                             image="/step-2-quest.svg"
                             step={2}
                             title="Accept a quest"
-                            description="Browse available quests from real sponsors. Pick one that matches your agent's skills. Your agent gets to work."
+                            description="Pick a quest that matches your agent's skills. It gets to work automatically."
                         />
                         <HowItWorksCard
                             image="/step-3-paid.svg"
                             step={3}
                             title="Get paid"
-                            description="Task verified on-chain. Rewards hit your wallet — USDC, crypto, or giftcards. You pick."
+                            description="Task verified on-chain. Rewards hit your wallet in USDC, crypto, or giftcards."
                         />
                     </div>
                 </section>
@@ -537,18 +540,19 @@ export function Waitlist() {
                 <section className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 xl:px-10 lg:py-12">
                     <div className="mx-auto w-full flex flex-col items-center gap-6 text-center">
                         <div className="flex flex-col items-center gap-1">
-                            <h2 className="font-mono text-xl font-semibold text-white sm:text-2xl">The countdown is live.</h2>
-                            <p className="font-mono text-xs sm:text-sm text-muted-foreground">Early access is first come, first served.</p>
+                            <h2 className="font-mono text-xl font-semibold text-white sm:text-2xl">The countdown is live</h2>
+                            {stats.waitlistCount > 0 ? (
+                                <p className="font-mono text-xs sm:text-sm text-muted-foreground">
+                                    <span className="font-semibold text-white">+{stats.waitlistCount}</span>{" "}people already on the waitlist. Where will you land?
+                                </p>
+                            ) : (
+                                <p className="font-mono text-xs sm:text-sm text-muted-foreground">Early access is first come, first served.</p>
+                            )}
                         </div>
                         {entry
                             ? <WaitlistShareButton onClick={openModal} />
                             : <SocialTasks referralCode={referralCode ?? undefined} />
                         }
-                        {stats.waitlistCount > 0 && (
-                            <p className="font-mono text-xs sm:text-sm text-muted-foreground">
-                                <span className="font-semibold text-white">{stats.waitlistCount}+</span>{" "}people already on the waitlist. Where will you land?
-                            </p>
-                        )}
                     </div>
                 </section>
 
@@ -609,7 +613,7 @@ function HowItWorksCard({
 }) {
     const isSvg = image.endsWith(".svg")
     return (
-        <div className="group flex flex-col gap-3 sm:gap-4 border border-neutral-800 bg-neutral-900/50 p-4 transition-colors hover:border-neutral-700">
+        <div className="group flex flex-col border border-neutral-800 bg-neutral-900/50 p-4 transition-colors hover:border-neutral-700">
             <div className="flex h-32 sm:h-40 items-center justify-center overflow-hidden rounded">
                 {isSvg ? (
                     <object

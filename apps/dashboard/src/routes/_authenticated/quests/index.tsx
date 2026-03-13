@@ -223,7 +223,6 @@ export function QuestList() {
                     />
                     {tabs.map(t => {
                         const isActive = tab === t.id
-                        const Icon = isActive ? tabIconMap[t.id].fill : tabIconMap[t.id].line
                         return (
                             <button
                                 key={t.id}
@@ -234,14 +233,13 @@ export function QuestList() {
                                     "max-sm:px-2 max-sm:text-xs max-sm:gap-1 max-sm:min-h-[44px]",
                                     isActive
                                         ? "text-primary-foreground"
-                                        : "text-foreground hover:text-primary"
+                                        : "textforeground hover:text-primary"
                                 )}
                                 onClick={() => handleTabChange(t.id)}
                             >
-                                <Icon size={16} className="max-sm:w-3.5 max-sm:h-3.5" />
                                 {t.label}
                                 {tabCounts[t.id] > 0 && (
-                                    <span className="text-xs opacity-70 max-sm:text-[10px]">({tabCounts[t.id]})</span>
+                                    <span className="text-xs opacity-70 max-sm:text-2xs">({tabCounts[t.id]})</span>
                                 )}
                             </button>
                         )
@@ -318,7 +316,7 @@ export function QuestList() {
 
             {/* Loading skeletons — match active view */}
             {activeIsLoading && view === "grid" && (
-                <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4 py-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-4">
                     {[1, 2, 3, 4, 5, 6].map(i => (
                         <div key={i} className="flex flex-col border border-border rounded p-4 pointer-events-none">
                             <div className="flex justify-between items-center mb-3">
@@ -378,7 +376,7 @@ export function QuestList() {
                     sorted.length === 0 ? (
                         <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4 max-sm:gap-3 py-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-sm:gap-3 py-4">
                             {sorted.map(quest => (
                                 <QuestGridCard key={quest.id} quest={quest} />
                             ))}
@@ -426,7 +424,7 @@ export function QuestList() {
                                     return (
                                         <tr key={quest.id} className="hover:bg-bg-secondary cursor-pointer transition-colors" onClick={() => navigate({ to: "/quests/$questId", params: { questId: quest.id } })}>
                                             <td className="px-2 py-3 text-xs border-b border-border align-top whitespace-nowrap">
-                                                <span className="inline-flex items-center gap-1 text-sm font-semibold text-success whitespace-nowrap">
+                                                <span className="inline-flex items-center gap-2 text-sm font-semibold text-success whitespace-nowrap">
                                                     <TokenIcon token={quest.rewardType} size={16} />
                                                     {quest.rewardAmount.toLocaleString()} {quest.rewardType}
                                                 </span>
@@ -476,7 +474,7 @@ export function QuestList() {
 
             {/* Animated banner — only on featured tab */}
             {tab === "featured" && (
-                <div className="mt-10">
+                <div className="mt-6 sm:mt-12">
                     <AnimatedBanner />
                 </div>
             )}

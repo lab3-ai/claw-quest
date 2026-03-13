@@ -214,6 +214,13 @@ export async function escrowRoutes(server: FastifyInstance) {
                 return reply.status(400).send({ message: 'Quest is not funded' } as any);
             }
 
+            const questEnded =
+                ['completed', 'expired', 'cancelled'].includes(quest.status) ||
+                (quest.expiresAt != null && new Date() >= quest.expiresAt);
+            if (!questEnded) {
+                return reply.status(400).send({ message: 'Quest has not ended yet' } as any);
+            }
+
             const targetChainId = chainId || quest.cryptoChainId || escrowConfig.defaultChainId;
 
             if (!isChainAllowed(targetChainId)) {
@@ -273,8 +280,9 @@ export async function escrowRoutes(server: FastifyInstance) {
                 return reply.status(403).send({ message: 'Only quest creator or admin can refund' } as any);
             }
 
-            if (quest.fundingStatus !== 'confirmed') {
-                return reply.status(400).send({ message: 'Quest is not funded' } as any);
+            // Refund is only allowed after rewards have been distributed
+            if (quest.fundingStatus !== 'distributed') {
+                return reply.status(400).send({ message: 'Rewards must be distributed before a refund can be issued' } as any);
             }
 
             const targetChainId = chainId || quest.cryptoChainId || escrowConfig.defaultChainId;

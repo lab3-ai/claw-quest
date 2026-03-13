@@ -59,6 +59,7 @@ async function verifyXAction(
         const targetTweetId = extractTweetId(targetValue)
         if (targetTweetId) {
           const quoteOk =
+            tweet.quotedTweetId === targetTweetId ||
             tweet.entityUrls.some(u => u.includes(targetTweetId)) ||
             tweet.text.includes(targetTweetId)
           if (!quoteOk) return { valid: false, error: 'This tweet does not quote the required post' }

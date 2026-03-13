@@ -24,6 +24,8 @@ export interface TweetInfo {
   text: string
   /** Expanded URLs from entities — used to detect quoted tweet */
   entityUrls: string[]
+  /** Quoted tweet ID when this tweet is a quote (from API `quoted.tweet_id`) */
+  quotedTweetId?: string
 }
 
 /**
@@ -41,19 +43,23 @@ export async function getTweetInfo(
       headers: headers(key),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     })
-    if (!res.ok) return null
-    const data = await res.json() as {
+    const raw = await res.text()
+    if (!raw?.trim()) return null
+    const data = JSON.parse(raw) as {
       author?: { screen_name?: string; rest_id?: string }
       text?: string
       entities?: { urls?: Array<{ expanded_url?: string }> }
+      quoted?: { tweet_id?: string }
     }
     const screenName = data.author?.screen_name
     if (!screenName) return null
+
     return {
       authorScreenName: screenName,
       authorId: data.author?.rest_id ?? '',
       text: data.text ?? '',
       entityUrls: (data.entities?.urls ?? []).map(u => u.expanded_url ?? '').filter(Boolean),
+      quotedTweetId: data.quoted?.tweet_id ?? undefined,
     }
   } catch {
     return null
@@ -76,8 +82,9 @@ export async function checkRetweet(
       headers: headers(key),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     })
-    if (!res.ok) return null
-    const data = await res.json() as { is_retweeted?: boolean; status?: string }
+    const raw = await res.text()
+    if (!raw?.trim()) return null
+    const data = JSON.parse(raw) as { is_retweeted?: boolean; status?: string }
     if (data.status !== 'ok') return null
     return data.is_retweeted ?? false
   } catch {
@@ -96,13 +103,14 @@ export async function checkFollow(
   const key = apiKey ?? process.env.RAPID_API_KEY ?? ''
   if (!key) return null
   try {
-    const url = `${BASE}/checkfollow.php?screenname=${encodeURIComponent(screenName)}&target=${encodeURIComponent(targetHandle)}`
+    const url = `${BASE}/checkfollow.php?user=${encodeURIComponent(screenName)}&follows=${encodeURIComponent(targetHandle)}`
     const res = await fetch(url, {
       headers: headers(key),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     })
-    if (!res.ok) return null
-    const data = await res.json() as { is_follow?: boolean }
+    const raw = await res.text()
+    if (!raw?.trim()) return null
+    const data = JSON.parse(raw) as { is_follow?: boolean }
     return data.is_follow ?? false
   } catch {
     return null

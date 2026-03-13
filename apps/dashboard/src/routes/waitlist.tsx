@@ -319,7 +319,7 @@ export function Waitlist() {
 
 
                     {/* Countdown */}
-                    <div className="relative z-10 w-full rounded-xl border border-neutral-800 bg-neutral-900/50 px-4 py-5 sm:px-6 sm:py-6 flex justify-center">
+                    <div className="relative z-10 w-full rounded-xl border border-neutral-800 bg-neutral-900/50 px-4 py-5 sm:px-6 sm:py-6 flex justify-center mt-2 sm:mt-6">
                         <CountdownTimer />
                     </div>
 

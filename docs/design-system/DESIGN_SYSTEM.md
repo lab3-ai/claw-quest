@@ -57,17 +57,17 @@ Principles:
 
 ### Scale
 
-| Token | Size | Tailwind | Use |
-|-------|------|----------|-----|
-| `--text-2xs` | 10px | `text-2xs` | Micro labels, uppercase tracking |
-| `--text-xs` | 12px | `text-xs` | Captions, timestamps, meta |
-| `--text-sm` | 14px | `text-sm` | Labels, secondary text, nav |
-| `--text-base` | 16px | `text-base` | Body text (default) |
-| `--text-md` | 16px | `text-md` | Alias for base |
-| `--text-lg` | 18px | `text-lg` | Section titles |
-| `--text-xl` | 20px | `text-xl` | Card headings |
-| `--text-2xl` | 24px | `text-2xl` | Page titles |
-| `--text-3xl` | 28px | `text-3xl` | Hero headings |
+| Token | Size | Line height | Tailwind | Use |
+|-------|------|-------------|----------|-----|
+| `--text-2xs` | 10px | 14px | `text-2xs` | Micro labels, uppercase tracking |
+| `--text-xs` | 12px | 16px | `text-xs` | Captions, timestamps, meta |
+| `--text-sm` | 14px | 20px | `text-sm` | Labels, secondary text, nav |
+| `--text-base` | 16px | 24px | `text-base` | Body text (default) |
+| `--text-md` | 16px | 24px | `text-md` | Alias for base |
+| `--text-lg` | 18px | 28px | `text-lg` | Section titles |
+| `--text-xl` | 20px | 28px | `text-xl` | Card headings |
+| `--text-2xl` | 24px | 32px | `text-2xl` | Page titles |
+| `--text-3xl` | 28px | 36px | `text-3xl` | Hero headings |
 
 ### Font weights
 
@@ -85,9 +85,16 @@ Live preview: `/concepts/demo/typography`
 
 ### Line heights
 
-- Body text: `1.6`
-- Headings: `1.3`
-- Compact (tables, badges): `1.2`
+Each font size has a paired line height (see Scale table above). Override utilities:
+
+| Tailwind | Value | Use |
+|----------|-------|-----|
+| `leading-none` | 1 | Single-line display text |
+| `leading-tight` | 1.25 | Headings, card titles |
+| `leading-snug` | 1.375 | Subheadings, multi-line titles |
+| `leading-normal` | 1.5 | Default body text |
+| `leading-relaxed` | 1.625 | Long-form descriptions |
+| `leading-loose` | 2 | Spacious reading |
 
 ---
 

@@ -9,6 +9,7 @@ import { XCallback } from './routes/auth/x-callback'
 import { PublicLayout } from './routes/_public'
 import { ConceptsDemoButtons } from './routes/_public/concepts.demo.buttons'
 import { TypographyDemo } from './routes/concepts.demo.typography'
+import { BadgesDemo } from './routes/concepts.demo.badges'
 import { Dashboard } from './routes/_authenticated/dashboard'
 import { QuestList } from './routes/_authenticated/quests/index'
 import { QuestDetail } from './routes/_public/quests/detail'
@@ -500,9 +501,16 @@ const conceptsDemoTypographyRoute = createRoute({
     component: TypographyDemo,
 })
 
+const conceptsdemoBadgesRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/concepts/demo/badges',
+    component: BadgesDemo,
+})
+
 const routeTree = rootRoute.addChildren([
     conceptsDemoButtonsRoute,
     conceptsDemoTypographyRoute,
+    conceptsdemoBadgesRoute,
     devLab3Route,
     loginRoute,
     registerRoute,

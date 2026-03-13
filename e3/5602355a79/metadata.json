@@ -3,7 +3,7 @@
   "checkpoint_id": "e35602355a79",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 3,
+  "checkpoints_count": 5,
   "files_touched": [
     "apps/api/src/modules/escrow/escrow-event-handlers.ts",
     "apps/api/src/modules/escrow/escrow.routes.ts",
@@ -24,13 +24,19 @@
       "transcript": "/e3/5602355a79/1/full.jsonl",
       "content_hash": "/e3/5602355a79/1/content_hash.txt",
       "prompt": "/e3/5602355a79/1/prompt.txt"
+    },
+    {
+      "metadata": "/e3/5602355a79/2/metadata.json",
+      "transcript": "/e3/5602355a79/2/full.jsonl",
+      "content_hash": "/e3/5602355a79/2/content_hash.txt",
+      "prompt": "/e3/5602355a79/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 38,
-    "cache_creation_tokens": 147970,
-    "cache_read_tokens": 2597011,
-    "output_tokens": 15315,
-    "api_call_count": 31
+    "input_tokens": 58,
+    "cache_creation_tokens": 221027,
+    "cache_read_tokens": 3686231,
+    "output_tokens": 21838,
+    "api_call_count": 47
   }
 }

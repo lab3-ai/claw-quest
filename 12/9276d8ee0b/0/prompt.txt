@@ -1,0 +1,9 @@
+<ide_selection>The user selected the lines 856 to 856 from /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/modules/quests/quests.routes.ts:
+verifySocialAction
+
+This may or may not be related to the current task.</ide_selection>
+"Use the superpowers:writing-plans skill to plan: Hiện tại API verify đang work không tối ưu, khi gửi verify 1 task sẽ call toàn bộ (tốn credit X,..)
+server.post(
+        '/:id/tasks/verify',
+tôi muốn gửi theo task platform, task action từ client lên
+và client nhận response luôn để update status cho task đó"

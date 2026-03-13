@@ -12,7 +12,7 @@ import { formatTimeShort, typeColorClass } from "@/components/quest-utils"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/context/ThemeContext"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { FlashFill, FlashLine, TrophyFill, TrophyLine, ClockFill, ClockLine, StarFill, StarLine, CalendarFill, CalendarLine, HistoryFill, HistoryLine, Rows3Line, RunLine, RandomLine } from "@mingcute/react"
+import { Rows3Line, RunLine, TrophyLine, RandomLine } from "@mingcute/react"
 import { SponsorLogo } from "@/components/sponsor-logo"
 import { PageTitle } from "@/components/page-title"
 import { TokenIcon } from "@/components/token-icon"
@@ -173,14 +173,6 @@ export function QuestList() {
         new: filterAndSortQuests(quests, "new").length,
         upcoming: filterAndSortQuests(quests, "upcoming").length,
         ended: endedQuests.length,
-    }
-    const tabIconMap: Record<Tab, { line: typeof FlashLine; fill: typeof FlashFill }> = {
-        featured: { line: FlashLine, fill: FlashFill },
-        "highest-reward": { line: TrophyLine, fill: TrophyFill },
-        "ending-soon": { line: ClockLine, fill: ClockFill },
-        new: { line: StarLine, fill: StarFill },
-        upcoming: { line: CalendarLine, fill: CalendarFill },
-        ended: { line: HistoryLine, fill: HistoryFill },
     }
     const tabs: { id: Tab; label: string }[] = [
         { id: "featured", label: "Featured" },

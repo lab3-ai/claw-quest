@@ -8,7 +8,7 @@ import { TierProgress } from "@/components/waitlist/tier-progress"
 import { HeroGridBg } from "@/components/waitlist/hero-grid-bg"
 import { MascotEyes, type MascotMood } from "@/components/waitlist/mascot-eyes"
 import { BrandLogo } from "@/components/brand-logo"
-import { HornLine, CelebrateLine, ArrowUpLine, CheckLine, CloseLine, Share2Line, TrophyLine, FlashLine, RocketLine } from "@mingcute/react"
+import { CelebrateLine, ArrowUpLine, CheckLine, CloseLine, Share2Line, TrophyLine, FlashLine, RocketLine } from "@mingcute/react"
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
 interface PlatformStats {

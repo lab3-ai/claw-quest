@@ -49,7 +49,7 @@ export function AuthenticatedLayout() {
         <div className="flex min-h-screen flex-col">
             {/* Topbar */}
             <header className="sticky top-0 z-50 bg-background">
-                <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-6 max-sm:px-3 max-sm:gap-1">
+                <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-6 max-lg:px-3 max-lg:gap-1">
                     <Link
                         to="/quests"
                         className="mr-5 flex items-center gap-1.5 no-underline"
@@ -58,7 +58,7 @@ export function AuthenticatedLayout() {
                     </Link>
 
                     {/* Desktop nav */}
-                    <nav className="hidden items-center gap-1 sm:flex">
+                    <nav className="hidden items-center gap-1 lg:flex">
                         <Link
                             to="/quests"
                             className="px-3 py-2 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
@@ -73,7 +73,7 @@ export function AuthenticatedLayout() {
                             <Button
                                 variant="ghost"
                                 iconOnly
-                                className="ml-auto sm:hidden"
+                                className="ml-auto lg:hidden"
                                 aria-label="Menu"
                             >
                                 <svg
@@ -136,7 +136,7 @@ export function AuthenticatedLayout() {
                     </Sheet>
 
                     {/* Desktop right */}
-                    <div className="ml-auto hidden items-center gap-3 sm:flex">
+                    <div className="ml-auto hidden items-center gap-3 lg:flex">
                         <Button asChild>
                             <Link to="/quests/new" className="no-underline">
                                 <AddLine size={16} />

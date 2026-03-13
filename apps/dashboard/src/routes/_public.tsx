@@ -62,7 +62,7 @@ function NavTabs() {
         "py-1.5 text-sm font-semibold text-foreground no-underline transition-colors duration-200 hover:text-fg-secondary [&.active]:text-foreground"
 
     return (
-        <nav ref={navRef} className="relative hidden items-center gap-6 sm:flex">
+        <nav ref={navRef} className="relative hidden items-center gap-6 lg:flex">
             {NAV_ITEMS.map(({ to, label }) => (
                 <Link key={to} to={to} className={linkClass}>
                     {label}
@@ -110,7 +110,7 @@ export function PublicLayout() {
                             <Button
                                 variant="ghost"
                                 iconOnly
-                                className="ml-auto sm:hidden"
+                                className="ml-auto lg:hidden"
                                 aria-label="Menu"
                             >
                                 <svg
@@ -196,7 +196,7 @@ export function PublicLayout() {
                     </Sheet>
 
                     {/* Desktop right */}
-                    <div className="ml-auto hidden items-center gap-3 sm:flex">
+                    <div className="ml-auto hidden items-center gap-3 lg:flex">
                         {/* Theme picker */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

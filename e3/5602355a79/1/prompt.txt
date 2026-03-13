@@ -1,0 +1,14 @@
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/app.ts in the IDE. This may or may not be related to the current task.</ide_opened_file>
+Hãy check URL khi invate bot discord
+https://discord.com/oauth2/authorize?client_id=1478034120075645000&scope=bot&permissions=0
+vậy thì bot discord check 2 task
+- member join a Discord
+- verify role in Discrod
+
+---
+
+<ide_selection>The user selected the lines 338 to 338 from /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/modules/quests/quests.service.ts:
+resolveInvite
+
+This may or may not be related to the current task.</ide_selection>
+Bật server members intent lên như nào?

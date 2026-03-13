@@ -1,0 +1,4 @@
+Phần data có dạng này nếu mà quoted bài viết khác
+@/Users/vuongluu/.cursor/projects/Users-vuongluu-Documents-jobs-lab3-ceo-clawquest/terminals/7.txt:437-515 
+Task post on X work rùi
+cần handle thêm quoted a post @apps/api/src/modules/x/x-twitter-api45-client.ts:34-65 @apps/api/src/modules/quests/social-action-verifier.ts:58-70

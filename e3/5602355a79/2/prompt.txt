@@ -1,0 +1,16 @@
+<ide_selection>The user selected the lines 239 to 239 from /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/modules/escrow/escrow.routes.ts:
+/refund/:questId
+
+This may or may not be related to the current task.</ide_selection>
+API admin or creator 
+- /distribute/:questId
+- /refund/:questId
+cần check thêm thời gian xem, cần phải kết thúc thì mới được call.
+
+---
+
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/contracts/src/ClawQuestEscrow.sol in the IDE. This may or may not be related to the current task.</ide_opened_file>
+Tôi muốn update trạng thái Quest và flow như sau
+- sau khi kết thúc thì Admin chỉ có thể call distribute thôi (call refund sẽ báo lỗi)
+- sau khi call distribute thành công rồi, thì mới được call refund
+nên có status update cho quest thì tốt.

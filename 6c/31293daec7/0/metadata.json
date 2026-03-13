@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "6c31293daec7",
+  "session_id": "ce085fdd-8e31-4eae-8ba1-e05fe6979d11",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-13T11:42:29.970514Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/modules/quests/social-action-verifier.ts",
+    "apps/api/src/modules/x/x-twitter-api45-client.ts"
+  ],
+  "agent": "Cursor",
+  "model": "default",
+  "turn_id": "d6907ec17d24",
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-13T11:42:29.945024Z",
+    "agent_lines": 5,
+    "human_added": 7,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 12,
+    "agent_percentage": 41.66666666666667
+  }
+}

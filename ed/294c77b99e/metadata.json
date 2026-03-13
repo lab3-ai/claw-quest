@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "ed294c77b99e",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 7,
+  "files_touched": [
+    "apps/api/src/app.ts",
+    "apps/api/src/modules/escrow/escrow.routes.ts",
+    "apps/api/src/modules/escrow/escrow.service.ts",
+    "apps/api/src/modules/quests/quests.routes.ts",
+    "apps/dashboard/src/routes/_public/quests/detail.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ed/294c77b99e/0/metadata.json",
+      "transcript": "/ed/294c77b99e/0/full.jsonl",
+      "content_hash": "/ed/294c77b99e/0/content_hash.txt",
+      "prompt": "/ed/294c77b99e/0/prompt.txt"
+    },
+    {
+      "metadata": "/ed/294c77b99e/1/metadata.json",
+      "transcript": "/ed/294c77b99e/1/full.jsonl",
+      "content_hash": "/ed/294c77b99e/1/content_hash.txt",
+      "prompt": "/ed/294c77b99e/1/prompt.txt"
+    },
+    {
+      "metadata": "/ed/294c77b99e/2/metadata.json",
+      "transcript": "/ed/294c77b99e/2/full.jsonl",
+      "content_hash": "/ed/294c77b99e/2/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 59,
+    "cache_creation_tokens": 209404,
+    "cache_read_tokens": 3246449,
+    "output_tokens": 17545,
+    "api_call_count": 39
+  }
+}

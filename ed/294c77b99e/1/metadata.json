@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "ed294c77b99e",
+  "session_id": "f8ced21d-6deb-4b96-895d-73bef5f1ec77",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-13T17:34:10.918033Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/app.ts"
+  ],
+  "agent": "Cursor",
+  "model": "default",
+  "turn_id": "727396e8ec5b",
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-13T17:34:10.904556Z",
+    "agent_lines": 0,
+    "human_added": 1633,
+    "human_modified": 13,
+    "human_removed": 0,
+    "total_committed": 1633,
+    "agent_percentage": 0
+  }
+}

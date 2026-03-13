@@ -1,0 +1,108 @@
+<ide_selection>The user selected the lines 856 to 856 from /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/modules/quests/quests.routes.ts:
+verifySocialAction
+
+This may or may not be related to the current task.</ide_selection>
+"Use the superpowers:writing-plans skill to plan: Hiện tại API verify đang work không tối ưu, khi gửi verify 1 task sẽ call toàn bộ (tốn credit X,..)
+server.post(
+        '/:id/tasks/verify',
+tôi muốn gửi theo task platform, task action từ client lên
+và client nhận response luôn để update status cho task đó"
+
+---
+
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/modules/quests/quests.routes.ts in the IDE. This may or may not be related to the current task.</ide_opened_file>
+You not implement at logic Client, right?
+
+---
+
+<ide_selection>The user selected the lines 670 to 670 from /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/dashboard/src/routes/_public/quests/detail.tsx:
+About this Quest
+
+This may or may not be related to the current task.</ide_selection>
+Có nhé, hãy làm chúng, ở trong file @apps/dashboard/src/routes/_public/quests/detail.tsx 
+Và tôi muốn bạn sửa thêm vào button khi bấm"Do it" thì nếu có link của X (ví dụ Like a Post, Repost, Quote a Post,..) thì sẽ chèn link của task vào nhé
+
+---
+
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/dashboard/src/routes/_public/quests/detail.tsx in the IDE. This may or may not be related to the current task.</ide_opened_file>
+[nhắc nhở] không commit nhé, tôi sẽ tự commit
+Fix bug: call verify lỗi 
+curl 'http://localhost:3000/quests/0c264ea9-5d5d-4171-b4f2-6e17b8e5933a/tasks/0/verify' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: en,en-US;q=0.9,vi;q=0.8,ko;q=0.7' \
+  -H 'Authorization: Bearer REDACTED' \
+  -H 'Connection: keep-alive' \
+  -H 'Content-Type: application/json' \
+  -H 'Origin: http://localhost:5173' \
+  -H 'Referer: http://localhost:5173/' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-site' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  --data-raw '{}'
+{
+    "statusCode": 500,
+    "error": "Internal Server Error",
+    "message": "\nInvalid `server.prisma.quest.findUnique()` invocation in\n/Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/modules/quests/quests.routes.ts:925:53\n\n  922     return reply.status(400).send({ error: { message: 'Invalid taskIndex', code: 'INVALID_TASK_INDEX' } })\n  923 }\n  924 \n→ 925 const quest = await server.prisma.quest.findUnique({\n        where: {\n          id: \"0c264ea9-5d5d-4171-b4f2-6e17b8e5933a\"\n        },\n        include: {\n          tasks: {\n          ~~~~~\n            orderBy: {\n              createdAt: \"asc\"\n            }\n          },\n      ?   sponsorUser?: true,\n      ?   llmModel?: true,\n      ?   participations?: true,\n      ?   collaborators?: true,\n      ?   deposits?: true\n        }\n      })\n\nInvalid scalar field `tasks` for include statement on model Quest. Available options are marked with ?.\nNote that include statements only accept relation fields."
+}
+
+---
+
+[nhắc nhở] không commit nhé, tôi sẽ tự commit
+Fix bug: call verify lỗi 
+curl 'http://localhost:3000/quests/0c264ea9-5d5d-4171-b4f2-6e17b8e5933a/tasks/0/verify' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: en,en-US;q=0.9,vi;q=0.8,ko;q=0.7' \
+  -H 'Authorization: Bearer REDACTED' \
+  -H 'Connection: keep-alive' \
+  -H 'Content-Type: application/json' \
+  -H 'Origin: http://localhost:5173' \
+  -H 'Referer: http://localhost:5173/' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-site' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  --data-raw '{}'
+{
+    "statusCode": 500,
+    "error": "Internal Server Error",
+    "message": "\nInvalid `server.prisma.quest.findUnique()` invocation in\n/Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/modules/quests/quests.routes.ts:925:53\n\n  922     return reply.status(400).send({ error: { message: 'Invalid taskIndex', code: 'INVALID_TASK_INDEX' } })\n  923 }\n  924 \n→ 925 const quest = await server.prisma.quest.findUnique({\n        where: {\n          id: \"0c264ea9-5d5d-4171-b4f2-6e17b8e5933a\"\n        },\n        include: {\n          tasks: {\n          ~~~~~\n            orderBy: {\n              createdAt: \"asc\"\n            }\n          },\n      ?   sponsorUser?: true,\n      ?   llmModel?: true,\n      ?   participations?: true,\n      ?   collaborators?: true,\n      ?   deposits?: true\n        }\n      })\n\nInvalid scalar field `tasks` for include statement on model Quest. Available options are marked with ?.\nNote that include statements only accept relation fields."
+}
+
+---
+
+<ide_selection>The user selected the lines 307 to 320 from /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/app.ts:
+ if (isEscrowConfigured()) {
+            try {
+                await rpcManager.load(prisma);
+                invalidateClientCache(); // ensure clients are rebuilt with DB-sourced RPCs
+                startEscrowPoller(server).catch((err) => {
+                    console.error('⚠️  Escrow poller failed (non-fatal):', err.message);
+                });
+            } catch (err: any) {
+                console.warn('⚠️  RPC manager load failed (non-fatal) — escrow poller will not start:', err.message);
+            }
+        } else {
+            console.warn('⚠️  Escrow not configured (missing contract address or operator key) — poller will not start');
+        }
+
+
+This may or may not be related to the current task.</ide_selection>
+Nếu task Post on X
+hãy chèn thêm intent phần content
+response có show ```{
+            "id": "a70ecbe7-4232-4bf2-a94a-7dd4a00822e6",
+            "platform": "x",
+            "actionType": "post",
+            "label": "Post on X",
+            "params": {
+                "content": "hi...."
+            },
+            "requireTagFriends": true
+        },```

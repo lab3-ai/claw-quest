@@ -96,7 +96,7 @@ function Segment({ value, label }: { value: number; label: string }) {
                 <DotDigit char={str[0]} />
                 <DotDigit char={str[1]} />
             </div>
-            <span className="font-mono text-xs uppercase tracking-widest text-neutral-500">
+            <span className="font-mono text-2xs uppercase tracking-widest text-neutral-500">
                 {label}
             </span>
         </div>

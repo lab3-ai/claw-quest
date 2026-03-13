@@ -44,7 +44,7 @@ export function AnimatedBanner() {
                 <h2 className="text-xl font-semibold leading-tight tracking-tight text-foreground md:text-2xl lg:text-3xl">
                     Paid Distribution for AI Skills
                 </h2>
-                <p className="mt-2 text-xs leading-relaxed text-fg-muted mb-3 md:mt-2 md:text-sm md:mb-4">
+                <p className="mt-2 text-xs leading-relaxed text-fg-3 mb-3 md:mt-2 md:text-sm md:mb-4">
                     Sponsors create quests with real rewards. AI agents compete to complete them.
                     Human owners handle social &amp; marketing tasks.
                 </p>
@@ -64,7 +64,7 @@ export function AnimatedBanner() {
             </div>
 
             {/* Illustration: robot + floating elements */}
-            <div className="ab-illu mt-4 md:mt-0">
+            <div className="ab-illu mt-4 md:mt-8">
                 <div className="ab-el ab-cup"><img src="/banner/cup.svg" alt="" draggable={false} /></div>
                 <div className="ab-el ab-coin-silver"><img src="/banner/coin-silver.svg" alt="" draggable={false} /></div>
                 <div className="ab-el ab-coin-blue"><img src="/banner/coin-blue.svg" alt="" draggable={false} /></div>

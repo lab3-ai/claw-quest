@@ -74,13 +74,13 @@ export function FundSuccess() {
 
     return (
         <div className="max-w-xl mx-auto py-8 px-4">
-            <nav className="flex items-center gap-1 text-xs text-fg-muted mb-4">
+            <nav className="flex items-center gap-1 text-xs text-fg-3 mb-4">
                 <Link to="/quests" className="hover:text-foreground transition-colors">Quests</Link>
-                <span className="text-fg-muted">/</span>
+                <span className="text-fg-3">/</span>
                 <Link to="/quests/$questId" params={{ questId }} className="hover:text-foreground transition-colors">
                     {quest?.title || 'Quest'}
                 </Link>
-                <span className="text-fg-muted">/</span>
+                <span className="text-fg-3">/</span>
                 <span className="text-foreground">Payment</span>
             </nav>
 
@@ -92,7 +92,7 @@ export function FundSuccess() {
                             style={{ borderTopColor: '#635bff' }}
                         />
                         <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Verifying Payment</h2>
-                        <p className="text-sm text-fg-muted m-0">
+                        <p className="text-sm text-fg-3 m-0">
                             Please wait while we confirm your payment...
                         </p>
                     </>
@@ -105,14 +105,14 @@ export function FundSuccess() {
                             style={{ borderTopColor: '#635bff' }}
                         />
                         <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Waiting for Payment Confirmation</h2>
-                        <p className="text-sm text-fg-muted m-0 mb-4">
+                        <p className="text-sm text-fg-3 m-0 mb-4">
                             Your payment has been received and is being processed by our payment provider.
                         </p>
-                        <p className="text-xs text-fg-muted m-0 mb-4">
+                        <p className="text-xs text-fg-3 m-0 mb-4">
                             This page will automatically update once your payment is confirmed. This usually takes a few seconds.
                         </p>
                         {sessionData?.paid && (
-                            <p className="text-xs text-fg-muted m-0">
+                            <p className="text-xs text-fg-3 m-0">
                                 ✓ Payment received - waiting for final confirmation...
                             </p>
                         )}
@@ -125,7 +125,7 @@ export function FundSuccess() {
                             ✓
                         </div>
                         <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Payment Successful!</h2>
-                        <p className="text-sm text-fg-muted m-0 mb-6">
+                        <p className="text-sm text-fg-3 m-0 mb-6">
                             Your quest has been funded successfully and is now {quest?.status === 'scheduled' ? 'scheduled' : 'live'}.
                         </p>
                         <div className="flex gap-3 justify-center">
@@ -145,7 +145,7 @@ export function FundSuccess() {
                             🚧
                         </div>
                         <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Stripe Payments Coming Soon</h2>
-                        <p className="text-sm text-fg-muted m-0 mb-6">
+                        <p className="text-sm text-fg-3 m-0 mb-6">
                             Stripe payments are temporarily unavailable. Please check back later.
                         </p>
                         <div className="flex gap-3 justify-center">
@@ -165,10 +165,10 @@ export function FundSuccess() {
                             ✕
                         </div>
                         <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Payment Not Confirmed</h2>
-                        <p className="text-sm text-fg-muted m-0 mb-6">
+                        <p className="text-sm text-fg-3 m-0 mb-6">
                             We couldn't confirm your payment. This might be because:
                         </p>
-                        <ul className="text-sm text-fg-muted text-left mb-6 space-y-2 max-w-md mx-auto">
+                        <ul className="text-sm text-fg-3 text-left mb-6 space-y-2 max-w-md mx-auto">
                             <li>• The payment is still processing (please wait a moment)</li>
                             <li>• The payment was cancelled</li>
                             <li>• There was an issue with the payment</li>

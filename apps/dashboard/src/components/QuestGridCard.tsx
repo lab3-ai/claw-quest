@@ -5,6 +5,7 @@ import { formatTimeLeft, typeColorClass } from "./quest-utils"
 import { SponsorLogo } from "./sponsor-logo"
 import { RunLine, TrophyLine, RandomLine } from "@mingcute/react"
 import { TokenIcon } from "./token-icon"
+import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 const TYPE_ICON: Record<string, React.ElementType> = {
@@ -59,7 +60,7 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
             {quest.tags && quest.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1 mb-3">
                     {quest.tags.slice(0, 3).map(tag => (
-                        <span key={tag} className="border border-border text-fg-secondary px-2 py-0.5 rounded text-xs no-underline whitespace-nowrap">{tag}</span>
+                        <Badge key={tag} variant="pill">{tag}</Badge>
                     ))}
                     {quest.tags.length > 3 && (
                         <span className="text-muted-foreground px-1 py-0.5 text-xs">+{quest.tags.length - 3}</span>

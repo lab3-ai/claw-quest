@@ -59,7 +59,7 @@ export function QuestJoin({ questId, token }: { questId: string; token: string }
     if (isLoading || status === 'idle' || status === 'accepting') {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <p className="text-fg-muted text-sm">Accepting invite...</p>
+                <p className="text-fg-3 text-sm">Accepting invite...</p>
             </div>
         )
     }
@@ -78,12 +78,12 @@ export function QuestJoin({ questId, token }: { questId: string; token: string }
                     <div className="bg-muted/50 border border-border rounded-lg p-4 mb-4 text-left">
                         <p className="text-sm font-semibold text-foreground m-0 mb-1">{quest.title}</p>
                         {quest.description && (
-                            <p className="text-xs text-fg-muted m-0 line-clamp-2">{quest.description}</p>
+                            <p className="text-xs text-fg-3 m-0 line-clamp-2">{quest.description}</p>
                         )}
                     </div>
                 )}
 
-                <p className="text-sm text-fg-muted m-0 mb-5">
+                <p className="text-sm text-fg-3 m-0 mb-5">
                     This quest is now available in your Dashboard.
                 </p>
                 <Button asChild>

@@ -23,7 +23,7 @@ export function ThemeSwitcher({ className }: { className?: string }) {
                             'rounded-button',
                             colorMode === m.id
                                 ? 'bg-primary text-primary-foreground'
-                                : 'text-fg-muted hover:text-fg'
+                                : 'text-fg-3 hover:text-fg-1'
                         )}
                     >
                         <m.icon size={14} />
@@ -42,11 +42,11 @@ export function ThemeSwitcher({ className }: { className?: string }) {
                             'flex flex-col items-start gap-1 rounded-md border p-3 text-left transition-all',
                             theme === t.id
                                 ? 'border-primary bg-accent-light'
-                                : 'border-border hover:border-border-heavy'
+                                : 'border-border hover:border-border-3'
                         )}
                     >
-                        <span className="text-sm font-medium text-fg">{t.label}</span>
-                        <span className="text-xs text-fg-muted">{t.description}</span>
+                        <span className="text-sm font-medium text-fg-1">{t.label}</span>
+                        <span className="text-xs text-fg-3">{t.description}</span>
                     </button>
                 ))}
             </div>

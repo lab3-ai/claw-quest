@@ -77,7 +77,7 @@ function ParticipantRow({
     const [reason, setReason] = useState('')
 
     return (
-        <tr className="group [&>td]:hover:bg-bg-secondary">
+        <tr className="group [&>td]:hover:bg-bg-2">
             <td className="px-4 py-[0.65rem] border-b border-border text-foreground align-top text-xs">{p.agentName}</td>
             <td className="px-4 py-[0.65rem] border-b border-border text-foreground align-top text-xs">
                 <span className={statusBadgeClass(p.status)}>{p.status}</span>
@@ -87,7 +87,7 @@ function ParticipantRow({
                 {p.proof ? (
                     <details className="text-xs text-muted-foreground max-w-[200px]">
                         <summary className="cursor-pointer text-(--link,#0074cc) text-xs">View proof</summary>
-                        <pre className="mt-1 text-2xs bg-bg-subtle border border-border rounded-sm p-[6px] overflow-auto max-h-[120px] whitespace-pre-wrap break-all">
+                        <pre className="mt-1 text-2xs bg-bg-3 border border-border rounded-sm p-[6px] overflow-auto max-h-[120px] whitespace-pre-wrap break-all">
                             {JSON.stringify(p.proof, null, 2)}
                         </pre>
                     </details>
@@ -171,7 +171,7 @@ function ParticipantCard({
                     {p.proof ? (
                         <details className="text-xs text-muted-foreground">
                             <summary className="cursor-pointer text-(--link,#0074cc) text-xs">View proof</summary>
-                            <pre className="mt-1 text-2xs bg-bg-subtle border border-border rounded-sm p-[6px] overflow-auto max-h-[120px] whitespace-pre-wrap break-all">
+                            <pre className="mt-1 text-2xs bg-bg-3 border border-border rounded-sm p-[6px] overflow-auto max-h-[120px] whitespace-pre-wrap break-all">
                                 {JSON.stringify(p.proof, null, 2)}
                             </pre>
                         </details>
@@ -236,7 +236,7 @@ function DistributeError({ error }: { error: string | undefined }) {
         return (
             <div className="text-xs mb-2">
                 <p className="text-error mb-1">Winners haven't completed Stripe setup yet. Share this link with them:</p>
-                <div className="flex items-center gap-2 bg-bg-subtle border border-border rounded px-2 py-1.5">
+                <div className="flex items-center gap-2 bg-bg-3 border border-border rounded px-2 py-1.5">
                     <code className="text-xs text-foreground flex-1 break-all">{stripeUrl}</code>
                     <button
                         className="text-xs font-medium text-accent hover:underline shrink-0"
@@ -478,7 +478,7 @@ export function ManageQuest() {
                         </h3>
                         {/* Status counts */}
                         {Object.keys(statusCounts).length > 0 && (
-                            <div className="flex flex-wrap gap-[6px] px-5 max-sm:px-3 py-3 max-sm:py-2 bg-bg-subtle border-t border-border">
+                            <div className="flex flex-wrap gap-[6px] px-5 max-sm:px-3 py-3 max-sm:py-2 bg-bg-3 border-t border-border">
                                 {Object.entries(statusCounts).map(([s, n]) => (
                                     <span key={s} className={cn('text-xs max-sm:text-2xs font-medium rounded-sm px-2 py-[2px]', statusBadgeClass(s))}>
                                         {s}: {n}
@@ -497,11 +497,11 @@ export function ManageQuest() {
                                     <table className="w-full border-collapse text-xs">
                                         <thead>
                                             <tr>
-                                                <th className="px-4 py-[0.6rem] text-left text-xs font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Agent</th>
-                                                <th className="px-4 py-[0.6rem] text-left text-xs font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Status</th>
-                                                <th className="px-4 py-[0.6rem] text-left text-xs font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Tasks</th>
-                                                <th className="px-4 py-[0.6rem] text-left text-xs font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Proof</th>
-                                                <th className="px-4 py-[0.6rem] text-left text-xs font-semibold text-muted-foreground bg-bg-subtle border-b border-border">Actions</th>
+                                                <th className="px-4 py-[0.6rem] text-left text-xs font-semibold text-muted-foreground bg-bg-3 border-b border-border">Agent</th>
+                                                <th className="px-4 py-[0.6rem] text-left text-xs font-semibold text-muted-foreground bg-bg-3 border-b border-border">Status</th>
+                                                <th className="px-4 py-[0.6rem] text-left text-xs font-semibold text-muted-foreground bg-bg-3 border-b border-border">Tasks</th>
+                                                <th className="px-4 py-[0.6rem] text-left text-xs font-semibold text-muted-foreground bg-bg-3 border-b border-border">Proof</th>
+                                                <th className="px-4 py-[0.6rem] text-left text-xs font-semibold text-muted-foreground bg-bg-3 border-b border-border">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -668,34 +668,34 @@ export function ManageQuest() {
                         </h3>
                         {isFiatFunded ? (
                             <div className="grid grid-cols-2 gap-2">
-                                <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
+                                <div className="bg-bg-3 border border-border rounded-md px-[0.8rem] py-[0.6rem]">
                                     <div className="text-2xs text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Funded</div>
                                     <div className="text-[13px] font-semibold text-foreground">${quest.rewardAmount.toLocaleString()} USD</div>
                                 </div>
-                                <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
+                                <div className="bg-bg-3 border border-border rounded-md px-[0.8rem] py-[0.6rem]">
                                     <div className="text-2xs text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Method</div>
                                     <div className="text-[13px] font-semibold text-(--stripe-fg,#635bff)">Stripe</div>
                                 </div>
-                                <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
+                                <div className="bg-bg-3 border border-border rounded-md px-[0.8rem] py-[0.6rem]">
                                     <div className="text-2xs text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Status</div>
                                     <div className="text-[13px] font-semibold text-foreground">{quest.fundingStatus}</div>
                                 </div>
                             </div>
                         ) : escrow ? (
                             <div className="grid grid-cols-2 gap-2">
-                                <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
+                                <div className="bg-bg-3 border border-border rounded-md px-[0.8rem] py-[0.6rem]">
                                     <div className="text-2xs text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Deposited</div>
                                     <div className="text-[13px] font-semibold text-foreground">{escrow.depositedHuman} {data.quest.rewardType}</div>
                                 </div>
-                                <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
+                                <div className="bg-bg-3 border border-border rounded-md px-[0.8rem] py-[0.6rem]">
                                     <div className="text-2xs text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Distributed</div>
                                     <div className="text-[13px] font-semibold text-foreground">{escrow.distributedHuman} {data.quest.rewardType}</div>
                                 </div>
-                                <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
+                                <div className="bg-bg-3 border border-border rounded-md px-[0.8rem] py-[0.6rem]">
                                     <div className="text-2xs text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Refunded</div>
                                     <div className="text-[13px] font-semibold text-foreground">{escrow.refundedHuman} {data.quest.rewardType}</div>
                                 </div>
-                                <div className="bg-bg-subtle border border-border rounded-md px-[0.8rem] py-[0.6rem]">
+                                <div className="bg-bg-3 border border-border rounded-md px-[0.8rem] py-[0.6rem]">
                                     <div className="text-2xs text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Remaining</div>
                                     <div className="text-[13px] font-semibold text-foreground">{escrow.remainingHuman} {data.quest.rewardType}</div>
                                 </div>

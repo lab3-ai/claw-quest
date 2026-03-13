@@ -22,64 +22,71 @@
 }
 
 @theme {
-    --color-background: var(--bg);
-    --color-foreground: var(--fg);
+    /* ── shadcn aliases → numbered tokens ── */
+    --color-background: var(--bg-1);
+    --color-foreground: var(--fg-1);
 
-    --color-card: var(--bg);
-    --color-card-foreground: var(--fg);
+    --color-card: var(--bg-1);
+    --color-card-foreground: var(--fg-1);
 
-    --color-popover: var(--bg);
-    --color-popover-foreground: var(--fg);
+    --color-popover: var(--bg-1);
+    --color-popover-foreground: var(--fg-1);
 
     --color-primary: var(--primary);
     --color-primary-foreground: var(--primary-fg);
 
-    --color-secondary: var(--bg-muted);
-    --color-secondary-foreground: var(--fg);
+    --color-secondary: var(--bg-4);
+    --color-secondary-foreground: var(--fg-1);
 
-    --color-muted: var(--bg-muted);
-    --color-muted-foreground: var(--fg-muted);
+    --color-muted: var(--bg-4);
+    --color-muted-foreground: var(--fg-3);
 
     --color-destructive: var(--error);
     --color-destructive-foreground: var(--accent-fg);
 
-    --color-input: var(--border);
+    --color-input: var(--border-2);
     --color-ring: var(--accent);
 
-    --color-bg: var(--bg);
-    --color-bg-secondary: var(--bg-secondary);
-    --color-bg-subtle: var(--bg-subtle);
-    --color-bg-muted: var(--bg-muted);
+    /* ── Numbered scale ── */
+    --color-bg-1: var(--bg-1);
+    --color-bg-2: var(--bg-2);
+    --color-bg-3: var(--bg-3);
+    --color-bg-4: var(--bg-4);
 
-    --color-fg: var(--fg);
-    --color-fg-secondary: var(--fg-secondary);
-    --color-fg-muted: var(--fg-muted);
+    --color-fg-1: var(--fg-1);
+    --color-fg-2: var(--fg-2);
+    --color-fg-3: var(--fg-3);
+    --color-fg-4: var(--fg-4);
 
-    --color-border: var(--border);
-    --color-border-muted: var(--border-muted);
-    --color-border-heavy: var(--border-heavy);
-    --color-border-strong: var(--border-strong);
+    --color-border-1: var(--border-1);
+    --color-border-2: var(--border-2);
+    --color-border-3: var(--border-3);
+    --color-border-4: var(--border-4);
+
+    /* ── Default border (shadcn) ── */
+    --color-border: var(--border-2);
 
     --color-accent: var(--accent);
     --color-accent-hover: var(--accent-hover);
     --color-accent-light: var(--accent-light);
-    --color-accent-border: var(--accent-border);
+    --color-border-accent: var(--accent-border);
     --color-accent-foreground: var(--accent-fg);
 
     --color-success: var(--success);
     --color-success-light: var(--success-light);
-    --color-success-border: var(--success-border);
+    --color-border-success: var(--success-border);
 
     --color-error: var(--error);
     --color-error-light: var(--error-light);
-    --color-error-border: var(--error-border);
+    --color-border-error: var(--error-border);
 
     --color-warning: var(--warning);
     --color-warning-light: var(--warning-light);
-    --color-warning-border: var(--warning-border);
+    --color-border-warning: var(--warning-border);
 
     --color-info: var(--info);
     --color-info-light: var(--info-light);
+    --color-border-info: var(--info-border);
 
     --color-human: var(--human-fg);
     --color-human-bg: var(--human-bg);
@@ -176,18 +183,19 @@
    ────────────────────────────────────────────── */
 :root,
 [data-theme="terminal"] {
-    /* ── Core Colors ── */
-    --bg: #ffffff;
-    --bg-secondary: #f5f5f5;
-    --bg-subtle: #e5e5e5;
-    --bg-muted: #dcdcdc;
-    --fg: #111111;
-    --fg-secondary: #555555;
-    --fg-muted: #888888;
-    --border: #e5e5e5;
-    --border-muted: #efefef;
-    --border-heavy: #aaaaaa;
-    --border-strong: #222222;
+    /* ── Core Colors (numbered: 1=lightest bg / darkest fg, 4=inverse) ── */
+    --bg-1: #ffffff;
+    --bg-2: #f5f5f5;
+    --bg-3: #e5e5e5;
+    --bg-4: #dcdcdc;
+    --fg-1: #111111;
+    --fg-2: #555555;
+    --fg-3: #888888;
+    --fg-4: #aaaaaa;
+    --border-1: #efefef;
+    --border-2: #e5e5e5;
+    --border-3: #aaaaaa;
+    --border-4: #222222;
 
     /* ── Dark surfaces (code blocks, dark cards) ── */
     --surface-dark: #1a1a1a;
@@ -223,6 +231,7 @@
     --warning-border: #ffcc66;
     --info: #4488ff;
     --info-light: #e6f0ff;
+    --info-border: #88bbff;
 
     /* ── Actor Colors — monochrome ── */
     --human-fg: #555555;
@@ -329,8 +338,8 @@ body {
     font-family: var(--font);
     font-size: var(--text-base);
     line-height: 1.6;
-    color: var(--fg);
-    background: var(--bg);
+    color: var(--fg-1);
+    background: var(--bg-2);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -395,7 +404,7 @@ summary {
 
 /* Skeleton loading placeholder */
 .skeleton {
-    background: linear-gradient(90deg, var(--bg-subtle) 25%, var(--border) 50%, var(--bg-subtle) 75%);
+    background: linear-gradient(90deg, var(--bg-3) 25%, var(--border-2) 50%, var(--bg-3) 75%);
     background-size: 200% 100%;
     animation: skeleton-pulse 1.5s ease-in-out infinite;
     border-radius: var(--radius-sm);

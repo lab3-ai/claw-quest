@@ -9,6 +9,7 @@ import { QuestersPopup } from "@/components/QuestersPopup"
 import { SeoHead } from "@/components/seo-head"
 import { formatTimeShort, typeColorClass } from "@/components/quest-utils"
 
+import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/context/ThemeContext"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -215,7 +216,7 @@ export function QuestList() {
 
             {/* Tabs row + view toggle */}
             <div className="flex items-center gap-3 py-3 max-sm:flex-col max-sm:gap-2 max-sm:items-stretch">
-                <div className="relative flex flex-1 min-w-0 items-center gap-0.5 p-0.5 max-sm:overflow-x-auto">
+                <div className="relative flex flex-1 min-w-0 items-center gap-2 p-0.5 max-sm:overflow-x-auto">
                     {/* Sliding highlight */}
                     <span
                         className="absolute top-0.5 bottom-0.5 rounded-button bg-primary transition-all duration-200 ease-out z-0"
@@ -228,18 +229,23 @@ export function QuestList() {
                                 key={t.id}
                                 ref={el => { tabRefs.current[t.id] = el }}
                                 className={cn(
-                                    "relative z-10 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-button cursor-pointer transition-all duration-200 ease-out",
+                                    "group/tab relative z-10 inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-button cursor-pointer transition-colors duration-150 ease-out",
                                     "font-semibold whitespace-nowrap",
-                                    "max-sm:px-2 max-sm:text-xs max-sm:gap-1 max-sm:min-h-[44px]",
+                                    "max-sm:px-2 max-sm:text-xs max-sm:gap-1.5 max-sm:min-h-[44px]",
                                     isActive
                                         ? "text-primary-foreground"
-                                        : "textforeground hover:text-primary"
+                                        : "text-foreground hover:text-primary"
                                 )}
                                 onClick={() => handleTabChange(t.id)}
                             >
                                 {t.label}
                                 {tabCounts[t.id] > 0 && (
-                                    <span className="text-xs opacity-70 max-sm:text-2xs">({tabCounts[t.id]})</span>
+                                    <Badge
+                                        variant={isActive ? "count-primary-inverted" : "count-muted"}
+                                        className={!isActive ? "transition-colors duration-150 ease-out group-hover/tab:bg-primary group-hover/tab:text-primary-foreground" : undefined}
+                                    >
+                                        {tabCounts[t.id]}
+                                    </Badge>
                                 )}
                             </button>
                         )
@@ -422,7 +428,7 @@ export function QuestList() {
                                 ) : sorted.map(quest => {
                                     const time = formatTimeShort(quest.expiresAt)
                                     return (
-                                        <tr key={quest.id} className="hover:bg-bg-secondary cursor-pointer transition-colors" onClick={() => navigate({ to: "/quests/$questId", params: { questId: quest.id } })}>
+                                        <tr key={quest.id} className="hover:bg-bg-2 cursor-pointer transition-colors" onClick={() => navigate({ to: "/quests/$questId", params: { questId: quest.id } })}>
                                             <td className="px-2 py-3 text-xs border-b border-border align-top whitespace-nowrap">
                                                 <span className="inline-flex items-center gap-2 text-sm font-semibold text-success whitespace-nowrap">
                                                     <TokenIcon token={quest.rewardType} size={16} />

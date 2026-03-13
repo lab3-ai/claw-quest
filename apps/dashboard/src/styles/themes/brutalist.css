@@ -17,17 +17,18 @@
     --shadow-lg: 8px 8px 0 #000000;
     --shadow-accent: 4px 4px 0 var(--accent);
 
-    --bg: #ffffff;
-    --bg-secondary: #fafafa;
-    --bg-subtle: #f5f5f5;
-    --bg-muted: #eeeeee;
-    --fg: #000000;
-    --fg-secondary: #333333;
-    --fg-muted: #777777;
-    --border: #000000;
-    --border-muted: #cccccc;
-    --border-heavy: #000000;
-    --border-strong: #000000;
+    --bg-1: #ffffff;
+    --bg-2: #fafafa;
+    --bg-3: #f5f5f5;
+    --bg-4: #eeeeee;
+    --fg-1: #000000;
+    --fg-2: #333333;
+    --fg-3: #777777;
+    --fg-4: #999999;
+    --border-1: #cccccc;
+    --border-2: #000000;
+    --border-3: #000000;
+    --border-4: #000000;
 
     --surface-dark: #000000;
     --surface-dark-subtle: #111111;
@@ -91,17 +92,18 @@
     --shadow-lg: 8px 8px 0 #ffffff;
     --shadow-accent: 4px 4px 0 var(--accent);
 
-    --bg: #111111;
-    --bg-secondary: #161616;
-    --bg-subtle: #1a1a1a;
-    --bg-muted: #222222;
-    --fg: #ffffff;
-    --fg-secondary: #cccccc;
-    --fg-muted: #888888;
-    --border: #ffffff;
-    --border-muted: #333333;
-    --border-heavy: #ffffff;
-    --border-strong: #ffffff;
+    --bg-1: #111111;
+    --bg-2: #161616;
+    --bg-3: #1a1a1a;
+    --bg-4: #222222;
+    --fg-1: #ffffff;
+    --fg-2: #cccccc;
+    --fg-3: #888888;
+    --fg-4: #666666;
+    --border-1: #333333;
+    --border-2: #ffffff;
+    --border-3: #ffffff;
+    --border-4: #ffffff;
 
     --surface-dark: #000000;
     --surface-dark-subtle: #0a0a0a;

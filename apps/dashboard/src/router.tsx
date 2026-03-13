@@ -10,6 +10,8 @@ import { PublicLayout } from './routes/_public'
 import { ConceptsDemoButtons } from './routes/_public/concepts.demo.buttons'
 import { TypographyDemo } from './routes/concepts.demo.typography'
 import { BadgesDemo } from './routes/concepts.demo.badges'
+import { DemoIndex } from './routes/concepts.demo.index'
+import { ColorsDemo } from './routes/concepts.demo.colors'
 import { Dashboard } from './routes/_authenticated/dashboard'
 import { QuestList } from './routes/_authenticated/quests/index'
 import { QuestDetail } from './routes/_public/quests/detail'
@@ -507,10 +509,24 @@ const conceptsdemoBadgesRoute = createRoute({
     component: BadgesDemo,
 })
 
+const conceptsDemoIndexRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/concepts/demo',
+    component: DemoIndex,
+})
+
+const conceptsDemoColorsRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/concepts/demo/colors',
+    component: ColorsDemo,
+})
+
 const routeTree = rootRoute.addChildren([
     conceptsDemoButtonsRoute,
     conceptsDemoTypographyRoute,
     conceptsdemoBadgesRoute,
+    conceptsDemoIndexRoute,
+    conceptsDemoColorsRoute,
     devLab3Route,
     loginRoute,
     registerRoute,

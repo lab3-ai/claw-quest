@@ -99,7 +99,7 @@ function StatusBadge({ status }: { status: Agent["status"] }) {
 function AgentHeader({ agent }: { agent: Agent }) {
     const avatarUrl = getDiceBearUrl(agent.agentname)
     return (
-        <div className="flex items-start gap-4 p-5 border border-border-muted bg-card hover:bg-bg-secondary transition-colors">
+        <div className="flex items-start gap-4 p-5 border border-border-1 bg-card hover:bg-bg-2 transition-colors">
             <img
                 src={avatarUrl}
                 alt={agent.agentname}
@@ -137,7 +137,7 @@ function ActiveQuestCard({ participation }: { participation: Participation }) {
             >
                 {participation.quest.title}
             </Link>
-            <p className="text-xs text-fg-secondary mt-1">
+            <p className="text-xs text-fg-2 mt-1">
                 Reward: {participation.quest.rewardAmount} {participation.quest.rewardType}
             </p>
             <div className="mt-3">
@@ -158,7 +158,7 @@ function ActiveQuestCard({ participation }: { participation: Participation }) {
 function StatItem({ label, value }: { label: string; value: string | number }) {
     return (
         <div className="flex justify-between items-center py-2.5 border-b border-border last:border-b-0">
-            <span className="text-xs text-fg-secondary">{label}</span>
+            <span className="text-xs text-fg-2">{label}</span>
             <span className="text-sm font-semibold text-foreground">{value}</span>
         </div>
     )
@@ -171,7 +171,7 @@ function AgentStatsPanel({ agent }: { agent: Agent }) {
     const totalEarned = completed.reduce((sum, p) => sum + (p.payoutAmount || 0), 0)
 
     return (
-        <div className="p-5 border border-border-muted bg-card hover:bg-bg-secondary transition-colors sticky top-6">
+        <div className="p-5 border border-border-1 bg-card hover:bg-bg-2 transition-colors sticky top-6">
             <h3 className="text-sm font-semibold text-foreground mb-3">Stats</h3>
             <StatItem label="Quests Completed" value={completed.length} />
             <StatItem label="Total Earned" value={`$${totalEarned.toFixed(2)}`} />
@@ -182,7 +182,7 @@ function AgentStatsPanel({ agent }: { agent: Agent }) {
 
 function ActivityLog({ logs }: { logs: AgentLog[] }) {
     return (
-        <div className="p-5 border border-border-muted bg-card hover:bg-bg-secondary transition-colors">
+        <div className="p-5 border border-border-1 bg-card hover:bg-bg-2 transition-colors">
             <h3 className="text-sm font-semibold text-foreground mb-3">Activity Log</h3>
             {logs.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">No activity yet</p>
@@ -210,7 +210,7 @@ function QuestHistory({ participations }: { participations: Participation[] }) {
     if (completed.length === 0) return null
 
     return (
-        <div className="p-5 border border-border-muted bg-card hover:bg-bg-secondary transition-colors">
+        <div className="p-5 border border-border-1 bg-card hover:bg-bg-2 transition-colors">
             <h3 className="text-sm font-semibold text-foreground mb-3">Quest History</h3>
             <div className="flex flex-col gap-2">
                 {completed.map((p) => (
@@ -218,7 +218,7 @@ function QuestHistory({ participations }: { participations: Participation[] }) {
                         key={p.id}
                         to="/quests/$questId"
                         params={{ questId: p.quest.id }}
-                        className="flex items-center justify-between py-2.5 px-3 border border-border hover:bg-bg-secondary/50 transition-colors"
+                        className="flex items-center justify-between py-2.5 px-3 border border-border hover:bg-bg-2/50 transition-colors"
                     >
                         <div className="flex items-center gap-2 min-w-0">
                             <CheckCircleLine size={16} className="text-success shrink-0" />
@@ -236,10 +236,10 @@ function QuestHistory({ participations }: { participations: Participation[] }) {
 
 function EmptyQuestsState() {
     return (
-        <div className="p-5 border border-border-muted bg-card text-center py-12">
+        <div className="p-5 border border-border-1 bg-card text-center py-12">
             <Search2Line size={48} className="mx-auto text-muted-foreground mb-3" />
             <p className="text-sm font-semibold text-foreground">No quests yet</p>
-            <p className="text-xs text-fg-secondary mt-1 max-w-[45ch] mx-auto">
+            <p className="text-xs text-fg-2 mt-1 max-w-[45ch] mx-auto">
                 This agent hasn't participated in any quests. Browse available quests to get started.
             </p>
             <Link to="/quests">
@@ -275,7 +275,7 @@ function AgentErrorState({ onRetry }: { onRetry: () => void }) {
             <div className="text-center py-12">
                 <AlertLine size={48} className="mx-auto text-error mb-3" />
                 <p className="text-sm font-semibold text-foreground">Something went wrong</p>
-                <p className="text-xs text-fg-secondary mt-1">Failed to load agent details</p>
+                <p className="text-xs text-fg-2 mt-1">Failed to load agent details</p>
                 <Button variant="outline" className="mt-4" onClick={onRetry}>Retry</Button>
             </div>
         </div>

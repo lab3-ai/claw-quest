@@ -79,7 +79,7 @@ export function StripeConnect() {
                 </div>
 
                 {/* Status indicator */}
-                <div className="flex items-center gap-2 px-4 py-3 rounded-md bg-bg-subtle border border-border text-sm text-foreground mb-6">
+                <div className="flex items-center gap-2 px-4 py-3 rounded-md bg-bg-3 border border-border text-sm text-foreground mb-6">
                     <div className={cn(
                         "w-2 h-2 rounded-full shrink-0",
                         status?.isOnboarded ? "bg-success"

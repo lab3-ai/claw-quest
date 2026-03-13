@@ -7,6 +7,7 @@ import { QuestersPopup } from "./QuestersPopup"
 import { RunLine, TrophyLine, RandomLine } from "@mingcute/react"
 import { formatTimeLeft, typeColorClass } from "./quest-utils"
 import { TokenIcon } from "./token-icon"
+import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
 const TYPE_ICON: Record<string, React.ElementType> = {
@@ -150,7 +151,7 @@ export function QuestCard({ quest }: QuestCardProps) {
                 {quest.tags && quest.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 max-sm:gap-1 items-center text-xs">
                         {quest.tags.map(tag => (
-                            <span key={tag} className="border border-border text-fg-secondary px-2 py-0.5 rounded text-xs max-sm:text-xs no-underline whitespace-nowrap">{tag}</span>
+                            <Badge key={tag} variant="pill">{tag}</Badge>
                         ))}
                     </div>
                 )}

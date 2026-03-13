@@ -59,7 +59,7 @@ function NavTabs() {
     }, [updateIndicator])
 
     const linkClass =
-        "py-1.5 text-sm font-semibold text-foreground no-underline transition-colors duration-200 hover:text-fg-secondary [&.active]:text-foreground"
+        "py-1.5 text-sm font-semibold text-foreground no-underline transition-colors duration-200 hover:text-fg-2 [&.active]:text-foreground"
 
     return (
         <nav ref={navRef} className="relative hidden items-center gap-6 lg:flex">
@@ -89,10 +89,18 @@ export function PublicLayout() {
     const handle = displayName ?? user?.email?.split("@")[0] ?? "user"
     const handleLabel = displayName ? handle : `@${handle}`
 
+    const [scrolled, setScrolled] = useState(false)
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 8)
+        onScroll()
+        window.addEventListener("scroll", onScroll, { passive: true })
+        return () => window.removeEventListener("scroll", onScroll)
+    }, [])
+
     return (
         <div className="flex min-h-screen flex-col">
             {/* Topbar */}
-            <header className="sticky top-0 z-50 bg-background">
+            <header className={`sticky top-0 z-50 bg-bg-2 transition-[border-color,backdrop-filter,box-shadow] duration-200 border-b ${scrolled ? "border-border backdrop-blur-md bg-bg-2/80" : "border-transparent"}`}>
                 <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-6">
                     <Link
                         to="/quests"
@@ -132,7 +140,7 @@ export function PublicLayout() {
                                 <Link
                                     to="/quests"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-2"
                                 >
                                     Quests
                                 </Link>
@@ -152,7 +160,7 @@ export function PublicLayout() {
                                 </Link>
                                 <div className="my-1 h-px bg-border" />
                                 <div className="px-3 py-2">
-                                    <span className="text-xs font-medium text-fg-muted">Theme</span>
+                                    <span className="text-xs font-medium text-fg-3">Theme</span>
                                     <ThemeSwitcher className="mt-2" />
                                 </div>
                                 {isAuthenticated ? (
@@ -160,14 +168,14 @@ export function PublicLayout() {
                                         <Link
                                             to="/dashboard"
                                             onClick={() => setMobileOpen(false)}
-                                            className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
+                                            className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-2"
                                         >
                                             Dashboard
                                         </Link>
                                         <Link
                                             to="/account"
                                             onClick={() => setMobileOpen(false)}
-                                            className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
+                                            className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-2"
                                         >
                                             Account
                                         </Link>
@@ -177,7 +185,7 @@ export function PublicLayout() {
                                                 logout()
                                                 setMobileOpen(false)
                                             }}
-                                            className="rounded px-3 py-2.5 text-left text-sm text-destructive hover:bg-bg-secondary"
+                                            className="rounded px-3 py-2.5 text-left text-sm text-destructive hover:bg-bg-2"
                                         >
                                             Log out
                                         </button>
@@ -186,7 +194,7 @@ export function PublicLayout() {
                                     <Link
                                         to="/login"
                                         onClick={() => setMobileOpen(false)}
-                                        className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
+                                        className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-2"
                                     >
                                         Log in
                                     </Link>

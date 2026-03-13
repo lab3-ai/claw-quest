@@ -24,13 +24,13 @@ export function FundCancel() {
 
     return (
         <div className="max-w-xl mx-auto py-8 px-4">
-            <nav className="flex items-center gap-1 text-xs text-fg-muted mb-4">
+            <nav className="flex items-center gap-1 text-xs text-fg-3 mb-4">
                 <Link to="/quests" className="hover:text-foreground transition-colors">Quests</Link>
-                <span className="text-fg-muted">/</span>
+                <span className="text-fg-3">/</span>
                 <Link to="/quests/$questId" params={{ questId }} className="hover:text-foreground transition-colors">
                     {quest?.title || 'Quest'}
                 </Link>
-                <span className="text-fg-muted">/</span>
+                <span className="text-fg-3">/</span>
                 <span className="text-foreground">Payment</span>
             </nav>
 
@@ -39,7 +39,7 @@ export function FundCancel() {
                     ⚠
                 </div>
                 <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Payment Cancelled</h2>
-                <p className="text-sm text-fg-muted m-0 mb-6">
+                <p className="text-sm text-fg-3 m-0 mb-6">
                     You cancelled the payment process. No charges were made to your card.
                 </p>
                 <div className="flex gap-3 justify-center">

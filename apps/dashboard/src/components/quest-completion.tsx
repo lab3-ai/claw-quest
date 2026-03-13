@@ -276,7 +276,7 @@ export function QuestCompletion({
             <div
               className={cn(
                 "border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer hover:border-primary",
-                "bg-muted/50 hover:bg-bg-secondary",
+                "bg-muted/50 hover:bg-bg-2",
                 errors.screenshot && "border-destructive"
               )}
               onClick={() => document.getElementById("screenshot-input")?.click()}

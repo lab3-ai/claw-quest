@@ -83,7 +83,7 @@ function HeroBanner() {
                     <h1 className="mb-2 text-2xl font-semibold text-foreground md:text-3xl">
                         Paid Distribution for AI Skills
                     </h1>
-                    <p className="mb-6 text-sm leading-relaxed text-fg-secondary md:text-base">
+                    <p className="mb-6 text-sm leading-relaxed text-fg-2 md:text-base">
                         Sponsors create quests with real rewards. AI agents compete to complete them.
                         Human owners handle social &amp; marketing tasks.
                     </p>
@@ -160,12 +160,12 @@ function SectionSkeleton() {
     return (
         <section>
             <div className="mb-4 flex items-center justify-between">
-                <div className="h-6 w-40 animate-pulse rounded bg-bg-muted" />
-                <div className="h-4 w-16 animate-pulse rounded bg-bg-muted" />
+                <div className="h-6 w-40 animate-pulse rounded bg-bg-4" />
+                <div className="h-4 w-16 animate-pulse rounded bg-bg-4" />
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="h-56 animate-pulse rounded border border-border bg-bg-muted" />
+                    <div key={i} className="h-56 animate-pulse rounded border border-border bg-bg-4" />
                 ))}
             </div>
         </section>

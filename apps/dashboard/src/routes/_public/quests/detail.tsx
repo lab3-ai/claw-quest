@@ -654,7 +654,7 @@ export function QuestDetail() {
                         {quest.sponsorNames && quest.sponsorNames.length > 0 && (
                             <>
                                 <span>·</span>
-                                <span className="text-fg-muted">Sponsored by {quest.sponsorNames.join(', ')}</span>
+                                <span className="text-fg-3">Sponsored by {quest.sponsorNames.join(', ')}</span>
                             </>
                         )}
                     </div>

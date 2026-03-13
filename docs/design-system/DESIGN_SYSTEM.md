@@ -96,24 +96,55 @@ Each font size has a paired line height (see Scale table above). Override utilit
 | `leading-relaxed` | 1.625 | Long-form descriptions |
 | `leading-loose` | 2 | Spacious reading |
 
+### Color demo
+
+Live preview: `/concepts/demo/colors`
+
 ---
 
 ## Color Palette
 
-### Core
+### Core — Numbered Scale
 
-| Token | Hex | Use |
-|-------|-----|-----|
-| `--bg` | `#ffffff` | Page background (white) |
-| `--bg-subtle` | `#e5e5e5` | Sidebar, section bg, card hover |
-| `--bg-muted` | `#dcdcdc` | Disabled bg, skeleton loading |
-| `--fg` | `#111111` | Primary text (near-black) |
-| `--fg-secondary` | `#555555` | Secondary text |
-| `--fg-muted` | `#888888` | Placeholder, disabled text |
-| `--border` | `#e5e5e5` | Default borders, dividers |
-| `--border-muted` | `#efefef` | Card borders, subtle dividers |
-| `--border-heavy` | `#aaaaaa` | Active borders, emphasis |
-| `--border-strong` | `#222222` | Strong contrast borders |
+Tokens use a **numbered scale** (1–4). The key rule: **`bg-1 + fg-1 = max contrast`**.
+
+| Scale | Light mode | Dark mode | Rule |
+|-------|-----------|-----------|------|
+| **bg-1** | lightest (`#fff`) | darkest (`#0a0a0a`) | Page bg, cards |
+| **bg-4** | darkest | lightest | Muted bg, disabled |
+| **fg-1** | darkest (`#111`) | lightest (`#e0e0e0`) | Primary text |
+| **fg-4** | lightest | darkest | Disabled text |
+| **border-1** | lightest | lightest | Subtle dividers |
+| **border-4** | darkest | darkest | Strong contrast |
+
+Direction flips between modes so that **the same class works in both**: `bg-bg-1` is always the base surface, `text-fg-1` is always the strongest text.
+
+#### Background
+
+| Token | Tailwind | Hex | Use |
+|-------|----------|-----|-----|
+| `--bg-1` | `bg-bg-1` | `#ffffff` | Page background, card bg |
+| `--bg-2` | `bg-bg-2` | `#f5f5f5` | **Body background**, navbar, secondary surfaces |
+| `--bg-3` | `bg-bg-3` | `#e5e5e5` | Sidebar, section bg, card hover, skeleton |
+| `--bg-4` | `bg-bg-4` | `#dcdcdc` | Disabled bg, muted backgrounds |
+
+#### Foreground
+
+| Token | Tailwind | Hex | Use |
+|-------|----------|-----|-----|
+| `--fg-1` | `text-fg-1` | `#111111` | Primary text (near-black) |
+| `--fg-2` | `text-fg-2` | `#555555` | Secondary text, badge labels |
+| `--fg-3` | `text-fg-3` | `#888888` | Muted text, placeholders |
+| `--fg-4` | `text-fg-4` | `#aaaaaa` | Disabled text, lightest foreground |
+
+#### Border
+
+| Token | Tailwind | Hex | Use |
+|-------|----------|-----|-----|
+| `--border-1` | `border-border-1` | `#efefef` | Card borders, subtle dividers |
+| `--border-2` | `border-border-2` | `#e5e5e5` | Default borders, dividers (shadcn `border`) |
+| `--border-3` | `border-border-3` | `#aaaaaa` | Active borders, emphasis |
+| `--border-4` | `border-border-4` | `#222222` | Strong contrast borders |
 
 ### Dark Surfaces
 
@@ -155,19 +186,22 @@ For code blocks, dark cards, and inverted sections:
 
 ### Semantic
 
-| Token | Hex | Use |
-|-------|-----|-----|
-| `--success` | `#16a34a` | Completed, funded, connected, rewards |
-| `--success-light` | `#f0fdf4` | Success background |
-| `--success-border` | `#86efac` | Success borders |
-| `--error` | `#ff4444` | Errors, failed, cancelled |
-| `--error-light` | `#fff0f0` | Error background |
-| `--error-border` | `#ff8888` | Error borders |
-| `--warning` | `#ffaa00` | Caution, expiring soon |
-| `--warning-light` | `#fff8e6` | Warning background |
-| `--warning-border` | `#ffcc66` | Warning borders |
-| `--info` | `#4488ff` | Info, external links |
-| `--info-light` | `#e6f0ff` | Info background |
+Each semantic color has 3 tokens: **base** (text/icon), **light** (background), **border**.
+
+| Group | Token | Tailwind | Hex | Use |
+|-------|-------|----------|-----|-----|
+| Success | `--success` | `text-success` / `bg-success` | `#16a34a` | Completed, funded, connected |
+| | `--success-light` | `bg-success-light` | `#f0fdf4` | Success background |
+| | `--success-border` | `border-border-success` | `#86efac` | Success borders |
+| Error | `--error` | `text-error` / `bg-error` | `#ff4444` | Errors, failed, cancelled |
+| | `--error-light` | `bg-error-light` | `#fff0f0` | Error background |
+| | `--error-border` | `border-border-error` | `#ff8888` | Error borders |
+| Warning | `--warning` | `text-warning` / `bg-warning` | `#ffaa00` | Caution, expiring soon |
+| | `--warning-light` | `bg-warning-light` | `#fff8e6` | Warning background |
+| | `--warning-border` | `border-border-warning` | `#ffcc66` | Warning borders |
+| Info | `--info` | `text-info` / `bg-info` | `#4488ff` | Info, external links |
+| | `--info-light` | `bg-info-light` | `#e6f0ff` | Info background |
+| | `--info-border` | `border-border-info` | `#88bbff` | Info borders |
 
 ### Actor Colors — monochrome
 
@@ -212,10 +246,10 @@ All actor colors use grayscale to match the monochromatic theme:
 | `--red-bg` | `#fff0f0` | `--error-light` |
 | `--yellow` | `#ffaa00` | `--warning` |
 | `--yellow-bg` | `#fff8e6` | `--warning-light` |
-| `--tag-bg` | `#dcdcdc` | `--bg-muted` |
-| `--tag-fg` | `#555555` | `--fg-secondary` |
+| `--tag-bg` | `#dcdcdc` | `--bg-4` |
+| `--tag-fg` | `#555555` | `--fg-2` |
 | `--code-bg` | `#1a1a1a` | `--surface-dark` |
-| `--sidebar-bg` | `#e8e8e8` | `--bg-subtle` (`#e5e5e5`) |
+| `--sidebar-bg` | `#e8e8e8` | `--bg-3` |
 
 ---
 
@@ -341,9 +375,9 @@ All buttons: `font-semibold`, `rounded-button`, `active:scale-95`, **min `gap-2`
 
 ### Cards
 
-- Border: `border border-border-muted` (1px, lightest border token)
-- Background: `bg-card` (`--bg`)
-- Hover: `hover:bg-background` (lightest bg). Glass theme: CSS override to `rgba(255,255,255,0.85)`
+- Border: `border border-border` (1px, `--border-2`)
+- Background: `bg-background` (`--bg-1`)
+- Hover: `hover:border-foreground`. Glass theme: CSS override to `rgba(255,255,255,0.85)`
 - Radius: `--radius-base` (0px Terminal)
 - Padding: `--space-4` to `--space-5`
 - No box-shadow at rest
@@ -358,7 +392,7 @@ All buttons: `font-semibold`, `rounded-button`, `active:scale-95`, **min `gap-2`
 ### Form Inputs
 
 - Height: 36px (default), 44px (lg)
-- Border: `border border-border`
+- Border: `border border-input` (`--border-2`)
 - Focus: `outline: 2px solid var(--accent)`, `outline-offset: 2px`
 - Error: `border-error`
 - Font: monospace, `text-base` (16px)
@@ -366,10 +400,11 @@ All buttons: `font-semibold`, `rounded-button`, `active:scale-95`, **min `gap-2`
 ### Topbar
 
 - Height: `64px` (default)
-- Background: `bg-background` + bottom border
+- Background: `bg-bg-2` (`--bg-2`)
+- **On scroll**: `border-b border-border` + `backdrop-blur-md` + `bg-bg-2/80` (glass effect)
 - Logo: `CLAWQUEST`, `text-base font-semibold`
-- Active link: `border-b-2 border-foreground` (underline indicator)
-- Nav font: `text-sm`
+- Active link: sliding `bg-foreground` underline indicator (2px)
+- Nav font: `text-sm font-semibold`
 
 ### Tabs
 
@@ -406,41 +441,64 @@ Rules: mobile-first, avoid `lg:`/`2xl:`, use `sm:` only for minor tweaks.
 
 All CSS variables mapped via `@theme` block in `apps/dashboard/src/index.css` (Tailwind v4). Use Tailwind classes in JSX.
 
-| CSS Variable | Tailwind Class | Example |
-|-------------|----------------|---------|
-| `--bg` | `bg-background` | `<div className="bg-background">` |
-| `--bg-subtle` | `bg-bg-subtle` | `<div className="bg-bg-subtle">` |
-| `--bg-muted` | `bg-muted` / `bg-secondary` | `<div className="bg-muted">` |
-| `--fg` | `text-foreground` | `<p className="text-foreground">` |
-| `--fg-secondary` | `text-fg-secondary` | `<span className="text-fg-secondary">` |
-| `--fg-muted` | `text-muted-foreground` | `<span className="text-muted-foreground">` |
-| `--primary` | `bg-primary` / `text-primary` | Buttons |
-| `--primary-fg` | `text-primary-foreground` | Button text |
+### Numbered Scale (primary system)
+
+| CSS Variable | Tailwind Class | Use |
+|-------------|----------------|-----|
+| `--bg-1` | `bg-bg-1` | Page bg, cards |
+| `--bg-2` | `bg-bg-2` | Body bg, navbar, secondary surfaces |
+| `--bg-3` | `bg-bg-3` | Sidebar, section bg, card hover |
+| `--bg-4` | `bg-bg-4` | Disabled bg, muted backgrounds |
+| `--fg-1` | `text-fg-1` | Primary text |
+| `--fg-2` | `text-fg-2` | Secondary text |
+| `--fg-3` | `text-fg-3` | Muted text, placeholders |
+| `--fg-4` | `text-fg-4` | Disabled text |
+| `--border-1` | `border-border-1` | Card borders, subtle dividers |
+| `--border-2` | `border-border-2` | Default borders |
+| `--border-3` | `border-border-3` | Active/emphasis borders |
+| `--border-4` | `border-border-4` | Strong contrast borders |
+
+### Semantic Colors
+
+| CSS Variable | Tailwind Class | Use |
+|-------------|----------------|-----|
+| `--success` | `text-success` / `bg-success` | Completed, funded, connected |
+| `--success-light` | `bg-success-light` | Success background |
+| `--success-border` | `border-border-success` | Success borders |
+| `--error` | `text-error` / `bg-error` | Error states |
+| `--error-light` | `bg-error-light` | Error background |
+| `--error-border` | `border-border-error` | Error borders |
+| `--warning` | `text-warning` / `bg-warning` | Caution states |
+| `--warning-light` | `bg-warning-light` | Warning background |
+| `--warning-border` | `border-border-warning` | Warning borders |
+| `--info` | `text-info` / `bg-info` | Info states |
+| `--info-light` | `bg-info-light` | Info background |
+| `--info-border` | `border-border-info` | Info borders |
+| `--primary` | `bg-primary` / `text-primary` | Buttons, CTA |
 | `--accent` | `bg-accent` / `text-accent` | Accent highlights |
-| `--border` | `border-border` | `<div className="border border-border">` |
-| `--border-muted` | `border-border-muted` | `<div className="border border-border-muted">` (cards) |
-| `--success` | `text-success` / `bg-success` | Rewards, connected status |
-| `--error` | `text-error` / `bg-error` / `text-destructive` | Error states |
+| `--accent-border` | `border-border-accent` | Accent borders |
 
 ### shadcn Token Aliases
 
-| shadcn Token | Maps To | Hex |
+> shadcn/ui classes still work — they point to numbered tokens internally.
+
+| shadcn Token | Maps To | Use |
 |-------------|---------|-----|
-| `background` | `--bg` | `#ffffff` |
-| `foreground` | `--fg` | `#111111` |
-| `primary` | `--primary` | `#FF574B` (brand) |
-| `primary-foreground` | `--primary-fg` | `#ffffff` |
-| `secondary` | `--bg-muted` | `#dcdcdc` |
-| `secondary-foreground` | `--fg` | `#111111` |
-| `muted` | `--bg-muted` / `--fg-muted` | `#dcdcdc` / `#888888` |
-| `destructive` | `--error` | `#ff4444` |
-| `destructive-foreground` | `--accent-fg` | `#ffffff` |
-| `accent` | `--accent` | `#FF574B` |
-| `accent-foreground` | `--accent-fg` | `#ffffff` |
-| `card` | `--bg` | `#ffffff` |
-| `popover` | `--bg` | `#ffffff` |
-| `input` | `--border` | `#e5e5e5` |
-| `ring` | `--accent` | `#FF574B` |
+| `background` | `--bg-1` | `bg-background` → lightest bg |
+| `foreground` | `--fg-1` | `text-foreground` → darkest fg |
+| `card` | `--bg-1` | `bg-card` → card background |
+| `muted` | `--bg-4` | `bg-muted` → muted background |
+| `muted-foreground` | `--fg-3` | `text-muted-foreground` → muted text |
+| `secondary` | `--bg-4` | `bg-secondary` → secondary bg |
+| `secondary-foreground` | `--fg-1` | `text-secondary-foreground` |
+| `primary` | `--primary` | `bg-primary` → brand buttons |
+| `primary-foreground` | `--primary-fg` | `text-primary-foreground` |
+| `destructive` | `--error` | `text-destructive` → error states |
+| `accent` | `--accent` | `bg-accent` → accent color |
+| `accent-foreground` | `--accent-fg` | `text-accent-foreground` |
+| `border` | `--border-2` | `border-border` → default border |
+| `input` | `--border-2` | `border-input` → form inputs |
+| `ring` | `--accent` | Focus ring color |
 
 ### CSS Variable Source
 

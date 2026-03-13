@@ -49,12 +49,7 @@ export function typeBadgeClass(type: string): string {
 
 /** Map quest type to text color class */
 export function typeColorClass(type: string): string {
-    const map: Record<string, string> = {
-        FCFS: "text-accent",
-        LEADERBOARD: "text-info",
-        LUCKY_DRAW: "text-fg-secondary",
-    }
-    return map[type] ?? "text-accent"
+    return "text-foreground"
 }
 
 /** Map quest status to CSS badge class */

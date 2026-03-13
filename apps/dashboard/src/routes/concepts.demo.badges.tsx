@@ -150,6 +150,29 @@ export function BadgesDemo() {
                 </div>
             </Section>
 
+            {/* Count badges */}
+            <Section title="Count Badges">
+                <p className="text-xs text-muted-foreground">Filled pill with number, used in tabs and navigation counters.</p>
+                <div className="border border-border rounded-lg overflow-hidden">
+                    {([
+                        { variant: "count", label: "count", value: "12" },
+                        { variant: "count-muted", label: "count-muted", value: "5" },
+                        { variant: "count-primary", label: "count-primary", value: "8" },
+                        { variant: "count-primary-inverted", label: "count-primary-inverted", value: "6" },
+                        { variant: "count-success", label: "count-success", value: "3" },
+                        { variant: "count-error", label: "count-error", value: "1" },
+                        { variant: "count-warning", label: "count-warning", value: "2" },
+                        { variant: "count-info", label: "count-info", value: "7" },
+                    ] as const).map(({ variant, label, value }) => (
+                        <div key={variant} className="flex items-center gap-4 px-4 py-3 border-t border-border first:border-t-0">
+                            <code className="text-xs text-accent font-semibold w-48 shrink-0">{variant}</code>
+                            <Badge variant={variant}>{value}</Badge>
+                            <Badge variant={variant}>128</Badge>
+                        </div>
+                    ))}
+                </div>
+            </Section>
+
             {/* Composition examples */}
             <Section title="Composition Examples">
                 <p className="text-xs text-muted-foreground">Real-world usage patterns combining badges in context.</p>
@@ -202,6 +225,8 @@ export function BadgesDemo() {
 <Badge variant="default|success|error|warning|info|muted">...</Badge>
 <Badge variant="pill|outline|outline-success|outline-error|...">...</Badge>
 <Badge variant="filled-success|filled-error|filled-warning|filled-muted">...</Badge>
+<Badge variant="count|count-muted|count-primary|count-primary-inverted">3</Badge>
+<Badge variant="count-success|count-error|count-warning|count-info">3</Badge>
 
 /* Quest badges — src/components/quest-badges.tsx */
 <QuestTypeBadge type="FCFS|LEADERBOARD|LUCKY_DRAW" />

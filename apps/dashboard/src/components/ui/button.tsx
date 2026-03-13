@@ -24,8 +24,8 @@ const buttonVariants = cva(
                 "warning-tonal": "bg-amber-500/20 text-amber-500 hover:bg-amber-500/30",
                 "info-tonal": "bg-sky-500/20 text-sky-500 hover:bg-sky-500/30",
                 /* Outline: border + transparent bg + colored text */
-                outline: "border border-input bg-background hover:bg-bg-secondary",
-                "default-outline": "border border-input bg-background hover:bg-bg-secondary",
+                outline: "border border-input bg-background hover:bg-bg-2",
+                "default-outline": "border border-input bg-background hover:bg-bg-2",
                 "primary-outline": "border border-primary/30 bg-transparent text-primary hover:bg-primary/10",
                 "danger-outline": "border border-destructive/30 bg-transparent text-destructive hover:bg-destructive/10",
                 "success-outline": "border border-emerald-600/30 bg-transparent text-emerald-600 hover:bg-emerald-600/10",
@@ -33,7 +33,7 @@ const buttonVariants = cva(
                 "info-outline": "border border-sky-500/30 bg-transparent text-sky-500 hover:bg-sky-500/10",
                 /* Utility */
                 secondary: "bg-foreground text-background hover:bg-foreground/80", /* @deprecated use "default" */
-                ghost: "hover:bg-bg-secondary",
+                ghost: "hover:bg-bg-2",
                 link: "text-foreground underline-offset-4 hover:underline",
             },
             size: {

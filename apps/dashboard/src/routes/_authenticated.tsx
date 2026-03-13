@@ -15,7 +15,7 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { BankCardLine, Dashboard4Line, AddLine, DownLine } from "@mingcute/react"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { BrandLogo } from "@/components/brand-logo"
@@ -45,10 +45,18 @@ export function AuthenticatedLayout() {
         "user"
     const handleLabel = displayName ? handle : `@${handle}`
 
+    const [scrolled, setScrolled] = useState(false)
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 8)
+        onScroll()
+        window.addEventListener("scroll", onScroll, { passive: true })
+        return () => window.removeEventListener("scroll", onScroll)
+    }, [])
+
     return (
         <div className="flex min-h-screen flex-col">
             {/* Topbar */}
-            <header className="sticky top-0 z-50 bg-background">
+            <header className={`sticky top-0 z-50 bg-bg-2 transition-[border-color,backdrop-filter,box-shadow] duration-200 border-b ${scrolled ? "border-border backdrop-blur-md bg-bg-2/80" : "border-transparent"}`}>
                 <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-6 max-lg:px-3 max-lg:gap-1">
                     <Link
                         to="/quests"
@@ -95,28 +103,28 @@ export function AuthenticatedLayout() {
                                 <Link
                                     to="/quests"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-2"
                                 >
                                     Quests
                                 </Link>
                                 <Link
                                     to="/dashboard"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-2"
                                 >
                                     Dashboard
                                 </Link>
                                 <Link
                                     to="/account"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary"
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-2"
                                 >
                                     Account
                                 </Link>
                                 <Link
                                     to="/stripe-connect"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-secondary flex items-center gap-2"
+                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-2 flex items-center gap-2"
                                 >
                                     <BankCardLine className="h-4 w-4" />
                                     Stripe Payout
@@ -127,7 +135,7 @@ export function AuthenticatedLayout() {
                                         logout()
                                         setMobileOpen(false)
                                     }}
-                                    className="rounded px-3 py-2.5 text-left text-sm text-destructive hover:bg-bg-secondary"
+                                    className="rounded px-3 py-2.5 text-left text-sm text-destructive hover:bg-bg-2"
                                 >
                                     Log out
                                 </button>

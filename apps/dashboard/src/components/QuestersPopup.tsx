@@ -16,7 +16,7 @@ async function fetchQuesters(questId: string): Promise<QuestersResponse> {
 
 function rankColorClass(rank: number) {
     if (rank === 1) return "text-warning"
-    if (rank === 2) return "text-fg-muted"
+    if (rank === 2) return "text-fg-3"
     if (rank === 3) return "text-warning"
     return ""
 }
@@ -75,7 +75,7 @@ export function QuestersPopup({ questId, questTitle, onClose }: QuestersPopupPro
                                 {data.participations.map((p: QuestParticipation) => {
                                     const done = p.status === "completed" || p.status === "submitted"
                                     return (
-                                        <tr key={p.id} className="hover:bg-bg-secondary">
+                                        <tr key={p.id} className="hover:bg-bg-2">
                                             <td className={cn("px-3 py-2 text-xs border-b border-border align-middle w-9 text-center font-semibold text-muted-foreground", rankColorClass(p.rank))}>
                                                 {p.rank}
                                             </td>

@@ -58,7 +58,7 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
                     ✓
                 </div>
                 <h3 className="text-base font-semibold text-foreground m-0 mb-2">Quest Funded</h3>
-                <p className="text-sm text-fg-muted m-0 mb-4">
+                <p className="text-sm text-fg-3 m-0 mb-4">
                     This quest has been funded via Stripe and is now {quest.status}.
                 </p>
                 <Button asChild>
@@ -77,7 +77,7 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
                     style={{ borderTopColor: '#635bff' }}
                 />
                 <h3 className="text-base font-semibold text-foreground m-0 mb-2">Payment Processing</h3>
-                <p className="text-sm text-fg-muted m-0 mb-4">
+                <p className="text-sm text-fg-3 m-0 mb-4">
                     Your payment is being confirmed. This page will update automatically.
                 </p>
             </div>
@@ -93,23 +93,23 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
                     </span>
                     <span>Stripe Checkout</span>
                 </div>
-                <p className="text-xs text-fg-muted leading-relaxed m-0">
+                <p className="text-xs text-fg-3 leading-relaxed m-0">
                     You'll be redirected to Stripe's secure checkout page to complete payment with credit card, debit card, Apple Pay, or Google Pay.
                 </p>
             </div>
 
-            <div className="bg-bg-subtle border border-border rounded-md px-5 py-4 mb-5">
-                <div className="flex justify-between items-center py-2 text-xs text-fg-muted">
+            <div className="bg-bg-3 border border-border rounded-md px-5 py-4 mb-5">
+                <div className="flex justify-between items-center py-2 text-xs text-fg-3">
                     <span>Amount</span>
                     <span className="font-semibold text-sm text-foreground">
                         ${Math.max(0, (quest?.rewardAmount ?? 0) - (quest?.totalFunded ?? 0)).toLocaleString()} USD
                     </span>
                 </div>
-                <div className="flex justify-between items-center py-2 text-xs text-fg-muted border-t border-border">
+                <div className="flex justify-between items-center py-2 text-xs text-fg-3 border-t border-border">
                     <span>Quest</span>
                     <span>{quest?.title}</span>
                 </div>
-                <div className="flex justify-between items-center py-2 text-xs text-fg-muted border-t border-border">
+                <div className="flex justify-between items-center py-2 text-xs text-fg-3 border-t border-border">
                     <span>Distribution</span>
                     <span>{quest?.type} · {quest?.totalSlots} winners</span>
                 </div>
@@ -260,11 +260,11 @@ export function FundQuest() {
     if (authLoading || questLoading) {
         return (
             <div className="max-w-xl mx-auto py-8 px-4">
-                <nav className="flex items-center gap-1 text-xs text-fg-muted mb-4">
+                <nav className="flex items-center gap-1 text-xs text-fg-3 mb-4">
                     <Skeleton className="h-4 w-16" />
-                    <span className="text-fg-muted">/</span>
+                    <span className="text-fg-3">/</span>
                     <Skeleton className="h-4 w-24" />
-                    <span className="text-fg-muted">/</span>
+                    <span className="text-fg-3">/</span>
                     <Skeleton className="h-4 w-12" />
                 </nav>
 
@@ -295,19 +295,19 @@ export function FundQuest() {
 
     return (
         <div className="max-w-xl mx-auto py-8 px-4">
-            <nav className="flex items-center gap-1 text-xs text-fg-muted mb-4">
+            <nav className="flex items-center gap-1 text-xs text-fg-3 mb-4">
                 <Link to="/quests" className="hover:text-foreground transition-colors">Quests</Link>
-                <span className="text-fg-muted">/</span>
+                <span className="text-fg-3">/</span>
                 <Link to="/quests/$questId" params={{ questId }} className="hover:text-foreground transition-colors">
                     {quest?.title || 'Quest'}
                 </Link>
-                <span className="text-fg-muted">/</span>
+                <span className="text-fg-3">/</span>
                 <span className="text-foreground">Fund</span>
             </nav>
 
             <div className="bg-background border border-border rounded-lg p-8">
                 <h2 className="text-xl font-semibold text-foreground m-0 mb-1">Fund Quest</h2>
-                {quest && <p className="text-fg-muted text-xs m-0 mb-6">{quest.title}</p>}
+                {quest && <p className="text-fg-3 text-xs m-0 mb-6">{quest.title}</p>}
 
                 {/* Funding progress — shared across both methods */}
                 {quest && (
@@ -316,7 +316,7 @@ export function FundQuest() {
 
                 {/* Wait for payment method to be determined */}
                 {!method && (
-                    <div className="text-center text-fg-muted py-12">Determining payment method...</div>
+                    <div className="text-center text-fg-3 py-12">Determining payment method...</div>
                 )}
 
                 {/* Stripe flow */}
@@ -328,7 +328,7 @@ export function FundQuest() {
                 {method === 'crypto' && (
                     <>
                         {paramsLoading && (
-                            <div className="text-center text-fg-muted py-12">Loading deposit parameters...</div>
+                            <div className="text-center text-fg-3 py-12">Loading deposit parameters...</div>
                         )}
 
                         {paramsError && !params && (
@@ -344,7 +344,7 @@ export function FundQuest() {
 
                         {isLlmQuest && !paramsError && (
                             <div className="mb-4">
-                                <label className="text-xs text-fg-muted mb-1 block">Deposit token</label>
+                                <label className="text-xs text-fg-3 mb-1 block">Deposit token</label>
                                 <select
                                     value={selectedToken}
                                     onChange={e => setSelectedToken(e.target.value)}
@@ -364,7 +364,7 @@ export function FundQuest() {
                                 <div className="text-center min-h-[120px]">
                                     {step === 'connect' && (
                                         <div className="flex flex-col items-center gap-4">
-                                            <p className="text-fg-muted m-0 mb-4 text-xs">Connect your wallet to fund this quest</p>
+                                            <p className="text-fg-3 m-0 mb-4 text-xs">Connect your wallet to fund this quest</p>
                                             <ConnectButton />
                                         </div>
                                     )}
@@ -477,7 +477,7 @@ function FundingProgress({ quest, session, questId }: { quest: any; session: any
     return (
         <>
             <div className="mb-6 space-y-2">
-                <div className="flex justify-between text-xs text-fg-muted">
+                <div className="flex justify-between text-xs text-fg-3">
                     <span>Funding progress</span>
                     <span>{totalFunded} / {rewardAmount} {quest.rewardType}</span>
                 </div>
@@ -488,7 +488,7 @@ function FundingProgress({ quest, session, questId }: { quest: any; session: any
                     />
                 </div>
                 {!isFullyFunded && (
-                    <p className="text-xs text-fg-muted">
+                    <p className="text-xs text-fg-3">
                         {(rewardAmount - totalFunded).toFixed(2)} {quest.rewardType} still needed to publish
                     </p>
                 )}

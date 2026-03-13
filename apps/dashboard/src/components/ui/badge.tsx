@@ -15,7 +15,7 @@ const badgeVariants = cva(
                 info: "text-info",
                 muted: "text-muted-foreground",
                 /* Pill — rounded, border, light bg (for tags, skills, categories) */
-                pill: "border border-border rounded-full px-2.5 py-0.5 text-fg-secondary",
+                pill: "border border-border rounded-full px-2.5 py-0.5 text-fg-2",
                 /* Filled — solid bg (for status indicators) */
                 "filled-success": "rounded-full bg-success-light text-success px-2 py-0.5",
                 "filled-error": "rounded-full bg-error-light text-error px-2 py-0.5",
@@ -27,6 +27,15 @@ const badgeVariants = cva(
                 "outline-error": "border border-error/40 rounded-full px-2 py-0.5 bg-error-light text-error",
                 "outline-warning": "border border-warning/40 rounded-full px-2 py-0.5 bg-warning-light text-warning",
                 "outline-muted": "border border-border rounded-full px-2 py-0.5 bg-muted/50 text-muted-foreground",
+                /* Count — small filled pill for numbers in tabs/nav */
+                "count": "inline-flex items-center justify-center min-w-5 h-5 px-1 text-2xs font-semibold rounded-full bg-fg-1 text-bg-1",
+                "count-muted": "inline-flex items-center justify-center min-w-5 h-5 px-1 text-2xs font-semibold rounded-full bg-bg-4 text-fg-2",
+                "count-primary": "inline-flex items-center justify-center min-w-5 h-5 px-1 text-2xs font-semibold rounded-full bg-primary text-primary-foreground",
+                "count-primary-inverted": "inline-flex items-center justify-center min-w-5 h-5 px-1 text-2xs font-semibold rounded-full bg-primary-foreground text-primary",
+                "count-success": "inline-flex items-center justify-center min-w-5 h-5 px-1 text-2xs font-semibold rounded-full bg-success text-bg-1",
+                "count-error": "inline-flex items-center justify-center min-w-5 h-5 px-1 text-2xs font-semibold rounded-full bg-error text-bg-1",
+                "count-warning": "inline-flex items-center justify-center min-w-5 h-5 px-1 text-2xs font-semibold rounded-full bg-warning text-bg-1",
+                "count-info": "inline-flex items-center justify-center min-w-5 h-5 px-1 text-2xs font-semibold rounded-full bg-info text-bg-1",
             },
         },
         defaultVariants: {

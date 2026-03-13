@@ -417,7 +417,7 @@ export function Account() {
 
             {/* Profile */}
             <div className="border border-border rounded mb-5 bg-background overflow-hidden">
-                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-secondary text-foreground">Profile</div>
+                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-2 text-foreground">Profile</div>
                 <div className="p-4">
                     {profileLoading ? (
                         <>
@@ -511,7 +511,7 @@ export function Account() {
 
             {/* Connected Accounts */}
             <div className="border border-border rounded mb-5 bg-background overflow-hidden">
-                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-secondary text-foreground">Connected Accounts</div>
+                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-2 text-foreground">Connected Accounts</div>
                 <div className="p-4">
                     {LINK_PROVIDERS.map((p, idx) => {
                         const identity = identities.find(i => i.provider === p.key)
@@ -683,7 +683,7 @@ export function Account() {
 
             {/* Wallets */}
             <div className="border border-border rounded mb-5 bg-background overflow-hidden">
-                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-secondary text-foreground">Wallets</div>
+                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-2 text-foreground">Wallets</div>
                 <div className="p-4">
                     {walletsLoading ? (
                         <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
@@ -798,7 +798,7 @@ function FiatPayoutSection({ token }: { token: string | undefined }) {
 
     return (
         <div className="border border-border rounded mb-5 bg-background overflow-hidden">
-            <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-secondary text-foreground">Fiat Payout</div>
+            <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-2 text-foreground">Fiat Payout</div>
             <div className="p-4">
                 {isLoading ? (
                     <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>

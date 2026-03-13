@@ -30,6 +30,7 @@ const badgeVariants = cva(
                 /* Count — small filled pill for numbers in tabs/nav */
                 "count": "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full bg-fg-1 text-bg-1",
                 "count-muted": "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full bg-bg-3 text-fg-2",
+                "count-outline": "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full border border-border text-fg-3",
                 "count-primary": "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full bg-primary text-primary-foreground",
                 "count-primary-inverted": "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full bg-primary-foreground text-primary",
                 "count-success": "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full bg-success text-bg-1",

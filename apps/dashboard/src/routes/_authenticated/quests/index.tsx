@@ -95,6 +95,8 @@ export function QuestList() {
     const [popupQuest, setPopupQuest] = useState<{ id: string; title: string } | null>(null)
     const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({})
     const viewRefs = useRef<Record<string, HTMLButtonElement | null>>({})
+    const tabScrollRef = useRef<HTMLDivElement>(null)
+    const [showTabMask, setShowTabMask] = useState(true)
     const [tabIndicatorStyle, setTabIndicatorStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 })
     const [viewIndicatorStyle, setViewIndicatorStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 })
 
@@ -207,39 +209,59 @@ export function QuestList() {
             <PageTitle title="Quests" description="Agent-executable tasks with on-chain rewards" />
 
             {/* Tabs row + view toggle */}
-            <div className="flex items-center gap-3 py-3 max-sm:flex-col max-sm:gap-2 max-sm:items-stretch">
-                <div className="flex flex-1 min-w-0 items-center gap-6 max-sm:overflow-x-auto">
-                    {tabs.map(t => {
-                        const isActive = tab === t.id
-                        return (
-                            <button
-                                key={t.id}
-                                ref={el => { tabRefs.current[t.id] = el }}
-                                className={cn(
-                                    "group/tab inline-flex items-center gap-2 py-1.5 text-base cursor-pointer transition-colors duration-150 ease-out",
-                                    "font-medium whitespace-nowrap border-b-3",
-                                    "max-sm:text-xs max-sm:gap-1.5 sm:min-h-10",
-                                    isActive
-                                        ? "border-fg-1 text-fg-1 font-semibold"
-                                        : "border-transparent text-fg-3 hover:text-fg-1"
-                                )}
-                                onClick={() => handleTabChange(t.id)}
-                            >
-                                {t.label}
-                                {tabCounts[t.id] > 0 && (
-                                    <Badge variant={isActive ? "count" : "count-muted"}>
-                                        {tabCounts[t.id]}
-                                    </Badge>
-                                )}
-                            </button>
-                        )
-                    })}
+            <div className="flex items-center gap-3 py-3">
+                {/* Scrollable tabs with right fade mask on mobile */}
+                <div className="relative flex-1 min-w-0">
+                    <div
+                        ref={tabScrollRef}
+                        onScroll={(e) => {
+                            const el = e.currentTarget
+                            setShowTabMask(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
+                        }}
+                        className="relative flex items-center gap-4 lg:gap-6 max-lg:overflow-x-auto scrollbar-hide"
+                    >
+                        {/* Sliding underline indicator */}
+                        <span
+                            className="absolute bottom-0 h-[3px] bg-fg-1 rounded-full transition-all duration-200 ease-out"
+                            style={{ left: tabIndicatorStyle.left, width: tabIndicatorStyle.width }}
+                        />
+                        {tabs.map(t => {
+                            const isActive = tab === t.id
+                            return (
+                                <button
+                                    key={t.id}
+                                    ref={el => { tabRefs.current[t.id] = el }}
+                                    className={cn(
+                                        "group/tab inline-flex items-center gap-2 py-1 pb-1.5 text-base cursor-pointer transition-colors duration-150 ease-out",
+                                        "font-medium whitespace-nowrap",
+                                        "text-sm max-sm:gap-1.5 lg:min-h-10",
+                                        isActive
+                                            ? "text-fg-1 font-semibold"
+                                            : "text-fg-3 hover:text-fg-1"
+                                    )}
+                                    onClick={() => handleTabChange(t.id)}
+                                >
+                                    {t.label}
+                                    {tabCounts[t.id] > 0 && (
+                                        <Badge variant={isActive ? "count" : "count-outline"}>
+                                            {tabCounts[t.id]}
+                                        </Badge>
+                                    )}
+                                </button>
+                            )
+                        })}
+                    </div>
+                    {/* Right fade mask — hints at scrollable content, hides when scrolled to end */}
+                    <div className={cn(
+                        "pointer-events-none absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-bg-base to-transparent lg:hidden transition-opacity duration-200",
+                        showTabMask ? "opacity-100" : "opacity-0"
+                    )} />
                 </div>
                 <TooltipProvider delayDuration={300}>
-                    <div className="relative inline-flex border border-border p-0.5 gap-0.5 rounded-button overflow-hidden ml-auto shrink-0 max-sm:ml-0 max-sm:w-full">
+                    <div className="relative inline-flex border border-border p-0.5 gap-0.5 rounded-button overflow-hidden ml-auto shrink-0 max-lg:hidden">
                         {/* Sliding highlight */}
                         <span
-                            className="absolute top-0.5 bottom-0.5 rounded-button bg-fg-1 transition-all duration-200 ease-out z-0"
+                            className="absolute top-0.5 bottom-0.5 rounded-button bg-bg-3 transition-all duration-200 ease-out z-0"
                             style={{ left: viewIndicatorStyle.left, width: viewIndicatorStyle.width }}
                         />
                         <Tooltip>
@@ -247,9 +269,9 @@ export function QuestList() {
                                 <button
                                     ref={el => { viewRefs.current["grid"] = el }}
                                     className={cn(
-                                        "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
-                                        "max-sm:flex-1 max-sm:w-auto max-sm:h-[44px]",
-                                        view === "grid" ? "text-bg-1" : "text-fg-3 hover:text-fg-1"
+                                        "relative z-10 flex items-center justify-center w-7 h-7 cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
+                                        "max-sm:flex-1 max-sm:w-auto",
+                                        view === "grid" ? "text-fg-1" : "text-fg-3 hover:text-fg-1"
                                     )}
                                     onClick={() => handleViewChange("grid")}
                                 >
@@ -268,9 +290,9 @@ export function QuestList() {
                                 <button
                                     ref={el => { viewRefs.current["list"] = el }}
                                     className={cn(
-                                        "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
-                                        "max-sm:flex-1 max-sm:w-auto max-sm:h-[44px]",
-                                        view === "list" ? "text-bg-1" : "text-fg-3 hover:text-fg-1"
+                                        "relative z-10 flex items-center justify-center w-7 h-7 cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
+                                        "max-sm:flex-1 max-sm:w-auto",
+                                        view === "list" ? "text-fg-1" : "text-fg-3 hover:text-fg-1"
                                     )}
                                     onClick={() => handleViewChange("list")}
                                 >
@@ -284,9 +306,9 @@ export function QuestList() {
                                 <button
                                     ref={el => { viewRefs.current["compact"] = el }}
                                     className={cn(
-                                        "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
-                                        "max-sm:flex-1 max-sm:w-auto max-sm:h-[44px]",
-                                        view === "compact" ? "text-bg-1" : "text-fg-3 hover:text-fg-1"
+                                        "relative z-10 flex items-center justify-center w-7 h-7 cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
+                                        "max-sm:flex-1 max-sm:w-auto",
+                                        view === "compact" ? "text-fg-1" : "text-fg-3 hover:text-fg-1"
                                     )}
                                     onClick={() => handleViewChange("compact")}
                                 >

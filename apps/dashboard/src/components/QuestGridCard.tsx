@@ -51,7 +51,7 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
             </div>
 
             {/* Title */}
-            <h3 className="text-md max-sm:text-sm font-semibold leading-snug mb-2 line-clamp-2">{quest.title}</h3>
+            <h3 className="text-md font-semibold leading-snug mb-2 line-clamp-2">{quest.title}</h3>
 
             {/* Description excerpt */}
             <p className="flex-1 text-xs text-fg-3 leading-relaxed mb-3 line-clamp-2">{quest.description}</p>

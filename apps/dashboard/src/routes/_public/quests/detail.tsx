@@ -78,7 +78,11 @@ function getTaskActionUrl(task: any): string | undefined {
         case "follow_account": return `https://x.com/${p.username}`
         case "like_post":
         case "repost": return p.postUrl
-        case "post": return "https://x.com/compose/tweet"
+        case "quote_post": return p.postUrl  // open original tweet so user can quote-tweet it
+        case "post": {
+            const content = p.content ? `?text=${encodeURIComponent(p.content)}` : ""
+            return `https://x.com/intent/tweet${content}`
+        }
         case "join_server": return p.inviteUrl
         case "join_channel": {
             const ch = p.channelUrl || ""
@@ -369,58 +373,57 @@ export function QuestDetail() {
         },
     })
 
-    const verifyMutation = useMutation({
-        mutationFn: async () => {
-            const filteredProofs = Object.fromEntries(
-                Object.entries(proofUrls).filter(([, v]) => v.trim())
-            )
-            const hasProofs = Object.keys(filteredProofs).length > 0
-            const res = await fetch(`${API_BASE}/quests/${questId}/tasks/verify`, {
+    // Per-task verify: calls POST /quests/:id/tasks/:taskIndex/verify
+    // Only hits the external API for the specific task — avoids wasting X/Discord/Telegram credits
+    const verifyTaskMutation = useMutation({
+        mutationFn: async ({ taskIndex, proofUrl }: { taskIndex: number; proofUrl?: string }) => {
+            const res = await fetch(`${API_BASE}/quests/${questId}/tasks/${taskIndex}/verify`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${session?.access_token}`,
                 },
-                body: JSON.stringify(hasProofs ? { proofUrls: filteredProofs } : {}),
+                body: JSON.stringify(proofUrl ? { proofUrl } : {}),
             })
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}))
-                throw new Error(err.message || "Verification failed")
+                throw new Error(err.error?.message || err.message || "Verification failed")
             }
             return res.json()
         },
-        onSuccess: (data) => {
-            // Show per-task errors for failed verifications
-            const errors: Record<number, string> = {}
-            const newVerified: number[] = []
-            for (const r of data.results ?? []) {
-                if (r.valid) newVerified.push(r.taskIndex)
-                else if (r.error) errors[r.taskIndex] = r.error
-            }
-            setTaskErrors(errors)
+        onSuccess: (data, { taskIndex }) => {
             setVerifyingIndex(null)
-            // Optimistic update: merge verified indices immediately
-            if (newVerified.length > 0) {
-                queryClient.setQueryData<QuestWithParticipation>(["quest", questId, token], (old) => {
-                    if (!old?.myParticipation) return old
-                    const existing = old.myParticipation.proof?.verifiedIndices ?? []
-                    const merged = [...new Set([...existing, ...newVerified])]
-                    return {
-                        ...old,
-                        myParticipation: {
-                            ...old.myParticipation,
-                            proof: { ...old.myParticipation.proof, verifiedIndices: merged },
-                        },
-                    }
-                })
+            if (!data.valid && data.error) {
+                setTaskErrors(prev => ({ ...prev, [taskIndex]: data.error }))
+            } else {
+                setTaskErrors(prev => { const n = { ...prev }; delete n[taskIndex]; return n })
             }
-            // Background refetch for full server data
+            // Optimistic update with server-provided counts
+            const queryKey = ["quest", questId, token, session?.access_token ?? "anon"]
+            queryClient.setQueryData<QuestWithParticipation>(queryKey, (old) => {
+                if (!old?.myParticipation) return old
+                const existing = old.myParticipation.proof?.verifiedIndices ?? []
+                return {
+                    ...old,
+                    myParticipation: {
+                        ...old.myParticipation,
+                        tasksCompleted: data.tasksCompleted,
+                        status: data.status,
+                        proof: {
+                            ...old.myParticipation.proof,
+                            verifiedIndices: data.valid
+                                ? [...new Set([...existing, taskIndex])]
+                                : existing,
+                        },
+                    },
+                }
+            })
             queryClient.invalidateQueries({ queryKey: ["quest", questId] })
         },
-        onError: (e: Error) => {
-            setTaskErrors({ [-1]: e.message })
+        onError: (e: Error, { taskIndex }) => {
+            setTaskErrors(prev => ({ ...prev, [taskIndex]: e.message }))
             setVerifyingIndex(null)
-        }
+        },
     })
 
     // Sync hasAccepted state when quest data loads with myParticipation
@@ -750,7 +753,7 @@ export function QuestDetail() {
                                                     if (task.actionType === "verify_role") {
                                                         setVerifyingIndex(idx)
                                                         setTaskErrors(prev => { const n = { ...prev }; delete n[idx]; return n })
-                                                        verifyMutation.mutate()
+                                                        verifyTaskMutation.mutate({ taskIndex: idx })
                                                         return
                                                     }
                                                     // First click: open external link, mark as opened
@@ -759,10 +762,13 @@ export function QuestDetail() {
                                                         setOpenedTasks(prev => new Set(prev).add(idx))
                                                         return
                                                     }
-                                                    // Second click (Verify): trigger verify all
+                                                    // Second click (Verify): verify only this task
                                                     setVerifyingIndex(idx)
                                                     setTaskErrors(prev => { const n = { ...prev }; delete n[idx]; return n })
-                                                    verifyMutation.mutate()
+                                                    verifyTaskMutation.mutate({
+                                                        taskIndex: idx,
+                                                        proofUrl: proofUrls[idx]?.trim() || undefined,
+                                                    })
                                                 }}
                                             />
                                         </div>

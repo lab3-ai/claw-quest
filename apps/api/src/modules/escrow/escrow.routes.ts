@@ -280,8 +280,20 @@ export async function escrowRoutes(server: FastifyInstance) {
                 return reply.status(403).send({ message: 'Only quest creator or admin can refund' } as any);
             }
 
-            // Refund is only allowed after rewards have been distributed
-            if (quest.fundingStatus !== 'distributed') {
+            // Refund is allowed after distribution, OR immediately if quest ended with no winners
+            const isDistributed = quest.fundingStatus === 'distributed';
+            const questEnded =
+                ['completed', 'expired', 'cancelled'].includes(quest.status) ||
+                (quest.expiresAt != null && new Date() >= quest.expiresAt);
+            const noWinners = questEnded && await server.prisma.questParticipation.count({
+                where: {
+                    questId,
+                    status: { in: ['completed', 'submitted', 'verified'] },
+                    payoutWallet: { not: null },
+                },
+            }) === 0;
+
+            if (!isDistributed && !noWinners) {
                 return reply.status(400).send({ message: 'Rewards must be distributed before a refund can be issued' } as any);
             }
 

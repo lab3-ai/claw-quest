@@ -114,7 +114,7 @@ export function StepPreview({
             {isActive && (
                 <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
                     {/* Header badges */}
-                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap" style={{ marginBottom: 16 }}>
+                    <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground flex-wrap" style={{ marginBottom: 16 }}>
                         <QuestStatusBadge status="draft" />
                         <span>·</span>
                         <QuestTypeBadge type={form.type} />

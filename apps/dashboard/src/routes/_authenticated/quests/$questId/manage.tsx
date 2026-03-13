@@ -381,12 +381,12 @@ export function ManageQuest() {
     })
 
     if (isLoading) return (
-        <div className="max-w-5xl mx-auto px-4 py-6 text-muted-foreground text-center py-12">
+        <div className="mx-auto px-4 py-6 text-muted-foreground text-center py-12">
             Loading...
         </div>
     )
     if (error || !data) return (
-        <div className="max-w-5xl mx-auto px-4 py-6">
+        <div className="mx-auto px-4 py-6">
             <p className="text-error">{(error as Error)?.message || 'Failed to load'}</p>
             <Link to="/dashboard">Back to Dashboard</Link>
         </div>
@@ -398,7 +398,7 @@ export function ManageQuest() {
     const isCreator = quest.creatorUserId === user?.id
 
     return (
-        <div className="max-w-5xl mx-auto px-4 max-sm:px-3 py-6 max-sm:py-4">
+        <div className="mx-auto px-4 max-sm:px-3 py-6 max-sm:py-4">
             {/* Breadcrumb */}
             <nav className="flex items-center gap-1 text-xs max-sm:text-xs text-muted-foreground mb-4 max-sm:mb-3 overflow-x-auto scrollbar-hide">
                 <Link to="/quests" className="hover:text-foreground whitespace-nowrap">Quests</Link>

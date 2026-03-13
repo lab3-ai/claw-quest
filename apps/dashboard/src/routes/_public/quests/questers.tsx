@@ -74,7 +74,7 @@ export function QuestersPage() {
                 <div>
                     <h1 className="text-3xl font-semibold text-foreground">Questers</h1>
                     {data && (
-                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
+                        <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground flex-wrap">
                             <strong className="text-foreground">{data.totalQuesters}</strong> questers
                             <span>·</span>
                             <QuestTypeBadge type={data.questType} />

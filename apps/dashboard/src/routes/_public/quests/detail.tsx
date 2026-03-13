@@ -645,7 +645,7 @@ export function QuestDetail() {
             <div className="flex justify-between items-end py-3 border-b border-border mb-5">
                 <div>
                     <h1 className="text-3xl font-semibold text-foreground">{quest.title}</h1>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
+                    <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground flex-wrap">
                         <QuestStatusBadge status={quest.status} />
                         <span>·</span>
                         <span className="inline-flex items-center gap-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-foreground">{quest.sponsor}</strong></span>

@@ -82,7 +82,7 @@ export function GitHubBountiesExplore() {
     const filtered = filterBounties(data?.bounties ?? [], statusTab)
 
     return (
-        <div className="max-w-4xl mx-auto px-6 py-6">
+        <div className="mx-auto px-6 py-6">
             {/* Page header */}
             <div className="flex items-start justify-between mb-6">
                 <div>

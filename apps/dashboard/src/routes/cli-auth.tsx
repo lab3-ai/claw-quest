@@ -223,7 +223,7 @@ export function CliAuth() {
             <SeoHead title="CLI Login" noindex />
 
             <header className="sticky top-0 z-50 bg-background border-b border-border">
-                <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-6">
+                <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-6">
                     <Link to="/quests" className="mr-5 flex items-center gap-1.5 no-underline">
                         <span className="text-base font-semibold text-foreground uppercase">
                             Claw<span className="text-accent uppercase">Quest</span>

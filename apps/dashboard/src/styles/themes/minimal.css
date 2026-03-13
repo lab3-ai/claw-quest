@@ -29,6 +29,18 @@
     --border-2: #e4e4e7;
     --border-3: #a1a1aa;
     --border-4: #18181b;
+    --color-bg-1: var(--bg-1);
+    --color-bg-2: var(--bg-2);
+    --color-bg-3: var(--bg-3);
+    --color-bg-4: var(--bg-4);
+    --color-fg-1: var(--fg-1);
+    --color-fg-2: var(--fg-2);
+    --color-fg-3: var(--fg-3);
+    --color-fg-4: var(--fg-4);
+    --color-border-1: var(--border-1);
+    --color-border-2: var(--border-2);
+    --color-border-3: var(--border-3);
+    --color-border-4: var(--border-4);
 
     --surface-dark: #18181b;
     --surface-dark-subtle: #27272a;
@@ -104,6 +116,18 @@
     --border-2: #27272a;
     --border-3: #52525b;
     --border-4: #fafafa;
+    --color-bg-1: var(--bg-1);
+    --color-bg-2: var(--bg-2);
+    --color-bg-3: var(--bg-3);
+    --color-bg-4: var(--bg-4);
+    --color-fg-1: var(--fg-1);
+    --color-fg-2: var(--fg-2);
+    --color-fg-3: var(--fg-3);
+    --color-fg-4: var(--fg-4);
+    --color-border-1: var(--border-1);
+    --color-border-2: var(--border-2);
+    --color-border-3: var(--border-3);
+    --color-border-4: var(--border-4);
 
     --surface-dark: #09090b;
     --surface-dark-subtle: #18181b;

@@ -155,7 +155,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
 
     if (isLoading) {
         return (
-            <div className="max-w-4xl mx-auto px-6 py-6 grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6">
+            <div className="mx-auto px-6 py-6 grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6">
                 <div className="space-y-4">
                     <Skeleton className="h-6 w-1/2" />
                     <Skeleton className="h-8 w-3/4" />
@@ -179,7 +179,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
     const pendingCount = submissions.filter(s => s.status === "pending").length
 
     return (
-        <div className="max-w-4xl mx-auto px-6 py-6">
+        <div className="mx-auto px-6 py-6">
             {/* Breadcrumb */}
             <Link to="/github-bounties" className="text-xs text-muted-foreground hover:text-foreground mb-5 inline-flex items-center gap-1 no-underline">
                 ← All bounties

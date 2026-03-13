@@ -29,6 +29,18 @@
     --border-2: #000000;
     --border-3: #000000;
     --border-4: #000000;
+    --color-bg-1: var(--bg-1);
+    --color-bg-2: var(--bg-2);
+    --color-bg-3: var(--bg-3);
+    --color-bg-4: var(--bg-4);
+    --color-fg-1: var(--fg-1);
+    --color-fg-2: var(--fg-2);
+    --color-fg-3: var(--fg-3);
+    --color-fg-4: var(--fg-4);
+    --color-border-1: var(--border-1);
+    --color-border-2: var(--border-2);
+    --color-border-3: var(--border-3);
+    --color-border-4: var(--border-4);
 
     --surface-dark: #000000;
     --surface-dark-subtle: #111111;
@@ -104,6 +116,18 @@
     --border-2: #ffffff;
     --border-3: #ffffff;
     --border-4: #ffffff;
+    --color-bg-1: var(--bg-1);
+    --color-bg-2: var(--bg-2);
+    --color-bg-3: var(--bg-3);
+    --color-bg-4: var(--bg-4);
+    --color-fg-1: var(--fg-1);
+    --color-fg-2: var(--fg-2);
+    --color-fg-3: var(--fg-3);
+    --color-fg-4: var(--fg-4);
+    --color-border-1: var(--border-1);
+    --color-border-2: var(--border-2);
+    --color-border-3: var(--border-3);
+    --color-border-4: var(--border-4);
 
     --surface-dark: #000000;
     --surface-dark-subtle: #0a0a0a;

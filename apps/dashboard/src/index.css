@@ -47,7 +47,7 @@
     --color-input: var(--border-2);
     --color-ring: var(--accent);
 
-    /* ── Numbered scale ── */
+    /* ── Numbered scale — bg/fg/border ── */
     --color-bg-1: var(--bg-1);
     --color-bg-2: var(--bg-2);
     --color-bg-3: var(--bg-3);
@@ -196,6 +196,20 @@
     --border-2: #e5e5e5;
     --border-3: #aaaaaa;
     --border-4: #222222;
+
+    /* ── Tailwind color mappings (--color-* consumed by utilities) ── */
+    --color-bg-1: var(--bg-1);
+    --color-bg-2: var(--bg-2);
+    --color-bg-3: var(--bg-3);
+    --color-bg-4: var(--bg-4);
+    --color-fg-1: var(--fg-1);
+    --color-fg-2: var(--fg-2);
+    --color-fg-3: var(--fg-3);
+    --color-fg-4: var(--fg-4);
+    --color-border-1: var(--border-1);
+    --color-border-2: var(--border-2);
+    --color-border-3: var(--border-3);
+    --color-border-4: var(--border-4);
 
     /* ── Dark surfaces (code blocks, dark cards) ── */
     --surface-dark: #1a1a1a;

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { CheckLine, LoadingLine, ArrowRightLine } from "@mingcute/react"
+import { CheckFill, LoadingLine, ArrowRightLine } from "@mingcute/react"
 import { PlatformIcon } from "@/components/PlatformIcon"
 import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 import { WAITLIST_TOKEN_KEY } from "@/components/waitlist/telegram-join-button"
@@ -82,31 +82,35 @@ export function SocialTasks({ referralCode }: SocialTasksProps) {
                 <div className="h-px flex-1 bg-neutral-800" />
             </div>
 
-            {/* Steps card */}
-            <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 overflow-hidden divide-y divide-neutral-800/60">
+            {/* Steps */}
+            <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 overflow-hidden">
 
                 {/* Step 1 — Follow */}
-                <div className={`flex items-center gap-4 px-4 py-3.5 transition-colors ${followDone ? "bg-[var(--wl-accent)]/5" : ""}`}>
-                    {/* Step badge */}
-                    <div className={`relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 font-mono text-xs font-bold transition-all duration-300 ${followDone
-                        ? "border-[var(--wl-accent)] bg-[var(--wl-accent)] text-white shadow-[0_0_10px_var(--wl-accent)]/40"
-                        : followPending
-                            ? "border-[var(--wl-accent)]/50 text-[var(--wl-accent)] animate-pulse"
-                            : "border-neutral-700 text-neutral-500"
-                        }`}>
-                        {followDone ? <CheckLine size={13} /> : "1"}
+                <div className={`flex items-center gap-4 px-5 py-4 transition-colors`}>
+                    {/* Step badge + connector */}
+                    <div className="flex flex-col items-center self-stretch shrink-0">
+                        <div className={`flex h-8 w-8 items-center justify-center rounded-full border font-mono text-xs transition-all duration-300 ${followDone
+                            ? "border-[var(--wl-accent)] bg-[var(--wl-accent)] text-white"
+                            : followPending
+                                ? "border-[var(--wl-accent)]/50 text-[var(--wl-accent)] animate-pulse"
+                                : "border-neutral-700 text-neutral-500"
+                            }`}>
+                            {followDone ? <CheckFill size={14} /> : "1"}
+                        </div>
+                        {/* Vertical connector */}
+                        <div className="flex-1 w-px bg-neutral-800 mt-1.5" />
                     </div>
 
                     {/* Text */}
-                    <div className="flex flex-1 flex-col min-w-0">
-                        <p className={`font-mono text-sm font-semibold leading-tight transition-colors ${followDone ? "text-white" : "text-white/90"}`}>
+                    <div className="flex flex-1 flex-col min-w-0 text-left">
+                        <p className={`font-mono text-base font-semibold tracking-wide leading-tight transition-colors ${followDone ? "text-white" : "text-white/90"}`}>
                             Follow{" "}
                             <span className={followDone ? "text-[var(--wl-accent)]" : "text-white"}>
                                 @ClawQuestAI
                             </span>
                             {" "}on X
                         </p>
-                        <p className="font-mono text-[11px] text-neutral-500 mt-0.5">
+                        <p className="font-mono text-xs text-neutral-500 mt-1">
                             {followPending ? (
                                 <span className="text-[var(--wl-accent)]/70 animate-pulse">Verifying...</span>
                             ) : followDone ? (
@@ -122,13 +126,13 @@ export function SocialTasks({ referralCode }: SocialTasksProps) {
                         type="button"
                         onClick={handleFollow}
                         disabled={followDone || followPending}
-                        className={`shrink-0 flex items-center gap-1.5 rounded-lg px-3.5 py-2 font-mono text-xs font-semibold transition-all duration-200 active:scale-95 ${followDone || followPending
+                        className={`shrink-0 flex w-[120px] items-center justify-center gap-2 rounded py-2 font-mono text-sm font-semibold transition-all duration-200 active:scale-95 ${followDone || followPending
                             ? "bg-neutral-800 text-neutral-600 cursor-default"
                             : "bg-[var(--wl-accent)] text-white hover:bg-[var(--wl-accent-hover)] shadow-md shadow-[var(--wl-accent)]/20"
                             }`}
                     >
                         {followDone ? (
-                            <CheckLine size={12} />
+                            <CheckFill size={12} />
                         ) : (
                             <PlatformIcon name="x" size={12} style={{ filter: "brightness(0) invert(1)" }} />
                         )}
@@ -136,22 +140,27 @@ export function SocialTasks({ referralCode }: SocialTasksProps) {
                     </button>
                 </div>
 
+                {/* Divider */}
+                <div className="h-px bg-neutral-800/60 mx-5" />
+
                 {/* Step 2 — Claim */}
-                <div className={`flex items-center gap-4 px-4 py-3.5 transition-all duration-300 ${!followDone ? "opacity-50" : ""}`}>
+                <div className={`flex items-center gap-4 px-5 py-4 transition-all duration-300 ${!followDone ? "opacity-50" : ""}`}>
                     {/* Step badge */}
-                    <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 font-mono text-xs font-bold transition-all duration-300 ${followDone
-                        ? "border-[var(--wl-accent)]/50 text-[var(--wl-accent)]"
-                        : "border-neutral-800 text-neutral-700"
-                        }`}>
-                        2
+                    <div className="flex flex-col items-center self-stretch shrink-0">
+                        <div className={`flex h-8 w-8 items-center justify-center rounded-full border font-mono text-xs transition-all duration-300 ${followDone
+                            ? "border-[var(--wl-accent)]/50 text-[var(--wl-accent)]"
+                            : "border-neutral-800 text-neutral-700"
+                            }`}>
+                            2
+                        </div>
                     </div>
 
                     {/* Text */}
-                    <div className="flex flex-1 flex-col min-w-0">
-                        <p className="font-mono text-sm font-semibold text-white/90 leading-tight">
+                    <div className="flex flex-1 flex-col min-w-0 text-left">
+                        <p className="font-mono text-base font-semibold text-white/90 tracking-wide leading-tight">
                             Claim your spot
                         </p>
-                        <p className="font-mono text-[11px] text-neutral-500 mt-0.5">
+                        <p className="font-mono text-xs text-neutral-500 mt-1">
                             Opens Telegram — bot replies instantly
                         </p>
                     </div>
@@ -161,9 +170,9 @@ export function SocialTasks({ referralCode }: SocialTasksProps) {
                         type="button"
                         onClick={handleClaim}
                         disabled={!followDone || claimLoading}
-                        className={`shrink-0 flex items-center gap-1.5 rounded-lg px-3.5 py-2 font-mono text-xs font-semibold transition-all duration-200 active:scale-95 ${followDone
+                        className={`shrink-0 flex w-[120px] items-center justify-center gap-2 rounded py-2 font-mono text-sm font-semibold transition-all duration-200 active:scale-95 ${followDone
                             ? "bg-[var(--wl-accent)] text-white hover:bg-[var(--wl-accent-hover)] shadow-md shadow-[var(--wl-accent)]/20"
-                            : "bg-neutral-800/60 text-neutral-700 cursor-not-allowed"
+                            : "bg-neutral-800 text-neutral-500 cursor-not-allowed"
                             }`}
                     >
                         {claimLoading ? (
@@ -178,7 +187,7 @@ export function SocialTasks({ referralCode }: SocialTasksProps) {
             </div>
 
             {/* RT hint */}
-            <p className="font-mono text-[11px] text-neutral-600 text-center">
+            <p className="font-mono text-xs text-neutral-600 text-center">
                 Retweet our{" "}
                 <a
                     href="https://x.com/clawquest_ai"

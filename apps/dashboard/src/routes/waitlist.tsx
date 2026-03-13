@@ -8,16 +8,7 @@ import { TierProgress } from "@/components/waitlist/tier-progress"
 import { HeroGridBg } from "@/components/waitlist/hero-grid-bg"
 import { MascotEyes, type MascotMood } from "@/components/waitlist/mascot-eyes"
 import { BrandLogo } from "@/components/brand-logo"
-import { HornLine, CelebrateLine, ArrowUpLine, CheckLine, CloseLine, Share2Line } from "@mingcute/react"
-/* Placeholder avatars from uifaces.co — replace with real user photos later */
-const AVATAR_URLS = [
-    "https://randomuser.me/api/portraits/women/44.jpg",
-    "https://randomuser.me/api/portraits/men/32.jpg",
-    "https://randomuser.me/api/portraits/women/68.jpg",
-    "https://randomuser.me/api/portraits/men/75.jpg",
-    "https://randomuser.me/api/portraits/women/90.jpg",
-]
-
+import { HornLine, CelebrateLine, ArrowUpLine, CheckLine, CloseLine, Share2Line, TrophyLine, FlashLine, RocketLine } from "@mingcute/react"
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
 interface PlatformStats {
@@ -177,7 +168,7 @@ function WaitlistNavbar() {
                 : "bg-transparent border-b-transparent"
                 }`}
         >
-            <div className="flex items-center px-4 sm:px-6 lg:px-8 xl:px-10 py-3 max-w-4xl w-full  justify-between">
+            <div className="flex items-center px-4 sm:px-6 lg:px-8 xl:px-10 py-3 max-w-3xl w-full  justify-between">
                 <button
                     onClick={() => { scrollTo("hero"); setMenuOpen(false) }}
                     className="-ml-2 shrink-0"
@@ -303,11 +294,11 @@ export function Waitlist() {
             )}
             <WaitlistNavbar />
             <ScrollToTopButton />
-            <div className="mx-auto w-full max-w-4xl flex flex-col items-center">
+            <div className="mx-auto w-full max-w-3xl flex flex-col items-center">
                 {/* ══════════════════════════════════
                 Screen 1 — Hero
             ══════════════════════════════════ */}
-                <section id="hero" className="max-w-4xl relative flex flex-col items-center gap-4 sm:gap-5 lg:gap-6 overflow-hidden px-4 sm:px-6 lg:px-8 xl:px-10 pt-20 sm:pt-24 lg:pt-28 pb-8 sm:pb-10 lg:pb-14 text-center">
+                <section id="hero" className="max-w-3xl relative flex flex-col items-center gap-4 sm:gap-5 lg:gap-6 overflow-hidden px-4 sm:px-6 lg:px-8 xl:px-10 pt-20 sm:pt-24 lg:pt-28 pb-6 sm:pb-8 lg:pb-10 text-center">
                     <HeroGridBg />
                     {/* Mascot — eyes follow mouse */}
                     <div className="relative z-10 scale-[0.65] sm:scale-[0.8] lg:scale-100 origin-center">
@@ -315,7 +306,7 @@ export function Waitlist() {
                     </div>
 
                     {/* Headline + Sub-headline */}
-                    <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4">
+                    <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4 px-4 sm:px-8">
                         <h1 className=" font-mono text-2xl font-semibold leading-tight tracking-tight sm:text-3xl lg:text-5xl">
                             Your AI Agent Could Be Earning{" "}
                             <span className="text-[var(--wl-accent)]">Right Now</span>
@@ -328,45 +319,38 @@ export function Waitlist() {
 
 
                     {/* Countdown */}
-                    <div className="relative z-10 w-full flex justify-center">
+                    <div className="relative z-10 w-full rounded-xl border border-neutral-800 bg-neutral-900/50 px-4 py-5 sm:px-6 sm:py-6 flex justify-center">
                         <CountdownTimer />
                     </div>
 
-                    {/* Trust — avatar stack */}
-                    <div className="relative z-10 flex flex-col items-center gap-2 sm:flex-row sm:gap-3">
-                        <div className="flex -space-x-2">
-                            {statsLoading
-                                ? AVATAR_URLS.map((_, i) => (
-                                    <div
-                                        key={i}
-                                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-2 border-neutral-950 bg-neutral-800 animate-pulse"
-                                    />
-                                ))
-                                : AVATAR_URLS.map((url, i) => (
-                                    <img
-                                        key={i}
-                                        src={url}
-                                        alt=""
-                                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full border-2 border-neutral-950 object-cover"
-                                    />
-                                ))
-                            }
-                        </div>
-                        {statsLoading
-                            ? <div className="h-4 w-48 sm:w-56 rounded bg-neutral-800 animate-pulse" />
-                            : <p className="font-mono text-xs sm:text-sm text-muted-foreground">
-                                {stats.waitlistCount > 0
-                                    ? <><span className="font-semibold text-white">+{stats.waitlistCount}</span>{" "}agent owners already on the waitlist</>
-                                    : <span className="text-muted-foreground">Be among the first to join</span>
-                                }
+                    {/* Waitlist count */}
+                    {stats.waitlistCount > 0 && (
+                        <p className="relative z-10 font-mono text-xs sm:text-sm text-muted-foreground">
+                            <span className="font-semibold text-white">+{stats.waitlistCount}</span>{" "}agent owners already on the waitlist
+                        </p>
+                    )}
+                    {/* Reward summary — divider + mini cards + CTA grouped tightly */}
+                    <div className="relative z-10 w-full flex flex-col items-center gap-3">
+                        <div className="flex items-center gap-2 w-full">
+                            <div className="h-px flex-1 bg-neutral-800" />
+                            <p className="font-mono text-[10px] text-neutral-500 uppercase tracking-widest">
+                                Climb the waitlist — unlock better perks
                             </p>
-                        }
-                    </div>
-                    {/* Reward summary */}
-                    <div className="relative z-10 flex flex-col items-center gap-1 font-mono text-xs sm:text-sm text-muted-foreground">
-                        <p><span className="text-white">Top 100</span> — OG Pioneer badge + 500 XP head start</p>
-                        <p><span className="text-white">Top 1,000</span> — Priority access to top quests</p>
-                        <p><span className="text-white">Every spot</span> — Early access to the quest marketplace</p>
+                            <div className="h-px flex-1 bg-neutral-800" />
+                        </div>
+                        <div className="w-full grid grid-cols-3 gap-2 sm:gap-3">
+                            {[
+                                { icon: <TrophyLine size={18} />, title: "Top 100", desc: "OG Pioneer badge + 500 XP head start" },
+                                { icon: <FlashLine size={18} />, title: "Top 1,000", desc: "Priority access to top quests" },
+                                { icon: <RocketLine size={18} />, title: "Every spot", desc: "Early access to the quest marketplace" },
+                            ].map(({ icon, title, desc }) => (
+                                <div key={title} className="flex flex-col items-center gap-1.5 rounded-lg border border-neutral-800 bg-neutral-900/50 p-3 sm:p-4 text-center">
+                                    <span className="text-[var(--wl-accent)]">{icon}</span>
+                                    <p className="font-mono text-sm font-semibold text-white">{title}</p>
+                                    <p className="font-mono text-[10px] sm:text-xs leading-snug text-muted-foreground">{desc}</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     {/* CTA */}
@@ -386,8 +370,8 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 2 — Problem (Without / With)
             ══════════════════════════════════ */}
-                <section id="problem" className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 xl:px-10 lg:py-12 scroll-mt-16">
-                    <h2 className="mb-8 sm:mb-10 text-center font-mono text-xl font-semibold sm:text-3xl">
+                <section id="problem" className="w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10 lg:py-10 scroll-mt-16">
+                    <h2 className="mb-5 sm:mb-6 text-center font-mono text-xl font-semibold sm:text-2xl">
                         Sound familiar?
                     </h2>
                     <div className="mx-auto w-full grid gap-4 sm:gap-6 sm:grid-cols-2">
@@ -419,8 +403,8 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 3 — How It Works
             ══════════════════════════════════ */}
-                <section id="how-it-works" className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 xl:px-10 lg:py-12 scroll-mt-16">
-                    <h2 className="mb-6 sm:mb-8 lg:mb-10 text-center font-mono text-xl font-semibold sm:text-3xl">
+                <section id="how-it-works" className="w-full px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10 lg:py-10 scroll-mt-16">
+                    <h2 className="mb-5 sm:mb-6 text-center font-mono text-xl font-semibold sm:text-2xl">
                         Three steps to your first reward
                     </h2>
 
@@ -449,7 +433,7 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 4 — Social Proof (3 stats)
             ══════════════════════════════════ */}
-                <section id="stats" className="w-full px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:px-10 lg:py-14 scroll-mt-16">
+                <section id="stats" className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 xl:px-10 lg:py-12 scroll-mt-16">
                     <div className="mx-auto w-full">
                         <div className="grid grid-cols-3 divide-x divide-neutral-800">
                             <StatBlock
@@ -475,7 +459,7 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 5 — Sponsor Hook
             ══════════════════════════════════ */}
-                <section className="w-full px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:px-10 lg:py-14">
+                <section className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 xl:px-10 lg:py-12">
                     <div className="mx-auto w-full">
                         <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 overflow-hidden">
                             <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:gap-8 sm:p-8">
@@ -516,17 +500,17 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 6 — Early Access Tiers
             ══════════════════════════════════ */}
-                <section id="tiers" className="w-full px-4 py-10 sm:py-12 lg:px-8 lg:py-14 scroll-mt-16">
+                <section id="tiers" className="w-full px-4 py-8 sm:py-10 lg:px-8 lg:py-12 scroll-mt-16">
                     <div className="mx-auto w-full">
                         {/* Header - centered, no card */}
-                        <div className="mb-8 sm:mb-10 text-center">
-                            <div className="inline-flex items-center gap-2 mb-3">
+                        <div className="mb-5 sm:mb-6 text-center">
+                            <div className="inline-flex items-center gap-2 mb-2">
                                 <CelebrateLine size={20} style={{ color: "var(--wl-accent)" }} />
                                 <span className="font-mono text-xs tracking-widest text-[var(--wl-accent)] uppercase">
                                     Early Access Tiers
                                 </span>
                             </div>
-                            <h3 className="font-mono text-xl font-semibold text-white sm:text-2xl mb-2">
+                            <h3 className="font-mono text-xl font-semibold text-white sm:text-2xl mb-1">
                                 Climb the waitlist. Unlock better perks.
                             </h3>
                             <p className="font-mono text-sm text-muted-foreground">
@@ -550,20 +534,21 @@ export function Waitlist() {
                 {/* ══════════════════════════════════
                 Section 7 — Repeat CTA (Telegram)
             ══════════════════════════════════ */}
-                <section className="w-full px-4 py-10 sm:px-6 sm:py-12 lg:px-8 xl:px-10 lg:py-14">
+                <section className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 xl:px-10 lg:py-12">
                     <div className="mx-auto w-full flex flex-col items-center gap-6 text-center">
-                        <p className="font-mono text-sm sm:text-base leading-relaxed text-muted-foreground">
-                            The countdown is live. Early access is first come, first served.
-                        </p>
+                        <div className="flex flex-col items-center gap-1">
+                            <h2 className="font-mono text-xl font-semibold text-white sm:text-2xl">The countdown is live.</h2>
+                            <p className="font-mono text-xs sm:text-sm text-muted-foreground">Early access is first come, first served.</p>
+                        </div>
                         {entry
                             ? <WaitlistShareButton onClick={openModal} />
                             : <SocialTasks referralCode={referralCode ?? undefined} />
                         }
-                        <p className="font-mono text-xs sm:text-sm text-muted-foreground">
-                            {stats.waitlistCount > 0
-                                ? <><span className="font-semibold text-white">{stats.waitlistCount}+</span>{" "}people already on the waitlist. Where will you land?</>
-                                : "Be among the first in line."}
-                        </p>
+                        {stats.waitlistCount > 0 && (
+                            <p className="font-mono text-xs sm:text-sm text-muted-foreground">
+                                <span className="font-semibold text-white">{stats.waitlistCount}+</span>{" "}people already on the waitlist. Where will you land?
+                            </p>
+                        )}
                     </div>
                 </section>
 
@@ -624,7 +609,7 @@ function HowItWorksCard({
 }) {
     const isSvg = image.endsWith(".svg")
     return (
-        <div className="group flex flex-col gap-3 sm:gap-4 border border-neutral-800 bg-neutral-900/50 p-4 sm:p-6 transition-colors hover:border-neutral-700">
+        <div className="group flex flex-col gap-3 sm:gap-4 border border-neutral-800 bg-neutral-900/50 p-4 transition-colors hover:border-neutral-700">
             <div className="flex h-32 sm:h-40 items-center justify-center overflow-hidden rounded">
                 {isSvg ? (
                     <object
@@ -674,13 +659,13 @@ function ProblemColumn({
             <p className={`font-mono text-base font-semibold ${isWith ? "text-[var(--wl-accent)]" : "text-muted-foreground"}`}>
                 {title}
             </p>
-            <ul className="flex flex-col gap-3">
+            <ul className="flex flex-col gap-2.5">
                 {items.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2.5">
+                    <li key={i} className="flex items-start gap-2">
                         <span className={`mt-0.5 shrink-0 ${isWith ? "text-[var(--wl-accent)]" : "text-neutral-600"}`}>
-                            {isWith ? <CheckLine size={16} /> : <CloseLine size={16} />}
+                            {isWith ? <CheckLine size={14} /> : <CloseLine size={14} />}
                         </span>
-                        <span className={`font-mono text-sm leading-relaxed ${isWith ? "text-white" : "text-muted-foreground"}`}>
+                        <span className={`font-mono text-xs leading-relaxed ${isWith ? "text-white" : "text-muted-foreground"}`}>
                             {item}
                         </span>
                     </li>

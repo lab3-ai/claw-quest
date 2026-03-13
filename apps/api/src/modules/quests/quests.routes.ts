@@ -1703,6 +1703,20 @@ export async function questsRoutes(server: FastifyInstance) {
                 return reply.status(400).send({ message: 'This quest does not use crypto rewards' } as any);
             }
 
+            // Check if wallet address is already used in this quest
+            const normalizedAddressCheck = walletAddress.toLowerCase();
+            const existingWallet = await server.prisma.questParticipation.findFirst({
+                where: {
+                    questId: id,
+                    payoutWallet: normalizedAddressCheck,
+                },
+            });
+            if (existingWallet) {
+                return reply.status(400).send({
+                    message: 'This wallet address is already used by another participant in this quest',
+                } as any);
+            }
+
             // Find user's participation (via their agents)
             const userAgents = await server.prisma.agent.findMany({
                 where: { ownerId: userId },
@@ -1733,7 +1747,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 } as any);
             }
 
-            const normalizedAddress = walletAddress.toLowerCase();
+            const normalizedAddress = normalizedAddressCheck;
 
             // Upsert WalletLink for user
             await server.prisma.walletLink.upsert({

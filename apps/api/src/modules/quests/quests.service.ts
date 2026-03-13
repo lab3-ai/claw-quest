@@ -59,6 +59,8 @@ export function validateTaskParams(task: QuestTask): string | null {
         case 'verify_role':
             if (!p.inviteUrl || !DISCORD_INVITE_RE.test(p.inviteUrl))
                 return `Task "${task.label}": invalid Discord invite URL "${p.inviteUrl || ''}"`;
+            if (!p.roleId)
+                return `Task "${task.label}": role ID is required`;
             if (!p.roleName)
                 return `Task "${task.label}": role name is required`;
             break;
@@ -328,7 +330,17 @@ export async function updateQuest(
     if (input.tags !== undefined) data.tags = input.tags;
     if (input.requiredSkills !== undefined) data.requiredSkills = input.requiredSkills;
     if (input.requireVerified !== undefined) data.requireVerified = input.requireVerified;
-    if (input.tasks !== undefined) data.tasks = input.tasks as any;
+    // Auto-resolve Discord invite → guildId for join_server tasks missing guildId (same as createQuest)
+    if (input.tasks !== undefined) {
+      for (const task of input.tasks as QuestTask[]) {
+        if (task.actionType === 'join_server' && task.params?.inviteUrl && !task.params.guildId) {
+          const code = (task.params.inviteUrl as string).replace(/^https?:\/\/(discord\.gg|discord\.com\/invite)\//, '')
+          const guild = await resolveInvite(code)
+          if (guild) task.params.guildId = guild.guildId
+        }
+      }
+      data.tasks = input.tasks as any
+    }
     if (input.expiresAt !== undefined) data.expiresAt = input.expiresAt ? new Date(input.expiresAt) : null;
     if (input.startAt !== undefined) data.startAt = input.startAt ? new Date(input.startAt) : null;
     if (input.network !== undefined) data.network = input.network;

@@ -170,9 +170,15 @@ export async function handleQuestDistributed(
         });
     }
 
-    if (quest.status !== 'completed') {
-        await prisma.quest.update({ where: { id: questId }, data: { status: 'completed' } });
-    }
+    // Mark quest as completed and update fundingStatus to 'distributed'
+    // 'distributed' unlocks the /refund endpoint for returning any remaining balance
+    await prisma.quest.update({
+        where: { id: questId },
+        data: {
+            status: 'completed',
+            fundingStatus: 'distributed',
+        },
+    });
 
     // Issue LLM bonus keys asynchronously — failure must not affect distribution outcome
     if (quest.llmKeyRewardEnabled) {

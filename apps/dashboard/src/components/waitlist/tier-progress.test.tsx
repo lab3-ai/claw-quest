@@ -4,7 +4,7 @@ import { TierProgress } from './tier-progress'
 
 // Mock IntersectionObserver
 class MockIntersectionObserver {
-    constructor(private callback: IntersectionObserverCallback) {}
+    constructor(private callback: IntersectionObserverCallback) { }
     observe(element: Element) {
         // Immediately trigger callback with isIntersecting: true for testing
         this.callback(
@@ -12,8 +12,8 @@ class MockIntersectionObserver {
             this as any
         )
     }
-    unobserve() {}
-    disconnect() {}
+    unobserve() { }
+    disconnect() { }
     takeRecords() {
         return []
     }
@@ -55,13 +55,13 @@ describe('TierProgress', () => {
         render(<TierProgress totalSignups={50} />)
 
         // OG Pioneer: 50/100
-        const ogText = screen.getByText((content, element) => {
+        const ogText = screen.getByText((_content, element) => {
             return element?.textContent === '50/100 claimed'
         })
         expect(ogText).toBeInTheDocument()
 
         // Early Access: 0/1000 (since totalSignups < 100)
-        const earlyText = screen.getByText((content, element) => {
+        const earlyText = screen.getByText((_content, element) => {
             return element?.textContent === '0/1000 claimed'
         })
         expect(earlyText).toBeInTheDocument()
@@ -71,13 +71,13 @@ describe('TierProgress', () => {
         render(<TierProgress totalSignups={150} />)
 
         // OG Pioneer should be capped at 100
-        const ogText = screen.getByText((content, element) => {
+        const ogText = screen.getByText((_content, element) => {
             return element?.textContent === '100/100 claimed'
         })
         expect(ogText).toBeInTheDocument()
 
         // Early Access should show 50 (150 - 100 from first tier)
-        const earlyText = screen.getByText((content, element) => {
+        const earlyText = screen.getByText((_content, element) => {
             return element?.textContent === '50/1000 claimed'
         })
         expect(earlyText).toBeInTheDocument()
@@ -123,13 +123,13 @@ describe('TierProgress', () => {
         render(<TierProgress totalSignups={1100} />)
 
         // OG Pioneer: 100/100
-        const ogText = screen.getByText((content, element) => {
+        const ogText = screen.getByText((_content, element) => {
             return element?.textContent === '100/100 claimed'
         })
         expect(ogText).toBeInTheDocument()
 
         // Early Access: 1000/1000
-        const earlyText = screen.getByText((content, element) => {
+        const earlyText = screen.getByText((_content, element) => {
             return element?.textContent === '1000/1000 claimed'
         })
         expect(earlyText).toBeInTheDocument()

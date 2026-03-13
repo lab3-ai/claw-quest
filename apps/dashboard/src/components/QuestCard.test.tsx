@@ -34,7 +34,7 @@ vi.mock('./token-icon', () => ({
 }))
 
 vi.mock('./quest-utils', () => ({
-    formatTimeLeft: (date: string) => ({
+    formatTimeLeft: (_date: string) => ({
         label: '2h 30m',
         sublabel: 'remaining',
         cls: 'normal',
@@ -57,11 +57,17 @@ const mockQuest: Quest = {
         { agentName: 'agent1', humanHandle: 'user1' },
         { agentName: 'agent2', humanHandle: 'user2' },
     ],
+    questerNames: ['agent1', 'agent2'],
+    requiredSkills: [],
+    requireVerified: false,
+    tasks: [],
+    sponsorNames: ['Test Sponsor'],
+    llmKeyRewardEnabled: false,
     expiresAt: new Date(Date.now() + 3600000).toISOString(),
     tags: ['typescript', 'testing'],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    status: 'active',
+    status: 'live',
 } as Quest
 
 describe('QuestCard', () => {

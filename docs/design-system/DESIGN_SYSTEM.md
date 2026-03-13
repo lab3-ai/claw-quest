@@ -110,22 +110,24 @@ Tokens use a **numbered scale** (1–4). The key rule: **`bg-1 + fg-1 = max cont
 
 | Scale | Light mode | Dark mode | Rule |
 |-------|-----------|-----------|------|
-| **bg-1** | lightest (`#fff`) | darkest (`#0a0a0a`) | Page bg, cards |
+| **bg-base** | `#fafafa` | `#050505` | Body/page background |
+| **bg-1** | `#ffffff` | `#0e0e0e` | Cards, popovers |
 | **bg-4** | darkest | lightest | Muted bg, disabled |
 | **fg-1** | darkest (`#111`) | lightest (`#e0e0e0`) | Primary text |
 | **fg-4** | lightest | darkest | Disabled text |
 | **border-1** | lightest | lightest | Subtle dividers |
 | **border-4** | darkest | darkest | Strong contrast |
 
-Direction flips between modes so that **the same class works in both**: `bg-bg-1` is always the base surface, `text-fg-1` is always the strongest text.
+Direction flips between modes so that **the same class works in both**: `bg-bg-base` is always the page background, `bg-bg-1` is always the card/surface background, `text-fg-1` is always the strongest text.
 
 #### Background
 
 | Token | Tailwind | Hex | Use |
 |-------|----------|-----|-----|
-| `--bg-1` | `bg-bg-1` | `#ffffff` | Page background, card bg |
-| `--bg-2` | `bg-bg-2` | `#f5f5f5` | **Body background**, navbar, secondary surfaces |
-| `--bg-3` | `bg-bg-3` | `#e5e5e5` | Sidebar, section bg, card hover, skeleton |
+| `--bg-base` | `bg-bg-base` | `#fafafa` | **Body/page background**, navbar |
+| `--bg-1` | `bg-bg-1` | `#ffffff` | Card bg, popovers, inputs |
+| `--bg-2` | `bg-bg-2` | `#f5f5f5` | Secondary surfaces, hover states |
+| `--bg-3` | `bg-bg-3` | `#e5e5e5` | Sidebar, section bg, skeleton |
 | `--bg-4` | `bg-bg-4` | `#dcdcdc` | Disabled bg, muted backgrounds |
 
 #### Foreground
@@ -375,10 +377,10 @@ All buttons: `font-semibold`, `rounded-button`, `active:scale-95`, **min `gap-2`
 
 ### Cards
 
-- Border: `border border-border` (1px, `--border-2`)
-- Background: `bg-background` (`--bg-1`)
-- Hover: `hover:border-foreground`. Glass theme: CSS override to `rgba(255,255,255,0.85)`
-- Radius: `--radius-base` (0px Terminal)
+- Border: `border border-border-1` (1px, `--border-1`)
+- Background: `bg-card` (`--bg-1`)
+- Hover: `hover:bg-bg-2` (subtle bg shift, no border change)
+- Radius: `rounded` (uses `--radius-base`, 0px Terminal)
 - Padding: `--space-4` to `--space-5`
 - No box-shadow at rest
 
@@ -386,8 +388,14 @@ All buttons: `font-semibold`, `rounded-button`, `active:scale-95`, **min `gap-2`
 
 - Radius: `--radius-full` (9999px)
 - Padding: `4px 8px`
-- Font: `text-xs font-medium`
-- Variants: filled (bg + text) or outline (border + text)
+- Font: `text-xs font-semibold`
+- Variant groups:
+  - **Semantic** (text only): `default`, `success`, `error`, `warning`, `info`, `muted`
+  - **Pill** (border + rounded): `pill` — for tags, skills, categories
+  - **Filled** (solid bg): `filled-success`, `filled-error`, `filled-warning`, `filled-muted`
+  - **Outline** (border + light bg): `outline`, `outline-success`, `outline-error`, `outline-warning`, `outline-muted`
+  - **Count** (small pill for numbers): `count` (`bg-fg-1 text-bg-1`), `count-muted`, `count-primary`, `count-success`, `count-error`, `count-warning`, `count-info`
+- Count badges: `min-w-4 h-4 px-1 text-2xs font-semibold rounded-full`
 
 ### Form Inputs
 
@@ -399,25 +407,31 @@ All buttons: `font-semibold`, `rounded-button`, `active:scale-95`, **min `gap-2`
 
 ### Topbar
 
-- Height: `64px` (default)
-- Background: `bg-bg-2` (`--bg-2`)
-- **On scroll**: `border-b border-border` + `backdrop-blur-md` + `bg-bg-2/80` (glass effect)
-- Logo: `CLAWQUEST`, `text-base font-semibold`
-- Active link: sliding `bg-foreground` underline indicator (2px)
+- Height: `56px` (`h-14`)
+- Background: `bg-bg-base` (`--bg-base`)
+- **On scroll**: `border-b border-border` + `backdrop-blur-md` + `bg-bg-base/80` (glass effect)
+- **At rest**: `border-b border-border-1` (subtle)
+- Logo: `<BrandLogo animated />` — SVG icon (`h-9`) + text logo side by side
+- Divider: `h-4 w-px bg-border-2` between logo and nav (desktop only)
+- Active link: `text-primary font-semibold` (color change, no underline/bg)
+- Inactive link: `text-fg-1 font-semibold`, hover: `text-primary`
 - Nav font: `text-sm font-semibold`
+- Theme switcher: simple sun/moon toggle button (`variant="outline" iconOnly`)
 
 ### Tabs
 
-- Sliding indicator: `bg-foreground` behind active tab
-- Active: `text-background font-semibold` (inverted)
-- Inactive: `text-muted-foreground`, hover: `text-foreground`
-- Icons: Fill variant active, Line variant inactive
+- Active: `border-b-3 border-fg-1 text-fg-1 font-semibold`
+- Inactive: `border-b-3 border-transparent text-fg-3`, hover: `text-fg-1`
+- Gap: `gap-6` between tab items
+- No padding-x on tab items
+- Active badge: `count` variant, inactive badge: `count-muted` variant
+- Font: `text-base`
 
 ### View Toggle
 
-- Container: `border border-border p-0.5` with sliding indicator (`bg-accent`)
-- Active: `text-accent-foreground`
-- Inactive: `text-muted-foreground`, hover: `text-foreground`
+- Container: `border border-border p-0.5` with sliding indicator (`bg-fg-1`)
+- Active: `text-bg-1` (inverted on dark highlight)
+- Inactive: `text-fg-3`, hover: `text-fg-1`
 
 ---
 
@@ -445,9 +459,10 @@ All CSS variables mapped via `@theme` block in `apps/dashboard/src/index.css` (T
 
 | CSS Variable | Tailwind Class | Use |
 |-------------|----------------|-----|
-| `--bg-1` | `bg-bg-1` | Page bg, cards |
-| `--bg-2` | `bg-bg-2` | Body bg, navbar, secondary surfaces |
-| `--bg-3` | `bg-bg-3` | Sidebar, section bg, card hover |
+| `--bg-base` | `bg-bg-base` | Body/page bg, navbar |
+| `--bg-1` | `bg-bg-1` | Cards, popovers, inputs |
+| `--bg-2` | `bg-bg-2` | Secondary surfaces, hover states |
+| `--bg-3` | `bg-bg-3` | Sidebar, section bg, skeleton |
 | `--bg-4` | `bg-bg-4` | Disabled bg, muted backgrounds |
 | `--fg-1` | `text-fg-1` | Primary text |
 | `--fg-2` | `text-fg-2` | Secondary text |
@@ -484,7 +499,7 @@ All CSS variables mapped via `@theme` block in `apps/dashboard/src/index.css` (T
 
 | shadcn Token | Maps To | Use |
 |-------------|---------|-----|
-| `background` | `--bg-1` | `bg-background` → lightest bg |
+| `background` | `--bg-base` | `bg-background` → body/page bg |
 | `foreground` | `--fg-1` | `text-foreground` → darkest fg |
 | `card` | `--bg-1` | `bg-card` → card background |
 | `muted` | `--bg-4` | `bg-muted` → muted background |
@@ -509,24 +524,24 @@ No separate `tailwind.config.js` — uses Tailwind v4 CSS-first configuration.
 
 ## Multi-Theme System
 
-5 themes x 2 modes (light/dark) = 10 variants. All themes share the brand color `#FF574B`.
+Currently **only Terminal theme is active** (light/dark). Other themes (Glass, Brutalist, Minimal, Bauhaus) are temporarily disabled — CSS imports commented out, THEMES array reduced.
 
-| Theme | Font | Style | Radius | Shadows |
-|-------|------|-------|--------|---------|
-| **Terminal** (default) | Geist Mono | Flat, monospace, high-contrast | 0–8px | None (light), subtle + brand glow (dark) |
-| **Glass** | Inter | Frosted blur, translucent, rounded, backdrop-filter on popover/topbar | 8–20px | Soft layered (light), deeper translucent (dark) |
-| **Brutalist** | Space Grotesk | Heavy borders, hard offset shadows | 0px all | Black offset (light), white offset (dark) |
-| **Minimal** | Inter | Clean, airy, subtle | 4–12px | Very subtle (light), slightly stronger (dark) |
-| **Bauhaus** | DM Sans | Geometric, warm palette, bold | 0px + 50px xl | None (both modes) |
+| Theme | Font | Style | Status |
+|-------|------|-------|--------|
+| **Terminal** (default) | Geist Mono | Flat, monospace, high-contrast | **Active** |
+| Glass | Inter | Frosted blur, translucent | Disabled (TODO) |
+| Brutalist | Space Grotesk | Heavy borders, offset shadows | Disabled (TODO) |
+| Minimal | Inter | Clean, airy, subtle | Disabled (TODO) |
+| Bauhaus | DM Sans | Geometric, warm palette | Disabled (TODO) |
 
 ### Theme Architecture
 
 - CSS variables + `[data-theme="x"]` selector on `<html>`
 - Dark mode via `.dark` class on `<html>`
-- Theme definitions: `src/styles/themes/` (one file per theme: `terminal.css`, `glass.css`, `brutalist.css`, `minimal.css`, `bauhaus.css`)
+- Theme definitions: `src/styles/themes/` (one file per theme, imports in `themes/index.css`)
 - Base tokens (Terminal light): `src/index.css` `:root`
 - Context: `src/context/ThemeContext.tsx` (localStorage + system preference)
-- Switcher UI: `src/components/theme-switcher.tsx`
+- Switcher UI: `src/components/theme-switcher.tsx` — simple sun/moon toggle (light↔dark)
 - FOUC prevention: inline `<script>` in `index.html`
 
 ### What themes customize

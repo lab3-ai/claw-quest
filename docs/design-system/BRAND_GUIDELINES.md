@@ -63,17 +63,20 @@
 
 ### Primary Logo
 
-- **Wordmark:** "ClawQuest" — Custom claw SVG (see `/public/logo-clawquest.svg`)
-- **Icon:** Custom claw SVG (see `/public/appicon.svg`)
-- **Minimum size:** 24px height for icon, 120px width for wordmark
+- **Component:** `<BrandLogo>` (`src/components/brand-logo.tsx`)
+- **Variants:** `full` (icon + text), `icon` (icon only), `text` (text only)
+- **Sizes:** `xs` (scale-75), `sm` (scale-90), `md` (scale-100), `lg` (scale-125)
+- **Icon:** Inline SVG with animated blinking eyes (`h-9`, 36px)
+- **Wordmark:** `/public/logo-clawquest.svg`
+- **App icon:** `/public/appicon.svg`
 
 ### Usage Rules
 
-- Always use official SVG/PNG assets from `/public/`
+- Always use `<BrandLogo>` component — never raw SVG/img
+- Use `animated` prop for interactive contexts (navbar)
+- Use `dark` prop on dark backgrounds (inverts wordmark)
 - Do not stretch, rotate, or recolor the logo
 - Minimum clear space: 1x logo height on all sides
-- On dark backgrounds: use white wordmark variant
-- On light backgrounds: use dark wordmark variant
 
 ---
 
@@ -86,10 +89,11 @@
 | **ClawQuest Coral** | `#FF574B` | `--accent` / `--primary` | Brand accent, CTAs, links |
 | **Coral Hover** | `#E64A3F` | `--accent-hover` | Hover states |
 | **Coral Light** | `#FFF0EF` | `--accent-light` | Tinted backgrounds |
-| **Dark Text** | `#111111` | `--fg` | Primary text (near-black) |
-| **Secondary Text** | `#555555` | `--fg-secondary` | Secondary text |
-| **Muted Text** | `#888888` | `--fg-muted` | Placeholder, disabled |
-| **White** | `#FFFFFF` | `--bg` | Page backgrounds |
+| **Dark Text** | `#111111` | `--fg-1` | Primary text (near-black) |
+| **Secondary Text** | `#555555` | `--fg-2` | Secondary text |
+| **Muted Text** | `#888888` | `--fg-3` | Placeholder, disabled |
+| **Page Background** | `#FAFAFA` | `--bg-base` | Body/page background |
+| **Card White** | `#FFFFFF` | `--bg-1` | Cards, popovers, inputs |
 
 ### Actor Colors — Monochrome
 
@@ -124,13 +128,13 @@ Official brand colors for third-party integrations:
 
 ## Typography
 
-**Single font:** Geist Mono — monospace for everything (Terminal theme).
+**Two font families:** D-DIN Exp for headings, Geist Mono for body/UI.
 
 | Use | Font | Weight | Size |
 |-----|------|--------|------|
-| Headings | Geist Mono | 600 (semibold) | 18–28px |
+| Headings (h1–h6) | D-DIN Exp | 600 (semibold) | 18–28px |
 | Body | Geist Mono | 400 (normal) | 14–16px |
-| Labels/nav | Geist Mono | 500 (medium) | 12–14px |
+| Labels/nav | Geist Mono | 500–600 | 12–14px |
 | Code/IDs | Geist Mono | 400 (normal) | 14px |
 
 **Max weight: 600 (semibold).** Never use bold (700) or extrabold (800).

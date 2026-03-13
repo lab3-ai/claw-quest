@@ -10,15 +10,15 @@
 ### Standard Page
 
 ```
-[Topbar 64px, sticky]
+[Topbar 56px, sticky]
 [Page Header: title + actions]
-[Content area, max-w-7xl centered]
+[Content area, max-w-6xl centered]
 [Footer]
 ```
 
-- Topbar: sticky, `z-50`, `bg-background` + bottom border, `h-16`
+- Topbar: sticky, `z-50`, `bg-bg-base` + bottom border, `h-14`
 - Page header: `<PageTitle>` component — Geist Mono, `text-2xl` (24px), `font-semibold` + right-aligned actions
-- Content: parent layout provides `max-w-7xl mx-auto px-6 py-5`
+- Content: parent layout provides `max-w-6xl mx-auto px-6 py-5`
 - Pages should NOT add their own max-width container — inherit from layout
 
 ### Two-Column Detail
@@ -60,10 +60,10 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 +----------------------------------+
 ```
 
-- Hover: `hover:bg-background` (lightest bg, no shadow). Glass theme overrides to brighter translucent white
+- Hover: `hover:bg-bg-2` (subtle bg shift, no shadow)
 - Click: entire card is clickable (`cursor-pointer`)
 - Badge colors: status-based (see DESIGN_SYSTEM.md)
-- Border: `border border-border-muted` (1px, lightest border token, square corners)
+- Border: `border border-border-1` (1px, lightest border token, square corners)
 
 #### Responsive Behavior
 
@@ -163,11 +163,13 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 
 ### Navigation / Topbar
 
-- Active link: `border-b-2 border-foreground` (underline indicator, not bg fill)
-- Hover: `hover:text-foreground`
+- Active link: `text-primary font-semibold` (color change, no underline/bg)
+- Inactive link: `text-fg-1 font-semibold`, hover: `hover:text-primary`
+- Divider: `h-4 w-px bg-border-2` between logo and nav (desktop only)
 - Mobile: hamburger icon, Sheet slide-in from right
 - Breadcrumbs: only on 3+ level deep pages
-- Logo: `CLAWQUEST`, `text-base font-semibold` — weight only, no color
+- Logo: `<BrandLogo animated />` — SVG icon (`h-9`) + text logo
+- Theme toggle: sun/moon icon button (light↔dark)
 
 ---
 
@@ -177,7 +179,7 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 
 | Do | Don't |
 |----|-------|
-| Let parent layout handle `max-w-7xl` | Add extra max-width wrappers inside pages |
+| Let parent layout handle `max-w-6xl` | Add extra max-width wrappers inside pages |
 | Align content to 4px grid | Arbitrary spacing values |
 | Stack columns on mobile | Horizontal scroll on mobile |
 | Reserve space for async content (skeleton) | Layout shifts on load |
@@ -187,7 +189,7 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 | Do | Don't |
 |----|-------|
 | Use Tailwind design token classes (`text-base`, `text-error`) | Hardcode arbitrary values (`text-[14px]`, `text-red-600`) |
-| Use `border border-border-muted` for cards | Use heavy borders (`border-2 border-border-strong`) on cards |
+| Use `border border-border-1` for cards | Use heavy borders (`border-2 border-border-strong`) on cards |
 | Use `border-border` for inner dividers | Hardcode border colors |
 | Flat design — no shadows at rest | Add `shadow-sm/md` to cards |
 | Use `cn()` for conditional classes | Ternary in className strings |
@@ -233,13 +235,13 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 **Rules:**
 - Mobile-first: base styles = mobile, then `md:` tablet, `xl:` desktop
 - Use `sm:` (640px) only for minor tweaks (show/hide). Avoid `lg:`/`2xl:`
-- Container: `max-w-7xl` (1280px) centered with `mx-auto px-6`
+- Container: `max-w-6xl` (1152px) centered with `mx-auto px-6`
 
 **Pattern examples:**
 ```
 <div className="flex flex-col md:flex-row md:gap-4 xl:gap-6">
 <div className="hidden md:block">
-<div className="w-full xl:max-w-7xl xl:mx-auto">
+<div className="w-full xl:max-w-6xl xl:mx-auto">
 ```
 
 ### Per-Component Responsive

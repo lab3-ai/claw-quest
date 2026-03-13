@@ -40,9 +40,10 @@
 
 | Foreground | Background | Ratio | Level | Notes |
 |------------|------------|-------|-------|-------|
-| `#e0e0e0` (fg) | `#0a0a0a` (bg) | 15.0:1 | AAA | Primary text |
-| `#a0a0a0` (fg-secondary) | `#0a0a0a` (bg) | 7.6:1 | AAA | Secondary text |
-| `#666666` (fg-muted) | `#0a0a0a` (bg) | 3.4:1 | AA Large | Muted text — use >= 18px or pair with icon |
+| `#e0e0e0` (fg) | `#050505` (bg-base) | 16.2:1 | AAA | Primary text on page bg |
+| `#e0e0e0` (fg) | `#0e0e0e` (bg-1) | 15.0:1 | AAA | Primary text on cards |
+| `#a0a0a0` (fg-secondary) | `#050505` (bg-base) | 8.2:1 | AAA | Secondary text |
+| `#666666` (fg-muted) | `#050505` (bg-base) | 3.7:1 | AA Large | Muted text — use >= 18px or pair with icon |
 | `#000000` (black) | `#FF6B61` (accent) | 7.5:1 | AAA | Button text |
 | `#FF6B61` (accent) | `#3D1512` (accent-light) | 5.7:1 | AA | Accent on dark accent bg |
 | `#22c55e` (success) | `#052e16` (success-light) | 6.5:1 | AA | Success in dark mode |

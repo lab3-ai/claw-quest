@@ -69,8 +69,7 @@ export async function getActiveUpstreams(db: D1Database): Promise<UpstreamUrl[]>
   const result = await db
     .prepare('SELECT * FROM upstream_urls WHERE is_active = 1 ORDER BY priority DESC, id ASC')
     .all<UpstreamUrl>();
-    console.log("result.results: ", result.results);
-    
+
   return result.results;
 }
 

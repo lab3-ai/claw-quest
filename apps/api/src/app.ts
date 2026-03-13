@@ -85,6 +85,14 @@ server.register(cors, {
     credentials: true,
 });
 
+// ─── Rate Limiting (security) ────────────────────────────────────────────────
+import rateLimit from '@fastify/rate-limit';
+server.register(rateLimit, {
+    global: false, // Opt-in per route via config.rateLimit
+    max: 100,
+    timeWindow: '1 minute',
+});
+
 // ─── Supabase Auth Middleware ────────────────────────────────────────────────
 // Verifies the Supabase access_token sent by the frontend,
 // then finds-or-creates a Prisma User row so route handlers get `request.user.id`.
@@ -257,13 +265,11 @@ server.register(web3SkillsRoutes, { prefix: '/web3-skills' });
 import { TelegramService } from './modules/telegram/telegram.service';
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+let telegramService: TelegramService | null = null;
+
 if (TELEGRAM_BOT_TOKEN) {
-    const telegramService = new TelegramService(server, TELEGRAM_BOT_TOKEN);
+    telegramService = new TelegramService(server, TELEGRAM_BOT_TOKEN);
     server.decorate('telegram', telegramService);
-    telegramService.startPolling().catch((err) => {
-        console.error('⚠️  Telegram bot polling failed (non-fatal):', err.message);
-        // Don't crash the server — bot can still send messages via API
-    });
 } else {
     console.warn('⚠️  Missing TELEGRAM_BOT_TOKEN — Telegram bot will not start');
 }
@@ -317,6 +323,14 @@ const start = async () => {
         await server.listen({ port, host: '::' });
         console.log(`Server listening on http://localhost:${port}`);
         console.log(`Docs available at http://localhost:${port}/docs`);
+
+        // Start Telegram bot polling after server is ready
+        if (telegramService) {
+            telegramService.startPolling().catch((err) => {
+                console.error('⚠️  Telegram bot polling failed (non-fatal):', err.message);
+                // Don't crash the server — bot can still send messages via API
+            });
+        }
     } catch (err) {
         server.log.error(err);
         await prisma.$disconnect();

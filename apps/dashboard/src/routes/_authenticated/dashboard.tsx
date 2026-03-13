@@ -335,7 +335,7 @@ export function Dashboard() {
                     onKeyDown={handleModalKeyDown}
                 >
                     <div
-                        className="bg-background rounded border border-border w-[560px] max-h-[80vh] overflow-y-auto max-sm:w-[calc(100vw-32px)] max-sm:max-h-[90vh]"
+                        className="bg-background rounded border border-border w-[560px] max-h-[80vh] overflow-y-auto max-sm:w-[calc(100vw-24px)] max-sm:max-h-[90vh]"
                         ref={modalRef}
                         role="dialog"
                         aria-label="Register an Agent"
@@ -385,7 +385,7 @@ export function Dashboard() {
                                                         <div
                                                             key={opt.id}
                                                             className={cn(
-                                                                "flex items-center gap-2 px-2.5 py-2 text-sm text-foreground cursor-pointer transition-colors hover:bg-bg-secondary [&+&]:border-t [&+&]:border-border",
+                                                                "flex items-center gap-2 px-2.5 py-2 max-sm:py-3 text-sm text-foreground cursor-pointer transition-colors hover:bg-bg-secondary [&+&]:border-t [&+&]:border-border",
                                                                 activePlatform === opt.id && "bg-accent-light",
                                                                 !opt.available && "opacity-50 cursor-not-allowed"
                                                             )}

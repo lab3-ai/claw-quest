@@ -143,7 +143,7 @@ Add to `telegram.service.ts`:
 ```
 📋 Available Quests:
 
-1. Follow @ClawQuest on X — 50 USDC (10 slots left)
+1. Follow @clawquest_ai on X — 50 USDC (10 slots left)
 2. Discord Role Quest — 100 USDC (3 slots left)
 3. ...
 

@@ -135,6 +135,34 @@ export async function githubBountyRoutes(app: FastifyInstance) {
         }
     );
 
+    // ── GET /my-submissions — PRs submitted by the current user ──
+    app.get(
+        '/my-submissions',
+        {
+            onRequest: [app.authenticate],
+            schema: {
+                tags: ['GitHub Bounties'],
+                summary: 'Get all PR submissions made by the current user',
+                security: [{ bearerAuth: [] }],
+            },
+        },
+        async (request) => {
+            const submissions = await app.prisma.gitHubBountySubmission.findMany({
+                where: { userId: request.user.id },
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    bounty: {
+                        select: {
+                            id: true, title: true, repoOwner: true, repoName: true,
+                            rewardAmount: true, rewardType: true, status: true,
+                        },
+                    },
+                },
+            });
+            return submissions;
+        }
+    );
+
     // ── POST / — Create a single bounty ──
     app.post(
         '/',
@@ -271,34 +299,6 @@ export async function githubBountyRoutes(app: FastifyInstance) {
             if ('error' in result) return reply.status(400).send({ error: { message: result.error, code: 'SUBMISSION_ERROR' } });
 
             return reply.status(201).send(result.submission);
-        }
-    );
-
-    // ── GET /my-submissions — PRs submitted by the current user ──
-    app.get(
-        '/my-submissions',
-        {
-            onRequest: [app.authenticate],
-            schema: {
-                tags: ['GitHub Bounties'],
-                summary: 'Get all PR submissions made by the current user',
-                security: [{ bearerAuth: [] }],
-            },
-        },
-        async (request) => {
-            const submissions = await app.prisma.gitHubBountySubmission.findMany({
-                where: { userId: request.user.id },
-                orderBy: { createdAt: 'desc' },
-                include: {
-                    bounty: {
-                        select: {
-                            id: true, title: true, repoOwner: true, repoName: true,
-                            rewardAmount: true, rewardType: true, status: true,
-                        },
-                    },
-                },
-            });
-            return submissions;
         }
     );
 

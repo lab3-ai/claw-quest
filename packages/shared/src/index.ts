@@ -83,7 +83,7 @@ export const QuestTaskSchema = z.object({
         'join_server', 'verify_role', 'join_channel',
     ]),
     label: z.string().min(1).max(100),
-    params: z.record(z.string()),
+    params: z.record(z.string(), z.unknown()),
     requireTagFriends: z.boolean().optional().default(false),
 });
 export type QuestTask = z.infer<typeof QuestTaskSchema>;

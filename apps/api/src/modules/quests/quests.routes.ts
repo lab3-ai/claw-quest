@@ -696,7 +696,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     200: z.object({
                         valid: z.boolean(),
                         error: z.string().optional(),
-                        meta: z.record(z.string()).optional(),
+                        meta: z.record(z.string(), z.string()).optional(),
                     }),
                 },
             },
@@ -725,7 +725,7 @@ export async function questsRoutes(server: FastifyInstance) {
                             actionType: z.string(),
                             valid: z.boolean(),
                             error: z.string().optional(),
-                            meta: z.record(z.string()).optional(),
+                            meta: z.record(z.string(), z.string()).optional(),
                         })),
                     }),
                 },
@@ -1185,7 +1185,7 @@ export async function questsRoutes(server: FastifyInstance) {
                         taskType: z.string(),
                         proofUrl: z.string().url().optional(),
                         result: z.string().optional(),
-                        meta: z.record(z.unknown()).optional(),
+                        meta: z.record(z.string(), z.unknown()).optional(),
                     })).min(1),
                 }),
                 response: {

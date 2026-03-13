@@ -1,10 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { CountdownTimer } from "@/components/waitlist/countdown-timer"
 import { WAITLIST_TOKEN_KEY } from "@/components/waitlist/telegram-join-button"
-import { SocialTasks } from "@/components/waitlist/social-tasks"
 import { WaitlistSuccessModal } from "@/components/waitlist/waitlist-success-modal"
-import { DraftQuestModal } from "@/components/waitlist/draft-quest-modal"
-import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
+import { SocialTasks } from "@/components/waitlist/social-tasks"
 import { AnimatedCounter } from "@/components/waitlist/animated-counter"
 import { TierProgress } from "@/components/waitlist/tier-progress"
 import { HeroGridBg } from "@/components/waitlist/hero-grid-bg"
@@ -64,7 +62,6 @@ interface WaitlistEntry {
     referralCode: string
     role: string | null
     firstName: string | null
-    telegramId: string | null
 }
 
 /**
@@ -74,7 +71,6 @@ interface WaitlistEntry {
 function useWaitlistPolling() {
     const [entry, setEntry] = useState<WaitlistEntry | null>(null)
     const [showModal, setShowModal] = useState(false)
-    const [showDraftModal, setShowDraftModal] = useState(false)
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
     const tokenRef = useRef<string | null>(null)
 
@@ -94,7 +90,6 @@ function useWaitlistPolling() {
                         referralCode: data.referralCode,
                         role: data.role ?? null,
                         firstName: data.firstName ?? null,
-                        telegramId: data.telegramId ?? null,
                     })
                     const seenKey = `cq_waitlist_seen_${token}`
                     if (!localStorage.getItem(seenKey)) {
@@ -134,7 +129,7 @@ function useWaitlistPolling() {
         setEntry((prev) => (prev ? { ...prev, role: nextRole } : prev))
     }
 
-    return { entry, showModal, closeModal, openModal, setRole, showDraftModal, setShowDraftModal }
+    return { entry, showModal, closeModal, openModal, setRole }
 }
 
 const NAV_LINKS = [
@@ -188,7 +183,7 @@ function WaitlistNavbar() {
                     className="-ml-2 shrink-0"
                     aria-label="Scroll to top"
                 >
-                    <BrandLogo dark size="sm" animated />
+                    <BrandLogo dark size="sm" />
                 </button>
 
                 {/* Desktop nav */}
@@ -285,7 +280,7 @@ export function Waitlist() {
     const [mascotMood, setMascotMood] = useState<MascotMood>("normal")
     const { stats, isLoading: statsLoading } = usePlatformStats()
     const referralCode = useReferralCode()
-    const { entry, showModal, closeModal, openModal, setRole, showDraftModal, setShowDraftModal } = useWaitlistPolling()
+    const { entry, showModal, closeModal, openModal, setRole } = useWaitlistPolling()
 
     return (
         <div
@@ -304,12 +299,6 @@ export function Waitlist() {
                     firstName={entry.firstName}
                     onClose={closeModal}
                     onRoleSaved={setRole}
-                />
-            )}
-            {showDraftModal && entry?.telegramId && (
-                <DraftQuestModal
-                    telegramId={entry.telegramId}
-                    onClose={() => setShowDraftModal(false)}
                 />
             )}
             <WaitlistNavbar />
@@ -373,20 +362,23 @@ export function Waitlist() {
                             </p>
                         }
                     </div>
+                    {/* Reward summary */}
+                    <div className="relative z-10 flex flex-col items-center gap-1 font-mono text-xs sm:text-sm text-muted-foreground">
+                        <p><span className="text-white">Top 100</span> — OG Pioneer badge + 500 XP head start</p>
+                        <p><span className="text-white">Top 1,000</span> — Priority access to top quests</p>
+                        <p><span className="text-white">Every spot</span> — Early access to the quest marketplace</p>
+                    </div>
+
                     {/* CTA */}
                     <div
-                        className="relative z-10 w-full flex flex-col items-center gap-3"
-                        id="telegram-join-button"
+                        className="relative z-10 w-full flex justify-center"
                         onMouseEnter={() => setMascotMood("happy")}
                         onMouseLeave={() => setMascotMood("normal")}
                     >
-                        {entry ? (
-                            <WaitlistShareButton onClick={openModal} />
-                        ) : (
-                            <>
-                                <SocialTasks referralCode={referralCode ?? undefined} />
-                            </>
-                        )}
+                        {entry
+                            ? <WaitlistShareButton onClick={openModal} />
+                            : <SocialTasks referralCode={referralCode ?? undefined} />
+                        }
                     </div>
 
                 </section>
@@ -505,40 +497,13 @@ export function Waitlist() {
 
                                 {/* CTA side */}
                                 <div className="flex shrink-0 flex-col items-start gap-2 sm:items-center">
-                                    {entry?.telegramId ? (
-                                        <button
-                                            onClick={() => setShowDraftModal(true)}
-                                            className="group inline-flex items-center gap-2 rounded-lg bg-[var(--wl-accent)] px-6 py-3 font-mono text-sm font-semibold text-white transition-colors hover:bg-[var(--wl-accent-hover)] active:scale-95"
-                                        >
-                                            List Your First Quest
-                                            <span className="transition-transform group-hover:translate-x-0.5">→</span>
-                                        </button>
-                                    ) : (
-                                        <div className="flex flex-col items-start gap-2 sm:items-center w-full sm:w-auto">
-                                            <button
-                                                disabled
-                                                className="group inline-flex items-center gap-2 rounded-lg bg-neutral-800/50 border border-neutral-700 px-6 py-3 font-mono text-sm font-semibold text-neutral-500 cursor-not-allowed opacity-60"
-                                                title="Join the waitlist via Telegram first"
-                                            >
-                                                List Your First Quest
-                                                <span>→</span>
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    const element = document.getElementById('telegram-join-button')
-                                                    if (element) {
-                                                        element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                                                    }
-                                                }}
-                                                className="flex items-center gap-1.5 rounded-md border border-[var(--wl-accent)]/20 bg-[var(--wl-accent)]/5 px-3 py-1.5 transition-colors hover:bg-[var(--wl-accent)]/10 hover:border-[var(--wl-accent)]/30 cursor-pointer"
-                                            >
-                                                <ArrowUpLine size={14} className="text-[var(--wl-accent)]" />
-                                                <p className="font-mono text-xs text-[var(--wl-accent)]">
-                                                    Join Telegram waitlist first
-                                                </p>
-                                            </button>
-                                        </div>
-                                    )}
+                                    <a
+                                        href="/dashboard"
+                                        className="group inline-flex items-center gap-2 rounded-lg bg-[var(--wl-accent)] px-6 py-3 font-mono text-sm font-semibold text-white no-underline transition-colors hover:bg-[var(--wl-accent-hover)] active:scale-95"
+                                    >
+                                        List Your First Quest
+                                        <span className="transition-transform group-hover:translate-x-0.5">→</span>
+                                    </a>
                                     <p className="font-mono text-xs text-muted-foreground">
                                         Early sponsor spots are limited
                                     </p>
@@ -567,9 +532,6 @@ export function Waitlist() {
                             <p className="font-mono text-sm text-muted-foreground">
                                 Move up 10 spots for every friend who joins with your link.
                             </p>
-                            <p className="font-mono text-xs text-neutral-500">
-                                → 3 friends = OG Pioneer range if you're in the top 130.
-                            </p>
                         </div>
 
                         {/* Tier Progress card */}
@@ -593,11 +555,6 @@ export function Waitlist() {
                         <p className="font-mono text-sm sm:text-base leading-relaxed text-muted-foreground">
                             The countdown is live. Early access is first come, first served.
                         </p>
-                        <div className="w-full max-w-md flex flex-col items-center gap-1 font-mono text-xs sm:text-sm text-muted-foreground">
-                            <p><span className="text-white font-semibold">Top 100</span> — OG Pioneer badge + 500 XP head start</p>
-                            <p><span className="text-white font-semibold">Top 1,000</span> — Priority access to top quests</p>
-                            <p><span className="text-white font-semibold">Every spot</span> — First to claim quests when real USDC rewards go live</p>
-                        </div>
                         {entry
                             ? <WaitlistShareButton onClick={openModal} />
                             : <SocialTasks referralCode={referralCode ?? undefined} />
@@ -618,8 +575,8 @@ export function Waitlist() {
                         {/* Social links */}
                         <div className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1">
                             {[
-                                { label: "X", href: "https://x.com/clawquest_ai" },
-                                { label: "Telegram", href: `https://t.me/${TELEGRAM_BOT_USERNAME}` },
+                                { label: "Twitter / X", href: "https://twitter.com/ClawQuestAI" },
+                                { label: "Telegram", href: "https://t.me/ClawQuest_aibot" },
                                 { label: "Discord", href: "https://discord.gg/clawquest" },
                                 { label: "GitHub", href: "https://github.com/clawquest" },
                                 { label: "Docs", href: "https://api.clawquest.ai/docs" },
@@ -641,7 +598,7 @@ export function Waitlist() {
                         </div>
                         {/* Legal */}
                         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-                            <span className="font-mono text-xs text-muted-foreground">© 2025 ClawQuest</span>
+                            <span className="font-mono text-xs text-muted-foreground">© 2026 ClawQuest</span>
                             <a href="/privacy.html" className="font-mono text-xs text-muted-foreground no-underline hover:text-white">Privacy</a>
                             <a href="/terms.html" className="font-mono text-xs text-muted-foreground no-underline hover:text-white">Terms</a>
                         </div>

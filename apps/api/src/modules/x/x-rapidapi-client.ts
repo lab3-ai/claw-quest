@@ -7,7 +7,7 @@
  *
  * Env vars:
  *   RAPID_API_KEY                      — RapidAPI key (required)
- *   TWITTER_VERIFY_MENTION_CLAWQUEST   — require @clawquest mention (default: true)
+ *   TWITTER_VERIFY_MENTION_CLAWQUEST   — require @clawquest_ai mention (default: true)
  */
 
 import { extractTweetId, normaliseHandle } from './x-utils'
@@ -39,7 +39,7 @@ export interface TweetVerifyOptions {
     expectedAuthorUsername?: string
     /** Code that must appear somewhere in the tweet text */
     verificationCode?: string
-    /** Require tweet to mention @clawquest (default: env TWITTER_VERIFY_MENTION_CLAWQUEST, fallback true) */
+    /** Require tweet to mention @clawquest_ai  (default: env TWITTER_VERIFY_MENTION_CLAWQUEST, fallback true) */
     requireMentionClawquest?: boolean
 }
 
@@ -190,10 +190,10 @@ function parseTweetFlexible(id: string, raw: unknown, root?: unknown): TweetData
     const noteTweet = (obj.note_tweet as { note_tweet_results?: { result?: { text?: string } } })?.note_tweet_results?.result?.text
     const text =
         typeof obj.full_text === 'string' ? obj.full_text
-        : typeof obj.text === 'string' ? obj.text
-        : typeof legacy?.full_text === 'string' ? legacy.full_text
-        : typeof noteTweet === 'string' ? noteTweet
-        : null
+            : typeof obj.text === 'string' ? obj.text
+                : typeof legacy?.full_text === 'string' ? legacy.full_text
+                    : typeof noteTweet === 'string' ? noteTweet
+                        : null
     if (!text) {
         const data = obj.data as Record<string, unknown> | undefined
         if (data && typeof data === 'object') {
@@ -309,32 +309,103 @@ export async function verifyTweet(
         return { verified: false, reason: 'Twitter verification not configured (missing RAPID_API_KEY)' }
     }
 
-    // Step 2: Fetch tweet (twttrapi: GET /tweet-v2?pid=)
-    let tweet: TweetData | null
-    try {
-        const res = await fetch(`${RAPIDAPI_BASE}/tweet-v2?pid=${encodeURIComponent(tweetId)}`, {
-            headers: rapidApiHeaders(apiKey),
-            signal: AbortSignal.timeout(TIMEOUT_MS),
-        })
+    // Step 2: Fetch tweet (try multiple endpoints for better compatibility)
+    let tweet: TweetData | null = null
+    const endpoints = [
+        `/tweet-v2?pid=${encodeURIComponent(tweetId)}`,
+        `/get-tweet?tweet_id=${encodeURIComponent(tweetId)}`,
+    ]
 
-        if (res.status === 429) {
-            return { verified: false, reason: 'Rate limit exceeded — please try again later' }
-        }
-        if (!res.ok) {
-            return { verified: false, reason: 'Tweet not found' }
-        }
+    let lastError: string | null = null
 
-        const data = await res.json() as RapidApiTweetResponse
-        tweet = parseTweet(tweetId, data)
-    } catch (err: any) {
-        if (err?.name === 'TimeoutError') {
-            return { verified: false, reason: 'Twitter API timeout — please try again' }
+    for (const endpoint of endpoints) {
+        try {
+            const url = `${RAPIDAPI_BASE}${endpoint}`
+            const res = await fetch(url, {
+                headers: rapidApiHeaders(apiKey),
+                signal: AbortSignal.timeout(TIMEOUT_MS),
+            })
+
+            if (res.status === 429) {
+                return { verified: false, reason: 'Rate limit exceeded — please try again later' }
+            }
+
+            if (res.status === 402) {
+                return { verified: false, reason: 'RapidAPI payment required — your API key may have exceeded its quota or subscription limit' }
+            }
+
+            if (!res.ok) {
+                // Try to get error details from response
+                let errorDetail = ''
+                let errorBody = ''
+                try {
+                    errorBody = await res.text()
+                    if (errorBody) {
+                        const parsed = JSON.parse(errorBody)
+                        errorDetail = parsed.message || parsed.error || parsed.detail || errorBody.substring(0, 200)
+
+                        // Check for common RapidAPI error messages
+                        if (errorDetail.toLowerCase().includes('quota') ||
+                            errorDetail.toLowerCase().includes('credit') ||
+                            errorDetail.toLowerCase().includes('subscription')) {
+                            return { verified: false, reason: `RapidAPI quota exceeded: ${errorDetail}` }
+                        }
+                    }
+                } catch {
+                    errorDetail = `HTTP ${res.status}`
+                }
+
+                // Store error for fallback to next endpoint
+                lastError = `Endpoint ${endpoint}: ${res.status} - ${errorDetail || 'Unknown error'}`
+
+                // If 404, try next endpoint; otherwise return error immediately
+                if (res.status === 404) {
+                    continue // Try next endpoint
+                }
+
+                if (res.status === 403 || res.status === 401) {
+                    return { verified: false, reason: 'Twitter API authentication failed — please check API configuration or subscription status' }
+                }
+
+                // For other errors, try next endpoint if available
+                if (endpoint !== endpoints[endpoints.length - 1]) {
+                    continue
+                }
+
+                return { verified: false, reason: `Tweet verification failed (${res.status}): ${errorDetail || 'Unknown error'}` }
+            }
+
+            // Success - parse response
+            const data = await res.json() as RapidApiTweetResponse
+            tweet = parseTweet(tweetId, data)
+
+            // If successfully parsed, break out of loop
+            if (tweet) {
+                break
+            }
+
+            // If parse failed, try next endpoint
+            lastError = `Failed to parse response from ${endpoint}`
+        } catch (err: any) {
+            lastError = `Error fetching from ${endpoint}: ${err?.message || 'Unknown error'}`
+            // Try next endpoint if available
+            if (endpoint !== endpoints[endpoints.length - 1]) {
+                continue
+            }
+
+            if (err?.name === 'TimeoutError') {
+                return { verified: false, reason: 'Twitter API timeout — please try again' }
+            }
+            return { verified: false, reason: `Tweet verification error: ${err?.message || 'Unknown error'}` }
         }
-        return { verified: false, reason: 'Tweet not found' }
     }
 
+    // If we get here and tweet is still null, all endpoints failed
     if (!tweet) {
-        return { verified: false, reason: 'Tweet not found' }
+        if (lastError?.includes('404')) {
+            return { verified: false, reason: `Tweet not found (tweet ID: ${tweetId}) — the tweet may have been deleted, is private, or the URL is invalid. Error: ${lastError}` }
+        }
+        return { verified: false, reason: `Failed to fetch tweet: ${lastError || 'All endpoints failed'}` }
     }
 
     // Step 3a: Check author
@@ -350,11 +421,11 @@ export async function verifyTweet(
         }
     }
 
-    // Step 3b: Check @clawquest mention
+    // Step 3b: Check @clawquest_ai mention
     if (requireMention) {
         const hasMention =
-            tweet.mentionedHandles.includes('clawquest') ||
-            tweet.text.toLowerCase().includes('@clawquest')
+            tweet.mentionedHandles.includes('clawquest_ai') ||
+            tweet.text.toLowerCase().includes('@clawquest_ai')
 
         if (!hasMention) {
             return {

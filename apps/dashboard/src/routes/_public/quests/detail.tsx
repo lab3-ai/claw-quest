@@ -565,13 +565,14 @@ export function QuestDetail() {
     const isCompleted = quest.status === "completed"
 
     // Compute LLM token budget for LLMTOKEN_OPENROUTER quests
-    // Formula: total = totalFunded * inputPricePer1M * 1_000_000
+    // Formula: total = (totalFunded / inputPricePer1M) * 1_000_000
+    // e.g. inputPricePer1M=3.5 means $3.5 buys 1M tokens, so $2 => (2/3.5)*1M tokens
     const llmTokenBudget = (() => {
         if (quest.rewardType !== REWARD_TYPE.LLMTOKEN_OPENROUTER) return null
         const pricePer1M = (quest as any).llmModel?.inputPricePer1M
         const funded = Number(quest.totalFunded ?? 0)
         if (pricePer1M && funded > 0) {
-            const total = funded * pricePer1M * 1_000_000
+            const total = (funded / pricePer1M) * 1_000_000
             return { perWinner: total / (quest.totalSlots ?? 1), total }
         }
         return null

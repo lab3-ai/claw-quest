@@ -70,12 +70,10 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
-.env
-.env.test
-.env.local
-.env*.local
-apps/api/.env
-apps/dashboard/.env
+.env*
+apps/api/.env*
+apps/dashboard/.env*
+contracts/.env*
 # Note: .env.development and .env.production are committed (no secrets!)
 # They contain non-secret defaults for testnet/mainnet environments.
 
@@ -134,7 +132,6 @@ dist
 !.vscode/settings.json
 .DS_Store
 .vercel
-.env*.local
 .pnpm-store/
 vercel.env
 _tmp_*
@@ -143,9 +140,14 @@ _tmp_*
 docs/design-system/WORKFLOW-LOG.md
 docs/design-system/DECISIONS-LOG.md
 docs/design-system/STATUS.md
-.env
-apps/api/.env
-apps/dashboard/.env
 # Claude/ClaudeKit hooks logs (whole directory)
 .claude/hooks/.logs/
 reference-skill
+# Claude Code artifacts
+.claude/worktrees/
+*.bak
+
+# Agent plans and reports
+apps/api/plans/
+plans/reports/
+plans/visuals/

@@ -318,6 +318,17 @@ export async function executeDistribute(
     const quest = await prisma.quest.findUnique({ where: { id: questId } });
     if (!quest) throw new Error('Quest not found');
 
+    // Guard: check quest status
+    if (quest.status === 'completed') throw new Error('Quest already distributed');
+    if (quest.status !== 'live') throw new Error('Quest must be live to distribute');
+    if (quest.fundingStatus !== 'confirmed') throw new Error('Quest is not funded');
+
+    // Guard: check no existing pending/paid payouts
+    const existingPayouts = await prisma.questParticipation.count({
+        where: { questId, payoutStatus: { in: ['pending', 'paid'] } },
+    });
+    if (existingPayouts > 0) throw new Error('Distribution already in progress');
+
     const totalFunded = Number(quest.totalFunded ?? quest.rewardAmount);
     const payouts = await calculateDistribution(prisma, questId, totalFunded);
     if (payouts.length === 0) throw new Error('No eligible participants for distribution');

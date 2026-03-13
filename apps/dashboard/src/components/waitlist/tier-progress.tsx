@@ -27,6 +27,9 @@ export function TierProgress({ totalSignups, position, email }: TierProgressProp
         return () => obs.disconnect()
     }, [])
 
+    // Track remaining signups across tiers
+    let remainingSignups = totalSignups
+
     return (
         <div ref={ref} className="w-full space-y-5">
             {/* Current position indicator */}
@@ -47,8 +50,9 @@ export function TierProgress({ totalSignups, position, email }: TierProgressProp
             )}
 
             {TIERS.map((tier) => {
-                const filled = Math.min(totalSignups, tier.max)
+                const filled = Math.min(remainingSignups, tier.max)
                 const pct = (filled / tier.max) * 100
+                remainingSignups = Math.max(0, remainingSignups - tier.max)
 
                 return (
                     <div key={tier.name} className="space-y-2">

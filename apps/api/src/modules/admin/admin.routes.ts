@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { createHmac, timingSafeEqual } from 'crypto';
 import * as bcrypt from 'bcryptjs';
+import rateLimit from '@fastify/rate-limit';
 import { requireAdmin } from './admin.middleware';
 import { getAdminPrisma, isTestnetDbConfigured, type AdminEnv } from './admin.prisma';
 import {
@@ -31,7 +32,11 @@ const envQuerySchema = z.object({
 const JWT_EXPIRY_SECONDS = 60 * 60 * 8; // 8 hours
 
 function getJwtSecret(): string {
-    return process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET || 'admin-secret-change-me';
+    const secret = process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET;
+    if (!secret) {
+        throw new Error('ADMIN_JWT_SECRET or JWT_SECRET environment variable must be set');
+    }
+    return secret;
 }
 
 function signAdminJwt(payload: { id: string; email: string; role: string }): string {
@@ -93,6 +98,12 @@ export async function adminLoginRoutes(server: FastifyInstance) {
                     email: z.string().email(),
                     password: z.string().min(1),
                 }),
+            },
+            config: {
+                rateLimit: {
+                    max: 5,
+                    timeWindow: '15 minutes',
+                },
             },
         },
         async (request, reply) => {
@@ -242,19 +253,19 @@ export async function adminRoutes(server: FastifyInstance) {
                 params: z.object({ id: z.string().uuid() }),
                 querystring: envQuerySchema,
                 body: z.object({
-                    title: z.string().optional(),
-                    description: z.string().optional(),
-                    sponsor: z.string().optional(),
-                    type: z.string().optional(),
-                    status: z.string().optional(),
-                    rewardAmount: z.number().optional(),
-                    rewardType: z.string().optional(),
-                    totalSlots: z.number().optional(),
-                    tags: z.array(z.string()).optional(),
-                    requiredSkills: z.array(z.string()).optional(),
-                    expiresAt: z.string().nullable().optional(),
-                    startAt: z.string().nullable().optional(),
-                    fundingStatus: z.string().optional(),
+                    title: z.string().max(200).optional(),
+                    description: z.string().max(10000).optional(),
+                    sponsor: z.string().max(200).optional(),
+                    type: z.string().max(50).optional(),
+                    status: z.string().max(50).optional(),
+                    rewardAmount: z.number().min(0).max(1000000000).optional(),
+                    rewardType: z.string().max(50).optional(),
+                    totalSlots: z.number().int().min(1).max(1000000).optional(),
+                    tags: z.array(z.string().max(100)).max(50).optional(),
+                    requiredSkills: z.array(z.string().max(100)).max(50).optional(),
+                    expiresAt: z.string().max(50).nullable().optional(),
+                    startAt: z.string().max(50).nullable().optional(),
+                    fundingStatus: z.string().max(50).optional(),
                 }),
             },
         },
@@ -307,8 +318,8 @@ export async function adminRoutes(server: FastifyInstance) {
                 params: z.object({ id: z.string().uuid() }),
                 querystring: envQuerySchema,
                 body: z.object({
-                    status: z.string(),
-                    reason: z.string().min(1),
+                    status: z.string().max(50),
+                    reason: z.string().min(1).max(1000),
                 }),
             },
         },
@@ -442,7 +453,7 @@ export async function adminRoutes(server: FastifyInstance) {
                 body: z.object({
                     role: z.enum(['user', 'admin']).optional(),
                     username: z.string().min(3).max(30).optional(),
-                    password: z.string().min(6).optional(),
+                    password: z.string().min(6).max(100).optional(),
                 }),
             },
         },
@@ -635,4 +646,101 @@ export async function adminRoutes(server: FastifyInstance) {
             return reply.status(404).send({ error: { message: 'LLM model not found', code: 'NOT_FOUND' } });
         }
     });
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LLM SERVER PROXY (removes need for VITE_LLM_ADMIN_KEY in frontend)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // ── GET /admin/llm/upstreams ──────────────────────────────────────────────
+    server.get(
+        '/llm/upstreams',
+        {
+            schema: {
+                tags: ['Admin'],
+                summary: 'List LLM upstream URLs (admin)',
+                security: [{ bearerAuth: [] }],
+            },
+        },
+        async (request, reply) => {
+            const llmServerUrl = process.env.LLM_SERVER_URL;
+            const llmAdminKey = process.env.LLM_ADMIN_KEY;
+            if (!llmServerUrl || !llmAdminKey) {
+                return reply.status(500).send({ message: 'LLM server not configured' });
+            }
+            const res = await fetch(`${llmServerUrl}/api/v1/admin/upstream-urls`, {
+                headers: { 'X-Admin-Secret-Key': llmAdminKey },
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ detail: 'Request failed' }));
+                return reply.status(res.status).send({ message: err.detail || 'LLM request failed' });
+            }
+            return res.json();
+        }
+    );
+
+    // ── POST /admin/llm/upstreams ─────────────────────────────────────────────
+    server.post(
+        '/llm/upstreams',
+        {
+            schema: {
+                tags: ['Admin'],
+                summary: 'Create LLM upstream URL (admin)',
+                security: [{ bearerAuth: [] }],
+                body: z.object({
+                    base_url: z.string().url(),
+                    api_key: z.string(),
+                    model_name: z.string().optional(),
+                    name: z.string().optional(),
+                    priority: z.number().int().optional(),
+                }),
+            },
+        },
+        async (request, reply) => {
+            const llmServerUrl = process.env.LLM_SERVER_URL;
+            const llmAdminKey = process.env.LLM_ADMIN_KEY;
+            if (!llmServerUrl || !llmAdminKey) {
+                return reply.status(500).send({ message: 'LLM server not configured' });
+            }
+            const res = await fetch(`${llmServerUrl}/api/v1/admin/upstream-urls`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Admin-Secret-Key': llmAdminKey },
+                body: JSON.stringify(request.body),
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ detail: 'Request failed' }));
+                return reply.status(res.status).send({ message: err.detail || 'LLM request failed' });
+            }
+            return res.json();
+        }
+    );
+
+    // ── DELETE /admin/llm/upstreams/:id ───────────────────────────────────────
+    server.delete(
+        '/llm/upstreams/:id',
+        {
+            schema: {
+                tags: ['Admin'],
+                summary: 'Delete LLM upstream URL (admin)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ id: z.coerce.number().int() }),
+            },
+        },
+        async (request, reply) => {
+            const { id } = request.params as any;
+            const llmServerUrl = process.env.LLM_SERVER_URL;
+            const llmAdminKey = process.env.LLM_ADMIN_KEY;
+            if (!llmServerUrl || !llmAdminKey) {
+                return reply.status(500).send({ message: 'LLM server not configured' });
+            }
+            const res = await fetch(`${llmServerUrl}/api/v1/admin/upstream-urls/${id}`, {
+                method: 'DELETE',
+                headers: { 'X-Admin-Secret-Key': llmAdminKey },
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ detail: 'Request failed' }));
+                return reply.status(res.status).send({ message: err.detail || 'LLM request failed' });
+            }
+            return res.json();
+        }
+    );
 }

@@ -49,7 +49,6 @@ export async function refreshXToken(
       refresh_token: string
       expires_in: number
     }
-    console.log('refreshXToken data', data)
 
     await prisma.user.update({
       where: { id: userId },

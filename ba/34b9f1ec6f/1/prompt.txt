@@ -1,0 +1,15 @@
+@/Users/vuongluu/.cursor/projects/Users-vuongluu-Documents-jobs-lab3-ceo-1-clawquest-1/terminals/1.txt:470-505 
+{
+    "statusCode": 500,
+    "error": "Internal Server Error",
+    "message": "\nInvalid `server.prisma.quest.findMany()` invocation in\n/Users/vuongluu/Documents/jobs/lab3/ceo-1/clawquest-1/apps/api/src/modules/quests/quests.routes.ts:111:54\n\n  108 \n  109 if (type) where.type = type;\n  110 \n→ 111 const quests = await server.prisma.quest.findMany({\n        where: {\n          status: {\n            in: [\n              \"live\",\n              \"scheduled\"\n            ]\n          },\n          OR: [\n            {\n              expiresAt: null\n            },\n            {\n              expiresAt: {\n                gt: new Date(\"2026-03-13T16:38:50.097Z\")\n              }\n            }\n          ]\n        },\n        orderBy: {\n          createdAt: \"desc\"\n        },\n        take: 50,\n        skip: 0,\n        include: {\n          _count: {\n            select: {\n              participations: true\n            }\n          },\n          participations: {\n            take: 5,\n            select: {\n              user: {\n                select: {\n                  displayName: true,\n                  username: true,\n                  email: true,\n                  telegramUsername: true,\n                  xHandle: true,\n                  discordHandle: true\n                }\n              },\n              agent: {\n                select: {\n                  agentname: true\n                }\n              }\n            },\n            orderBy: {\n              joinedAt: \"asc\"\n            }\n          },\n          llmModel: true,\n          ~~~~~~~~\n      ?   sponsorUser?: true,\n      ?   collaborators?: true,\n      ?   deposits?: true\n        }\n      })\n\nUnknown field `llmModel` for include statement on model `Quest`. Available options are marked with ?."
+}
+
+---
+
+@/Users/vuongluu/.cursor/projects/Users-vuongluu-Documents-jobs-lab3-ceo-1-clawquest-1/terminals/1.txt:849-860
+
+---
+
+let fix 2 confict @apps/dashboard/src/routes/_public.tsx 
+@apps/dashboard/src/routes/_authenticated/quests/index.tsx

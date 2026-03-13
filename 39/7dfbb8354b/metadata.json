@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "397dfbb8354b",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/superpowers/plans/2026-03-13-twitterapio-x-verification.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/39/7dfbb8354b/0/metadata.json",
+      "transcript": "/39/7dfbb8354b/0/full.jsonl",
+      "content_hash": "/39/7dfbb8354b/0/content_hash.txt",
+      "prompt": "/39/7dfbb8354b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 815,
+    "cache_creation_tokens": 123823,
+    "cache_read_tokens": 3065351,
+    "output_tokens": 21173,
+    "api_call_count": 33
+  }
+}

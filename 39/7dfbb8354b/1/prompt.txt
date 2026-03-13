@@ -1,0 +1,7 @@
+<ide_selection>The user selected the lines 148 to 148 from /Users/vuongluu/Documents/jobs/lab3/ceo-1/clawquest-1/apps/api/prisma/schema.prisma:
+earlyAccessAt        DateTime?
+
+This may or may not be related to the current task.</ide_selection>
+Let check issue DB: earlyAccessAt        DateTime?
+at commit 30b4ca90d45586a0e6da8b3d5573a3dd4347e4ba
+at now, it work API. let fix it

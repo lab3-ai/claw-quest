@@ -394,7 +394,7 @@ All buttons: `font-semibold`, `rounded-button`, `active:scale-95`, **min `gap-2`
   - **Pill** (border + rounded): `pill` — for tags, skills, categories
   - **Filled** (solid bg): `filled-success`, `filled-error`, `filled-warning`, `filled-muted`
   - **Outline** (border + light bg): `outline`, `outline-success`, `outline-error`, `outline-warning`, `outline-muted`
-  - **Count** (small pill for numbers): `count` (`bg-fg-1 text-bg-1`), `count-muted`, `count-primary`, `count-success`, `count-error`, `count-warning`, `count-info`
+  - **Count** (small pill for numbers): `count` (`bg-fg-1 text-bg-1`), `count-muted`, `count-outline`, `count-primary`, `count-primary-inverted`, `count-success`, `count-error`, `count-warning`, `count-info`
 - Count badges: `min-w-4 h-4 px-1 text-2xs font-semibold rounded-full`
 
 ### Form Inputs
@@ -407,31 +407,58 @@ All buttons: `font-semibold`, `rounded-button`, `active:scale-95`, **min `gap-2`
 
 ### Topbar
 
+- Component: `<Navbar>` (`src/components/navbar.tsx`)
 - Height: `56px` (`h-14`)
 - Background: `bg-bg-base` (`--bg-base`)
 - **On scroll**: `border-b border-border` + `backdrop-blur-md` + `bg-bg-base/80` (glass effect)
 - **At rest**: `border-b border-border-1` (subtle)
-- Logo: `<BrandLogo animated />` — SVG icon (`h-9`) + text logo side by side
+- Logo: `<BrandLogo animated />` — full logo on desktop, icon-only on mobile
 - Divider: `h-4 w-px bg-border-2` between logo and nav (desktop only)
 - Active link: `text-primary font-semibold` (color change, no underline/bg)
 - Inactive link: `text-fg-1 font-semibold`, hover: `text-primary`
 - Nav font: `text-sm font-semibold`
 - Theme switcher: simple sun/moon toggle button (`variant="outline" iconOnly`)
+- **Mobile**: action buttons (Create, Dashboard) in header; navigation moves to bottom nav
+
+### Bottom Navigation (Mobile)
+
+- Component: `<BottomNav>` inside `navbar.tsx`, visible `lg:hidden`
+- Height: `52px` (`h-13`) — Apple HIG tab bar standard
+- Touch target: `44px` minimum per item
+- 3 items: Quests (`Compass3`), Web3 Skills (`Code`), Bounties (`Trophy`)
+- Icons: MingCute **Line** variant inactive, **Fill** variant active (`[&.active]` class toggle)
+- Labels: `text-2xs font-medium`
+- **On scroll**: `border-t border-border backdrop-blur-md bg-bg-base/80` (glass effect)
+- **At rest**: `bg-bg-base` (no border, no glass)
+- Safe area: `env(safe-area-inset-bottom)` padding for iPhone home indicator
+- Layout padding: parent container `pb-[52px] lg:pb-0`
+
+### Footer
+
+- Component: `<Footer>` (`src/components/footer.tsx`)
+- Data-driven: `LINKS` array with `href`, `label`, `external?`
+- Separator dots: `<i />` styled as `size-1 rounded-full bg-border`
+- Desktop: single row — brand + divider + links
+- Mobile: 2-row — brand on top, links below; divider hidden
 
 ### Tabs
 
 - Active: `border-b-3 border-fg-1 text-fg-1 font-semibold`
 - Inactive: `border-b-3 border-transparent text-fg-3`, hover: `text-fg-1`
-- Gap: `gap-6` between tab items
+- Gap: `gap-4 lg:gap-6` between tab items
 - No padding-x on tab items
-- Active badge: `count` variant, inactive badge: `count-muted` variant
+- Active badge: `count` variant, inactive badge: `count-outline` variant
 - Font: `text-base`
+- **Mobile**: `overflow-x-auto scrollbar-hide` horizontal scroll
+- **Fade mask**: right-side gradient (`bg-gradient-to-l from-bg-base to-transparent`), auto-hides when scrolled to end
+- **Sliding underline**: `h-[3px] bg-fg-1 rounded-full` with `transition-all duration-200 ease-out`, positioned via JS `tabIndicatorStyle`
 
 ### View Toggle
 
 - Container: `border border-border p-0.5` with sliding indicator (`bg-fg-1`)
 - Active: `text-bg-1` (inverted on dark highlight)
 - Inactive: `text-fg-3`, hover: `text-fg-1`
+- **Hidden on mobile**: `max-lg:hidden` — mobile uses grid view only
 
 ---
 

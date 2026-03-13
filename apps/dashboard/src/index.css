@@ -374,6 +374,12 @@ h6 {
     font-family: var(--font-heading);
 }
 
+.font-heading {
+    font-weight: 600;
+}
+
+
+
 .text-sm,
 .text-base {
     letter-spacing: -0.02em;

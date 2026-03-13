@@ -163,7 +163,7 @@ export function BadgesDemo() {
                         { variant: "count-error", label: "count-error", value: "1" },
                         { variant: "count-warning", label: "count-warning", value: "2" },
                         { variant: "count-info", label: "count-info", value: "7" },
-                    ] as const).map(({ variant, label, value }) => (
+                    ] as const).map(({ variant, label: _label, value }) => (
                         <div key={variant} className="flex items-center gap-4 px-4 py-3 border-t border-border first:border-t-0">
                             <code className="text-xs text-accent font-semibold w-48 shrink-0">{variant}</code>
                             <Badge variant={variant}>{value}</Badge>

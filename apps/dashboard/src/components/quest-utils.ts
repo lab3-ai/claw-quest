@@ -48,7 +48,7 @@ export function typeBadgeClass(type: string): string {
 }
 
 /** Map quest type to text color class */
-export function typeColorClass(type: string): string {
+export function typeColorClass(_type: string): string {
     return "text-foreground"
 }
 

@@ -16,7 +16,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { ThemeSwitcher } from "@/components/theme-switcher"
-import { Palette2Line, Dashboard4Line, AddLine, DownLine } from "@mingcute/react"
+import { Dashboard4Line, AddLine, DownLine } from "@mingcute/react"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { BrandLogo } from "@/components/brand-logo"
@@ -59,24 +59,15 @@ function NavTabs() {
     }, [updateIndicator])
 
     const linkClass =
-        "py-1.5 text-sm font-semibold text-foreground no-underline transition-colors duration-200 hover:text-fg-2 [&.active]:text-foreground"
+        "text-sm font-semibold text-fg-1 no-underline transition-colors duration-200 hover:text-primary [&.active]:text-primary [&.active]:font-semibold py-1.5 mr-4"
 
     return (
-        <nav ref={navRef} className="relative hidden items-center gap-6 lg:flex">
+        <nav className="hidden items-center gap-2 lg:flex">
             {NAV_ITEMS.map(({ to, label }) => (
                 <Link key={to} to={to} className={linkClass}>
                     {label}
                 </Link>
             ))}
-            {/* Sliding underline */}
-            <span
-                className="pointer-events-none absolute bottom-0 h-0.5 rounded-full bg-foreground transition-all duration-300 ease-in-out"
-                style={{
-                    left: indicator.left,
-                    width: indicator.width,
-                    opacity: hasActive ? 1 : 0,
-                }}
-            />
         </nav>
     )
 }
@@ -100,8 +91,8 @@ export function PublicLayout() {
     return (
         <div className="flex min-h-screen flex-col">
             {/* Topbar */}
-            <header className={`sticky top-0 z-50 bg-bg-2 transition-[border-color,backdrop-filter,box-shadow] duration-200 border-b ${scrolled ? "border-border backdrop-blur-md bg-bg-2/80" : "border-transparent"}`}>
-                <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-6">
+            <header className={`sticky top-0 z-50 bg-bg-base transition-[border-color,backdrop-filter,box-shadow] duration-200 border-b ${scrolled ? "border-border backdrop-blur-md bg-bg-base/80" : "border-border-1"}`}>
+                <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-6">
                     <Link
                         to="/quests"
                         className="mr-5 flex items-center gap-2 no-underline"
@@ -109,7 +100,9 @@ export function PublicLayout() {
                         <BrandLogo animated />
                     </Link>
 
-                    {/* Desktop nav with sliding indicator */}
+                    <div className="hidden lg:block h-4 w-px bg-border-2 mr-3" />
+
+                    {/* Desktop nav */}
                     <NavTabs />
 
                     {/* Mobile hamburger */}
@@ -159,9 +152,9 @@ export function PublicLayout() {
                                     Bounties
                                 </Link>
                                 <div className="my-1 h-px bg-border" />
-                                <div className="px-3 py-2">
+                                <div className="flex items-center justify-between px-3 py-2">
                                     <span className="text-xs font-medium text-fg-3">Theme</span>
-                                    <ThemeSwitcher className="mt-2" />
+                                    <ThemeSwitcher />
                                 </div>
                                 {isAuthenticated ? (
                                     <>
@@ -204,18 +197,8 @@ export function PublicLayout() {
                     </Sheet>
 
                     {/* Desktop right */}
-                    <div className="ml-auto hidden items-center gap-3 lg:flex">
-                        {/* Theme picker */}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" iconOnly aria-label="Theme" className="data-[state=open]:bg-muted">
-                                    <Palette2Line size={16} />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-72 p-3">
-                                <ThemeSwitcher />
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                    <div className="ml-auto hidden items-center gap-2 lg:flex">
+                        <ThemeSwitcher />
 
                         {isAuthenticated ? (
                             <>

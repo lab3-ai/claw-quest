@@ -2,10 +2,11 @@ import { createContext, useContext, useEffect, useState, useCallback } from 'rea
 
 export const THEMES = [
     { id: 'terminal', label: 'Terminal', description: 'Monospace, flat, high-contrast' },
-{ id: 'glass', label: 'Glass', description: 'Frosted blur, translucent, rounded' },
-    { id: 'brutalist', label: 'Brutalist', description: 'Raw, bold borders, heavy shadows' },
-    { id: 'minimal', label: 'Minimal', description: 'Clean, airy, subtle' },
-    { id: 'bauhaus', label: 'Bauhaus', description: 'Geometric, primary colors, bold' },
+    // TODO: re-enable after polishing each theme
+    // { id: 'glass', label: 'Glass', description: 'Frosted blur, translucent, rounded' },
+    // { id: 'brutalist', label: 'Brutalist', description: 'Raw, bold borders, heavy shadows' },
+    // { id: 'minimal', label: 'Minimal', description: 'Clean, airy, subtle' },
+    // { id: 'bauhaus', label: 'Bauhaus', description: 'Geometric, primary colors, bold' },
 ] as const
 
 export type ThemeId = (typeof THEMES)[number]['id']

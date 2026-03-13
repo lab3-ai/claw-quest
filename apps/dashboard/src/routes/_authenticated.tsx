@@ -56,7 +56,7 @@ export function AuthenticatedLayout() {
     return (
         <div className="flex min-h-screen flex-col">
             {/* Topbar */}
-            <header className={`sticky top-0 z-50 bg-bg-2 transition-[border-color,backdrop-filter,box-shadow] duration-200 border-b ${scrolled ? "border-border backdrop-blur-md bg-bg-2/80" : "border-transparent"}`}>
+            <header className={`sticky top-0 z-50 bg-bg-base transition-[border-color,backdrop-filter,box-shadow] duration-200 border-b ${scrolled ? "border-border backdrop-blur-md bg-bg-base/80" : "border-transparent"}`}>
                 <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-6 max-lg:px-3 max-lg:gap-1">
                     <Link
                         to="/quests"

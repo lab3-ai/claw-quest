@@ -208,12 +208,7 @@ export function QuestList() {
 
             {/* Tabs row + view toggle */}
             <div className="flex items-center gap-3 py-3 max-sm:flex-col max-sm:gap-2 max-sm:items-stretch">
-                <div className="relative flex flex-1 min-w-0 items-center gap-2 p-0.5 max-sm:overflow-x-auto">
-                    {/* Sliding highlight */}
-                    <span
-                        className="absolute top-0.5 bottom-0.5 rounded-button bg-primary transition-all duration-200 ease-out z-0"
-                        style={tabIndicatorStyle}
-                    />
+                <div className="flex flex-1 min-w-0 items-center gap-6 max-sm:overflow-x-auto">
                     {tabs.map(t => {
                         const isActive = tab === t.id
                         return (
@@ -221,21 +216,18 @@ export function QuestList() {
                                 key={t.id}
                                 ref={el => { tabRefs.current[t.id] = el }}
                                 className={cn(
-                                    "group/tab relative z-10 inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-button cursor-pointer transition-colors duration-150 ease-out",
-                                    "font-semibold whitespace-nowrap",
-                                    "max-sm:px-2 max-sm:text-xs max-sm:gap-1.5 max-sm:min-h-[44px]",
+                                    "group/tab inline-flex items-center gap-2 py-1.5 text-base cursor-pointer transition-colors duration-150 ease-out",
+                                    "font-medium whitespace-nowrap border-b-3",
+                                    "max-sm:text-xs max-sm:gap-1.5 sm:min-h-10",
                                     isActive
-                                        ? "text-primary-foreground"
-                                        : "text-foreground hover:text-primary"
+                                        ? "border-fg-1 text-fg-1 font-semibold"
+                                        : "border-transparent text-fg-3 hover:text-fg-1"
                                 )}
                                 onClick={() => handleTabChange(t.id)}
                             >
                                 {t.label}
                                 {tabCounts[t.id] > 0 && (
-                                    <Badge
-                                        variant={isActive ? "count-primary-inverted" : "count-muted"}
-                                        className={!isActive ? "transition-colors duration-150 ease-out group-hover/tab:bg-primary group-hover/tab:text-primary-foreground" : undefined}
-                                    >
+                                    <Badge variant={isActive ? "count" : "count-muted"}>
                                         {tabCounts[t.id]}
                                     </Badge>
                                 )}
@@ -247,7 +239,7 @@ export function QuestList() {
                     <div className="relative inline-flex border border-border p-0.5 gap-0.5 rounded-button overflow-hidden ml-auto shrink-0 max-sm:ml-0 max-sm:w-full">
                         {/* Sliding highlight */}
                         <span
-                            className="absolute top-0.5 bottom-0.5 rounded-button bg-primary transition-all duration-200 ease-out z-0"
+                            className="absolute top-0.5 bottom-0.5 rounded-button bg-fg-1 transition-all duration-200 ease-out z-0"
                             style={{ left: viewIndicatorStyle.left, width: viewIndicatorStyle.width }}
                         />
                         <Tooltip>
@@ -257,7 +249,7 @@ export function QuestList() {
                                     className={cn(
                                         "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
                                         "max-sm:flex-1 max-sm:w-auto max-sm:h-[44px]",
-                                        view === "grid" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                                        view === "grid" ? "text-bg-1" : "text-fg-3 hover:text-fg-1"
                                     )}
                                     onClick={() => handleViewChange("grid")}
                                 >
@@ -278,7 +270,7 @@ export function QuestList() {
                                     className={cn(
                                         "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
                                         "max-sm:flex-1 max-sm:w-auto max-sm:h-[44px]",
-                                        view === "list" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                                        view === "list" ? "text-bg-1" : "text-fg-3 hover:text-fg-1"
                                     )}
                                     onClick={() => handleViewChange("list")}
                                 >
@@ -294,7 +286,7 @@ export function QuestList() {
                                     className={cn(
                                         "relative z-10 flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
                                         "max-sm:flex-1 max-sm:w-auto max-sm:h-[44px]",
-                                        view === "compact" ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                                        view === "compact" ? "text-bg-1" : "text-fg-3 hover:text-fg-1"
                                     )}
                                     onClick={() => handleViewChange("compact")}
                                 >

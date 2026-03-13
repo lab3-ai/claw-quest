@@ -25,7 +25,7 @@ const SCALE: Record<LogoSize, string> = {
 function AppIcon({ animated = false }: { animated?: boolean }) {
     return (
         <svg
-            className={cn("cq-icon h-8 w-auto", animated && "cq-auto")}
+            className={cn("cq-icon h-9 w-auto", animated && "cq-auto")}
             viewBox="0 0 3178 3178"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"

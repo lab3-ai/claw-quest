@@ -17,6 +17,7 @@
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
     --shadow-accent: 0 0 20px rgba(255, 87, 75, 0.15);
 
+    --bg-base: #f8fafc;
     --bg-1: #fcfdfe;
     --bg-2: #f6f8fb;
     --bg-3: rgba(255, 255, 255, 0.6);
@@ -29,6 +30,7 @@
     --border-2: rgba(148, 163, 184, 0.3);
     --border-3: rgba(100, 116, 139, 0.4);
     --border-4: #0f172a;
+    --color-bg-base: var(--bg-base);
     --color-bg-1: var(--bg-1);
     --color-bg-2: var(--bg-2);
     --color-bg-3: var(--bg-3);
@@ -104,6 +106,7 @@
     --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
     --shadow-accent: 0 0 24px rgba(255, 107, 97, 0.2);
 
+    --bg-base: #0a1020;
     --bg-1: #0f172a;
     --bg-2: #151e34;
     --bg-3: rgba(30, 41, 59, 0.6);
@@ -116,6 +119,7 @@
     --border-2: rgba(71, 85, 105, 0.4);
     --border-3: rgba(100, 116, 139, 0.5);
     --border-4: #e2e8f0;
+    --color-bg-base: var(--bg-base);
     --color-bg-1: var(--bg-1);
     --color-bg-2: var(--bg-2);
     --color-bg-3: var(--bg-3);

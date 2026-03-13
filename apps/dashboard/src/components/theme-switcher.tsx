@@ -1,55 +1,24 @@
-import { useTheme, THEMES, type ColorMode } from '@/context/ThemeContext'
+import { useTheme, THEMES } from '@/context/ThemeContext'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import { SunLine, MoonLine } from '@mingcute/react'
 
-const COLOR_MODES: { id: ColorMode; label: string; icon: React.ElementType }[] = [
-    { id: 'light', label: 'Light', icon: SunLine },
-    { id: 'dark', label: 'Dark', icon: MoonLine },
-]
-
 export function ThemeSwitcher({ className }: { className?: string }) {
-    const { theme, colorMode, setTheme, setColorMode } = useTheme()
+    const { colorMode, setColorMode } = useTheme()
+    const isDark = colorMode === 'dark'
 
     return (
-        <div className={cn('flex flex-col gap-4', className)}>
-            {/* Color mode toggle */}
-            <div className="flex items-center gap-1 rounded-button border border-border p-1">
-                {COLOR_MODES.map(m => (
-                    <button
-                        key={m.id}
-                        onClick={() => setColorMode(m.id)}
-                        className={cn(
-                            'flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-all',
-                            'rounded-button',
-                            colorMode === m.id
-                                ? 'bg-primary text-primary-foreground'
-                                : 'text-fg-3 hover:text-fg-1'
-                        )}
-                    >
-                        <m.icon size={14} />
-                        {m.label}
-                    </button>
-                ))}
-            </div>
-
-            {/* Theme grid */}
-            <div className="grid grid-cols-2 gap-2">
-                {THEMES.map(t => (
-                    <button
-                        key={t.id}
-                        onClick={() => setTheme(t.id)}
-                        className={cn(
-                            'flex flex-col items-start gap-1 rounded-md border p-3 text-left transition-all',
-                            theme === t.id
-                                ? 'border-primary bg-accent-light'
-                                : 'border-border hover:border-border-3'
-                        )}
-                    >
-                        <span className="text-sm font-medium text-fg-1">{t.label}</span>
-                        <span className="text-xs text-fg-3">{t.description}</span>
-                    </button>
-                ))}
-            </div>
-        </div>
+        <Button
+            variant="outline"
+            size="default"
+            iconOnly
+            onClick={() => setColorMode(isDark ? 'light' : 'dark')}
+            className={cn('text-fg-1', className)}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+            {isDark ? <SunLine size={16} /> : <MoonLine size={16} />}
+        </Button>
     )
 }
+
+export { THEMES }

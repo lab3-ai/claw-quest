@@ -5,7 +5,9 @@
    ────────────────────────────────────────────── */
 
 @import "./terminal.css";
+/* TODO: re-enable after polishing each theme
 @import "./glass.css";
 @import "./brutalist.css";
 @import "./minimal.css";
 @import "./bauhaus.css";
+*/

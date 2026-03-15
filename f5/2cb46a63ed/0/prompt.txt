@@ -328,3 +328,11 @@ The `20260316010300_add_skill_challenge_model` migration started at 2026-03-15 1
 
 
  ELIFECYCLE  Command failed with exit code 1.
+
+---
+
+<ide_selection>The user selected the lines 466 to 466 from /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/prisma/schema.prisma:
+verification_config
+
+This may or may not be related to the current task.</ide_selection>
+We miss show infomation (guide to verify skill) at Frontend

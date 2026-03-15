@@ -3,7 +3,7 @@
   "checkpoint_id": "f52cb46a63ed",
   "strategy": "manual-commit",
   "branch": "refactor/verify-agent",
-  "checkpoints_count": 10,
+  "checkpoints_count": 11,
   "files_touched": [
     "apps/api/prisma/migrations/20260315231300_remove_agent_registration_fields/migration.sql",
     "apps/api/prisma/migrations/20260316010300_add_skill_challenge_model/migration.sql",
@@ -43,6 +43,12 @@
       "transcript": "/f5/2cb46a63ed/0/full.jsonl",
       "content_hash": "/f5/2cb46a63ed/0/content_hash.txt",
       "prompt": "/f5/2cb46a63ed/0/prompt.txt"
+    },
+    {
+      "metadata": "/f5/2cb46a63ed/1/metadata.json",
+      "transcript": "/f5/2cb46a63ed/1/full.jsonl",
+      "content_hash": "/f5/2cb46a63ed/1/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {

@@ -7,6 +7,8 @@ import { AuthCallback } from './routes/auth/callback'
 import { TelegramCallback } from './routes/auth/telegram-callback'
 import { XCallback } from './routes/auth/x-callback'
 import { PublicLayout } from './routes/_public'
+import { Navbar } from './components/navbar'
+import { Footer } from './components/footer'
 import { ConceptsDemoButtons } from './routes/_public/concepts.demo.buttons'
 import { TypographyDemo } from './routes/concepts.demo.typography'
 import { BadgesDemo } from './routes/concepts.demo.badges'
@@ -42,6 +44,7 @@ import { Web3SkillsPage } from './routes/_public/web3-skills/index'
 import { Web3SkillDetail } from './routes/_public/web3-skills/$skillSlug'
 import { SubmitWeb3Skill } from './routes/_authenticated/web3-skills/submit'
 import { AdminWeb3Skills } from './routes/_authenticated/admin/web3-skills'
+import { VerifyChallenge } from './routes/_public/verify'
 
 // Root route
 interface RouterContext {
@@ -54,8 +57,8 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
         if (location.pathname === '/for-dev-lab3' || location.pathname.startsWith('/concepts/')) {
             return
         }
-        // Allow waitlist page without redirect
-        if (location.pathname === '/waitlist') {
+        // Allow waitlist page and public verify links without redirect
+        if (location.pathname === '/waitlist' || location.pathname.startsWith('/verify/')) {
             return
         }
         // Allow all routes if dev bypass flag is set in localStorage
@@ -478,6 +481,24 @@ const adminWeb3SkillsRoute = createRoute({
     component: AdminWeb3Skills,
 })
 
+// ── Skill Verification (public, no auth) ──
+const verifyRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/verify/$token',
+    component: function VerifyPage() {
+        const { token } = verifyRoute.useParams()
+        return (
+            <div className="flex min-h-screen flex-col">
+                <Navbar />
+                <div className="max-w-6xl mx-auto w-full py-5 px-6 flex-1">
+                    <VerifyChallenge token={token} />
+                </div>
+                <Footer />
+            </div>
+        )
+    },
+})
+
 const conceptsDemoButtonsRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/concepts/demo/buttons',
@@ -555,6 +576,7 @@ const routeTree = rootRoute.addChildren([
         web3SkillDetailRoute,
         adminWeb3SkillsRoute,
     ]),
+    verifyRoute,
 ])
 
 export const router = createRouter({

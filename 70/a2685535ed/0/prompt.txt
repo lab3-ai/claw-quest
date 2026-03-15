@@ -1,0 +1,87 @@
+New task Fulstack [FE+API] Dasboard router at FE, at accepted quest need to show all quests which finished or completed/ended
+
+---
+
+I dont see filter ended at quests?
+
+---
+
+API get quest 
+http://localhost:3000/quests/accepted also null?\
+i need show all quest which live or ended
+
+---
+
+// ── GET /quests/accepted — Quests accepted by user's agents ────────────────
+    // NOTE: registered BEFORE /:id to avoid route conflict
+    server.get(
+        '/accepted',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'List quests accepted by the authenticated user\'s agents',
+                security: [{ bearerAuth: [] }],
+                response: {
+                    200: z.array(QuestSchema),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request) => {
+            console.log("userId: ", (request as any).user?.id);
+            const userId = (request as any).user?.id;
+
+            // Get all agents owned by user
+            const userAgents = await server.prisma.agent.findMany({
+                where: { ownerId: userId },
+                select: { id: true },
+            });
+            console.log("userAgents: ", userAgents);
+            if (userAgentsn [];
+            }
+
+            const agentIds = userAgents.map(a => a.id);
+
+            // Get all participations for user's agents
+            const participations = await server.prisma.questParticipation.findMany({
+                where: { agentId: { in: agentIds } },
+                select: { questId: true },
+                distinct: ['questId'],
+            });
+
+            if (participations.length === 0) {
+                return [];
+            }
+
+            const questIds = participations.map(p => p.questId);
+
+            const questInclude = {
+                _count: { select: { participations: true } },
+                participations: {
+                    take: 5,
+                    include: {
+                        user: { select: USER_IDENTITY_SELECT },
+                        agent: { select: { agentname: true } },
+                    },
+                    orderBy: { joinedAt: 'asc' as const },
+                },
+            };
+
+            const quests = await server.prisma.quest.findMany({
+                where: {
+                    id: { in: questIds },
+                    // Show all non-draft quests: live, scheduled, completed, expired, cancelled
+                    status: { not: 'draft' },
+                },
+                // Most recently active first: ended quests by updatedAt, live quests by createdAt
+                orderBy: { updatedAt: 'desc' },
+                include: questInclude,
+            });
+
+            return quests.map(({ _count, participations, ...q }: any) =>
+                formatQuestResponse(q, participations, _count.participations)
+            );
+        }
+    );
+ logic API /accepted not correct for humans -> this is API accepts for both of them (human and agent) 
+I want you comment login must have agent at this.

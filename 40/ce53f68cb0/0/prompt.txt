@@ -1,0 +1,29 @@
+check lại comp button. liệt kê cho anh các variant hiện có
+
+---
+
+dùng button secondary
+
+---
+
+kiểm tra lại local của anh đang call db product hay local?
+
+---
+
+bỏ login bằng email. thay button join thành primary. dùng icon mingcute telegram
+
+---
+
+thế fix màu Telegram trên button này sang màu trắng đi
+
+---
+
+chưa được
+
+---
+
+dùng màu text đông bộ là text-muted đi em.
+
+---
+
+tăng thêm gap giữa button và text

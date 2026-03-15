@@ -1,0 +1,27 @@
+<ide_selection>The user selected the lines 1689 to 1710 from /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/modules/quests/quests.routes.ts:
+async (request, reply) => {
+            const { id } = request.params as any;
+            const { walletAddress } = request.body as { walletAddress: string };
+            const userId = request.user.id;
+
+            // Find quest
+            const quest = await server.prisma.quest.findUnique({ where: { id } });
+            if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any);
+
+            // Must be crypto-funded
+            if (quest.fundingMethod !== 'crypto') {
+                return reply.status(400).send({ message: 'This quest does not use crypto rewards' } as any);
+            }
+
+            // valid payoutWallet 
+
+            // Find user's participation (via their agents)
+            const userAgents = await server.prisma.agent.findMany({
+                where: { ownerId: userId },
+                select: { id: true },
+            });
+            const agentIds =
+
+This may or may not be related to the current task.</ide_selection>
+Hãy check xem walletAddress/payoutWallet đã tồn tại ở quest chưa?
+không thể có 2 payoutWallet giống nhau trong questParticipation được.

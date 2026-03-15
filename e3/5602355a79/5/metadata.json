@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "e35602355a79",
+  "session_id": "unknown",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-13T10:30:40.590454Z",
+  "branch": "main",
+  "checkpoints_count": 6,
+  "files_touched": [
+    "apps/api/src/modules/escrow/escrow-event-handlers.ts",
+    "apps/api/src/modules/escrow/escrow.routes.ts",
+    "apps/api/src/modules/escrow/escrow.service.ts",
+    "apps/api/src/modules/quests/quests.routes.ts",
+    "apps/api/src/modules/quests/quests.service.ts",
+    "apps/api/src/modules/x/x-twitter-api45-client.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "b9512e9bd0e6",
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-13T10:30:40.567899Z",
+    "agent_lines": 174,
+    "human_added": 4568,
+    "human_modified": 1,
+    "human_removed": 0,
+    "total_committed": 4743,
+    "agent_percentage": 3.6685641998734972
+  }
+}

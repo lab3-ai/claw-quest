@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "ba34b9f1ec6f",
+  "session_id": "32337fe1-2a67-4e84-a097-99783b43e90b",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-13T17:52:37.203618Z",
+  "branch": "main",
+  "checkpoints_count": 6,
+  "files_touched": [
+    "apps/api/src/modules/quests/__tests__/quests.service.test.ts",
+    "apps/api/src/modules/quests/__tests__/social-action-verifier.test.ts",
+    "apps/api/src/modules/quests/quests.routes.ts",
+    "apps/api/src/modules/quests/social-action-verifier.ts",
+    "apps/dashboard/src/components/quest-utils.ts",
+    "apps/dashboard/src/context/ThemeContext.test.tsx",
+    "apps/dashboard/src/routes/_public/quests/detail.tsx",
+    "apps/dashboard/src/routes/concepts.demo.badges.tsx",
+    "plans/260313-2248-fix-discord-verify/plan.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-4-6",
+  "turn_id": "313bb829230f",
+  "token_usage": {
+    "input_tokens": 158,
+    "cache_creation_tokens": 517848,
+    "cache_read_tokens": 9388770,
+    "output_tokens": 49991,
+    "api_call_count": 102
+  },
+  "session_metrics": {
+    "turn_count": 7
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-13T17:52:36.103828Z",
+    "agent_lines": 0,
+    "human_added": 945,
+    "human_modified": 455,
+    "human_removed": 0,
+    "total_committed": 945,
+    "agent_percentage": 0
+  }
+}

@@ -1,0 +1,5 @@
+@/Users/vuongluu/.cursor/projects/Users-vuongluu-Documents-jobs-lab3-ceo-clawquest/terminals/1.txt:83-128 lỗi
+
+---
+
+Tuong tự checkFollow, apply cho 2 function checkRetweet vs getTweetInfo

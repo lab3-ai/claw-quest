@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "e35602355a79",
+  "session_id": "20319243-4235-4b87-ace2-78311c3baff4",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-13T10:30:39.863197Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/api/src/modules/quests/quests.service.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "c47dfc6fcc42",
+  "token_usage": {
+    "input_tokens": 35,
+    "cache_creation_tokens": 102469,
+    "cache_read_tokens": 2584375,
+    "output_tokens": 15151,
+    "api_call_count": 29
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-13T10:30:39.447727Z",
+    "agent_lines": 13,
+    "human_added": 4160,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 4173,
+    "agent_percentage": 0.3115264797507788
+  }
+}

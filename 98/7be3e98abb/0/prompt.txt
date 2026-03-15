@@ -1,0 +1,23 @@
+<ide_selection>The user selected the lines 856 to 856 from /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/modules/quests/quests.routes.ts:
+verifySocialAction
+
+This may or may not be related to the current task.</ide_selection>
+"Use the superpowers:writing-plans skill to plan: Hiện tại API verify đang work không tối ưu, khi gửi verify 1 task sẽ call toàn bộ (tốn credit X,..)
+server.post(
+        '/:id/tasks/verify',
+tôi muốn gửi theo task platform, task action từ client lên
+và client nhận response luôn để update status cho task đó"
+
+---
+
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/modules/quests/quests.routes.ts in the IDE. This may or may not be related to the current task.</ide_opened_file>
+You not implement at logic Client, right?
+
+---
+
+<ide_selection>The user selected the lines 670 to 670 from /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/dashboard/src/routes/_public/quests/detail.tsx:
+About this Quest
+
+This may or may not be related to the current task.</ide_selection>
+Có nhé, hãy làm chúng, ở trong file @apps/dashboard/src/routes/_public/quests/detail.tsx 
+Và tôi muốn bạn sửa thêm vào button khi bấm"Do it" thì nếu có link của X (ví dụ Like a Post, Repost, Quote a Post,..) thì sẽ chèn link của task vào nhé

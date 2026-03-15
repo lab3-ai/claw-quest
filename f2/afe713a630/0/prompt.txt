@@ -1,0 +1,10 @@
+/superpowers:write-plan Hiện tại logic đang trong function verifyXAction @apps/api/src/modules/quests/social-action-verifier.ts 
+Đang có dùng  X_API (và rapidapi backup 1 số task) @apps/api/src/modules/x/x-rest-client.ts @apps/api/src/modules/x/x-rapidapi-client.ts 
+Solution mới: Sử dụng  rapidapi-client thôi, tuy nhiên sẽ dùng của market khác 
+- các file client khác giữ nguyên và không dùng 
+- tạo thêm 1 rapidclient mới để sử dụng 3 API và có response sẵn trong file '/Users/vuongluu/Documents/jobs/lab3/ceo-1/clawquest-1/RAPIDAPI.md' 
+- mục đích cuối là sẽ dùng để verify 4 task X (trừ task like a post mặc định sẽ true luôn)
+
+---
+
+Sure, let execute. Note: please dont commit anything, I will manual commit.

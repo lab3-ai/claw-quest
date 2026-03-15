@@ -1,0 +1,124 @@
+Good, So when system distribute for user? I see POST /escrow/distribute/:questId right?     // ── POST /escrow/distribute/:questId ─────────────────────────────────────
+    // Trigger on-chain distribution for a quest.
+    // Creator or admin auth required.
+    server.post(
+        '/distribute/:questId',
+        {
+            schema: {
+                tags: ['Escrow'],
+                summary: 'Trigger on-chain distribution (creator or admin)',
+                security: [{ bearerAuth: [] }],
+                params: z.object({ questId: z.string().uuid() }),
+                body: z.object({
+                    chainId: z.number().optional(),
+                }),
+                response: {
+                    200: z.object({
+                        message: z.string(),
+                        txHash: z.string(),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            if (!isEscrowConfigured()) {
+            ;
+            }
+
+            const { questId } = request.params as any;
+            const { chainId } = request.body as any;
+
+            const quest = await server.prisma.quest.findUnique({ where: { id: questId } });
+            if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any);
+
+            // Creator or admin check
+            const isCreator = quest.creatorUserId === request.user.id;
+            const isAdmin = request.user.role === 'admin';
+            if (!isCreator && !isAdmin) {
+                return reply.status(403).send({ message: 'Only quest creator or admin can distribute' } as any);
+            }
+
+            if (quest.fundingStatus !== 'confirmed') {
+                return reply.status(400).send({ message: 'Quest is not funded' } as any);
+            }
+
+            const targetChainId = chainId || quest.cryptoChainId || escrowConfig.defaultChainId;
+
+            if (!isChainAllowed(targetChainId)) {
+                return reply.status(400).send({
+                    message: `Chain ${targetChainId} is not available in this environment`,
+                } as any);
+            }
+
+            try {
+                const txHash = await executeDistribute(server.prisma, questId, targetChainId);
+                return { message: 'Distribution submitted — poller will confirm', txHash };
+            } catch (err: any) {
+                server.log.error({ err, questId }, '[escrow:distribute] failed');
+                return reply.status(500).send({ message: `Distribution failed: ${err.message}` } as any);
+            }
+        }
+    );
+
+    // ── POST /escrow/refund/:questId ─────────────────────────────────────────
+    // Trigger on-chain refund for a quest.
+    // Creator or admin auth required.
+    server.post(
+        '/refund/:questId',
+        {
+            schema: {
+                tags: ['Escrow'],
+                summary: 'Trigger on-chain refund (creator or admin)',
+           g().uuid() }),
+                body: z.object({
+                    chainId: z.number().optional(),
+                }),
+                response: {
+                    200: z.object({
+                        message: z.string(),
+                        txHash: z.string(),
+                    }),
+                },
+            },
+            onRequest: [server.authenticate],
+        },
+        async (request, reply) => {
+            if (!isEscrowConfigured()) {
+                return reply.status(503).send({ message: 'Escrow not configured' } as any);
+            }
+
+            const { questId } = request.params as any;
+            const { chainId } = request.body as any;
+
+            const quest = await server.prisma.quest.findUnique({ where: { id: questId } });
+            if (!quest) return reply.status(404).send({ message: 'Quest not found' } as any);
+
+            // Creator or admin check
+            const isCreator = quest.creatorUserId === request.user.id;
+            const isAdmin = request.user.role === 'admin';
+            if (!isCreator && !isAdmin) {
+                return reply.status(403).send({ message: 'Only quest creator or admin can refund' } as any);
+            }
+
+            if (quest.fundingStatus !== 'confirmed') {
+                return reply.status(400).send({ message: 'Quest is not funded' } as any);
+            }
+
+            const targetChainId = chainId || quest.cryptoChainId || escrowConfig.defaultChainId;
+
+            if (!isChainAllowed(targetChainId)) {
+                return reply.status(400).send({
+                    message: `Chain ${targetChainId} is not available in this environment`,
+                } as any);
+            }
+
+            try {
+                const txHash = await executeRefund(server.prisma, questId, targetChainId);
+                return { message: 'Refund submitted — poller will confirm', txHash };
+            } catch (err: any) {
+                server.log.error({ err, questId }, '[escrow:refund] failed');
+                return reply.status(500).sen{ message: `Refund failed: ${err.message}` } as any);
+            }
+        }
+    );

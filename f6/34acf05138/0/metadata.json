@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "f634acf05138",
+  "session_id": "082e8393-b2a5-4eb4-b70a-4338c754da64",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-12T06:59:39.787878Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/modules/quests/__tests__/social-action-verifier.test.ts",
+    "apps/api/src/modules/quests/social-action-verifier.ts"
+  ],
+  "agent": "Cursor",
+  "model": "default",
+  "turn_id": "40407a755241",
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-12T06:59:39.76666Z",
+    "agent_lines": 32,
+    "human_added": 4952,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 4984,
+    "agent_percentage": 0.6420545746388443
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "40ce53f68cb0",
+  "session_id": "013de323-ccc4-4b11-94e0-82608bef8136",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-12T07:25:34.554984Z",
+  "branch": "hiru-uiux",
+  "checkpoints_count": 7,
+  "files_touched": [
+    "apps/dashboard/src/components/waitlist/telegram-join-button.tsx",
+    "apps/dashboard/src/routes/waitlist.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-6",
+  "turn_id": "77e36cfb07d1",
+  "token_usage": {
+    "input_tokens": 56,
+    "cache_creation_tokens": 54153,
+    "cache_read_tokens": 2026784,
+    "output_tokens": 7029,
+    "api_call_count": 38
+  },
+  "session_metrics": {
+    "turn_count": 8
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-12T07:25:34.309056Z",
+    "agent_lines": 32,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 32,
+    "agent_percentage": 100
+  }
+}

@@ -1,0 +1,1 @@
+Cool, Not issue at verifyTelegramAction. Issue at telegramId, we save wrong telegramId at user table. Let investegate it

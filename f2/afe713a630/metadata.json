@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "f2afe713a630",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/api/src/modules/quests/social-action-verifier.ts",
+    "apps/api/src/modules/x/x-twitter-api45-client.ts",
+    "plans/2026-03-13-x-twitter-api45-client.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f2/afe713a630/0/metadata.json",
+      "transcript": "/f2/afe713a630/0/full.jsonl",
+      "content_hash": "/f2/afe713a630/0/content_hash.txt",
+      "prompt": "/f2/afe713a630/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 19,
+    "cache_creation_tokens": 81865,
+    "cache_read_tokens": 830853,
+    "output_tokens": 12081,
+    "api_call_count": 10
+  }
+}

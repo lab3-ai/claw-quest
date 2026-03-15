@@ -1,0 +1,60 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "e35602355a79",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 13,
+  "files_touched": [
+    "apps/api/src/modules/escrow/escrow-event-handlers.ts",
+    "apps/api/src/modules/escrow/escrow.routes.ts",
+    "apps/api/src/modules/escrow/escrow.service.ts",
+    "apps/api/src/modules/quests/quests.routes.ts",
+    "apps/api/src/modules/quests/quests.service.ts",
+    "apps/api/src/modules/x/x-twitter-api45-client.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e3/5602355a79/0/metadata.json",
+      "transcript": "/e3/5602355a79/0/full.jsonl",
+      "content_hash": "/e3/5602355a79/0/content_hash.txt",
+      "prompt": "/e3/5602355a79/0/prompt.txt"
+    },
+    {
+      "metadata": "/e3/5602355a79/1/metadata.json",
+      "transcript": "/e3/5602355a79/1/full.jsonl",
+      "content_hash": "/e3/5602355a79/1/content_hash.txt",
+      "prompt": "/e3/5602355a79/1/prompt.txt"
+    },
+    {
+      "metadata": "/e3/5602355a79/2/metadata.json",
+      "transcript": "/e3/5602355a79/2/full.jsonl",
+      "content_hash": "/e3/5602355a79/2/content_hash.txt",
+      "prompt": "/e3/5602355a79/2/prompt.txt"
+    },
+    {
+      "metadata": "/e3/5602355a79/3/metadata.json",
+      "transcript": "/e3/5602355a79/3/full.jsonl",
+      "content_hash": "/e3/5602355a79/3/content_hash.txt",
+      "prompt": "/e3/5602355a79/3/prompt.txt"
+    },
+    {
+      "metadata": "/e3/5602355a79/4/metadata.json",
+      "transcript": "/e3/5602355a79/4/full.jsonl",
+      "content_hash": "/e3/5602355a79/4/content_hash.txt",
+      "prompt": ""
+    },
+    {
+      "metadata": "/e3/5602355a79/5/metadata.json",
+      "transcript": "/e3/5602355a79/5/full.jsonl",
+      "content_hash": "/e3/5602355a79/5/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 65,
+    "cache_creation_tokens": 273325,
+    "cache_read_tokens": 3938963,
+    "output_tokens": 22949,
+    "api_call_count": 52
+  }
+}

@@ -45,11 +45,10 @@ describe('Agent API Integration Tests', () => {
     await prisma.$disconnect();
   });
 
-  describe('Agent Registration via Activation Code', () => {
+  describe('Agent Management', () => {
     let agentId: string;
-    let activationCode: string;
 
-    it('should create an agent with activation code', async () => {
+    it('should create an agent', async () => {
       const response = await server.inject({
         method: 'POST',
         url: '/agents',
@@ -64,13 +63,10 @@ describe('Agent API Integration Tests', () => {
       expect(response.statusCode).toBe(201);
       const body = JSON.parse(response.body);
       expect(body.agentname).toBe('test-agent-1');
-      expect(body.activationCode).toBeDefined();
-      expect(body.activationCode).toHaveLength(6);
       expect(body.status).toBe('idle'); // Default status from schema
       expect(body.ownerId).toBe(owner.id);
 
       agentId = body.id;
-      activationCode = body.activationCode;
     });
 
     it('should list user agents', async () => {
@@ -102,7 +98,6 @@ describe('Agent API Integration Tests', () => {
       const body = JSON.parse(response.body);
       expect(body.id).toBe(agentId);
       expect(body.agentname).toBe('test-agent-1');
-      expect(body.activationCode).toBe(activationCode);
     });
 
     it('should reject getting agent details without auth', async () => {

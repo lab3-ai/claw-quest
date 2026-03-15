@@ -17,7 +17,6 @@ import { QuestList } from './routes/_authenticated/quests/index'
 import { QuestDetail } from './routes/_public/quests/detail'
 import { QuestersPage } from './routes/_public/quests/questers'
 import { CreateQuest } from './routes/_authenticated/quests/create'
-import { VerifyAgent } from './routes/_authenticated/verify'
 import { ClaimQuest } from './routes/_authenticated/quests/claim'
 import { FundQuest } from './routes/_authenticated/quests/$questId/fund'
 import { FundSuccess } from './routes/_authenticated/quests/$questId/fund-success'
@@ -317,18 +316,6 @@ const createQuestRoute = createRoute({
     component: CreateQuest,
 })
 
-const verifyRoute = createRoute({
-    getParentRoute: () => appLayoutRoute,
-    path: '/verify',
-    validateSearch: (search: Record<string, unknown>): { token?: string } => {
-        return { token: typeof search.token === 'string' ? search.token : undefined }
-    },
-    beforeLoad: ({ context }) => {
-        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
-    },
-    component: VerifyAgent,
-})
-
 const claimQuestRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/quests/claim',
@@ -557,7 +544,6 @@ const routeTree = rootRoute.addChildren([
         agentDetailRoute,
         createAgentRoute,
         createQuestRoute,
-        verifyRoute,
         accountRoute,
         stripeConnectRoute,
         githubBountiesRoute,

@@ -633,3 +633,92 @@ export async function getTimeseries(
         })),
     };
 }
+
+// ─── Skill CRUD ───────────────────────────────────────────────────────────────
+
+export async function upsertSkill(
+    prisma: PrismaClient,
+    data: {
+        slug: string;
+        display_name: string;
+        summary?: string;
+        owner_handle?: string;
+        owner_display_name?: string;
+        tags?: Record<string, string>;
+        verification_config?: Record<string, unknown>;
+        featured?: boolean;
+        featured_order?: number;
+        is_web3?: boolean;
+    }
+) {
+    return prisma.clawhub_skills.upsert({
+        where: { slug: data.slug },
+        create: {
+            clawhub_id: `admin_${data.slug}`,
+            slug: data.slug,
+            display_name: data.display_name,
+            summary: data.summary ?? null,
+            owner_handle: data.owner_handle ?? null,
+            owner_display_name: data.owner_display_name ?? null,
+            tags: data.tags ?? {},
+            badges: {},
+            verification_config: data.verification_config ?? undefined,
+            featured: data.featured ?? false,
+            featured_order: data.featured_order ?? null,
+            is_web3: data.is_web3 ?? false,
+        },
+        update: {
+            display_name: data.display_name,
+            summary: data.summary ?? undefined,
+            owner_handle: data.owner_handle ?? undefined,
+            owner_display_name: data.owner_display_name ?? undefined,
+            tags: data.tags ?? undefined,
+            verification_config: data.verification_config ?? undefined,
+            featured: data.featured ?? undefined,
+            featured_order: data.featured_order ?? undefined,
+            is_web3: data.is_web3 ?? undefined,
+        },
+    });
+}
+
+export async function updateSkillVerificationConfig(
+    prisma: PrismaClient,
+    slug: string,
+    verification_config: Record<string, unknown>
+) {
+    return prisma.clawhub_skills.update({
+        where: { slug },
+        data: { verification_config },
+    });
+}
+
+export async function listSkillsAdmin(
+    prisma: PrismaClient,
+    opts: { limit?: number; offset?: number; search?: string; hasVerifyConfig?: boolean }
+) {
+    const where: Prisma.clawhub_skillsWhereInput = {};
+    if (opts.search) {
+        where.OR = [
+            { slug: { contains: opts.search, mode: 'insensitive' } },
+            { display_name: { contains: opts.search, mode: 'insensitive' } },
+        ];
+    }
+    if (opts.hasVerifyConfig === true) where.verification_config = { not: Prisma.JsonNull };
+    if (opts.hasVerifyConfig === false) where.verification_config = Prisma.JsonNull;
+
+    const [items, total] = await Promise.all([
+        prisma.clawhub_skills.findMany({
+            where,
+            orderBy: { downloads: 'desc' },
+            take: opts.limit ?? 50,
+            skip: opts.offset ?? 0,
+            select: {
+                id: true, slug: true, display_name: true, summary: true,
+                downloads: true, stars: true, featured: true,
+                is_web3: true, verification_config: true, crawled_at: true,
+            },
+        }),
+        prisma.clawhub_skills.count({ where }),
+    ]);
+    return { items, total };
+}

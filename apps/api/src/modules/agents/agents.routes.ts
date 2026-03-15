@@ -1,46 +1,8 @@
-import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { CreateAgentSchema, AgentSchema } from '@clawquest/shared';
+import { AgentSchema } from '@clawquest/shared';
 import { z } from 'zod';
-import { randomBytes } from 'crypto';
-import { verifyTweet } from '../x/x-rapidapi-client';
-
-// ─── Helper ──────────────────────────────────────────────────────────────────
-
-function generateAgentApiKey(): string {
-    return 'cq_' + randomBytes(24).toString('hex'); // e.g. cq_a3f9b2...
-}
-
-// ─── Agent Auth Helper ────────────────────────────────────────────────────────
-// Agents authenticate with "Authorization: Bearer cq_<key>" — separate from human JWT.
-// Returns { agentId, ownerId } or sends 401 and returns null.
-
-async function authenticateAgent(
-    server: FastifyInstance & { prisma: any },
-    request: FastifyRequest,
-    reply: FastifyReply
-): Promise<{ agentId: string; ownerId: string | null } | null | undefined> {
-    const auth = request.headers.authorization;
-    if (!auth?.startsWith('Bearer cq_')) {
-        reply.status(401).send({ error: 'Missing or invalid agent API key' });
-        return null;
-    }
-    const apiKey = auth.slice(7); // strip "Bearer "
-    const agent = await server.prisma.agent.findUnique({
-        where: { agentApiKey: apiKey },
-        select: { id: true, ownerId: true, isActive: true },
-    });
-    if (!agent) {
-        reply.status(401).send({ error: 'Invalid agent API key' });
-        return null;
-    }
-    // Block inactive agents — only the active agent per user can call APIs
-    if (agent.ownerId && !agent.isActive) {
-        reply.status(403).send({ error: 'This agent is not active. Ask your human owner to activate it on the Dashboard.' });
-        return null;
-    }
-    return { agentId: agent.id, ownerId: agent.ownerId as string | null };
-}
+import { authenticateAgent } from './agent-auth.helper';
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
 
@@ -70,57 +32,10 @@ export async function agentsRoutes(app: FastifyInstance) {
                 status: a.status as any,
                 ownerId: a.ownerId,
                 isActive: a.isActive,
-                activationCode: a.activationCode ?? undefined,
                 agentApiKey: a.agentApiKey ?? undefined,
-                verificationToken: a.verificationToken ?? undefined,
-                verificationExpiresAt: a.verificationExpiresAt?.toISOString() ?? undefined,
-                claimedAt: a.claimedAt?.toISOString() ?? undefined,
-                claimedVia: a.claimedVia ?? undefined,
-                claimEmail: a.claimEmail ?? undefined,
                 createdAt: a.createdAt.toISOString(),
                 updatedAt: a.updatedAt.toISOString(),
             }));
-        }
-    );
-
-    // ── Create Agent (human JWT) ──────────────────────────────────────────────
-    server.post(
-        '/',
-        {
-            onRequest: [app.authenticate],
-            schema: {
-                tags: ['Agents'],
-                summary: 'Create a new agent',
-                security: [{ bearerAuth: [] }],
-                body: CreateAgentSchema,
-                response: { 201: AgentSchema },
-            },
-        },
-        async (request, reply) => {
-            const { agentname } = request.body as { agentname: string };
-            const agent = await server.prisma.agent.create({
-                data: {
-                    agentname,
-                    ownerId: request.user.id,
-                    activationCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
-                },
-            });
-            return reply.code(201).send({
-                id: agent.id,
-                agentname: agent.agentname,
-                status: agent.status as any,
-                ownerId: agent.ownerId,
-                isActive: agent.isActive,
-                activationCode: agent.activationCode ?? undefined,
-                agentApiKey: agent.agentApiKey ?? undefined,
-                verificationToken: agent.verificationToken ?? undefined,
-                verificationExpiresAt: agent.verificationExpiresAt?.toISOString() ?? undefined,
-                claimedAt: agent.claimedAt?.toISOString() ?? undefined,
-                claimedVia: agent.claimedVia ?? undefined,
-                claimEmail: agent.claimEmail ?? undefined,
-                createdAt: agent.createdAt.toISOString(),
-                updatedAt: agent.updatedAt.toISOString(),
-            });
         }
     );
 
@@ -151,13 +66,7 @@ export async function agentsRoutes(app: FastifyInstance) {
                 status: agent.status as any,
                 ownerId: agent.ownerId,
                 isActive: agent.isActive,
-                activationCode: agent.activationCode ?? undefined,
                 agentApiKey: agent.agentApiKey ?? undefined,
-                verificationToken: agent.verificationToken ?? undefined,
-                verificationExpiresAt: agent.verificationExpiresAt?.toISOString() ?? undefined,
-                claimedAt: agent.claimedAt?.toISOString() ?? undefined,
-                claimedVia: agent.claimedVia ?? undefined,
-                claimEmail: agent.claimEmail ?? undefined,
                 createdAt: agent.createdAt.toISOString(),
                 updatedAt: agent.updatedAt.toISOString(),
             };
@@ -183,13 +92,12 @@ export async function agentsRoutes(app: FastifyInstance) {
             const { id } = request.params as { id: string };
             const userId = (request as any).user.id;
 
-            // Verify ownership and must be claimed
+            // Verify ownership
             const agent = await server.prisma.agent.findFirst({
                 where: { id, ownerId: userId },
-                select: { id: true, claimedAt: true, agentname: true },
+                select: { id: true, agentname: true },
             });
             if (!agent) return reply.status(404).send({ error: 'Agent not found or not owned by you' } as any);
-            if (!agent.claimedAt) return reply.status(400).send({ error: 'Agent must be claimed before activating' } as any);
 
             // Deactivate all other agents for this user, then activate this one
             await server.prisma.$transaction([
@@ -290,73 +198,6 @@ export async function agentsRoutes(app: FastifyInstance) {
                 meta: l.meta ?? null,
                 createdAt: l.createdAt.toISOString(),
             }));
-        }
-    );
-
-    // ── POST /agents/register — agent exchanges activationCode for agentApiKey ─
-    // No auth required. The activationCode IS the one-time credential.
-    // Human creates agent on Dashboard → copies activationCode → gives to their agent.
-    // Agent calls this endpoint once → receives agentApiKey (store in ~/.clawquest/credentials.json).
-    server.post(
-        '/register',
-        {
-            schema: {
-                tags: ['Agents'],
-                summary: 'Exchange activation code for agent API key (no auth required)',
-                body: z.object({
-                    activationCode: z.string().min(4).max(12),
-                    agentname: z.string().min(1).max(50).optional(),
-                }),
-                response: {
-                    200: z.object({
-                        agentId: z.string().uuid(),
-                        agentApiKey: z.string(),
-                        agentname: z.string(),
-                        ownerId: z.string().uuid(),
-                        message: z.string(),
-                    }),
-                },
-            },
-        },
-        async (request, reply) => {
-            const { activationCode, agentname } = request.body as { activationCode: string; agentname?: string };
-
-            const agent = await server.prisma.agent.findUnique({
-                where: { activationCode: activationCode.toUpperCase() },
-            });
-
-            if (!agent) {
-                return reply.status(404).send({ error: 'Invalid or expired activation code' } as any);
-            }
-
-            // Issue a fresh agentApiKey, consume the activationCode
-            const agentApiKey = generateAgentApiKey();
-
-            const updated = await server.prisma.agent.update({
-                where: { id: agent.id },
-                data: {
-                    agentApiKey,
-                    activationCode: null, // one-time use — clear it
-                    ...(agentname ? { agentname } : {}),
-                },
-            });
-
-            await server.prisma.agentLog.create({
-                data: {
-                    agentId: agent.id,
-                    type: 'INFO',
-                    message: 'Agent registered via activation code',
-                    meta: { method: 'activation_code' },
-                },
-            });
-
-            return {
-                agentId: updated.id,
-                agentApiKey,
-                agentname: updated.agentname,
-                ownerId: updated.ownerId,
-                message: `✅ Agent "${updated.agentname}" registered. Store agentApiKey safely — it won't be shown again.`,
-            };
         }
     );
 
@@ -737,213 +578,4 @@ export async function agentsRoutes(app: FastifyInstance) {
         }
     );
 
-    // ── POST /agents/self-register — agent-first registration (no auth) ─────
-    // Agent calls this to create itself, gets agentApiKey + claim URL for human.
-    // Human visits claimUrl → enters verificationCode → claims the agent.
-    server.post(
-        '/self-register',
-        {
-            schema: {
-                tags: ['Agents'],
-                summary: 'Agent self-registration (no auth required)',
-                body: z.object({
-                    agentname: z.string().min(1).max(50).optional(),
-                    platform: z.string().max(50).optional(),
-                }),
-                response: {
-                    201: z.object({
-                        agentId: z.string().uuid(),
-                        agentApiKey: z.string(),
-                        verificationToken: z.string(),
-                        claimUrl: z.string(),
-                        verificationCode: z.string(),
-                        telegramDeeplink: z.string(),
-                        message: z.string(),
-                    }),
-                },
-            },
-        },
-        async (request, reply) => {
-            const { agentname, platform } = request.body as { agentname?: string; platform?: string };
-            const resolvedName = agentname || `agent-${randomBytes(3).toString('hex')}`;
-
-            const agentApiKey = generateAgentApiKey();
-            const verificationToken = 'agent_' + randomBytes(32).toString('hex');
-            const verificationExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h
-
-            const agent = await server.prisma.agent.create({
-                data: {
-                    agentname: resolvedName,
-                    ownerId: null,
-                    agentApiKey,
-                    verificationToken,
-                    verificationExpiresAt,
-                },
-            });
-
-            await server.prisma.agentLog.create({
-                data: {
-                    agentId: agent.id,
-                    type: 'INFO',
-                    message: 'Agent self-registered, awaiting human claim',
-                    meta: { method: 'self-register', platform: platform ?? null },
-                },
-            });
-
-            const frontendUrl = process.env.FRONTEND_URL || 'https://clawquest.ai';
-            const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'ClawQuest_aibot';
-            const claimUrl = `${frontendUrl}/verify?token=${verificationToken}`;
-            const verificationCode = verificationToken.slice(0, 8);
-            const telegramDeeplink = `https://t.me/${botUsername}?start=${verificationToken}`;
-
-            return reply.code(201).send({
-                agentId: agent.id,
-                agentApiKey,
-                verificationToken,
-                claimUrl,
-                verificationCode,
-                telegramDeeplink,
-                message: `Agent "${resolvedName}" created. Share the claim URL and verification code with your human owner. Store agentApiKey safely.`,
-            });
-        }
-    );
-
-    // ── GET /agents/verify/:token — get agent info by verification token (public) ─────
-    server.get(
-        '/verify/:token',
-        {
-            schema: {
-                tags: ['Agents'],
-                summary: 'Get agent info by verification token (public)',
-                params: z.object({
-                    token: z.string().min(1),
-                }),
-                response: {
-                    200: z.object({
-                        display_name: z.string(),
-                        verification_code: z.string(),
-                    }),
-                },
-            },
-        },
-        async (request, reply) => {
-            const { token } = request.params as { token: string };
-
-            const agent = await server.prisma.agent.findUnique({
-                where: { verificationToken: token },
-                select: {
-                    agentname: true,
-                    verificationToken: true,
-                    verificationExpiresAt: true,
-                    ownerId: true,
-                },
-            });
-
-            if (!agent) {
-                return reply.status(404).send({ error: 'Invalid verification token' } as any);
-            }
-
-            if (agent.ownerId) {
-                return reply.status(400).send({ error: 'Agent already claimed' } as any);
-            }
-
-            if (agent.verificationExpiresAt && agent.verificationExpiresAt < new Date()) {
-                return reply.status(410).send({ error: 'Verification token expired' } as any);
-            }
-
-            const verificationCode = agent.verificationToken?.slice(0, 8) || '';
-
-            return {
-                display_name: agent.agentname,
-                verification_code: verificationCode,
-            };
-        }
-    );
-
-    // ── POST /agents/verify — human claims an agent (human JWT) ─────────────
-    server.post(
-        '/verify',
-        {
-            onRequest: [app.authenticate],
-            schema: {
-                tags: ['Agents'],
-                summary: 'Claim a self-registered agent (human JWT)',
-                security: [{ bearerAuth: [] }],
-                body: z.object({
-                    verificationToken: z.string().min(1),
-                    verify_tweet_url: z.string().url().optional(),
-                }),
-                response: {
-                    200: z.object({
-                        agentId: z.string().uuid(),
-                        agentname: z.string(),
-                        message: z.string(),
-                    }),
-                },
-            },
-        },
-        async (request, reply) => {
-            const { verificationToken, verify_tweet_url } = request.body as { verificationToken: string; verify_tweet_url?: string };
-
-            const agent = await server.prisma.agent.findUnique({
-                where: { verificationToken },
-            });
-
-            if (!agent) {
-                return reply.status(404).send({ error: 'Invalid or expired verification token' } as any);
-            }
-
-            if (agent.ownerId) {
-                return reply.status(400).send({ error: 'Agent already claimed' } as any);
-            }
-
-            if (agent.verificationExpiresAt && agent.verificationExpiresAt < new Date()) {
-                return reply.status(410).send({ error: 'Verification token expired' } as any);
-            }
-
-            // If verify_tweet_url is provided, verify via X (RapidAPI — no OAuth tokens needed)
-            if (verify_tweet_url) {
-                const verificationCode = verificationToken.slice(0, 8);
-
-                const result = await verifyTweet(verify_tweet_url, { verificationCode });
-
-                if (!result.verified) {
-                    const status = result.reason === 'Tweet not found' ? 404
-                        : result.reason?.includes('Rate limit') ? 429
-                            : 400;
-                    return reply.status(status).send({ error: result.reason } as any);
-                }
-            }
-
-            const updated = await server.prisma.agent.update({
-                where: { id: agent.id },
-                data: {
-                    ownerId: request.user.id,
-                    verificationToken: null,
-                    verificationExpiresAt: null,
-                    claimedAt: new Date(),
-                    claimedVia: verify_tweet_url ? 'x' : 'supabase',
-                },
-            });
-
-            await server.prisma.agentLog.create({
-                data: {
-                    agentId: agent.id,
-                    type: 'INFO',
-                    message: `Agent claimed by ${request.user.email}${verify_tweet_url ? ' via X verification' : ''}`,
-                    meta: {
-                        method: verify_tweet_url ? 'x_verification' : 'verification',
-                        userId: request.user.id,
-                        verify_tweet_url: verify_tweet_url || undefined,
-                    },
-                },
-            });
-
-            return {
-                agentId: updated.id,
-                agentname: updated.agentname,
-                message: `Agent "${updated.agentname}" is now yours!`,
-            };
-        }
-    );
 }

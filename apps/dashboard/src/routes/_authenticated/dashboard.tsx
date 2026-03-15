@@ -1,14 +1,12 @@
-import { useState, useEffect, useRef, useCallback, Fragment } from "react"
+import { useState, useEffect, Fragment } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { useQuery, useQueries, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { QuestersPopup } from "@/components/QuestersPopup"
-import { PlatformIcon } from "@/components/PlatformIcon"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { QuestTypeBadge, QuestStatusBadge } from "@/components/quest-badges"
-import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { PageTitle } from "@/components/page-title"
 import { toast } from "sonner"
@@ -27,9 +25,6 @@ interface Agent {
     agentname: string
     status: "idle" | "questing" | "offline"
     isActive: boolean
-    activationCode?: string
-    claimedAt?: string
-    claimedVia?: string
     createdAt: string
     participations?: {
         id: string
@@ -52,7 +47,6 @@ interface AgentSkillInfo {
 
 type QuestFilter = "all" | "draft" | "live" | "scheduled" | "completed"
 type AcceptedFilter = "all" | "active" | "ended"
-type AgentFilter = "all" | "claimed" | "pending"
 type MainTab = "my-quest" | "accepted" | "agents"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -95,49 +89,6 @@ function formatTimeLeft(expiresAt: string | null): { val: string; label: string;
     return { val: `${d}d:${hh}h:${mm}m`, label: "remaining", cls: "normal" }
 }
 
-// ─── CmdBlock ─────────────────────────────────────────────────────────────────
-
-function CmdBlock({ cmd }: { cmd: string }) {
-    const [copied, setCopied] = useState(false)
-    const handleCopy = (e: React.MouseEvent) => {
-        e.stopPropagation()
-        navigator.clipboard.writeText(cmd).then(() => {
-            setCopied(true)
-            setTimeout(() => setCopied(false), 1500)
-        })
-    }
-    return (
-        <div className="flex items-center justify-between bg-surface-dark text-surface-dark-fg rounded px-3 py-2.5 font-mono text-xs mt-1.5">
-            <span><span className="text-surface-dark-muted mr-1.5">$</span><span className="select-all">{cmd}</span></span>
-            <button
-                className="bg-surface-dark-subtle border-none text-surface-dark-fg px-2 py-0.5 rounded text-xs cursor-pointer font-semibold hover:bg-surface-dark-muted/30"
-                onClick={handleCopy}
-            >{copied ? "Copied!" : "Copy"}</button>
-        </div>
-    )
-}
-
-// ─── CopyBlock ─────────────────────────────────────────────────────────────────
-
-function CopyBlock({ text }: { text: string }) {
-    const [copied, setCopied] = useState(false)
-    const handleCopy = (e: React.MouseEvent) => {
-        e.stopPropagation()
-        navigator.clipboard.writeText(text).then(() => {
-            setCopied(true)
-            setTimeout(() => setCopied(false), 1500)
-        })
-    }
-    return (
-        <div className="relative bg-surface-dark text-surface-dark-fg rounded px-3 py-2.5 font-mono text-xs mt-1.5">
-            <pre className="whitespace-pre-wrap select-all leading-relaxed pr-14">{text}</pre>
-            <button
-                className="absolute top-2 right-2 bg-surface-dark-subtle border-none text-surface-dark-fg px-2 py-0.5 rounded text-xs cursor-pointer font-semibold hover:bg-surface-dark-muted/30"
-                onClick={handleCopy}
-            >{copied ? "Copied!" : "Copy"}</button>
-        </div>
-    )
-}
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -187,52 +138,11 @@ export function Dashboard() {
     const [questFilter, setQuestFilter] = useState<QuestFilter>("all")
     const [questView, setQuestView] = useState<"card" | "list">("card")
     const [acceptedFilter, setAcceptedFilter] = useState<AcceptedFilter>("all")
-    const [agentFilter] = useState<AgentFilter>("all")
     const [activatingAgent, setActivatingAgent] = useState<string | null>(null)
     const [deletingAgent, setDeletingAgent] = useState<string | null>(null)
     const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null)
     const [expandedAgent, setExpandedAgent] = useState<string | null>(null)
     const [popupQuest, setPopupQuest] = useState<{ id: string; title: string } | null>(null)
-    const [showRegisterModal, setShowRegisterModal] = useState(false)
-    const [activePlatform, setActivePlatform] = useState<"openclaw" | "claude">("openclaw")
-    const [platformDropdownOpen, setPlatformDropdownOpen] = useState(false)
-    const platformSelectRef = useRef<HTMLDivElement>(null)
-    const modalRef = useRef<HTMLDivElement>(null)
-
-    // Focus trap for register agent modal
-    const handleModalKeyDown = useCallback((e: React.KeyboardEvent) => {
-        if (e.key === "Escape") { setShowRegisterModal(false); return }
-        if (e.key !== "Tab") return
-        const modal = modalRef.current
-        if (!modal) return
-        const focusable = modal.querySelectorAll<HTMLElement>(
-            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        )
-        if (focusable.length === 0) return
-        const first = focusable[0]
-        const last = focusable[focusable.length - 1]
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus() }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
-    }, [])
-
-    // Auto-focus first element when modal opens
-    useEffect(() => {
-        if (showRegisterModal && modalRef.current) {
-            const first = modalRef.current.querySelector<HTMLElement>('a[href], button:not([disabled]), input:not([disabled])')
-            first?.focus()
-        }
-    }, [showRegisterModal])
-
-    useEffect(() => {
-        if (!platformDropdownOpen) return
-        const handler = (e: MouseEvent) => {
-            if (platformSelectRef.current && !platformSelectRef.current.contains(e.target as Node)) {
-                setPlatformDropdownOpen(false)
-            }
-        }
-        document.addEventListener("mousedown", handler)
-        return () => document.removeEventListener("mousedown", handler)
-    }, [platformDropdownOpen])
 
     const { data: quests = [], isLoading: questsLoading } = useQuery<MineQuest[]>({
         queryKey: ["my-quests"],
@@ -272,7 +182,7 @@ export function Dashboard() {
     })
 
     // ── Agent skills (per agent) ─────────────────────────────────────────────
-    const activeAgents = agents.filter(a => !a.activationCode)
+    const activeAgents = agents
     const agentSkillQueries = useQueries({
         queries: activeAgents.map(agent => ({
             queryKey: ["agent-skills", agent.id],
@@ -335,11 +245,7 @@ export function Dashboard() {
             : allAccepted.filter(q => isEndedStatus(q.status))
 
     // Agent filter counts
-    const claimedAgents = agents.filter(a => !a.activationCode)
-    const pendingAgents = agents.filter(a => !!a.activationCode)
-    const filteredAgents = agentFilter === "all" ? agents
-        : agentFilter === "claimed" ? claimedAgents
-            : pendingAgents
+    const filteredAgents = agents
 
     const handleActivateAgent = async (agentId: string) => {
         if (!session?.access_token) return
@@ -406,150 +312,6 @@ export function Dashboard() {
                     />
                 )}
 
-                {/* Register Agent Modal */}
-                {showRegisterModal && (
-                    <div
-                        className="fixed inset-0 bg-black/40 z-300 flex items-center justify-center"
-                        onClick={() => setShowRegisterModal(false)}
-                        onKeyDown={handleModalKeyDown}
-                    >
-                        <div
-                            className="bg-background rounded border border-border w-[560px] max-h-[80vh] overflow-y-auto max-sm:w-[calc(100vw-24px)] max-sm:max-h-[90vh]"
-                            ref={modalRef}
-                            role="dialog"
-                            aria-label="Register an Agent"
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <div className="flex justify-between items-center px-5 py-3.5 border-b border-border">
-                                <h2 className="text-base font-semibold">Register an Agent</h2>
-                                <button
-                                    className="bg-transparent border-none text-lg text-muted-foreground cursor-pointer px-1.5 py-0.5 leading-none hover:text-foreground"
-                                    aria-label="Close"
-                                    onClick={() => setShowRegisterModal(false)}
-                                >&times;</button>
-                            </div>
-                            <div className="p-5">
-                                <div className="text-xs text-muted-foreground mb-4 leading-relaxed">
-                                    Tell your agent to install the ClawQuest skill. Once installed, the agent will automatically
-                                    appear in your My Agents list. Choose your agent's platform below:
-                                </div>
-
-                                {/* Platform picker — custom styled select */}
-                                <div className="space-y-1.5 mb-0 relative" ref={platformSelectRef}>
-                                    <Label>Agent Platform</Label>
-                                    {(() => {
-                                        const PLATFORMS = [
-                                            { id: "openclaw", label: "OpenClaw", available: true },
-                                            { id: "claude", label: "Claude Code", available: true },
-                                            { id: "chatgpt", label: "ChatGPT", available: false },
-                                            { id: "cursor", label: "Cursor", available: false },
-                                        ]
-                                        const selected = PLATFORMS.find(p => p.id === activePlatform) ?? PLATFORMS[0]
-                                        return (
-                                            <>
-                                                <div
-                                                    className={cn(
-                                                        "flex items-center gap-2 px-2.5 py-[7px] border border-input rounded bg-background cursor-pointer text-sm text-foreground select-none transition-colors hover:border-primary",
-                                                        platformDropdownOpen && "border-primary ring-2 ring-primary/15"
-                                                    )}
-                                                    onClick={() => setPlatformDropdownOpen(o => !o)}
-                                                >
-                                                    <PlatformIcon name={selected.id as any} size={18} colored />
-                                                    <span className="flex-1 font-medium">{selected.label}</span>
-                                                    <span className="text-xs text-muted-foreground ml-0.5">{platformDropdownOpen ? "▲" : "▼"}</span>
-                                                </div>
-                                                {platformDropdownOpen && (
-                                                    <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-background border border-input rounded shadow-lg z-200 overflow-hidden">
-                                                        {PLATFORMS.map(opt => (
-                                                            <div
-                                                                key={opt.id}
-                                                                className={cn(
-                                                                    "flex items-center gap-2 px-2.5 py-2 max-sm:py-3 text-sm text-foreground cursor-pointer transition-colors hover:bg-bg-2 [&+&]:border-t [&+&]:border-border",
-                                                                    activePlatform === opt.id && "bg-accent-light",
-                                                                    !opt.available && "opacity-50 cursor-not-allowed"
-                                                                )}
-                                                                onClick={() => {
-                                                                    if (!opt.available) return
-                                                                    setActivePlatform(opt.id as "openclaw" | "claude")
-                                                                    setPlatformDropdownOpen(false)
-                                                                }}
-                                                            >
-                                                                <PlatformIcon name={opt.id as any} size={18} colored />
-                                                                <span className="flex-1">{opt.label}</span>
-                                                                {!opt.available && (
-                                                                    <Badge variant="outline" className={cn("text-xs font-semibold uppercase tracking-wider px-1.5 py-0")}>Soon</Badge>
-                                                                )}
-                                                                {activePlatform === opt.id && opt.available && <span className="text-accent text-sm">✓</span>}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </>
-                                        )
-                                    })()}
-                                </div>
-
-                                {/* OpenClaw Install Guide */}
-                                {activePlatform === "openclaw" && (
-                                    <div className="mt-4">
-                                        <div className="h-px bg-border my-4" />
-                                        <div className="text-base font-semibold mb-3">OpenClaw — Install Guide</div>
-
-                                        <div className="mb-2">
-                                            <div className="text-xs text-muted-foreground leading-relaxed mb-2">Copy and paste to chat with your agent:</div>
-                                            <CopyBlock text={`1. Install "clawquest" skill: npx clawhub@latest install clawquest\n2. Follow instruction to join ClawQuest`} />
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Claude Code Install Guide */}
-                                {activePlatform === "claude" && (
-                                    <div className="mt-4">
-                                        <div className="h-px bg-border my-4" />
-                                        <div className="text-base font-semibold mb-3">Claude Code — Install Guide</div>
-
-                                        <div className="flex gap-2.5 mb-3.5">
-                                            <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center shrink-0 mt-px">1</div>
-                                            <div className="flex-1">
-                                                <div className="text-xs font-semibold text-foreground mb-1">Add ClawQuest MCP to Claude Code</div>
-                                                <div className="text-xs text-muted-foreground leading-relaxed">Run this in your project directory to register the ClawQuest MCP server:</div>
-                                                <CmdBlock cmd="claude mcp add --transport http clawquest https://api.clawquest.ai/mcp" />
-                                            </div>
-                                        </div>
-
-                                        <div className="flex gap-2.5 mb-3.5">
-                                            <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center shrink-0 mt-px">2</div>
-                                            <div className="flex-1">
-                                                <div className="text-xs font-semibold text-foreground mb-1">Restart Claude Code &amp; verify</div>
-                                                <div className="text-xs text-muted-foreground leading-relaxed">
-                                                    Restart Claude Code, then run <code>claude --mcp-debug</code> to confirm the <code>clawquest</code> MCP server is connected.
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex gap-2.5 mb-3.5">
-                                            <div className="w-[22px] h-[22px] rounded-full bg-accent text-white text-xs font-semibold flex items-center justify-center shrink-0 mt-px">3</div>
-                                            <div className="flex-1">
-                                                <div className="text-xs font-semibold text-foreground mb-1">Register &amp; claim your agent</div>
-                                                <div className="text-xs text-muted-foreground leading-relaxed">
-                                                    Ask Claude Code: <em>"Register me as a ClawQuest agent"</em>. Claude will call the MCP, receive a <code>claim_url</code> and <code>verification_code</code>, then guide you to complete the claim here in your{" "}
-                                                    <strong>My Agents</strong> list (status: <Badge variant="filled-warning">Pending Claim</Badge>).
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-bg-3 border border-border rounded px-3 py-2.5 mt-1">
-                                            <div className="text-xs text-muted-foreground leading-relaxed">
-                                                <strong className="text-foreground">How it works:</strong>{" "}
-                                                Claude Code connects to ClawQuest via MCP → your Claude agent registers and receives quest assignments → completes tasks autonomously → you verify ownership once and it stays active. One human can own multiple agents.
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 {/* Page header */}
                 <PageTitle
@@ -557,7 +319,6 @@ export function Dashboard() {
                     description={<>{displayName ? handle : `@${handle}`} · {agents.length} agents · {quests.length} quests</>}
                     border
                     actions={<>
-                        <Button onClick={() => setShowRegisterModal(true)}>+ Register Agent</Button>
                         <Button asChild>
                             <Link to="/quests/new">+ Create Quest</Link>
                         </Button>
@@ -1292,13 +1053,11 @@ export function Dashboard() {
                                     </thead>
                                     <tbody>
                                         {filteredAgents.map(agent => {
-                                            const isPending = !!agent.activationCode
                                             const isExpanded = expandedAgent === agent.id
                                             return (
                                                 <Fragment key={agent.id}>
                                                     <tr
                                                         className="cursor-pointer hover:bg-bg-2/50"
-                                                        data-agent-status={isPending ? "pending" : "claimed"}
                                                         onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}
                                                     >
                                                         <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[30px] text-center">
@@ -1313,16 +1072,11 @@ export function Dashboard() {
                                                                 {agent.isActive && (
                                                                     <span className="inline-flex items-center text-2xs font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">● Active</span>
                                                                 )}
-                                                                {agent.claimedVia === "x" && (
-                                                                    <span className="inline-flex items-center text-2xs font-semibold px-1 py-0.5 rounded bg-sky-500/15 text-sky-400">𝕏</span>
-                                                                )}
                                                             </div>
                                                             <div className="text-xs text-muted-foreground">id: {agent.id.slice(0, 8)}…</div>
                                                         </td>
                                                         <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
-                                                            {isPending ? (
-                                                                <Badge variant="filled-warning">Pending Claim</Badge>
-                                                            ) : agent.status === "questing" ? (
+                                                            {agent.status === "questing" ? (
                                                                 <span className="text-(--yellow) font-semibold text-xs">
                                                                     <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-(--yellow)" /> Questing
                                                                 </span>
@@ -1371,17 +1125,11 @@ export function Dashboard() {
                                                             </div>
                                                         </td>
                                                         <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
-                                                            {isPending ? (
-                                                                <Badge variant="filled-warning">Pending</Badge>
-                                                            ) : agent.claimedAt ? (
-                                                                <Badge variant="filled-success">Verified</Badge>
-                                                            ) : (
-                                                                <Badge variant="outline">Unverified</Badge>
-                                                            )}
+                                                            <Badge variant="filled-success">Verified</Badge>
                                                         </td>
                                                         <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[180px]" onClick={e => e.stopPropagation()}>
                                                             <div className="flex items-center gap-1.5 flex-wrap">
-                                                                {!isPending && agent.claimedAt && !agent.isActive && (
+                                                                {!agent.isActive && (
                                                                     <button
                                                                         type="button"
                                                                         disabled={activatingAgent === agent.id}
@@ -1413,28 +1161,14 @@ export function Dashboard() {
                                                         <tr key={`detail-${agent.id}`}>
                                                             <td colSpan={8} className="p-0 bg-muted">
                                                                 <div className="py-3.5 px-4 pl-[26px] border-b border-border">
-                                                                    {isPending ? (
-                                                                        <div className="mb-3.5 last:mb-0">
-                                                                            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Claim this Agent</div>
-                                                                            <p className="text-sm text-muted-foreground mb-2.5">
-                                                                                Run this command in your agent to claim it:
+                                                                    <div className="mb-3.5 last:mb-0">
+                                                                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Quest Participation</div>
+                                                                        {(!agent.participations || agent.participations.length === 0) ? (
+                                                                            <p className="text-sm text-muted-foreground">
+                                                                                No quest history yet.{" "}
+                                                                                <Link to="/quests">Browse available quests →</Link>
                                                                             </p>
-                                                                            <div className="flex items-center justify-between bg-[#1e1e2e] text-[#cdd6f4] rounded px-3 py-2.5 font-mono text-xs mt-1.5">
-                                                                                <span className="text-[#a6adc8] mr-1.5">$</span>
-                                                                                <span className="select-all">
-                                                                                    npx clawhub@latest claim --code {agent.activationCode}
-                                                                                </span>
-                                                                            </div>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="mb-3.5 last:mb-0">
-                                                                            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Quest Participation</div>
-                                                                            {(!agent.participations || agent.participations.length === 0) ? (
-                                                                                <p className="text-sm text-muted-foreground">
-                                                                                    No quest history yet.{" "}
-                                                                                    <Link to="/quests">Browse available quests →</Link>
-                                                                                </p>
-                                                                            ) : (
+                                                                        ) : (
                                                                                 <table className="w-full border-collapse">
                                                                                     <thead>
                                                                                         <tr>
@@ -1479,9 +1213,8 @@ export function Dashboard() {
                                                                                 </table>
                                                                             )}
                                                                         </div>
-                                                                    )}
                                                                     {/* My Skills section */}
-                                                                    {!isPending && (() => {
+                                                                    {(() => {
                                                                         const skillData = agentSkillsMap.get(agent.id)
                                                                         const scanCmd = `npx @clawquest/scan --key <your-agent-api-key> --server ${API_BASE}`
                                                                         return (

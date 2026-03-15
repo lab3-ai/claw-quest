@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { classifySingleSkill } from '../web3-skills/web3-classify.job';
+import { detectVerificationConfig } from './verification-config-registry';
 
 const CLAWHUB_BASE = 'https://wry-manatee-359.convex.site/api/v1/skills';
 const SYNC_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -91,6 +92,7 @@ async function ensurePrioritySlugs(server: FastifyInstance): Promise<void> {
         };
 
         const s = detail.skill;
+        const autoConfig = detectVerificationConfig(s.slug, s.tags ?? {});
         await server.prisma.clawhub_skills.create({
             data: {
                 clawhub_id: s.slug,
@@ -110,6 +112,7 @@ async function ensurePrioritySlugs(server: FastifyInstance): Promise<void> {
                 owner_handle: detail.owner?.handle ?? null,
                 owner_display_name: detail.owner?.displayName ?? null,
                 owner_image: detail.owner?.image ?? null,
+                verification_config: autoConfig ?? undefined,
             },
         });
         server.log.info(`[clawhub:sync] Priority slug inserted: ${slug}`);
@@ -154,6 +157,7 @@ async function runSync(server: FastifyInstance): Promise<void> {
 
             // Only call detail API for new skills (to get owner)
             const owner = await fetchOwner(item.slug);
+            const autoConfig = detectVerificationConfig(item.slug, item.tags ?? {});
 
             await server.prisma.clawhub_skills.create({
                 data: {
@@ -174,6 +178,7 @@ async function runSync(server: FastifyInstance): Promise<void> {
                     owner_handle: owner?.handle ?? null,
                     owner_display_name: owner?.displayName ?? null,
                     owner_image: owner?.image ?? null,
+                    verification_config: autoConfig ?? undefined,
                 },
             });
 

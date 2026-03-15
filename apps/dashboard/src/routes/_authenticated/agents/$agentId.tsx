@@ -18,8 +18,6 @@ interface Agent {
     status: "idle" | "questing" | "offline"
     platform: string | null
     createdAt: string
-    activationCode?: string
-    claimedAt?: string
     participations?: Participation[]
 }
 

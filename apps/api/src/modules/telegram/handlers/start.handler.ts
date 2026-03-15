@@ -2,7 +2,7 @@ import { Composer } from 'grammy';
 import { FastifyInstance } from 'fastify';
 import { BotContext } from '../types';
 import { MSG } from '../content/messages';
-import { linkAccountKeyboard, claimAgentKeyboard, claimQuestKeyboard } from '../keyboards/menus';
+import { linkAccountKeyboard, claimQuestKeyboard } from '../keyboards/menus';
 import { mainReplyKeyboard } from '../keyboards/reply-keyboard';
 import { handleWaitlistJoin, handleWaitlistJoinByToken } from './waitlist.handler';
 
@@ -93,49 +93,9 @@ async function handleBareStart(server: FastifyInstance, ctx: BotContext) {
     });
 }
 
-async function handleVerifyDeeplink(server: FastifyInstance, ctx: BotContext, token: string) {
-    try {
-        const agent = await server.prisma.agent.findUnique({
-            where: { verificationToken: token },
-        });
-
-        if (!agent) {
-            return ctx.reply(MSG.invalidLink);
-        }
-
-        if (agent.ownerId) {
-            return ctx.reply(MSG.agentAlreadyClaimed(agent.agentname));
-        }
-
-        if (agent.verificationExpiresAt && agent.verificationExpiresAt < new Date()) {
-            return ctx.reply(MSG.linkExpired);
-        }
-
-        // Link Telegram user to agent
-        const existingLink = await server.prisma.telegramLink.findUnique({
-            where: { agentId: agent.id },
-        });
-        if (!existingLink) {
-            await server.prisma.telegramLink.create({
-                data: {
-                    agentId: agent.id,
-                    telegramId: BigInt(ctx.from?.id || 0),
-                    username: ctx.from?.username,
-                    firstName: ctx.from?.first_name,
-                },
-            });
-        }
-
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        const verifyUrl = `${frontendUrl}/verify?token=${token}`;
-
-        return ctx.reply(MSG.agentLinked(agent.agentname), {
-            reply_markup: claimAgentKeyboard(verifyUrl),
-        });
-    } catch (error) {
-        server.log.error(error);
-        return ctx.reply(MSG.genericError);
-    }
+async function handleVerifyDeeplink(_server: FastifyInstance, ctx: BotContext, _token: string) {
+    // Verification token flow has been removed — agent registration no longer uses this
+    return ctx.reply(MSG.invalidLink);
 }
 
 async function handleQuestClaimDeeplink(server: FastifyInstance, ctx: BotContext, token: string) {
@@ -176,40 +136,7 @@ async function handleQuestClaimDeeplink(server: FastifyInstance, ctx: BotContext
     }
 }
 
-async function handleActivationCode(server: FastifyInstance, ctx: BotContext, code: string) {
-    await ctx.reply(MSG.searchingAgent);
-
-    try {
-        const agent = await server.prisma.agent.findUnique({
-            where: { activationCode: code.toUpperCase() },
-            include: { TelegramLink: true },
-        });
-
-        if (!agent) {
-            return ctx.reply(MSG.invalidCode);
-        }
-
-        if (agent.TelegramLink) {
-            return ctx.reply(MSG.agentAlreadyLinked);
-        }
-
-        await server.prisma.telegramLink.create({
-            data: {
-                agentId: agent.id,
-                telegramId: BigInt(ctx.from?.id || 0),
-                username: ctx.from?.username,
-                firstName: ctx.from?.first_name,
-            },
-        });
-
-        await server.prisma.agent.update({
-            where: { id: agent.id },
-            data: { activationCode: null },
-        });
-
-        return ctx.reply(MSG.activationSuccess(agent.agentname));
-    } catch (error) {
-        server.log.error(error);
-        return ctx.reply(MSG.genericError);
-    }
+async function handleActivationCode(_server: FastifyInstance, ctx: BotContext, _code: string) {
+    // Activation code flow has been removed — agent registration no longer uses this
+    return ctx.reply(MSG.invalidCode);
 }

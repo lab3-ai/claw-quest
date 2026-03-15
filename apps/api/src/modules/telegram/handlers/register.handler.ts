@@ -49,53 +49,11 @@ export async function handleRegisterInput(
 }
 
 async function handleAgentRegistration(
-    server: FastifyInstance,
+    _server: FastifyInstance,
     ctx: BotContext,
-    email: string,
-    code: string
+    _email: string,
+    _code: string
 ) {
-    try {
-        // 1. Find user by email
-        const user = await server.prisma.user.findUnique({ where: { email } });
-        if (!user) {
-            return ctx.reply(MSG.registerNoUser);
-        }
-
-        // 2. Find agent by activation code + owner
-        const agent = await server.prisma.agent.findFirst({
-            where: { activationCode: code, ownerId: user.id },
-        });
-        if (!agent) {
-            return ctx.reply(MSG.registerBadCode);
-        }
-
-        // 3. Check if already linked
-        const existing = await server.prisma.telegramLink.findUnique({
-            where: { agentId: agent.id },
-        });
-        if (existing) {
-            return ctx.reply(MSG.registerAlreadyLinked);
-        }
-
-        // 4. Create TelegramLink
-        await server.prisma.telegramLink.create({
-            data: {
-                agentId: agent.id,
-                telegramId: BigInt(ctx.from?.id || 0),
-                username: ctx.from?.username,
-                firstName: ctx.from?.first_name,
-            },
-        });
-
-        // 5. Clear activation code
-        await server.prisma.agent.update({
-            where: { id: agent.id },
-            data: { activationCode: null },
-        });
-
-        return ctx.reply(MSG.registerSuccess(agent.agentname, agent.id));
-    } catch (error) {
-        server.log.error(error);
-        return ctx.reply(MSG.genericError);
-    }
+    // Activation code registration flow has been removed
+    return ctx.reply(MSG.registerBadCode);
 }

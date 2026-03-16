@@ -94,7 +94,7 @@ function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email, a
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <DropdownMenuTrigger asChild>
-                                    <button className="h-9 w-9 rounded overflow-hidden cursor-pointer border-none p-0 bg-transparent hover:opacity-70 transition-opacity">
+                                    <button className="h-9 w-9 rounded overflow-hidden cursor-pointer p-0.5 border border-border bg-bg-1 hover:opacity-70 transition-opacity">
                                         <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
                                     </button>
                                 </DropdownMenuTrigger>
@@ -210,7 +210,7 @@ export function Navbar() {
                                 </Button>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <button className="h-9 w-9 rounded overflow-hidden cursor-pointer border-none p-0 bg-transparent hover:opacity-70 transition-opacity">
+                                        <button className="h-9 w-9 rounded overflow-hidden cursor-pointer p-0.5 border border-border bg-bg-1 hover:opacity-70 transition-opacity">
                                             <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
                                         </button>
                                     </DropdownMenuTrigger>

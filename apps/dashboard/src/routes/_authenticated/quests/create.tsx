@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react"
 import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 import { useNavigate, Link } from "@tanstack/react-router"
+import { Breadcrumb } from "@/components/breadcrumb"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { useSkillSearch, isSkillUrl, fetchSkillFromUrl, type ClawHubSkill } from "@/hooks/useSkillSearch"
@@ -1102,11 +1103,10 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     if (isEditMode && blockedStatus) {
         return (
             <div className="max-w-3xl mx-auto w-full py-5 max-sm:py-4 px-6 max-sm:px-3">
-                <nav className="flex items-center gap-1.5 py-3 max-sm:py-2 text-xs max-sm:text-xs text-muted-foreground">
-                    <Link to="/quests/$questId" params={{ questId: editQuestId! }}>Quest</Link>
-                    <span>›</span>
-                    <span>Edit</span>
-                </nav>
+                <Breadcrumb items={[
+                    { label: "Quest", to: "/quests/$questId", params: { questId: editQuestId! } },
+                    { label: "Edit" },
+                ]} />
                 <div style={{
                     marginTop: 40, padding: "24px", textAlign: "center",
                     border: "1px solid var(--border)", borderRadius: 0, background: "var(--sidebar-bg)",
@@ -1142,21 +1142,10 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
 
     return (
         <div className="max-w-3xl mx-auto px-4 max-sm:px-3">
-            <nav className="flex items-center gap-1.5 py-3 max-sm:py-2 text-xs max-sm:text-xs text-muted-foreground">
-                {isEditMode ? (
-                    <>
-                        <Link to="/quests/$questId" params={{ questId: editQuestId! }}>Quest</Link>
-                        <span>›</span>
-                        <span>{editLabel}</span>
-                    </>
-                ) : (
-                    <>
-                        <Link to="/dashboard">Dashboard</Link>
-                        <span>›</span>
-                        <span>Create Quest</span>
-                    </>
-                )}
-            </nav>
+            <Breadcrumb items={isEditMode
+                ? [{ label: "Quest", to: "/quests/$questId", params: { questId: editQuestId! } }, { label: editLabel }]
+                : [{ label: "Dashboard", to: "/dashboard" }, { label: "Create Quest" }]
+            } />
             <PageTitle
                 title={isEditMode ? editLabel : "Create a Quest"}
                 description={isEditMode

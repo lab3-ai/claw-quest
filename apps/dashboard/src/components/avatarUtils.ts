@@ -1,12 +1,12 @@
 export const AVATAR_COLORS = [
-    "#6366f1", // indigo
-    "#f59e0b", // amber
-    "#10b981", // emerald
-    "#ef4444", // red
-    "#3b82f6", // blue
-    "#8b5cf6", // violet
-    "#ec4899", // pink
-    "#14b8a6", // teal
+    "#c7d2fe", // indigo-200
+    "#bfdbfe", // blue-200
+    "#ddd6fe", // violet-200
+    "#a5f3fc", // cyan-200
+    "#99f6e4", // teal-200
+    "#a7f3d0", // emerald-200
+    "#bae6fd", // sky-200
+    "#e0e7ff", // indigo-100
 ]
 
 export function getInitials(name: string): string {
@@ -15,8 +15,10 @@ export function getInitials(name: string): string {
     return name.slice(0, 2).toUpperCase()
 }
 
-/** DiceBear thumbs avatar URL — deterministic per seed (handle/name) */
+/** DiceBear fun-emoji avatar URL — deterministic per seed, happy/neutral only */
 export function getDiceBearUrl(seed: string, size = 40): string {
     const bgColors = AVATAR_COLORS.map((c) => c.replace("#", "")).join(",")
-    return `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(seed)}&size=${size}&backgroundColor=${bgColors}`
+    const eyes = "cute,closed,love,stars,wink,wink2"
+    const mouth = "cute,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile"
+    return `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(seed)}&size=${size}&backgroundColor=${bgColors}&eyes=${eyes}&mouth=${mouth}`
 }

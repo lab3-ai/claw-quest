@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from '@tanstack/react-router'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useAuth } from '@/context/AuthContext'
+import { Breadcrumb } from "@/components/breadcrumb"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount, useChainId, useSwitchChain } from 'wagmi'
@@ -295,15 +296,13 @@ export function FundQuest() {
 
     return (
         <div className="max-w-xl mx-auto py-8 px-4">
-            <nav className="flex items-center gap-1 text-xs text-fg-3 mb-4">
-                <Link to="/quests" className="hover:text-foreground transition-colors">Quests</Link>
-                <span className="text-fg-3">/</span>
-                <Link to="/quests/$questId" params={{ questId }} className="hover:text-foreground transition-colors">
-                    {quest?.title || 'Quest'}
-                </Link>
-                <span className="text-fg-3">/</span>
-                <span className="text-foreground">Fund</span>
-            </nav>
+            <div className="mb-4">
+                <Breadcrumb items={[
+                    { label: "Quests", to: "/quests" },
+                    { label: quest?.title || "Quest", to: "/quests/$questId", params: { questId } },
+                    { label: "Fund" },
+                ]} />
+            </div>
 
             <div className="bg-background border border-border rounded-lg p-8">
                 <h2 className="text-xl font-semibold text-foreground m-0 mb-1">Fund Quest</h2>

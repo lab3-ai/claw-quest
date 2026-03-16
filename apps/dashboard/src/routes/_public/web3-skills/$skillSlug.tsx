@@ -1,9 +1,10 @@
-import { PageTitle } from "@/components/page-title"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Breadcrumb } from "@/components/breadcrumb"
 import { useWeb3SkillDetail } from "@/hooks/useWeb3Skills"
-import { Download2Line, StarLine, FlashLine, ArrowLeftLine, GlobeLine } from "@mingcute/react"
+import { Download2Line, StarLine, FlashLine, GlobeLine } from "@mingcute/react"
+import { GitHubIcon } from "@/components/github-icon"
 
 function formatCount(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}m`
@@ -16,10 +17,21 @@ export function Web3SkillDetail({ skillSlug }: { skillSlug: string }) {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32" />
-        <Skeleton className="h-48" />
+      <div className="space-y-4">
+        <Breadcrumb items={[
+          { label: "Web3 Skills", to: "/web3-skills" },
+          { label: "Loading..." },
+        ]} />
+        <div className="py-4 border-b border-border">
+          <Skeleton className="h-6 w-48 mb-2" />
+          <Skeleton className="h-3 w-32" />
+        </div>
+        <Skeleton className="h-16 w-full" />
+        <div className="grid grid-cols-3 gap-3">
+          <Skeleton className="h-20" />
+          <Skeleton className="h-20" />
+          <Skeleton className="h-20" />
+        </div>
       </div>
     )
   }
@@ -27,10 +39,10 @@ export function Web3SkillDetail({ skillSlug }: { skillSlug: string }) {
   if (error || !skill) {
     return (
       <div className="space-y-4">
-        <a href="/web3-skills" className="inline-flex items-center gap-1 text-sm text-muted-foreground no-underline hover:text-foreground">
-          <ArrowLeftLine size={14} />
-          Back to Web3 Skills
-        </a>
+        <Breadcrumb items={[
+          { label: "Web3 Skills", to: "/web3-skills" },
+          { label: "Not found" },
+        ]} />
         <div className="py-12 text-center text-muted-foreground">Skill not found.</div>
       </div>
     )
@@ -38,53 +50,62 @@ export function Web3SkillDetail({ skillSlug }: { skillSlug: string }) {
 
   return (
     <div className="space-y-6">
-      <a href="/web3-skills" className="inline-flex items-center gap-1 text-sm text-muted-foreground no-underline hover:text-foreground">
-        <ArrowLeftLine size={14} />
-        Back to Web3 Skills
-      </a>
+      <div>
+        <Breadcrumb items={[
+          { label: "Web3 Skills", to: "/web3-skills" },
+          { label: skill.name },
+        ]} />
 
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4 max-sm:flex-col">
-        <div>
-          <PageTitle title={skill.name} />
-          <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-            {skill.ownerHandle ? `@${skill.ownerHandle}` : skill.ownerDisplayName ?? "Unknown"}
-            {skill.version && <span>· {skill.version}</span>}
+        {/* Header */}
+        <div className="py-4 border-b border-border">
+        <div className="flex items-start justify-between gap-4 max-sm:flex-col">
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">{skill.name}</h1>
+            <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span>by <strong className="text-foreground font-semibold">@{skill.ownerHandle || skill.ownerDisplayName || "unknown"}</strong></span>
+              {skill.version && (
+                <>
+                  <span className="w-1 h-1 rounded-full bg-border" />
+                  <span>{skill.version}</span>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {skill.category && <Badge variant="outline">{skill.category}</Badge>}
+            {skill.source === "community" && <Badge variant="pill">Community</Badge>}
+            {skill.featured && <Badge variant="outline" className="text-warning border-warning/30">Featured</Badge>}
           </div>
         </div>
-        <div className="flex gap-2">
-          {skill.category && <Badge variant="outline">{skill.category}</Badge>}
-          {skill.source === "community" && <Badge variant="pill">Community</Badge>}
-          {skill.featured && <Badge className="bg-yellow-500/10 text-yellow-600">Featured</Badge>}
         </div>
       </div>
 
-      {skill.summary && <p className="text-sm text-muted-foreground">{skill.summary}</p>}
+      {skill.summary && <p className="text-sm text-muted-foreground leading-relaxed">{skill.summary}</p>}
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3">
         {[
           { icon: Download2Line, label: "Downloads", value: formatCount(skill.downloads) },
           { icon: StarLine, label: "Stars", value: formatCount(skill.stars) },
           { icon: FlashLine, label: "Agents", value: formatCount(skill.installs) },
         ].map(({ icon: Icon, label, value }) => (
-          <div key={label} className="flex flex-col items-center rounded-lg border border-border p-4">
-            <Icon size={20} className="text-muted-foreground" />
-            <span className="mt-1 text-lg font-semibold">{value}</span>
-            <span className="text-xs text-muted-foreground">{label}</span>
+          <div key={label} className="flex flex-col items-center border border-border rounded p-3">
+            <Icon size={16} className="text-muted-foreground" />
+            <span className="mt-1 text-base font-semibold">{value}</span>
+            <span className="text-2xs text-muted-foreground uppercase tracking-wider">{label}</span>
           </div>
         ))}
       </div>
 
       {skill.description && (
-        <div className="space-y-2">
-          <h2 className="text-lg font-semibold">Description</h2>
-          <div className="whitespace-pre-wrap text-sm text-muted-foreground">{skill.description}</div>
+        <div>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Description</h2>
+          <div className="whitespace-pre-wrap text-sm text-muted-foreground leading-relaxed">{skill.description}</div>
         </div>
       )}
 
       {(skill.websiteUrl || skill.githubUrl) && (
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           {skill.websiteUrl && (
             <Button variant="outline" size="sm" asChild>
               <a href={skill.websiteUrl} target="_blank" rel="noopener noreferrer" className="no-underline">
@@ -94,16 +115,18 @@ export function Web3SkillDetail({ skillSlug }: { skillSlug: string }) {
           )}
           {skill.githubUrl && (
             <Button variant="outline" size="sm" asChild>
-              <a href={skill.githubUrl} target="_blank" rel="noopener noreferrer" className="no-underline">GitHub</a>
+              <a href={skill.githubUrl} target="_blank" rel="noopener noreferrer" className="no-underline">
+                <GitHubIcon size={14} /> GitHub
+              </a>
             </Button>
           )}
         </div>
       )}
 
       {skill.tags && skill.tags.length > 0 && (
-        <div className="space-y-2">
-          <h2 className="text-lg font-semibold">Tags</h2>
-          <div className="flex flex-wrap gap-2">
+        <div>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Tags</h2>
+          <div className="flex flex-wrap gap-1.5">
             {skill.tags.map((tag) => (
               <Badge key={tag} variant="pill">{tag}</Badge>
             ))}

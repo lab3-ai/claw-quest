@@ -1,6 +1,7 @@
 import { useTheme, THEMES } from '@/context/ThemeContext'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { SunLine, MoonLine } from '@mingcute/react'
 
 export function ThemeSwitcher({ className }: { className?: string }) {
@@ -8,16 +9,21 @@ export function ThemeSwitcher({ className }: { className?: string }) {
     const isDark = colorMode === 'dark'
 
     return (
-        <Button
-            variant="outline"
-            size="default"
-            iconOnly
-            onClick={() => setColorMode(isDark ? 'light' : 'dark')}
-            className={cn('text-fg-1', className)}
-            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-            {isDark ? <SunLine size={16} /> : <MoonLine size={16} />}
-        </Button>
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <Button
+                    variant="outline"
+                    size="default"
+                    iconOnly
+                    onClick={() => setColorMode(isDark ? 'light' : 'dark')}
+                    className={cn('text-fg-1', className)}
+                    aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
+                    {isDark ? <SunLine size={16} /> : <MoonLine size={16} />}
+                </Button>
+            </TooltipTrigger>
+            <TooltipContent>{isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</TooltipContent>
+        </Tooltip>
     )
 }
 

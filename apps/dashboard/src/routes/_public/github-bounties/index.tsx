@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
+import { PageTitle } from "@/components/page-title"
 import { GitBranchLine, CodeLine, AddLine } from "@mingcute/react"
 import { cn } from "@/lib/utils"
 import { GitHubIcon } from "@/components/github-icon"
@@ -30,15 +30,14 @@ interface GitHubBounty {
     _count: { submissions: number }
 }
 
-// Status filter tabs: "open" = live + 0 submissions, "in_review" = live + has submissions
 type StatusTab = "all" | "open" | "in_review" | "completed"
 type RewardFilter = "USDC" | "USD" | "LLM_KEY" | undefined
 
 function difficultyFromAmount(amount: string): { label: string; className: string } {
     const n = Number(amount)
-    if (n < 100) return { label: "easy", className: "text-green-400 border-green-500/20" }
-    if (n < 500) return { label: "medium", className: "text-yellow-400 border-yellow-500/20" }
-    return { label: "hard", className: "text-red-400 border-red-500/20" }
+    if (n < 100) return { label: "easy", className: "text-success border-success/30" }
+    if (n < 500) return { label: "medium", className: "text-warning border-warning/30" }
+    return { label: "hard", className: "text-error border-error/30" }
 }
 
 const STATUS_TABS: { key: StatusTab; label: string }[] = [
@@ -82,19 +81,16 @@ export function GitHubBountiesExplore() {
     const filtered = filterBounties(data?.bounties ?? [], statusTab)
 
     return (
-        <div className="mx-auto px-6 py-6">
-            {/* Page header */}
-            <div className="flex items-start justify-between mb-6">
-                <div>
-                    <h1 className="text-2xl font-semibold mb-1">GitHub Bounties</h1>
-                    <p className="text-sm text-muted-foreground">Fix open-source issues, earn USDC or LLM API keys</p>
-                </div>
-                {isAuthenticated && (
-                    <Button asChild size="sm" className="gap-1.5">
-                        <Link to="/github-bounties/new"><AddLine size={14} /> Post Bounty</Link>
+        <div>
+            <PageTitle
+                title="GitHub Bounties"
+                description="Fix open-source issues, earn USDC or LLM API keys"
+                actions={isAuthenticated ? (
+                    <Button asChild size="sm">
+                        <Link to="/github-bounties/new" className="no-underline"><AddLine size={14} /> Post Bounty</Link>
                     </Button>
-                )}
-            </div>
+                ) : undefined}
+            />
 
             {/* Status tabs */}
             <div className="flex gap-0 border-b border-border mb-4">
@@ -103,10 +99,10 @@ export function GitHubBountiesExplore() {
                         key={tab.key}
                         onClick={() => setStatusTab(tab.key)}
                         className={cn(
-                            "px-4 py-2 text-sm transition-colors border-b-2 -mb-px",
+                            "px-4 py-2 text-sm font-semibold transition-colors border-b-2 -mb-px bg-transparent border-none cursor-pointer",
                             statusTab === tab.key
-                                ? "border-foreground text-foreground font-medium"
-                                : "border-transparent text-muted-foreground hover:text-foreground"
+                                ? "border-b-2 border-b-foreground text-foreground"
+                                : "border-b-2 border-b-transparent text-muted-foreground hover:text-foreground"
                         )}
                     >
                         {tab.label}
@@ -126,10 +122,10 @@ export function GitHubBountiesExplore() {
                         key={f.value}
                         onClick={() => setRewardFilter(rewardFilter === f.value ? undefined : f.value)}
                         className={cn(
-                            "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
+                            "px-3 py-1 rounded-full text-xs font-medium border transition-colors bg-transparent cursor-pointer",
                             rewardFilter === f.value
                                 ? "bg-foreground text-background border-foreground"
-                                : "bg-transparent border-border text-muted-foreground hover:border-foreground/50"
+                                : "border-border text-muted-foreground hover:border-foreground/50"
                         )}
                     >
                         {f.label}
@@ -141,7 +137,17 @@ export function GitHubBountiesExplore() {
             {isLoading ? (
                 <div className="space-y-2">
                     {Array.from({ length: 5 }).map((_, i) => (
-                        <Skeleton key={i} className="h-20 rounded-lg" />
+                        <div key={i} className="flex items-start gap-4 rounded border border-border bg-bg-1 p-4 animate-pulse">
+                            <div className="flex-1 space-y-2">
+                                <div className="h-3 w-32 rounded bg-bg-2" />
+                                <div className="h-4 w-3/4 rounded bg-bg-2" />
+                                <div className="flex gap-2">
+                                    <div className="h-5 w-20 rounded-full bg-bg-2" />
+                                    <div className="h-5 w-14 rounded-full bg-bg-2" />
+                                </div>
+                            </div>
+                            <div className="h-3 w-16 rounded bg-bg-2" />
+                        </div>
                     ))}
                 </div>
             ) : !filtered.length ? (
@@ -157,7 +163,7 @@ export function GitHubBountiesExplore() {
                     </p>
                     {isAuthenticated && statusTab === "all" && (
                         <Button asChild variant="outline" size="sm">
-                            <Link to="/github-bounties/new">Post the first bounty</Link>
+                            <Link to="/github-bounties/new" className="no-underline">Post the first bounty</Link>
                         </Button>
                     )}
                 </div>
@@ -170,26 +176,23 @@ export function GitHubBountiesExplore() {
                                 key={bounty.id}
                                 to="/github-bounties/$bountyId"
                                 params={{ bountyId: bounty.id }}
-                                className="flex items-start justify-between gap-4 rounded-lg border border-border bg-card hover:border-foreground/30 transition-colors p-4 no-underline"
+                                className="flex items-start justify-between gap-4 rounded border border-border bg-bg-1 hover:border-fg-1 transition-colors p-4 no-underline"
                             >
                                 <div className="min-w-0 flex-1 space-y-1.5">
-                                    {/* Repo + issue */}
-                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                         <GitHubIcon size={12} />
                                         <span>{bounty.repoOwner}/{bounty.repoName}</span>
                                         {bounty.issueNumber && (
                                             <span className="opacity-60">#{bounty.issueNumber}</span>
                                         )}
                                     </div>
-                                    {/* Title */}
-                                    <p className="text-sm font-medium text-foreground leading-snug">{bounty.title}</p>
-                                    {/* Meta badges */}
+                                    <p className="text-sm font-semibold text-foreground leading-snug">{bounty.title}</p>
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        <Badge variant="outline" className={cn("text-xs px-2 py-0", rewardBadgeClass(bounty.rewardType))}>
+                                        <Badge variant="outline" className={cn("text-xs", rewardBadgeClass(bounty.rewardType))}>
                                             {rewardLabel(bounty.rewardType, bounty.rewardAmount)}
                                         </Badge>
                                         {bounty.rewardType !== "LLM_KEY" && (
-                                            <Badge variant="outline" className={cn("text-xs px-2 py-0", difficulty.className)}>
+                                            <Badge variant="outline" className={cn("text-xs", difficulty.className)}>
                                                 {difficulty.label}
                                             </Badge>
                                         )}
@@ -204,7 +207,6 @@ export function GitHubBountiesExplore() {
                                         )}
                                     </div>
                                 </div>
-                                {/* Right: winners */}
                                 <div className="shrink-0 text-right">
                                     <span className="text-xs text-muted-foreground">
                                         {bounty.maxWinners} winner{bounty.maxWinners !== 1 ? "s" : ""}

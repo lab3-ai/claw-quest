@@ -9,7 +9,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ThemeSwitcher } from "@/components/theme-switcher"
-import { Dashboard4Line, AddLine, DownLine, Compass3Line, Compass3Fill, CodeLine, CodeFill, TrophyLine, TrophyFill, Home4Line, Home4Fill } from "@mingcute/react"
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
+import { Dashboard4Line, Dashboard4Fill, AddLine, Compass3Line, Compass3Fill, CodeLine, CodeFill, TrophyLine, TrophyFill, Home4Line, Home4Fill, User3Line, User3Fill, ExitLine, ExitFill } from "@mingcute/react"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { useEffect, useState } from "react"
 import { BrandLogo } from "@/components/brand-logo"
@@ -38,7 +39,7 @@ function NavTabs() {
 }
 
 /** Mobile bottom navigation bar — glass effect on scroll */
-function BottomNav({ scrolled }: { scrolled: boolean }) {
+function BottomNav() {
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border backdrop-blur-md bg-bg-base/80 lg:hidden">
             {/* 49px height (Apple HIG tab bar), 44px min touch target */}
@@ -62,51 +63,80 @@ function BottomNav({ scrolled }: { scrolled: boolean }) {
 }
 
 /** Desktop right-side actions (theme, create quest, user menu) */
-function DesktopActions({ isAuthenticated, logout, handle, handleLabel }: {
+function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email }: {
     isAuthenticated: boolean
     logout: () => void
     handle: string
     handleLabel: string
+    email?: string
 }) {
     return (
+        <TooltipProvider delayDuration={300}>
         <div className="ml-auto hidden items-center gap-2 lg:flex">
             <ThemeSwitcher />
 
             {isAuthenticated ? (
                 <>
-                    <Button asChild variant="primary">
-                        <Link to="/quests/new" className="no-underline">
-                            <AddLine size={16} />
-                            Create Quest
-                        </Link>
-                    </Button>
-
-                    <Button asChild variant="outline">
-                        <Link to="/dashboard" className="no-underline">
-                            <Dashboard4Line size={16} />
-                            Dashboard
-                        </Link>
-                    </Button>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button asChild variant="primary">
+                                <Link to="/quests/new" className="no-underline">
+                                    <AddLine size={16} />
+                                    Create Quest
+                                </Link>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Create a new quest</TooltipContent>
+                    </Tooltip>
 
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline">
-                                <img src={getDiceBearUrl(handle, 32)} alt="" className="h-5 w-5 rounded-full" />
-                                {handleLabel}
-                                <DownLine size={16} />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40">
-                            <DropdownMenuItem asChild>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <DropdownMenuTrigger asChild>
+                                    <button className="h-9 w-9 rounded overflow-hidden cursor-pointer border-none p-0 bg-transparent hover:opacity-70 transition-opacity">
+                                        <img src={getDiceBearUrl(handle, 32)} alt="" className="h-full w-full" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>{handleLabel}</TooltipContent>
+                        </Tooltip>
+                        <DropdownMenuContent align="end" className="w-52">
+                            {/* User info header */}
+                            <div className="flex items-center gap-2.5 px-2 py-2">
+                                <img src={getDiceBearUrl(handle, 40)} alt="" className="h-9 w-9 rounded shrink-0" />
+                                <div className="min-w-0">
+                                    <div className="text-sm font-semibold text-foreground truncate">{handleLabel}</div>
+                                    <div className="text-xs text-muted-foreground truncate">{email ?? handle}</div>
+                                </div>
+                            </div>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild className="group">
+                                <Link to="/dashboard" className="no-underline">
+                                    <span className="relative h-4 w-4 shrink-0">
+                                        <Dashboard4Line size={16} className="absolute inset-0 transition-opacity duration-150 group-data-[highlighted]:opacity-0" />
+                                        <Dashboard4Fill size={16} className="absolute inset-0 transition-opacity duration-150 opacity-0 group-data-[highlighted]:opacity-100" />
+                                    </span>
+                                    Dashboard
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild className="group">
                                 <Link to="/account" className="no-underline">
+                                    <span className="relative h-4 w-4 shrink-0">
+                                        <User3Line size={16} className="absolute inset-0 transition-opacity duration-150 group-data-[highlighted]:opacity-0" />
+                                        <User3Fill size={16} className="absolute inset-0 transition-opacity duration-150 opacity-0 group-data-[highlighted]:opacity-100" />
+                                    </span>
                                     Account
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() => logout()}
-                                className="text-destructive focus:text-destructive"
+                                className="group text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
                             >
+                                <span className="relative h-4 w-4 shrink-0">
+                                    <ExitLine size={16} className="absolute inset-0 transition-opacity duration-150 group-data-[highlighted]:opacity-0" />
+                                    <ExitFill size={16} className="absolute inset-0 transition-opacity duration-150 opacity-0 group-data-[highlighted]:opacity-100" />
+                                </span>
                                 Log out
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -128,6 +158,7 @@ function DesktopActions({ isAuthenticated, logout, handle, handleLabel }: {
                 </>
             )}
         </div>
+        </TooltipProvider>
     )
 }
 
@@ -166,26 +197,65 @@ export function Navbar() {
 
                     {/* Mobile action buttons */}
                     <div className="flex items-center gap-2 lg:hidden">
+                        <ThemeSwitcher />
                         {isAuthenticated ? (
                             <>
-                                <Button asChild variant="primary">
+                                <Button asChild variant="primary" size="default">
                                     <Link to="/quests/new" className="no-underline">
                                         <AddLine size={16} />
                                         Create
                                     </Link>
                                 </Button>
-                                <Button asChild variant="outline" iconOnly>
-                                    <Link to="/dashboard" className="no-underline">
-                                        <Dashboard4Line size={16} />
-                                    </Link>
-                                </Button>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button className="h-9 w-9 rounded overflow-hidden cursor-pointer border-none p-0 bg-transparent hover:opacity-70 transition-opacity">
+                                            <img src={getDiceBearUrl(handle, 32)} alt="" className="h-full w-full" />
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-52">
+                                        <div className="flex items-center gap-2.5 px-2 py-2">
+                                            <img src={getDiceBearUrl(handle, 40)} alt="" className="h-9 w-9 rounded shrink-0" />
+                                            <div className="min-w-0">
+                                                <div className="text-sm font-semibold text-foreground truncate">{handleLabel}</div>
+                                                <div className="text-2xs text-muted-foreground truncate">{user?.email ?? handle}</div>
+                                            </div>
+                                        </div>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem asChild className="group">
+                                            <Link to="/dashboard" className="no-underline">
+                                                <span className="relative h-4 w-4 shrink-0">
+                                                    <Dashboard4Line size={16} className="absolute inset-0 transition-opacity duration-150 group-data-[highlighted]:opacity-0" />
+                                                    <Dashboard4Fill size={16} className="absolute inset-0 transition-opacity duration-150 opacity-0 group-data-[highlighted]:opacity-100" />
+                                                </span>
+                                                Dashboard
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild className="group">
+                                            <Link to="/account" className="no-underline">
+                                                <span className="relative h-4 w-4 shrink-0">
+                                                    <User3Line size={16} className="absolute inset-0 transition-opacity duration-150 group-data-[highlighted]:opacity-0" />
+                                                    <User3Fill size={16} className="absolute inset-0 transition-opacity duration-150 opacity-0 group-data-[highlighted]:opacity-100" />
+                                                </span>
+                                                Account
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem onClick={() => logout()} className="group text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer">
+                                            <span className="relative h-4 w-4 shrink-0">
+                                                <ExitLine size={16} className="absolute inset-0 transition-opacity duration-150 group-data-[highlighted]:opacity-0" />
+                                                <ExitFill size={16} className="absolute inset-0 transition-opacity duration-150 opacity-0 group-data-[highlighted]:opacity-100" />
+                                            </span>
+                                            Log out
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </>
                         ) : (
                             <>
-                                <Button asChild variant="outline">
+                                <Button asChild variant="outline" size="default">
                                     <Link to="/login" className="no-underline">Log in</Link>
                                 </Button>
-                                <Button asChild variant="primary">
+                                <Button asChild variant="primary" size="default">
                                     <Link to="/quests/new" className="no-underline">
                                         <AddLine size={16} />
                                         Create
@@ -200,12 +270,13 @@ export function Navbar() {
                         logout={logout}
                         handle={handle}
                         handleLabel={handleLabel}
+                        email={user?.email}
                     />
                 </div>
             </header>
 
             {/* Mobile bottom nav */}
-            <BottomNav scrolled={scrolled} />
+            <BottomNav />
         </>
     )
 }

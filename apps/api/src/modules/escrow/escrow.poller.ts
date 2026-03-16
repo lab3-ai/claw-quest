@@ -91,7 +91,6 @@ async function saveCursor(server: FastifyInstance, chainId: number, lastBlock: b
 async function pollChain(server: FastifyInstance, chainId: number): Promise<void> {
     const client = getPublicClient(chainId);
     const chainHealth = escrowPollerHealth.chains[chainId];
-
     if (chainPollInProgress[chainId]) return;
 
     chainPollInProgress[chainId] = true;
@@ -121,12 +120,13 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
         });
 
         if (rawLogs.length === 0) {
-            server.log.info(`[escrow:poller] Saving cursor for chain ${chainId} to block ${toBlock}`);
+            server.log.info(`[escrow:poller] Saving1 cursor for chain ${chainId} to block ${toBlock}`);
             await saveCursor(server, chainId, toBlock);
             if (chainHealth) {
                 chainHealth.lastPollAt = new Date();
                 chainHealth.lastError = null;
             }
+            chainPollInProgress[chainId] = false;
             return;
         }
 
@@ -178,7 +178,7 @@ async function pollChain(server: FastifyInstance, chainId: number): Promise<void
             escrowPollerHealth.eventsProcessed += processed;
             if (chainHealth) chainHealth.eventsProcessed += processed;
         }
-        server.log.info(`[escrow:poller] Saving cursor for chain ${chainId} to block ${toBlock}`);
+        server.log.info(`[escrow:poller] Saving2 cursor for chain ${chainId} to block ${toBlock}`);
 
         await saveCursor(server, chainId, toBlock);
 

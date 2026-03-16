@@ -61,7 +61,7 @@
 | Rule | Implementation |
 |------|----------------|
 | Tab order | Matches visual reading order (top → bottom, left → right) |
-| Focus visible | `outline: 2px solid var(--accent)` with `outline-offset: 2px` |
+| Focus visible | Global `outline: none` — inputs use `border-foreground` on focus |
 | Skip link | "Skip to content" link, visible on focus, before topbar |
 | Escape key | Closes modals, dropdowns, popovers |
 | Enter/Space | Activates buttons and links |
@@ -70,17 +70,18 @@
 ### Focus Styles
 
 ```css
-/* Default focus ring for all interactive elements */
+/* Global — no visible focus ring (cleaner UI) */
 :focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* Remove default outline for mouse clicks */
-:focus:not(:focus-visible) {
   outline: none;
 }
+
+/* Inputs — subtle border change on focus */
+input:focus-visible {
+  border-color: var(--fg-1); /* --foreground */
+}
 ```
+
+> **Note:** Focus rings were removed globally in Session 31 (2026-03-16) for cleaner UI. Inputs retain a subtle `border-foreground` indicator. Buttons and dropdowns rely on hover/active states instead of focus outlines.
 
 ---
 

@@ -168,6 +168,14 @@ See `DESIGN_SYSTEM.md` for full type scale and other theme fonts.
 - **No stock photos** — use illustrations or abstract graphics if needed
 - **Screenshots:** Use device frames, clean browser chrome
 
+### Avatar System
+
+- **OAuth first:** `getUserAvatarUrl()` in `avatarUtils.ts` — prioritizes `user_metadata.avatar_url` from OAuth providers (Google, GitHub, Discord, X, Telegram)
+- **Fallback:** DiceBear `fun-emoji` style — deterministic per username seed
+- **Palette:** Pastel cool colors (indigo-200, blue-200, violet-200, cyan-200, teal-200, emerald-200, sky-200, indigo-100)
+- **Expressions:** Happy/neutral only — eyes: cute, closed, love, stars, wink, wink2; mouth: cute, lilSmile, smileLol, smileTeeth, tongueOut, wideSmile
+- **Sizing:** 32px (button trigger), 40px (dropdown header), `object-cover` for OAuth photos
+
 ---
 
 ## Do / Don't

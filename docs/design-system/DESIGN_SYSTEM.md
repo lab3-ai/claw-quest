@@ -144,9 +144,9 @@ Direction flips between modes so that **the same class works in both**: `bg-bg-b
 | Token | Tailwind | Hex | Use |
 |-------|----------|-----|-----|
 | `--border-1` | `border-border-1` | `#efefef` | Card borders, subtle dividers |
-| `--border-2` | `border-border-2` | `#e5e5e5` | Default borders, dividers (shadcn `border`) |
-| `--border-3` | `border-border-3` | `#aaaaaa` | Active borders, emphasis |
-| `--border-4` | `border-border-4` | `#222222` | Strong contrast borders |
+| `--border-2` | `border-border-2` | `#e0e0e0` | Default borders, dividers (shadcn `border`) |
+| `--border-3` | `border-border-3` | `#c0c0c0` | Active borders, emphasis |
+| `--border-4` | `border-border-4` | `#999999` | Strong contrast borders |
 
 ### Dark Surfaces
 
@@ -321,12 +321,22 @@ Flat design — no decorative shadows.
 | `--transition-fast` | `80ms ease-out` | Quick hover feedback |
 | `--transition-normal` | `150ms ease-out` | Standard transitions |
 
+### CSS Animations
+
+| Name | Keyframe | Use |
+|------|----------|-----|
+| `page-fade-in` | `opacity: 0 → 1`, 220ms ease-out | Route change transition (applied via `key={pathname}`) |
+| `button-pop` | `scale(0.95) → scale(1.02) → scale(1)`, 250ms | Button click feedback (`.btn-pop:active`) |
+| `blink` | `opacity: 1 → 0 → 1` | Cursor blink in typing animation |
+| `skeleton-pulse` | `background-position: 200% → 0` | Loading skeleton shimmer |
+
 ### Rules
 
 - All interactive elements: `transition: all var(--transition-normal)`
 - Respect `prefers-reduced-motion: reduce`
 - No layout-shifting animations (use `transform` + `opacity` only)
 - Loading states: skeleton shimmer or subtle spinner (no bouncing)
+- Focus: `outline: none` globally — no accent ring on any element
 
 ---
 
@@ -373,7 +383,7 @@ Naming: `variant="primary"`, `variant="primary-tonal"`, `variant="primary-outlin
 
 **Icon button**: `iconOnly` prop — square (w=h), follows size. Use with any variant.
 
-All buttons: `font-semibold`, `rounded-button`, `active:scale-95`, **min `gap-2`** for icon+text spacing. Demo: `/concepts/demo/buttons`.
+All buttons: `font-semibold`, `rounded-button`, `btn-pop` (scale bounce on click), **min `gap-2`** for icon+text spacing. No focus ring — `focus-visible:outline-hidden`. Demo: `/concepts/demo/buttons`.
 
 ### Cards
 
@@ -401,7 +411,7 @@ All buttons: `font-semibold`, `rounded-button`, `active:scale-95`, **min `gap-2`
 
 - Height: 36px (default), 44px (lg)
 - Border: `border border-input` (`--border-2`)
-- Focus: `outline: 2px solid var(--accent)`, `outline-offset: 2px`
+- Focus: `focus-visible:border-foreground` (subtle border change, no ring/outline)
 - Error: `border-error`
 - Font: monospace, `text-base` (16px)
 
@@ -437,9 +447,9 @@ All buttons: `font-semibold`, `rounded-button`, `active:scale-95`, **min `gap-2`
 
 - Component: `<Footer>` (`src/components/footer.tsx`)
 - Data-driven: `LINKS` array with `href`, `label`, `external?`
-- Separator dots: `<i />` styled as `size-1 rounded-full bg-border`
-- Desktop: single row — brand + divider + links
-- Mobile: 2-row — brand on top, links below; divider hidden
+- Separator: `h-1 w-1 rounded-full bg-border-2` bullet dots between nav links
+- Desktop: single row — logo+copyright left, nav links right with bullet separators
+- Mobile: 2-row stacked — logo+copyright on top, links below
 
 ### Tabs
 
@@ -642,7 +652,7 @@ See `ACCESSIBILITY.md` for full standards.
 
 - [ ] Color contrast: 4.5:1 normal text, 3:1 large text (see verified table)
 - [ ] Semantic colors: always pair with icon/text — never color alone
-- [ ] Focus rings: `2px solid var(--accent)`, `outline-offset: 2px`
+- [x] Focus rings: disabled globally (`outline: none`), inputs use `border-foreground` on focus
 - [ ] Touch targets: 44x44px mobile, 36x36px desktop
 - [ ] `aria-label` on icon-only buttons
 - [ ] `aria-busy="true"` on loading skeletons

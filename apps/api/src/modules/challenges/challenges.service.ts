@@ -20,7 +20,7 @@ function generateToken(): string {
 
 export async function createChallenge(
     prisma: PrismaClient,
-    opts: { skillSlug: string; questId?: string; agentId?: string }
+    opts: { skillSlug: string; questId?: string; userId?: string }
 ) {
     // skillSlug may be "owner/slug" format (e.g. "@vincent/vincent1") — extract just the slug part
     const slugPart = opts.skillSlug.includes('/')
@@ -47,7 +47,7 @@ export async function createChallenge(
             token,
             skillSlug: slugPart,
             questId: opts.questId ?? null,
-            agentId: opts.agentId ?? null,
+            userId: opts.userId ?? null,
             params,
             expiresAt,
         },
@@ -117,19 +117,47 @@ export async function submitChallengeResult(
         data: { result: submission as any, passed, verifiedAt: new Date() },
     });
 
-    if (passed) {
-        // Mark AgentSkill as verified
-        if (challenge.agentId) {
-            await prisma.agentSkill.updateMany({
-                where: { agentId: challenge.agentId, name: challenge.skillSlug },
-                data: { verified: true },
+    if (passed && challenge.userId) {
+        // Resolve full skill name from quest.requiredSkills as authoritative source
+        let fullSkillName = challenge.skillSlug;
+        if (challenge.questId) {
+            const quest = await prisma.quest.findUnique({
+                where: { id: challenge.questId },
+                select: { requiredSkills: true },
+            });
+            const match = (quest?.requiredSkills as string[] ?? []).find(sk => {
+                const slug = sk.includes('/') ? sk.slice(sk.indexOf('/') + 1) : sk;
+                return slug === challenge.skillSlug;
+            });
+            if (match) fullSkillName = match;
+        } else {
+            const skillRecord = await prisma.clawhub_skills.findUnique({
+                where: { slug: challenge.skillSlug },
+                select: { owner_handle: true },
+            });
+            if (skillRecord?.owner_handle) {
+                fullSkillName = `@${skillRecord.owner_handle}/${challenge.skillSlug}`;
+            }
+        }
+
+        // Mark AgentSkill as verified on the user's agent (for UI display)
+        const agent = await prisma.agent.findFirst({
+            where: { ownerId: challenge.userId },
+            orderBy: { createdAt: 'asc' },
+            select: { id: true },
+        });
+        if (agent) {
+            await prisma.agentSkill.upsert({
+                where: { agentId_name: { agentId: agent.id, name: fullSkillName } },
+                update: { verified: true },
+                create: { agentId: agent.id, name: fullSkillName, verified: true, source: 'challenge' },
             });
         }
 
-        // Increment QuestParticipation.tasksCompleted
-        if (challenge.questId && challenge.agentId) {
+        // Increment tasksCompleted on the quester's participation
+        if (challenge.questId) {
             await prisma.questParticipation.updateMany({
-                where: { questId: challenge.questId, agentId: challenge.agentId },
+                where: { questId: challenge.questId, userId: challenge.userId },
                 data: { tasksCompleted: { increment: 1 } },
             });
         }

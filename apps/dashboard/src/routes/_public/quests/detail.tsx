@@ -130,6 +130,7 @@ interface MyParticipation {
     tasksCompleted?: number
     tasksTotal?: number
     proof?: any
+    verifiedSkills?: string[]
     llmRewardApiKey?: string | null
     llmRewardIssuedAt?: string | null
 }
@@ -141,14 +142,6 @@ interface QuestWithParticipation extends Quest {
     creatorUserId?: string
     isCreator?: boolean
     isSponsor?: boolean
-}
-
-interface AgentSkillInfo {
-    name: string
-    version: string | null
-    verified: boolean
-    platform: string | null
-    scannedAt: string | null
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -212,33 +205,6 @@ export function QuestDetail() {
         },
         enabled: isAuthenticated && !!session?.access_token,
         staleTime: 60_000,
-    })
-
-    // Fetch user's first agent ID (for skill check on quest detail)
-    const { data: userAgents } = useQuery<{ id: string }[]>({
-        queryKey: ["agents"],
-        queryFn: async () => {
-            const res = await fetch(`${API_BASE}/agents`, {
-                headers: { Authorization: `Bearer ${session?.access_token}` },
-            })
-            if (!res.ok) return []
-            return res.json()
-        },
-        enabled: isAuthenticated && !!session?.access_token,
-        staleTime: 60_000,
-    })
-    const firstAgentId = userAgents?.[0]?.id
-
-    // Fetch agent skills for required skills check
-    const { data: agentSkillsData } = useQuery<{ skills: AgentSkillInfo[]; lastScan: string | null }>({
-        queryKey: ["agent-skills", firstAgentId],
-        queryFn: async () => {
-            const res = await fetch(`${API_BASE}/agents/${firstAgentId}/skills`)
-            if (!res.ok) return { skills: [], lastScan: null }
-            return res.json()
-        },
-        enabled: !!firstAgentId,
-        staleTime: 30_000,
     })
 
     // Fetch Stripe connect status for USD quest banner
@@ -626,10 +592,11 @@ export function QuestDetail() {
         }
         return null
     })()
-    const needsVerifiedScan = isAuthenticated && firstAgentId && quest.requireVerified &&
+    const myVerifiedSkills = new Set(quest.myParticipation?.verifiedSkills ?? [])
+    const needsVerifiedScan = isAuthenticated && quest.requireVerified &&
         quest.requiredSkills?.some((sk: string) => {
-            const match = agentSkillsData?.skills?.find(s => s.name === sk)
-            return !match || !match.verified
+            const slug = sk.includes('/') ? sk.slice(sk.indexOf('/') + 1) : sk
+            return !myVerifiedSkills.has(sk) && !myVerifiedSkills.has(slug)
         })
 
     return (
@@ -876,9 +843,7 @@ export function QuestDetail() {
 
                     {/* Agent Tasks (from quest.requiredSkills) */}
                     {quest.requiredSkills && quest.requiredSkills.length > 0 && (() => {
-                        const agentSkillMap = new Map(
-                            (agentSkillsData?.skills ?? []).map(s => [s.name, s])
-                        )
+                        const verifiedSkills = new Set(quest.myParticipation?.verifiedSkills ?? [])
 
                         return (
                             <div className="mb-6 pl-3.5 border-l-4 border-l-(--agent-fg)">
@@ -891,11 +856,12 @@ export function QuestDetail() {
                                     <span className="font-normal text-xs text-muted-foreground ml-auto">Your AI agent handles these</span>
                                 </div>
                                 {quest.requiredSkills.map((skill: string, idx: number) => {
-                                    const match = agentSkillMap.get(skill)
-                                    const status = !isAuthenticated || !firstAgentId ? "pending"
-                                        : match?.verified ? "done"
-                                            : match ? "verifying"
-                                                : "pending"
+                                    // Match by full name or slug part
+                                    const skillSlug = skill.includes('/') ? skill.slice(skill.indexOf('/') + 1) : skill
+                                    const isVerified = verifiedSkills.has(skill) || verifiedSkills.has(skillSlug)
+                                    const status = !quest.myParticipation ? "pending"
+                                        : isVerified ? "done"
+                                            : "pending"
                                     const isLoading = challengeLoading === skill
 
                                     return (
@@ -905,23 +871,24 @@ export function QuestDetail() {
                                                 <span className="flex-1 font-medium">
                                                     Requires skill: <code className="font-mono text-xs bg-muted px-1 py-px rounded">{skill}</code>
                                                 </span>
-                                                {isAuthenticated && firstAgentId && (
+                                                {quest.myParticipation && (
                                                     <span className={cn("text-xs font-semibold px-1.5 py-0.5 rounded",
-                                                        match?.verified ? "bg-green-100 text-success"
-                                                            : match ? "bg-amber-100 text-warning"
-                                                                : "bg-red-100 text-error"
+                                                        isVerified ? "bg-green-100 text-success"
+                                                            : "bg-amber-100 text-warning"
                                                     )}>
-                                                        {match?.verified ? "Verified" : match ? "Reported" : "Missing"}
+                                                        {isVerified ? "Verified" : "Pending"}
                                                     </span>
                                                 )}
-                                                <button
-                                                    type="button"
-                                                    disabled={isLoading}
-                                                    onClick={() => openVerifyChallenge(skill, quest.id)}
-                                                    className="text-xs font-semibold px-1.5 py-0.5 rounded border border-border bg-transparent text-foreground hover:bg-muted transition-colors disabled:opacity-50"
-                                                >
-                                                    {isLoading ? "Loading…" : "How to verify"}
-                                                </button>
+                                                {!isVerified && (
+                                                    <button
+                                                        type="button"
+                                                        disabled={isLoading}
+                                                        onClick={() => openVerifyChallenge(skill, quest.id)}
+                                                        className="text-xs font-semibold px-1.5 py-0.5 rounded border border-border bg-transparent text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                                                    >
+                                                        {isLoading ? "Loading…" : "How to verify"}
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     )

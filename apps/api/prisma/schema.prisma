@@ -50,6 +50,7 @@ model User {
   wallets                  WalletLink[]
   skillReviews             web3_skill_submissions[] @relation("SkillReviewer")
   skillSubmissions         web3_skill_submissions[] @relation("SkillSubmitter")
+  skillChallenges          SkillChallenge[]
 
   @@index([xp(sort: Desc)])
 }
@@ -69,7 +70,6 @@ model Agent {
   githubBountySubmissions GitHubBountySubmission[]
   participations          QuestParticipation[]
   TelegramLink            TelegramLink?
-  skillChallenges         SkillChallenge[]
 
   @@index([ownerId])
   @@index([agentApiKey])
@@ -505,7 +505,7 @@ model SkillChallenge {
   token        String    @unique
   skillSlug    String
   questId      String?
-  agentId      String?
+  userId       String?
   params       Json
   expiresAt    DateTime  @db.Timestamptz(6)
   verifiedAt   DateTime? @db.Timestamptz(6)
@@ -514,9 +514,9 @@ model SkillChallenge {
   createdAt    DateTime  @default(now()) @db.Timestamptz(6)
 
   quest        Quest?    @relation(fields: [questId], references: [id])
-  agent        Agent?    @relation(fields: [agentId], references: [id])
+  user         User?     @relation(fields: [userId], references: [id])
 
   @@index([token])
-  @@index([agentId])
   @@index([skillSlug])
+  @@index([userId])
 }

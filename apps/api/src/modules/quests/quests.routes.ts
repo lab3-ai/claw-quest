@@ -165,6 +165,7 @@ export async function questsRoutes(server: FastifyInstance) {
                             tasksCompleted: z.number().optional(),
                             tasksTotal: z.number().optional(),
                             proof: z.any().optional(),
+                            verifiedSkills: z.array(z.string()).optional(),
                             llmRewardApiKey: z.string().nullable().optional(),
                             llmRewardIssuedAt: z.string().datetime().nullable().optional(),
                             payoutTokenApiKey: z.string().nullable().optional(),
@@ -321,6 +322,13 @@ export async function questsRoutes(server: FastifyInstance) {
                             where: { questId_userId: { questId: id, userId: user.id } },
                         });
                         if (myParticipation) {
+                            // Fetch verified skill slugs from SkillChallenge
+                            const verifiedChallenges = await server.prisma.skillChallenge.findMany({
+                                where: { questId: id, userId: user.id, passed: true },
+                                select: { skillSlug: true },
+                            });
+                            const verifiedSkills = verifiedChallenges.map(c => c.skillSlug);
+
                             response.myParticipation = {
                                 id: myParticipation.id,
                                 status: myParticipation.status,
@@ -331,6 +339,7 @@ export async function questsRoutes(server: FastifyInstance) {
                                 tasksCompleted: myParticipation.tasksCompleted,
                                 tasksTotal: myParticipation.tasksTotal,
                                 proof: myParticipation.proof,
+                                verifiedSkills,
                                 llmRewardApiKey: myParticipation.llmRewardApiKey ?? null,
                                 llmRewardIssuedAt: myParticipation.llmRewardIssuedAt?.toISOString() ?? null,
                                 payoutTokenApiKey: myParticipation.payoutTokenApiKey ?? null,
@@ -548,19 +557,12 @@ export async function questsRoutes(server: FastifyInstance) {
         async (request, reply) => {
             const userId = (request.user as any).id as string;
 
-            // Find the user's first agent (optional — challenge still works without one)
-            const agent = await server.prisma.agent.findFirst({
-                where: { ownerId: userId },
-                orderBy: { createdAt: 'asc' },
-                select: { id: true },
-            });
-
             const { skillSlug, questId } = request.body;
             try {
                 const { token, verifyUrl, challenge } = await createChallenge(server.prisma, {
                     skillSlug,
                     questId,
-                    agentId: agent?.id ?? undefined,
+                    userId,
                 });
                 return reply.status(200).send({
                     token,

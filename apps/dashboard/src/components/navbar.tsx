@@ -11,7 +11,7 @@ import {
 import { ThemeSwitcher } from "@/components/theme-switcher"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import { Dashboard4Line, Dashboard4Fill, AddLine, Compass3Line, Compass3Fill, CodeLine, CodeFill, TrophyLine, TrophyFill, Home4Line, Home4Fill, User3Line, User3Fill, ExitLine, ExitFill } from "@mingcute/react"
-import { getDiceBearUrl } from "@/components/avatarUtils"
+import { getDiceBearUrl, getUserAvatarUrl } from "@/components/avatarUtils"
 import { useEffect, useState } from "react"
 import { BrandLogo } from "@/components/brand-logo"
 
@@ -63,12 +63,13 @@ function BottomNav() {
 }
 
 /** Desktop right-side actions (theme, create quest, user menu) */
-function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email }: {
+function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email, avatarUrl }: {
     isAuthenticated: boolean
     logout: () => void
     handle: string
     handleLabel: string
     email?: string
+    avatarUrl: string
 }) {
     return (
         <TooltipProvider delayDuration={300}>
@@ -94,7 +95,7 @@ function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email }:
                             <TooltipTrigger asChild>
                                 <DropdownMenuTrigger asChild>
                                     <button className="h-9 w-9 rounded overflow-hidden cursor-pointer border-none p-0 bg-transparent hover:opacity-70 transition-opacity">
-                                        <img src={getDiceBearUrl(handle, 32)} alt="" className="h-full w-full" />
+                                        <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
                                     </button>
                                 </DropdownMenuTrigger>
                             </TooltipTrigger>
@@ -103,7 +104,7 @@ function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email }:
                         <DropdownMenuContent align="end" className="w-52">
                             {/* User info header */}
                             <div className="flex items-center gap-2.5 px-2 py-2">
-                                {/* <img src={getDiceBearUrl(handle, 40)} alt="" className="h-9 w-9 rounded shrink-0" /> */}
+                                <img src={avatarUrl} alt="" className="h-9 w-9 rounded shrink-0 object-cover" />
                                 <div className="min-w-0">
                                     <div className="text-sm font-semibold text-foreground truncate">{handleLabel}</div>
                                     <div className="text-xs text-muted-foreground truncate">{email ?? handle}</div>
@@ -168,6 +169,7 @@ export function Navbar() {
     const displayName = user?.user_metadata?.full_name as string | undefined
     const handle = displayName ?? user?.email?.split("@")[0] ?? "user"
     const handleLabel = displayName ? handle : `@${handle}`
+    const avatarUrl = getUserAvatarUrl(user, handle, 40)
 
     const [scrolled, setScrolled] = useState(false)
     useEffect(() => {
@@ -209,12 +211,12 @@ export function Navbar() {
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <button className="h-9 w-9 rounded overflow-hidden cursor-pointer border-none p-0 bg-transparent hover:opacity-70 transition-opacity">
-                                            <img src={getDiceBearUrl(handle, 32)} alt="" className="h-full w-full" />
+                                            <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
                                         </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-52">
                                         <div className="flex items-center gap-2.5 px-2 py-2">
-                                            <img src={getDiceBearUrl(handle, 40)} alt="" className="h-9 w-9 rounded shrink-0" />
+                                            <img src={avatarUrl} alt="" className="h-9 w-9 rounded shrink-0 object-cover" />
                                             <div className="min-w-0">
                                                 <div className="text-sm font-semibold text-foreground truncate">{handleLabel}</div>
                                                 <div className="text-2xs text-muted-foreground truncate">{user?.email ?? handle}</div>
@@ -271,6 +273,7 @@ export function Navbar() {
                         handle={handle}
                         handleLabel={handleLabel}
                         email={user?.email}
+                        avatarUrl={avatarUrl}
                     />
                 </div>
             </header>

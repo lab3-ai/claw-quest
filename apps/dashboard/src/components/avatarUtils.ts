@@ -22,3 +22,10 @@ export function getDiceBearUrl(seed: string, size = 40): string {
     const mouth = "cute,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile"
     return `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(seed)}&size=${size}&backgroundColor=${bgColors}&eyes=${eyes}&mouth=${mouth}`
 }
+
+/** Get user avatar: OAuth provider avatar → DiceBear fallback */
+export function getUserAvatarUrl(user: { user_metadata?: Record<string, unknown> } | null, fallbackSeed: string, size = 40): string {
+    const oauthAvatar = user?.user_metadata?.avatar_url as string | undefined
+    if (oauthAvatar) return oauthAvatar
+    return getDiceBearUrl(fallbackSeed, size)
+}

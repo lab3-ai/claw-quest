@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/sheet"
 import { useState, useEffect } from "react"
 import { BankCardLine, Dashboard4Line, AddLine, DownLine } from "@mingcute/react"
-import { getDiceBearUrl } from "@/components/avatarUtils"
+import { getUserAvatarUrl } from "@/components/avatarUtils"
 import { BrandLogo } from "@/components/brand-logo"
 import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 
@@ -44,6 +44,7 @@ export function AuthenticatedLayout() {
         user?.email?.split("@")[0] ??
         "user"
     const handleLabel = displayName ? handle : `@${handle}`
+    const avatarUrl = getUserAvatarUrl(user, handle, 40)
 
     const [scrolled, setScrolled] = useState(false)
     useEffect(() => {
@@ -162,7 +163,7 @@ export function AuthenticatedLayout() {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline">
-                                    <img src={getDiceBearUrl(handle, 32)} alt="" className="h-5 w-5 rounded-full" />
+                                    <img src={avatarUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
                                     {handleLabel}
                                     <DownLine size={16} />
                                 </Button>

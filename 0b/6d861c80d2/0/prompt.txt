@@ -1,0 +1,11 @@
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/.env in the IDE. This may or may not be related to the current task.</ide_opened_file>
+Let fix build `pnpm build` 
+apps/dashboard build$ tsc && vite build
+│ src/components/quest-utils.ts(51,32): error TS6133: 'type' is declared but its value is never read.
+│ src/context/ThemeContext.test.tsx(12,45): error TS2345: Argument of type '"glass"' is not assignable to parameter of type '"terminal"'.
+│ src/routes/concepts.demo.badges.tsx(166,49): error TS6133: 'label' is declared but its value is never read.
+└─ Failed in 8.9s at /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/dashboard
+/Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/dashboard:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @clawquest/dashboard@0.1.0 build: `tsc && vite build`
+Exit status 2
+ ELIFECYCLE  Command failed with exit code 2.

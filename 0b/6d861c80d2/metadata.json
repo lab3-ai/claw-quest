@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "0b6d861c80d2",
+  "strategy": "manual-commit",
+  "branch": "refactor/verify-agent",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/dashboard/src/components/quest-utils.ts",
+    "apps/dashboard/src/context/ThemeContext.test.tsx",
+    "apps/dashboard/src/routes/concepts.demo.badges.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0b/6d861c80d2/0/metadata.json",
+      "transcript": "/0b/6d861c80d2/0/full.jsonl",
+      "content_hash": "/0b/6d861c80d2/0/content_hash.txt",
+      "prompt": "/0b/6d861c80d2/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 13,
+    "cache_creation_tokens": 51217,
+    "cache_read_tokens": 573433,
+    "output_tokens": 1868,
+    "api_call_count": 10
+  }
+}

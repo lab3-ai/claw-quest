@@ -26,19 +26,22 @@ const FONT: Record<string, number[]> = {
     "9": [0b01110, 0b10001, 0b10001, 0b01111, 0b00001, 0b00010, 0b01100],
 }
 
-const DOT_SIZE = 6
-const GAP = 2
+/* Dot sizes: 4px on mobile, 6px on desktop */
+const DOT_SM = 4
+const DOT_LG = 6
+const GAP_SM = 1.5
+const GAP_LG = 2
 
 /** Renders a single 5×7 dot-matrix digit */
-function DotDigit({ char }: { char: string }) {
+function DotDigit({ char, dotSize, gap }: { char: string; dotSize: number; gap: number }) {
     const pattern = FONT[char] ?? FONT["0"]
     return (
         <div
             className="grid"
             style={{
-                gridTemplateColumns: `repeat(5, ${DOT_SIZE}px)`,
-                gridTemplateRows: `repeat(7, ${DOT_SIZE}px)`,
-                gap: `${GAP}px`,
+                gridTemplateColumns: `repeat(5, ${dotSize}px)`,
+                gridTemplateRows: `repeat(7, ${dotSize}px)`,
+                gap: `${gap}px`,
             }}
         >
             {pattern.flatMap((row, r) =>
@@ -49,8 +52,8 @@ function DotDigit({ char }: { char: string }) {
                             key={`${r}-${col}`}
                             className="rounded-sm"
                             style={{
-                                width: DOT_SIZE,
-                                height: DOT_SIZE,
+                                width: dotSize,
+                                height: dotSize,
                                 background: on
                                     ? "var(--wl-accent)"
                                     : "rgba(255,255,255,0.04)",
@@ -67,18 +70,17 @@ function DotDigit({ char }: { char: string }) {
     )
 }
 
-/** Colon separator — two glowing dots, aligned to digit grid baseline */
-function DotSeparator() {
-    /* Total digit height = 7 dots × 6px + 6 gaps × 2px = 54px. Center two 6px dots with 12px gap between. */
+/** Colon separator — two glowing dots */
+function DotSeparator({ dotSize, height }: { dotSize: number; height: number }) {
     return (
-        <div className="flex flex-col items-center justify-center px-2 sm:px-3" style={{ height: 54, gap: 12 }}>
+        <div className="flex flex-col items-center justify-center px-1 sm:px-3" style={{ height, gap: dotSize * 2 }}>
             {[0, 1].map((i) => (
                 <span
                     key={i}
                     className="rounded-sm"
                     style={{
-                        width: DOT_SIZE,
-                        height: DOT_SIZE,
+                        width: dotSize,
+                        height: dotSize,
                         background: "var(--wl-accent)",
                         boxShadow: "0 0 4px var(--wl-accent), 0 0 8px color-mix(in srgb, var(--wl-accent) 30%, transparent)",
                     }}
@@ -88,13 +90,13 @@ function DotSeparator() {
     )
 }
 
-function Segment({ value, label }: { value: number; label: string }) {
+function Segment({ value, label, dotSize, gap }: { value: number; label: string; dotSize: number; gap: number }) {
     const str = String(value).padStart(2, "0")
     return (
-        <div className="flex flex-col items-center gap-3">
-            <div className="flex gap-1.5 sm:gap-2">
-                <DotDigit char={str[0]} />
-                <DotDigit char={str[1]} />
+        <div className="flex flex-col items-center gap-2 sm:gap-3">
+            <div className="flex gap-1 sm:gap-2">
+                <DotDigit char={str[0]} dotSize={dotSize} gap={gap} />
+                <DotDigit char={str[1]} dotSize={dotSize} gap={gap} />
             </div>
             <span className="font-mono text-2xs uppercase tracking-widest text-neutral-500">
                 {label}
@@ -103,9 +105,30 @@ function Segment({ value, label }: { value: number; label: string }) {
     )
 }
 
+/** Hook: returns true when viewport matches the media query */
+function useMediaQuery(query: string) {
+    const [matches, setMatches] = useState(() =>
+        typeof window !== "undefined" ? window.matchMedia(query).matches : false
+    )
+    useEffect(() => {
+        const mql = window.matchMedia(query)
+        const handler = (e: MediaQueryListEvent) => setMatches(e.matches)
+        mql.addEventListener("change", handler)
+        setMatches(mql.matches)
+        return () => mql.removeEventListener("change", handler)
+    }, [query])
+    return matches
+}
+
 export function CountdownTimer() {
     const [time, setTime] = useState(calcTimeLeft)
     const tick = useCallback(() => setTime(calcTimeLeft), [])
+    const isDesktop = useMediaQuery("(min-width: 640px)")
+
+    const dotSize = isDesktop ? DOT_LG : DOT_SM
+    const gap = isDesktop ? GAP_LG : GAP_SM
+    /* Total digit height = 7 dots × dotSize + 6 gaps × gap */
+    const digitHeight = 7 * dotSize + 6 * gap
 
     useEffect(() => {
         const id = setInterval(tick, 1000)
@@ -122,14 +145,14 @@ export function CountdownTimer() {
             <p className="font-mono text-xs uppercase tracking-widest text-neutral-500">
                 Early access opens in
             </p>
-            <div className="flex items-start gap-2 scale-80 sm:scale-100">
-                <Segment value={time.days} label="Days" />
-                <DotSeparator />
-                <Segment value={time.hours} label="Hours" />
-                <DotSeparator />
-                <Segment value={time.minutes} label="Mins" />
-                <DotSeparator />
-                <Segment value={time.seconds} label="Secs" />
+            <div className="flex items-start gap-1 sm:gap-2">
+                <Segment value={time.days} label="Days" dotSize={dotSize} gap={gap} />
+                <DotSeparator dotSize={dotSize} height={digitHeight} />
+                <Segment value={time.hours} label="Hours" dotSize={dotSize} gap={gap} />
+                <DotSeparator dotSize={dotSize} height={digitHeight} />
+                <Segment value={time.minutes} label="Mins" dotSize={dotSize} gap={gap} />
+                <DotSeparator dotSize={dotSize} height={digitHeight} />
+                <Segment value={time.seconds} label="Secs" dotSize={dotSize} gap={gap} />
             </div>
         </div>
     )

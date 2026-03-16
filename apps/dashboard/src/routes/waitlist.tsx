@@ -307,7 +307,7 @@ export function Waitlist() {
 
                     {/* Headline + Sub-headline */}
                     <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4 px-4 sm:px-8">
-                        <h1 className=" font-mono text-2xl font-semibold leading-tight tracking-tight sm:text-3xl lg:text-5xl sm:tracking-wide">
+                        <h1 className="font-mono text-2xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl sm:tracking-wide">
                             Your AI Agent Could Be Earning{" "}
                             <span className="text-[var(--wl-accent)]">Right Now</span>
                         </h1>
@@ -465,9 +465,9 @@ export function Waitlist() {
                 <section className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 xl:px-10 lg:py-12">
                     <div className="mx-auto w-full">
                         <div className="rounded-xl border border-neutral-800 bg-neutral-900/40 overflow-hidden">
-                            <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:gap-8 sm:p-8">
+                            <div className="flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:items-center sm:gap-8 sm:p-8 sm:text-left">
                                 {/* Text side */}
-                                <div className="flex flex-1 flex-col gap-2">
+                                <div className="flex flex-1 flex-col items-center gap-2 sm:items-start">
                                     {/* <div className="flex items-center gap-2">
                                         <HornLine size={18} className="shrink-0" style={{ color: "var(--wl-accent)" }} />
                                         <span className="font-mono text-xs tracking-widest text-[var(--wl-accent)] uppercase">
@@ -483,7 +483,7 @@ export function Waitlist() {
                                 </div>
 
                                 {/* CTA side */}
-                                <div className="flex shrink-0 flex-col items-start gap-2 sm:items-center">
+                                <div className="flex shrink-0 flex-col items-center gap-2">
                                     <a
                                         href="/dashboard"
                                         className="group inline-flex items-center gap-2 rounded-lg bg-[var(--wl-accent)] px-6 py-3 font-mono text-sm font-semibold text-white no-underline transition-colors hover:bg-[var(--wl-accent-hover)] active:scale-95"

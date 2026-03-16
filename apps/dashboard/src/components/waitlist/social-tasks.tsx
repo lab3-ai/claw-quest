@@ -86,10 +86,10 @@ export function SocialTasks({ referralCode }: SocialTasksProps) {
             <div className="rounded-xl border border-neutral-800 bg-neutral-900/50 overflow-hidden">
 
                 {/* Step 1 — Follow */}
-                <div className={`flex items-center gap-4 px-5 py-4 transition-colors`}>
+                <div className={`flex items-center gap-4 px-3 sm:px-5 py-4 sm:py-5 transition-colors`}>
                     {/* Step badge + connector */}
                     <div className="flex flex-col items-center self-stretch shrink-0">
-                        <div className={`flex h-8 w-8 items-center justify-center rounded-full border font-mono text-xs transition-all duration-300 ${followDone
+                        <div className={`flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full border font-mono text-2xs sm:text-xs transition-all duration-300 ${followDone
                             ? "border-[var(--wl-accent)] bg-[var(--wl-accent)] text-white"
                             : followPending
                                 ? "border-[var(--wl-accent)]/50 text-[var(--wl-accent)] animate-pulse"
@@ -97,8 +97,8 @@ export function SocialTasks({ referralCode }: SocialTasksProps) {
                             }`}>
                             {followDone ? <CheckFill size={14} /> : "1"}
                         </div>
-                        {/* Vertical connector */}
-                        <div className="flex-1 w-px bg-neutral-800 mt-1.5" />
+                        {/* Vertical connector — hidden on mobile */}
+                        <div className="hidden sm:block flex-1 w-px bg-neutral-800 mt-1.5" />
                     </div>
 
                     {/* Text */}
@@ -144,10 +144,10 @@ export function SocialTasks({ referralCode }: SocialTasksProps) {
                 <div className="h-px bg-neutral-800/60 mx-5" />
 
                 {/* Step 2 — Claim */}
-                <div className={`flex items-center gap-4 px-5 py-4 transition-all duration-300 ${!followDone ? "opacity-50" : ""}`}>
+                <div className={`flex items-center gap-4 px-3 sm:px-5 py-4 sm:py-5 transition-all duration-300 ${!followDone ? "opacity-50" : ""}`}>
                     {/* Step badge */}
                     <div className="flex flex-col items-center self-stretch shrink-0">
-                        <div className={`flex h-8 w-8 items-center justify-center rounded-full border font-mono text-xs transition-all duration-300 ${followDone
+                        <div className={`flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full border font-mono text-2xs sm:text-xs transition-all duration-300 ${followDone
                             ? "border-[var(--wl-accent)]/50 text-[var(--wl-accent)]"
                             : "border-neutral-800 text-neutral-700"
                             }`}>

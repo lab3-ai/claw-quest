@@ -9,12 +9,13 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ThemeSwitcher } from "@/components/theme-switcher"
-import { Dashboard4Line, AddLine, DownLine, Compass3Line, Compass3Fill, CodeLine, CodeFill, TrophyLine, TrophyFill } from "@mingcute/react"
+import { Dashboard4Line, AddLine, DownLine, Compass3Line, Compass3Fill, CodeLine, CodeFill, TrophyLine, TrophyFill, Home4Line, Home4Fill } from "@mingcute/react"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { useEffect, useState } from "react"
 import { BrandLogo } from "@/components/brand-logo"
 
 const NAV_ITEMS = [
+    { to: "/", label: "Home", icon: Home4Line, iconActive: Home4Fill },
     { to: "/quests", label: "Quests", icon: Compass3Line, iconActive: Compass3Fill },
     { to: "/web3-skills", label: "Web3 Skills", icon: CodeLine, iconActive: CodeFill },
     { to: "/github-bounties", label: "Bounties", icon: TrophyLine, iconActive: TrophyFill },
@@ -39,7 +40,7 @@ function NavTabs() {
 /** Mobile bottom navigation bar — glass effect on scroll */
 function BottomNav({ scrolled }: { scrolled: boolean }) {
     return (
-        <nav className={`fixed bottom-0 left-0 right-0 z-50 transition-[border-color,backdrop-filter,background-color] duration-200 lg:hidden ${scrolled ? "border-t border-border backdrop-blur-md bg-bg-base/80" : "bg-bg-base"}`}>
+        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border backdrop-blur-md bg-bg-base/80 lg:hidden">
             {/* 49px height (Apple HIG tab bar), 44px min touch target */}
             <div className="flex h-13 items-stretch justify-around">
                 {NAV_ITEMS.map(({ to, label, icon: Icon, iconActive: IconActive }) => (
@@ -149,10 +150,10 @@ export function Navbar() {
         <>
             {/* Top header */}
             <header className={`sticky top-0 z-50 bg-bg-base transition-[border-color,backdrop-filter,box-shadow] duration-200 border-b ${scrolled ? "border-border backdrop-blur-md bg-bg-base/80" : "border-border-1"}`}>
-                <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-6">
+                <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4 md:px-6">
                     {/* Full logo on desktop, icon-only on mobile */}
                     <Link
-                        to="/quests"
+                        to="/"
                         className="mr-5 flex items-center gap-2 no-underline max-lg:mr-auto"
                     >
                         <span className="hidden lg:block"><BrandLogo animated /></span>

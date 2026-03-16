@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams, Link } from '@tanstack/react-router'
+import { Breadcrumb } from "@/components/breadcrumb"
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
@@ -399,14 +400,13 @@ export function ManageQuest() {
 
     return (
         <div className="mx-auto px-4 max-sm:px-3 py-6 max-sm:py-4">
-            {/* Breadcrumb */}
-            <nav className="flex items-center gap-1 text-xs max-sm:text-xs text-muted-foreground mb-4 max-sm:mb-3 overflow-x-auto scrollbar-hide">
-                <Link to="/quests" className="hover:text-foreground whitespace-nowrap">Quests</Link>
-                <span className="text-muted-foreground">/</span>
-                <Link to="/quests/$questId" params={{ questId }} className="hover:text-foreground truncate max-w-[120px] max-sm:max-w-[80px]" title={quest.title}>{quest.title}</Link>
-                <span className="text-muted-foreground">/</span>
-                <span className="text-foreground whitespace-nowrap">Manage</span>
-            </nav>
+            <div className="mb-4 max-sm:mb-3">
+                <Breadcrumb items={[
+                    { label: "Quests", to: "/quests" },
+                    { label: quest.title, to: "/quests/$questId", params: { questId } },
+                    { label: "Manage" },
+                ]} />
+            </div>
 
             <div className="flex flex-col md:flex-row gap-6 max-sm:gap-4 items-start">
                 {/* Main column */}

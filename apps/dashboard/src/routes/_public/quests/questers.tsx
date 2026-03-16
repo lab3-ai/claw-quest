@@ -1,8 +1,9 @@
 import { useState } from "react"
-import { useParams, Link } from "@tanstack/react-router"
+import { useParams } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import type { QuestersResponse, QuestParticipation } from "@clawquest/shared"
 import { getDiceBearUrl } from "@/components/avatarUtils"
+import { Breadcrumb } from "@/components/breadcrumb"
 import { Button } from "@/components/ui/button"
 import { QuestTypeBadge } from "@/components/quest-badges"
 import { cn } from "@/lib/utils"
@@ -59,15 +60,11 @@ export function QuestersPage() {
 
     return (
         <div>
-            {/* Breadcrumb */}
-            <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
-                <Link to="/quests">Quests</Link>
-                <span>›</span>
-                {data && <Link to="/quests/$questId" params={{ questId }}>{data.questTitle}</Link>}
-                {!data && <span>Quest</span>}
-                <span>›</span>
-                <span>Questers</span>
-            </nav>
+            <Breadcrumb items={[
+                { label: "Quests", to: "/quests" },
+                { label: data?.questTitle ?? "Quest", to: "/quests/$questId", params: { questId } },
+                { label: "Questers" },
+            ]} />
 
             {/* Page Header */}
             <div className="flex justify-between items-end py-3 border-b border-border mb-0">

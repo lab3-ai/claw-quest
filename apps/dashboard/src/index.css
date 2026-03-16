@@ -400,10 +400,14 @@ summary {
 }
 
 
-/* Global focus ring */
+/* Global focus ring — skip Radix menu items (they use bg highlight instead) */
 :focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+}
+[role="menuitem"]:focus-visible,
+[role="option"]:focus-visible {
+    outline: none;
 }
 
 /* Respect motion preferences */

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, useMemo, forwardRef } from "react"
+import { useEffect, useRef, useState, useCallback, forwardRef } from "react"
 import { Link } from "@tanstack/react-router"
 import { Button } from "@/components/ui/button"
 import { AddLine } from "@mingcute/react"
@@ -207,11 +207,12 @@ function UiWindows() {
         >
             <defs>
                 <style>{`
-                    .uw-stroke{fill:none;stroke:#ecddde;stroke-width:.65px;stroke-miterlimit:10}
-                    .uw-dot{fill:#ecddde}
-                    .uw-stroke-sm{fill:var(--accent-light, #FFF0EF);stroke:#ecddde;stroke-width:.4px;stroke-miterlimit:10}
-                    .uw-stroke-md{fill:var(--accent-light, #FFF0EF);stroke:#ecddde;stroke-width:.63px;stroke-miterlimit:10}
-                    .uw-dot-lt{fill:#ecddde}
+                    .uw-stroke{fill:none;stroke:var(--uw-stroke, #ecddde);stroke-width:.65px;stroke-miterlimit:10}
+                    .uw-dot{fill:var(--uw-stroke, #ecddde)}
+                    .uw-stroke-sm{fill:var(--uw-fill, var(--accent-light, #FFF0EF));stroke:var(--uw-stroke, #ecddde);stroke-width:.4px;stroke-miterlimit:10}
+                    .uw-stroke-md{fill:var(--uw-fill, var(--accent-light, #FFF0EF));stroke:var(--uw-stroke, #ecddde);stroke-width:.63px;stroke-miterlimit:10}
+                    .uw-dot-lt{fill:var(--uw-stroke, #ecddde)}
+                    .dark .ab-ui-windows{--uw-stroke:#333;--uw-fill:#1a1a1a}
                     @keyframes ab-winA{0%,100%{opacity:0}15%,45%{opacity:1}60%{opacity:0}}
                     @keyframes ab-winB{0%,100%{opacity:0}20%,50%{opacity:1}65%{opacity:0}}
                     #ab-w1{animation:ab-winA 8s ease-in-out 0.5s infinite}

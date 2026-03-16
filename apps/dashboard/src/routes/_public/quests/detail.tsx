@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge"
 import { QuestTypeBadge, QuestStatusBadge, RewardBadge } from "@/components/quest-badges"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Breadcrumb } from "@/components/breadcrumb"
 import { cn } from "@/lib/utils"
 import { QuestGridCard } from "@/components/QuestGridCard"
 
@@ -649,12 +650,10 @@ export function QuestDetail() {
                 }}
             />
 
-            {/* Breadcrumb */}
-            <nav className="flex items-center gap-1.5 py-3 text-xs text-muted-foreground">
-                <Link to="/quests">Quests</Link>
-                <span>›</span>
-                <span>{quest.title}</span>
-            </nav>
+            <Breadcrumb items={[
+                { label: "Quests", to: "/quests" },
+                { label: quest.title },
+            ]} />
 
             {/* Claim banner — shown when claim token is in URL */}
             {claim && claimStatus === "idle" && (
@@ -1393,12 +1392,7 @@ export function QuestDetail() {
             {/* ── Related Quests ── */}
             {relatedQuests && relatedQuests.length > 0 && (
                 <div className="mt-10 pt-6 border-t border-border">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Related Quests</h2>
-                        <Link to="/quests" className="text-xs text-muted-foreground hover:text-accent transition-colors">
-                            View all →
-                        </Link>
-                    </div>
+                    <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Related Quests</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {relatedQuests.map(q => (
                             <QuestGridCard key={q.id} quest={q} />

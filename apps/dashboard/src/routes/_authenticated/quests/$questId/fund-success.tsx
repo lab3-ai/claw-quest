@@ -3,6 +3,7 @@ import { useParams, Link, useSearch } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
+import { Breadcrumb } from "@/components/breadcrumb"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
@@ -74,15 +75,13 @@ export function FundSuccess() {
 
     return (
         <div className="max-w-xl mx-auto py-8 px-4">
-            <nav className="flex items-center gap-1 text-xs text-fg-3 mb-4">
-                <Link to="/quests" className="hover:text-foreground transition-colors">Quests</Link>
-                <span className="text-fg-3">/</span>
-                <Link to="/quests/$questId" params={{ questId }} className="hover:text-foreground transition-colors">
-                    {quest?.title || 'Quest'}
-                </Link>
-                <span className="text-fg-3">/</span>
-                <span className="text-foreground">Payment</span>
-            </nav>
+            <div className="mb-4">
+                <Breadcrumb items={[
+                    { label: "Quests", to: "/quests" },
+                    { label: quest?.title || "Quest", to: "/quests/$questId", params: { questId } },
+                    { label: "Payment" },
+                ]} />
+            </div>
 
             <div className="bg-background border border-border rounded-lg p-8 text-center">
                 {status === 'verifying' && (

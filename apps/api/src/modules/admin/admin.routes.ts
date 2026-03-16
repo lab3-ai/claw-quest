@@ -24,6 +24,7 @@ import {
     upsertSkill,
     updateSkillVerificationConfig,
     listSkillsAdmin,
+    getSkillAdmin,
 } from './admin.service';
 
 // ─── Env query param schema (shared across admin routes) ────────────────────
@@ -777,6 +778,29 @@ export async function adminRoutes(server: FastifyInstance) {
                 hasVerifyConfig: hasVerifyConfig === 'true' ? true : hasVerifyConfig === 'false' ? false : undefined,
             });
             return result;
+        }
+    );
+
+    // ── Get single skill (admin) ──────────────────────────────────────────────────
+    server.get(
+        '/skills/:slug',
+        {
+            schema: {
+                tags: ['Admin - Skills'],
+                summary: 'Get a single skill by slug',
+                params: z.object({ slug: z.string() }),
+                querystring: z.object({
+                    env: z.enum(['mainnet', 'testnet']).default('mainnet'),
+                }),
+            },
+        },
+        async (request, reply) => {
+            const { slug } = request.params as any;
+            const { env } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env as AdminEnv);
+            const skill = await getSkillAdmin(prisma, slug);
+            if (!skill) return reply.status(404).send({ error: 'Skill not found' });
+            return { skill };
         }
     );
 

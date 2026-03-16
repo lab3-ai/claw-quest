@@ -1,6 +1,27 @@
 // challenge-generator.ts
 // Generates challenge params and bash script from a skill's verification_config.
 
+export type InstallType = 'npx_clawhub' | 'npx_package' | 'pip' | 'npm_global' | 'brew' | 'custom';
+export type FetchType = 'curl' | 'wget' | 'custom';
+
+export interface InstallConfig {
+    /** How the skill should be installed */
+    type: InstallType;
+    /** Package name override — defaults to skillSlug when omitted */
+    package?: string;
+    /** Version tag for npx_package installs — defaults to 'latest' */
+    version?: string;
+    /** Full command template for 'custom' type — use ${package} as placeholder */
+    command?: string;
+}
+
+export interface FetchConfig {
+    /** How to fetch the challenge URL */
+    type: FetchType;
+    /** Full command template for 'custom' type — use ${url} as placeholder */
+    command?: string;
+}
+
 export interface VerificationConfig {
     type: string;
     skill_display: string;
@@ -13,6 +34,10 @@ export interface VerificationConfig {
         type: string;
         check_path?: string;
     };
+    /** Install configuration — defaults to npx_clawhub if omitted (backward compat) */
+    install?: InstallConfig;
+    /** Fetch configuration — defaults to curl if omitted (backward compat) */
+    fetch?: FetchConfig;
 }
 
 export interface ResolvedChallenge {
@@ -63,6 +88,43 @@ export function buildQueryString(params: Record<string, string | number>): strin
         .join('&');
 }
 
+/** Generate the install bash command from the install config */
+export function generateInstallCommand(install: InstallConfig, skillSlug: string): string {
+    const pkg = install.package || skillSlug;
+    switch (install.type) {
+        case 'npx_clawhub':
+            return `npx clawhub@latest install ${skillSlug}`;
+        case 'npx_package': {
+            const ver = install.version || 'latest';
+            return `npx ${pkg}@${ver}`;
+        }
+        case 'pip':
+            return `pip install ${pkg}`;
+        case 'npm_global':
+            return `npm install -g ${pkg}`;
+        case 'brew':
+            return `brew install ${pkg}`;
+        case 'custom':
+            return (install.command || `npx clawhub@latest install ${skillSlug}`).replace(/\$\{package\}/g, pkg);
+        default:
+            return `npx clawhub@latest install ${skillSlug}`;
+    }
+}
+
+/** Generate the fetch bash line from the fetch config */
+export function generateFetchCommand(fetch: FetchConfig, url: string): string {
+    switch (fetch.type) {
+        case 'curl':
+            return `RESPONSE=$(curl -s "${url}")`;
+        case 'wget':
+            return `RESPONSE=$(wget -q -O - "${url}")`;
+        case 'custom':
+            return (fetch.command || `RESPONSE=$(curl -s "${url}")`).replace(/\$\{url\}/g, url);
+        default:
+            return `RESPONSE=$(curl -s "${url}")`;
+    }
+}
+
 /** Generate the full markdown challenge response with embedded bash script */
 export function generateMarkdown(opts: {
     token: string;
@@ -73,10 +135,18 @@ export function generateMarkdown(opts: {
     params: Record<string, string | number>;
     submitUrl: string;
     expiresAt: Date;
+    install?: InstallConfig;
+    fetch?: FetchConfig;
 }): string {
     const qs = buildQueryString(opts.params);
     const fullUrl = `${opts.apiEndpoint}?${qs}`;
     const expiry = opts.expiresAt.toISOString();
+
+    const installCfg: InstallConfig = opts.install ?? { type: 'npx_clawhub' };
+    const fetchCfg: FetchConfig = opts.fetch ?? { type: 'curl' };
+
+    const installCmd = generateInstallCommand(installCfg, opts.skillSlug);
+    const fetchCmd = generateFetchCommand(fetchCfg, fullUrl);
 
     return `# ClawQuest Skill Verification
 
@@ -97,10 +167,10 @@ ${opts.taskDescription}
 # Just run this script — do not modify
 
 # Step 1: Install the skill
-npx clawhub@latest install ${opts.skillSlug}
+${installCmd}
 
 # Step 2: Fetch challenge data using ${opts.skillDisplay}
-RESPONSE=$(curl -s "${fullUrl}")
+${fetchCmd}
 
 # Step 3: Submit to ClawQuest
 curl -s -X POST "${opts.submitUrl}" \\

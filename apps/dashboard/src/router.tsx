@@ -7,6 +7,8 @@ import { AuthCallback } from './routes/auth/callback'
 import { TelegramCallback } from './routes/auth/telegram-callback'
 import { XCallback } from './routes/auth/x-callback'
 import { PublicLayout } from './routes/_public'
+import { Navbar } from './components/navbar'
+import { Footer } from './components/footer'
 import { ConceptsDemoButtons } from './routes/_public/concepts.demo.buttons'
 import { TypographyDemo } from './routes/concepts.demo.typography'
 import { BadgesDemo } from './routes/concepts.demo.badges'
@@ -17,7 +19,6 @@ import { QuestList } from './routes/_authenticated/quests/index'
 import { QuestDetail } from './routes/_public/quests/detail'
 import { QuestersPage } from './routes/_public/quests/questers'
 import { CreateQuest } from './routes/_authenticated/quests/create'
-import { VerifyAgent } from './routes/_authenticated/verify'
 import { ClaimQuest } from './routes/_authenticated/quests/claim'
 import { FundQuest } from './routes/_authenticated/quests/$questId/fund'
 import { FundSuccess } from './routes/_authenticated/quests/$questId/fund-success'
@@ -43,6 +44,7 @@ import { Web3SkillsPage } from './routes/_public/web3-skills/index'
 import { Web3SkillDetail } from './routes/_public/web3-skills/$skillSlug'
 import { SubmitWeb3Skill } from './routes/_authenticated/web3-skills/submit'
 import { AdminWeb3Skills } from './routes/_authenticated/admin/web3-skills'
+import { VerifyChallenge } from './routes/_public/verify'
 
 // Root route
 interface RouterContext {
@@ -55,8 +57,8 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
         if (location.pathname === '/for-dev-lab3' || location.pathname.startsWith('/concepts/')) {
             return
         }
-        // Allow waitlist page without redirect
-        if (location.pathname === '/waitlist') {
+        // Allow waitlist page and public verify links without redirect
+        if (location.pathname === '/waitlist' || location.pathname.startsWith('/verify/')) {
             return
         }
         // Allow all routes if dev bypass flag is set in localStorage
@@ -317,18 +319,6 @@ const createQuestRoute = createRoute({
     component: CreateQuest,
 })
 
-const verifyRoute = createRoute({
-    getParentRoute: () => appLayoutRoute,
-    path: '/verify',
-    validateSearch: (search: Record<string, unknown>): { token?: string } => {
-        return { token: typeof search.token === 'string' ? search.token : undefined }
-    },
-    beforeLoad: ({ context }) => {
-        if (!context.auth?.isLoading && !context.auth?.isAuthenticated) throw redirect({ to: '/login' })
-    },
-    component: VerifyAgent,
-})
-
 const claimQuestRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/quests/claim',
@@ -491,6 +481,24 @@ const adminWeb3SkillsRoute = createRoute({
     component: AdminWeb3Skills,
 })
 
+// ── Skill Verification (public, no auth) ──
+const verifyRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/verify/$token',
+    component: function VerifyPage() {
+        const { token } = verifyRoute.useParams()
+        return (
+            <div className="flex min-h-screen flex-col">
+                <Navbar />
+                <div className="max-w-6xl mx-auto w-full py-5 px-6 flex-1">
+                    <VerifyChallenge token={token} />
+                </div>
+                <Footer />
+            </div>
+        )
+    },
+})
+
 const conceptsDemoButtonsRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/concepts/demo/buttons',
@@ -557,7 +565,6 @@ const routeTree = rootRoute.addChildren([
         agentDetailRoute,
         createAgentRoute,
         createQuestRoute,
-        verifyRoute,
         accountRoute,
         stripeConnectRoute,
         githubBountiesRoute,
@@ -569,6 +576,7 @@ const routeTree = rootRoute.addChildren([
         web3SkillDetailRoute,
         adminWeb3SkillsRoute,
     ]),
+    verifyRoute,
 ])
 
 export const router = createRouter({

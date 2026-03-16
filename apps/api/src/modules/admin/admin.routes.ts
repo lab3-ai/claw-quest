@@ -21,6 +21,9 @@ import {
     listEscrowQuests,
     getAnalyticsOverview,
     getTimeseries,
+    upsertSkill,
+    updateSkillVerificationConfig,
+    listSkillsAdmin,
 } from './admin.service';
 
 // ─── Env query param schema (shared across admin routes) ────────────────────
@@ -741,6 +744,96 @@ export async function adminRoutes(server: FastifyInstance) {
                 return reply.status(res.status).send({ message: err.detail || 'LLM request failed' });
             }
             return res.json();
+        }
+    );
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SKILL MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // ── List skills (admin) ──────────────────────────────────────────────────────
+    server.get(
+        '/skills',
+        {
+            schema: {
+                tags: ['Admin - Skills'],
+                summary: 'List clawhub_skills with optional filters',
+                querystring: z.object({
+                    limit: z.coerce.number().min(1).max(200).default(50),
+                    offset: z.coerce.number().min(0).default(0),
+                    search: z.string().optional(),
+                    hasVerifyConfig: z.enum(['true', 'false']).optional(),
+                    env: z.enum(['mainnet', 'testnet']).default('mainnet'),
+                }),
+            },
+        },
+        async (request) => {
+            const { env, limit, offset, search, hasVerifyConfig } = request.query as any;
+            const prisma = getAdminPrisma(server.prisma, env as AdminEnv);
+            const result = await listSkillsAdmin(prisma, {
+                limit,
+                offset,
+                search,
+                hasVerifyConfig: hasVerifyConfig === 'true' ? true : hasVerifyConfig === 'false' ? false : undefined,
+            });
+            return result;
+        }
+    );
+
+    // ── Upsert skill (admin) ─────────────────────────────────────────────────────
+    server.post(
+        '/skills',
+        {
+            schema: {
+                tags: ['Admin - Skills'],
+                summary: 'Upsert a skill in clawhub_skills',
+                body: z.object({
+                    slug: z.string().min(1).max(100),
+                    display_name: z.string().min(1).max(200),
+                    summary: z.string().optional(),
+                    owner_handle: z.string().optional(),
+                    owner_display_name: z.string().optional(),
+                    tags: z.any().optional(),
+                    verification_config: z.any().optional(),
+                    featured: z.boolean().optional(),
+                    featured_order: z.number().int().optional(),
+                    is_web3: z.boolean().optional(),
+                    env: z.enum(['mainnet', 'testnet']).default('mainnet'),
+                }),
+            },
+        },
+        async (request, reply) => {
+            const { env, ...data } = request.body as any;
+            const prisma = getAdminPrisma(server.prisma, env as AdminEnv);
+            const skill = await upsertSkill(prisma, data);
+            return reply.status(200).send({ skill });
+        }
+    );
+
+    // ── Set verification config for a skill ─────────────────────────────────────
+    server.patch(
+        '/skills/:slug/verification-config',
+        {
+            schema: {
+                tags: ['Admin - Skills'],
+                summary: 'Set verification_config for a skill',
+                params: z.object({ slug: z.string() }),
+                body: z.object({
+                    verification_config: z.any(),
+                    env: z.enum(['mainnet', 'testnet']).default('mainnet'),
+                }),
+            },
+        },
+        async (request, reply) => {
+            const { slug } = request.params as any;
+            const { env, verification_config } = request.body as any;
+            const prisma = getAdminPrisma(server.prisma, env as AdminEnv);
+            try {
+                const skill = await updateSkillVerificationConfig(prisma, slug, verification_config);
+                return reply.status(200).send({ skill });
+            } catch {
+                return reply.status(404).send({ error: 'Skill not found' });
+            }
         }
     );
 }

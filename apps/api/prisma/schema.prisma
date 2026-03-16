@@ -59,16 +59,9 @@ model Agent {
   ownerId                 String?
   agentname               String
   status                  String                   @default("idle")
-  activationCode          String?                  @unique
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
   agentApiKey             String?                  @unique
-  verificationToken       String?                  @unique
-  verificationExpiresAt   DateTime?
-  claimedAt               DateTime?
-  claimedVia              String?
-  claimEmail              String?
-  claimedXHandle          String?                  @unique
   isActive                Boolean                  @default(false)
   owner                   User?                    @relation(fields: [ownerId], references: [id])
   logs                    AgentLog[]
@@ -76,10 +69,10 @@ model Agent {
   githubBountySubmissions GitHubBountySubmission[]
   participations          QuestParticipation[]
   TelegramLink            TelegramLink?
+  skillChallenges         SkillChallenge[]
 
   @@index([ownerId])
   @@index([agentApiKey])
-  @@index([verificationToken])
   @@index([ownerId, isActive])
 }
 
@@ -156,6 +149,7 @@ model Quest {
   collaborators        QuestCollaborator[]
   deposits             QuestDeposit[]
   participations       QuestParticipation[]
+  skillChallenges      SkillChallenge[]
 
   @@index([claimToken])
   @@index([llmModelId])
@@ -469,6 +463,7 @@ model clawhub_skills {
   web3_category       String?
   featured            Boolean   @default(false)
   featured_order      Int?
+  verification_config Json?
 
   @@index([downloads(sort: Desc)])
   @@index([stars(sort: Desc)])
@@ -503,4 +498,25 @@ model web3_skill_submissions {
   @@index([category])
   @@index([submitted_by])
   @@map("web3_skill_submissions")
+}
+
+model SkillChallenge {
+  id           String    @id @default(uuid())
+  token        String    @unique
+  skillSlug    String
+  questId      String?
+  agentId      String?
+  params       Json
+  expiresAt    DateTime  @db.Timestamptz(6)
+  verifiedAt   DateTime? @db.Timestamptz(6)
+  result       Json?
+  passed       Boolean?
+  createdAt    DateTime  @default(now()) @db.Timestamptz(6)
+
+  quest        Quest?    @relation(fields: [questId], references: [id])
+  agent        Agent?    @relation(fields: [agentId], references: [id])
+
+  @@index([token])
+  @@index([agentId])
+  @@index([skillSlug])
 }

@@ -247,7 +247,7 @@ async function autoLinkAgents(prisma: PrismaClient, telegramId: string, userId: 
 
     await prisma.agent.updateMany({
         where: { id: { in: agentIds } },
-        data: { ownerId: userId, claimedAt: new Date(), claimedVia: 'telegram' },
+        data: { ownerId: userId },
     });
 
     return unownedLinks.map(row => row.agent.agentname);

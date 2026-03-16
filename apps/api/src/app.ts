@@ -23,6 +23,7 @@ import { waitlistRoutes } from './modules/waitlist/waitlist.routes';
 import { githubBountyRoutes } from './modules/github-bounty/github-bounty.routes';
 import { llmModelsRoutes } from './modules/llm-models/llm-models.routes';
 import { web3SkillsRoutes } from './modules/web3-skills/web3-skills.routes';
+import { challengesRoutes } from './modules/challenges/challenges.routes';
 
 // ─── Supabase Admin Client ──────────────────────────────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
@@ -261,6 +262,7 @@ server.register(waitlistRoutes, { prefix: '/waitlist' });
 server.register(githubBountyRoutes, { prefix: '/github-bounties' });
 server.register(llmModelsRoutes, { prefix: '/llm-models' });
 server.register(web3SkillsRoutes, { prefix: '/web3-skills' });
+server.register(challengesRoutes);
 
 // Telegram Bot (Polling for local dev)
 import { TelegramService } from './modules/telegram/telegram.service';
@@ -304,19 +306,19 @@ server.get('/skill.md', async (_request, reply) => {
 const start = async () => {
     try {
         // Load RPC registry from DB before starting escrow poller or accepting requests
-        // if (isEscrowConfigured()) {
-        //     try {
-        //         await rpcManager.load(prisma);
-        //         invalidateClientCache(); // ensure clients are rebuilt with DB-sourced RPCs
-        //         startEscrowPoller(server).catch((err) => {
-        //             console.error('⚠️  Escrow poller failed (non-fatal):', err.message);
-        //         });
-        //     } catch (err: any) {
-        //         console.warn('⚠️  RPC manager load failed (non-fatal) — escrow poller will not start:', err.message);
-        //     }
-        // } else {
-        //     console.warn('⚠️  Escrow not configured (missing contract address or operator key) — poller will not start');
-        // }
+        if (isEscrowConfigured()) {
+            try {
+                await rpcManager.load(prisma);
+                invalidateClientCache(); // ensure clients are rebuilt with DB-sourced RPCs
+                startEscrowPoller(server).catch((err) => {
+                    console.error('⚠️  Escrow poller failed (non-fatal):', err.message);
+                });
+            } catch (err: any) {
+                console.warn('⚠️  RPC manager load failed (non-fatal) — escrow poller will not start:', err.message);
+            }
+        } else {
+            console.warn('⚠️  Escrow not configured (missing contract address or operator key) — poller will not start');
+        }
 
         // // ClawHub skill catalog sync (runs on startup + every 24h)
         // startClawhubSyncJob(server).catch((err) => {

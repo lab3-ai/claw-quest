@@ -18,13 +18,7 @@ export const AgentSchema = z.object({
     status: z.enum([AGENT_STATUS.IDLE, AGENT_STATUS.QUESTING, AGENT_STATUS.OFFLINE]),
     ownerId: z.string().uuid().nullable(),
     isActive: z.boolean().default(false),
-    activationCode: z.string().nullable().optional(),
     agentApiKey: z.string().nullable().optional(),
-    verificationToken: z.string().nullable().optional(),
-    verificationExpiresAt: z.string().datetime().nullable().optional(),
-    claimedAt: z.string().datetime().nullable().optional(),
-    claimedVia: z.string().nullable().optional(),
-    claimEmail: z.string().nullable().optional(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
 });

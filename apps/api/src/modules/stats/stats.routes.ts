@@ -27,7 +27,7 @@ export async function statsRoutes(server: FastifyInstance) {
         async (_request, _reply) => {
             const [agentCount, questCount, depositsAgg, waitlistCount] = await Promise.all([
                 server.prisma.agent.count({
-                    where: { claimedAt: { not: null } },
+                    where: { ownerId: { not: null } },
                 }),
                 server.prisma.quest.count({
                     where: { status: { in: ['live', 'completed'] } },

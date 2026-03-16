@@ -174,7 +174,7 @@ describe('validateTaskParams', () => {
                 label: 'Verify role',
                 platform: 'discord',
                 actionType: 'verify_role',
-                params: { inviteUrl: 'https://discord.gg/abc123', roleName: 'Member' },
+                params: { inviteUrl: 'https://discord.gg/abc123', roleId: 'role-123', roleName: 'Member' },
             } as any);
             expect(result).toBeNull();
         });
@@ -184,7 +184,7 @@ describe('validateTaskParams', () => {
                 label: 'Verify role',
                 platform: 'discord',
                 actionType: 'verify_role',
-                params: { inviteUrl: 'https://discord.gg/abc123', roleName: '' },
+                params: { inviteUrl: 'https://discord.gg/abc123', roleId: 'role-123', roleName: '' },
             } as any);
             expect(result).toBeTypeOf('string');
             expect(result).toContain('role name is required');

@@ -9,7 +9,7 @@ function TestComponent() {
         <div>
             <div data-testid="theme">{theme}</div>
             <div data-testid="color-mode">{colorMode}</div>
-            <button onClick={() => setTheme('terminal')}>Set Glass</button>
+            <button onClick={() => setTheme('terminal')}>Set Terminal</button>
             <button onClick={() => setColorMode('dark')}>Set Dark</button>
         </div>
     )

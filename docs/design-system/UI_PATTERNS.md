@@ -166,9 +166,11 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 - Active link: `text-primary font-semibold` (color change, no underline/bg)
 - Inactive link: `text-fg-1 font-semibold`, hover: `hover:text-primary`
 - Divider: `h-4 w-px bg-border-2` between logo and nav (desktop only)
-- Mobile: hamburger icon, Sheet slide-in from right
+- **Desktop**: full nav tabs inline in header
+- **Mobile**: bottom navigation bar (Apple HIG, 49px height, Line/Fill icon toggle)
+- Mobile header: icon-only logo + action buttons (Create, Dashboard)
 - Breadcrumbs: only on 3+ level deep pages
-- Logo: `<BrandLogo animated />` — SVG icon (`h-9`) + text logo
+- Logo: `<BrandLogo animated />` — full on desktop, icon-only on mobile
 - Theme toggle: sun/moon icon button (light↔dark)
 
 ---
@@ -251,6 +253,7 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 | Quest cards | 1 col, full width | 2 col grid | 3 col grid |
 | Detail page | Stacked (sidebar on top) | 2-col `[1fr_280px]` | Same |
 | Tables | Stack to card list | Full table | Same |
-| Navbar | Sheet menu (right) | Full nav visible | Same |
+| Navbar | Bottom nav bar (Apple HIG) | Full nav in header | Same |
 | Buttons | Full width (`w-full`) | Auto width | Same |
-| Tabs | Horizontal scroll | Full row | Same |
+| Tabs | Horizontal scroll + fade mask | Full row | Same |
+| View toggle | Hidden (grid only) | Visible | Same |

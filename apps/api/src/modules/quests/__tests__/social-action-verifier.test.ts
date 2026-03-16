@@ -14,6 +14,8 @@ describe('verifySocialAction', () => {
     vi.clearAllMocks()
     process.env.X_CLIENT_ID = 'test-id'
     process.env.X_CLIENT_SECRET = 'test-secret'
+    process.env.RAPID_API_KEY = 'test-rapid-key'
+    process.env.DISCORD_BOT_TOKEN = 'test-bot-token'
   })
   afterEach(() => { vi.restoreAllMocks() })
 
@@ -39,34 +41,34 @@ describe('verifySocialAction', () => {
   })
 
   // ── X token gate ──
-  it('X: error when token missing/expired', async () => {
+  it('X: error when xHandle missing', async () => {
     const ctx = { ...baseCtx, xId: 'x1' }
     const r = await verifySocialAction('x', 'follow_account', 0, ctx)
     expect(r.valid).toBe(false)
-    expect(r.error).toContain('token expired')
+    expect(r.error).toContain('Link your X account')
   })
 
   // ── X follow_account ──
   describe('X follow_account', () => {
     it('returns true when user follows target', async () => {
-      global.fetch = vi.fn()
-        .mockResolvedValueOnce({ ok: true, json: async () => ({ data: { id: 'target-id' } }) })
-        .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [{ id: 'target-id' }], meta: {} }) })
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true, text: async () => JSON.stringify({ is_follow: true }),
+      })
 
       const ctx: VerificationContext = {
-        ...baseCtx, xId: 'user-x', xAccessToken: 'tok', xRefreshToken: 'ref',
+        ...baseCtx, xId: 'user-x', xHandle: 'user-x', xAccessToken: 'tok', xRefreshToken: 'ref',
         xTokenExpiry: new Date(Date.now() + 3600000), params: { accountHandle: '@target' },
       }
       expect((await verifySocialAction('x', 'follow_account', 0, ctx)).valid).toBe(true)
     })
 
     it('returns false when not following', async () => {
-      global.fetch = vi.fn()
-        .mockResolvedValueOnce({ ok: true, json: async () => ({ data: { id: 'target-id' } }) })
-        .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [{ id: 'other' }], meta: {} }) })
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true, text: async () => JSON.stringify({ is_follow: false }),
+      })
 
       const ctx: VerificationContext = {
-        ...baseCtx, xId: 'user-x', xAccessToken: 'tok', xRefreshToken: 'ref',
+        ...baseCtx, xId: 'user-x', xHandle: 'user-x', xAccessToken: 'tok', xRefreshToken: 'ref',
         xTokenExpiry: new Date(Date.now() + 3600000), params: { accountHandle: '@target' },
       }
       const r = await verifySocialAction('x', 'follow_account', 0, ctx)
@@ -78,13 +80,13 @@ describe('verifySocialAction', () => {
   // ── X post ──
   describe('X post', () => {
     const xCtx: VerificationContext = {
-      ...baseCtx, xId: 'user-x', xAccessToken: 'tok', xRefreshToken: 'ref',
+      ...baseCtx, xId: 'user-x', xHandle: 'user-x', xAccessToken: 'tok', xRefreshToken: 'ref',
       xTokenExpiry: new Date(Date.now() + 3600000),
     }
 
     it('returns true when tweet author matches', async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true, json: async () => ({ data: { author_id: 'user-x' } }),
+        ok: true, text: async () => JSON.stringify({ author: { screen_name: 'user-x', rest_id: 'user-x' }, text: 'test', entities: {} }),
       })
       const ctx = { ...xCtx, proofUrls: { 0: 'https://x.com/user/status/12345' } }
       expect((await verifySocialAction('x', 'post', 0, ctx)).valid).toBe(true)
@@ -98,7 +100,7 @@ describe('verifySocialAction', () => {
 
     it('error when author mismatch', async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
-        ok: true, json: async () => ({ data: { author_id: 'someone-else' } }),
+        ok: true, text: async () => JSON.stringify({ author: { screen_name: 'someone-else', rest_id: 'other-id' }, text: 'test', entities: {} }),
       })
       const ctx = { ...xCtx, proofUrls: { 0: 'https://x.com/u/status/1' } }
       const r = await verifySocialAction('x', 'post', 0, ctx)
@@ -111,10 +113,10 @@ describe('verifySocialAction', () => {
   it('X quote_post: error when wrong quoted tweet', async () => {
     global.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ data: { author_id: 'user-x', referenced_tweets: [{ type: 'quoted', id: 'wrong' }] } }),
+      text: async () => JSON.stringify({ author: { screen_name: 'user-x', rest_id: 'user-x' }, text: '', entities: {}, quoted: { tweet_id: 'wrong' } }),
     })
     const ctx: VerificationContext = {
-      ...baseCtx, xId: 'user-x', xAccessToken: 'tok', xRefreshToken: 'ref',
+      ...baseCtx, xId: 'user-x', xHandle: 'user-x', xAccessToken: 'tok', xRefreshToken: 'ref',
       xTokenExpiry: new Date(Date.now() + 3600000),
       proofUrls: { 0: 'https://x.com/u/status/1' },
       params: { targetUrl: 'https://x.com/a/status/999' },
@@ -146,12 +148,12 @@ describe('verifySocialAction', () => {
   })
 
   // ── Discord join_server ──
-  it('Discord join_server: returns true via OAuth', async () => {
+  it('Discord join_server: returns true via bot when member', async () => {
     global.fetch = vi.fn().mockResolvedValueOnce({
       ok: true, json: async () => ({ roles: ['r1'] }),
     })
     const ctx: VerificationContext = {
-      ...baseCtx, discordId: 'd1', discordAccessToken: 'disc-tok',
+      ...baseCtx, discordId: 'd1',
       params: { guildId: 'g1' },
     }
     expect((await verifySocialAction('discord', 'join_server', 0, ctx)).valid).toBe(true)
@@ -159,12 +161,12 @@ describe('verifySocialAction', () => {
 
   it('Discord join_server: resolves guildId from inviteUrl when guildId missing', async () => {
     // 1st fetch: resolveInvite(abc) → guild
-    // 2nd fetch: getUserGuildMember(token, resolvedGuildId) → member
+    // 2nd fetch: getGuildMember(resolvedGuildId, discordId) → member
     global.fetch = vi.fn()
       .mockResolvedValueOnce({ ok: true, json: async () => ({ guild: { id: 'resolved-guild-id', name: 'Test' } }) })
       .mockResolvedValueOnce({ ok: true, json: async () => ({ roles: ['r1'] }) })
     const ctx: VerificationContext = {
-      ...baseCtx, discordId: 'd1', discordAccessToken: 'disc-tok',
+      ...baseCtx, discordId: 'd1',
       params: { inviteUrl: 'https://discord.gg/abc' },
     }
     expect((await verifySocialAction('discord', 'join_server', 0, ctx)).valid).toBe(true)
@@ -177,6 +179,17 @@ describe('verifySocialAction', () => {
     })
     expect(r.valid).toBe(false)
     expect(r.error).toContain('missing guildId')
+  })
+
+  it('Discord join_server: returns error when user not a member', async () => {
+    global.fetch = vi.fn().mockResolvedValueOnce({ ok: false, status: 404, json: async () => ({}) })
+    const ctx: VerificationContext = {
+      ...baseCtx, discordId: 'd1',
+      params: { guildId: 'g1' },
+    }
+    const r = await verifySocialAction('discord', 'join_server', 0, ctx)
+    expect(r.valid).toBe(false)
+    expect(r.error).toContain('not joined this Discord server')
   })
 
   // ── Unknown platform ──

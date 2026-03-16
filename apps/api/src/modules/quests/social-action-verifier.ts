@@ -6,7 +6,7 @@
 import { PrismaClient } from '@prisma/client'
 import { extractTweetId, normaliseHandle } from '../x/x-utils'
 import { getTweetInfo, checkRetweet, checkFollow } from '../x/x-twitter-api45-client'
-import { getGuildMember, getUserGuildMember, resolveInvite } from '../discord/discord-rest-client'
+import { getGuildMember, resolveInvite } from '../discord/discord-rest-client'
 import { validateSocialTarget, type SocialValidationResult } from './social-validator'
 
 export interface VerificationContext {
@@ -21,6 +21,7 @@ export interface VerificationContext {
   // Discord identity
   discordId?: string | null
   discordAccessToken?: string | null
+  discordTokenExpiry?: Date | null
   // Telegram identity
   telegramId?: string | null
   // Proof URLs for post/quote_post (map of taskIndex → URL)
@@ -116,15 +117,9 @@ async function verifyDiscordAction(
     }
     if (!guildId) return { valid: false, error: 'Quest task missing guildId — contact quest creator' }
 
-    // Prefer OAuth user token (no bot needed)
-    if (ctx.discordAccessToken) {
-      const roles = await getUserGuildMember(ctx.discordAccessToken, guildId)
-      if (roles !== null) return { valid: true }
-    }
-    // Fallback to bot
+    // Bot-based verification — requires the ClawQuest bot to be in the Discord server
     const botRoles = await getGuildMember(guildId, ctx.discordId)
     if (botRoles !== null) return { valid: true }
-
     return { valid: false, error: 'You have not joined this Discord server' }
   }
 

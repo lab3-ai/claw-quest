@@ -67,6 +67,7 @@ function getMissingAccountWarning(task: any, profile: any): string | null {
     if (task.platform === "x" && !profile.xId) return "Link your X account in Settings to verify"
     if (task.platform === "x" && profile.xId && !profile.hasXToken) return "Grant X verification access in Settings"
     if (task.platform === "discord" && !profile.discordId) return "Link your Discord account in Settings to verify"
+    if (task.platform === "discord" && profile.discordId && !profile.hasDiscordToken) return "Re-link Discord in Settings to enable verification"
     if (task.platform === "telegram" && !profile.telegramId) return "Link your Telegram account in Settings to verify"
     return null
 }

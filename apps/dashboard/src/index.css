@@ -490,22 +490,22 @@ summary {
 /* Illustration container — relative box, flex child, scales with breakpoints */
 .ab-illu {
     position: relative;
-    width: 320px;
-    height: 180px;
+    width: 360px;
+    height: 210px;
     flex-shrink: 0;
 }
 
 @media (min-width: 768px) {
     .ab-illu {
-        width: 320px;
-        height: 180px;
+        width: 380px;
+        height: 220px;
     }
 }
 
 @media (min-width: 1024px) {
     .ab-illu {
-        width: 420px;
-        height: 200px;
+        width: 480px;
+        height: 240px;
     }
 }
 
@@ -582,6 +582,8 @@ summary {
     transform-origin: 12% 85%;
     animation: ab-armSway 3.2s ease-in-out infinite;
 }
+
+
 
 /* Keyframes — entrance */
 @keyframes ab-slideDown {
@@ -712,6 +714,18 @@ summary {
 
 .ab-pyramid {
     animation: ab-slideUp .6s ease-out .5s both, ab-pyramidWobble 7s ease-in-out 1.1s infinite;
+}
+
+/* UI windows — inline SVG, full height, anchored right behind robot */
+.ab-ui-windows {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: auto;
+    display: block;
+    z-index: 2;
+    pointer-events: none;
 }
 
 /* Reduce motion */

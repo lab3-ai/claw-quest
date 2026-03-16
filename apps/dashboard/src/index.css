@@ -465,6 +465,28 @@ summary {
     outline: none;
 }
 
+/* Page transition — opacity-only fade on route change
+   No transform — translateY breaks position:fixed/sticky stacking context */
+@keyframes page-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.page-fade-in {
+    animation: page-fade-in 220ms ease-out both;
+}
+
+@keyframes button-pop {
+    0% { transform: scale(0.95); }
+    40% { transform: scale(1.02); }
+    to { transform: scale(1); }
+}
+
+.btn-pop:active:not(:disabled) {
+    animation: button-pop 0.25s ease-out;
+    transform: scale(0.97);
+}
+
 @keyframes blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }

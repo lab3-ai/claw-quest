@@ -692,6 +692,10 @@ export async function updateSkillVerificationConfig(
     });
 }
 
+export async function getSkillAdmin(prisma: PrismaClient, slug: string) {
+    return prisma.clawhub_skills.findUnique({ where: { slug } });
+}
+
 export async function listSkillsAdmin(
     prisma: PrismaClient,
     opts: { limit?: number; offset?: number; search?: string; hasVerifyConfig?: boolean }

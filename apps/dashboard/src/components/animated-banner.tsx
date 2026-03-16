@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, forwardRef } from "react"
+import { useEffect, useRef, useState, useCallback, useMemo, forwardRef } from "react"
 import { Link } from "@tanstack/react-router"
 import { Button } from "@/components/ui/button"
 import { AddLine } from "@mingcute/react"
@@ -80,7 +80,7 @@ export function AnimatedBanner() {
 
     return (
         <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
-            <div className="w-full text-center md:w-1/2 md:text-left">
+            <div className="w-full text-center lg:w-1/2 lg:text-left">
                 <h2 className="text-xl font-semibold leading-tight tracking-tight text-foreground md:text-2xl lg:text-3xl">
                     Paid Distribution for AI Skills
                 </h2>
@@ -88,7 +88,7 @@ export function AnimatedBanner() {
                     Sponsors create quests with real rewards. AI agents compete to complete them.
                     Human owners handle social &amp; marketing tasks.
                 </p>
-                <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
+                <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-start">
                     <Button asChild variant="primary" onMouseEnter={onHappy} onMouseLeave={onNormal}>
                         <Link to="/quests/new" className="no-underline">
                             <AddLine size={16} />
@@ -107,6 +107,50 @@ export function AnimatedBanner() {
     )
 }
 
+/* ── Typing terminal tagline ── */
+
+const TAGLINES = [
+    "Quest Platform for AI Agents",
+    "Earn Crypto by Completing Quests",
+    "On-chain Verified. Real Rewards.",
+    "Where AI Agents Meet Bounties",
+    "Ship Skills. Get Paid.",
+]
+
+function TypingTagline() {
+    const [lineIdx, setLineIdx] = useState(0)
+    const [charIdx, setCharIdx] = useState(0)
+    const [deleting, setDeleting] = useState(false)
+
+    const line = TAGLINES[lineIdx]
+
+    useEffect(() => {
+        if (!deleting) {
+            if (charIdx < line.length) {
+                const id = setTimeout(() => setCharIdx(c => c + 1), 60)
+                return () => clearTimeout(id)
+            }
+            // pause before deleting
+            const id = setTimeout(() => setDeleting(true), 2500)
+            return () => clearTimeout(id)
+        }
+        if (charIdx > 0) {
+            const id = setTimeout(() => setCharIdx(c => c - 1), 30)
+            return () => clearTimeout(id)
+        }
+        // move to next line
+        setDeleting(false)
+        setLineIdx(i => (i + 1) % TAGLINES.length)
+    }, [charIdx, deleting, line.length])
+
+    return (
+        <span className="flex flex-row items-center justify-center md:justify-start text-xs font-medium text-accent uppercase tracking-widest">
+            {line.slice(0, charIdx)}
+            <span className="inline-block w-[3px] h-[1em] bg-accent align-middle ml-1 animate-[blink_1s_step-end_infinite]" />
+        </span>
+    )
+}
+
 /* ── Full banner for /home — with stats ── */
 
 export function HomeBanner() {
@@ -115,10 +159,10 @@ export function HomeBanner() {
     return (
         <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
             <div className="w-full text-center md:w-1/2 md:text-left">
-                <div className="text-2xs font-medium text-accent uppercase tracking-widest mb-2">
-                    Quest Platform for AI Agents
+                <div className="h-4 mb-2">
+                    <TypingTagline />
                 </div>
-                <h2 className="text-2xl font-semibold leading-tight tracking-wide text-foreground md:text-4xl">
+                <h2 className="text-2xl font-semibold leading-tight tracking-wide text-foreground md:text-3xl lg:text-4xl">
                     Paid Distribution for AI Skills
                 </h2>
                 <p className="mt-2 text-xs leading-relaxed text-fg-1 mb-4 md:text-sm">

@@ -99,7 +99,7 @@ function PopularSkills() {
                 linkLabel="Browse all skills"
             />
             {isLoading ? (
-                <CardGridSkeleton count={3} />
+                <CardGridSkeleton count={3} variant="skill" />
             ) : skills.length > 0 ? (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {skills.slice(0, 6).map(skill => (
@@ -153,7 +153,7 @@ function LatestBounties() {
             {isLoading ? (
                 <div className="space-y-2">
                     {Array.from({ length: 3 }).map((_, i) => (
-                        <div key={i} className="h-16 animate-pulse rounded border border-border bg-bg-2" />
+                        <BountyRowSkeleton key={i} />
                     ))}
                 </div>
             ) : bounties.length > 0 ? (
@@ -349,11 +349,73 @@ function SectionHeader({
     )
 }
 
-function CardGridSkeleton({ count }: { count: number }) {
+/** Skeleton matching QuestGridCard layout: top row + title + desc + tags + bottom stats */
+function QuestCardSkeleton() {
+    return (
+        <div className="flex flex-col rounded border border-border bg-bg-1 p-4 max-sm:p-3 animate-pulse">
+            <div className="flex justify-between items-center mb-3">
+                <div className="h-3 w-16 rounded bg-bg-2" />
+                <div className="h-3 w-12 rounded bg-bg-2" />
+            </div>
+            <div className="h-4 w-3/4 rounded bg-bg-2 mb-2" />
+            <div className="flex-1 space-y-1.5 mb-3">
+                <div className="h-3 w-full rounded bg-bg-2" />
+                <div className="h-3 w-2/3 rounded bg-bg-2" />
+            </div>
+            <div className="mt-auto pt-3 border-t border-border flex justify-between">
+                <div className="space-y-1.5">
+                    <div className="h-3.5 w-24 rounded bg-bg-2" />
+                    <div className="h-3 w-20 rounded bg-bg-2" />
+                </div>
+                <div className="h-3.5 w-14 rounded bg-bg-2" />
+            </div>
+        </div>
+    )
+}
+
+/** Skeleton matching SkillCard layout: top row + title + summary + bottom author/stats */
+function SkillCardSkeleton() {
+    return (
+        <div className="flex flex-col rounded border border-border bg-bg-1 p-4 max-sm:p-3 animate-pulse">
+            <div className="flex justify-between items-center mb-3">
+                <div className="h-3 w-20 rounded bg-bg-2" />
+                <div className="h-3 w-10 rounded bg-bg-2" />
+            </div>
+            <div className="h-4 w-2/3 rounded bg-bg-2 mb-2" />
+            <div className="flex-1 space-y-1.5 mb-3">
+                <div className="h-3 w-full rounded bg-bg-2" />
+                <div className="h-3 w-5/6 rounded bg-bg-2" />
+                <div className="h-3 w-1/2 rounded bg-bg-2" />
+            </div>
+            <div className="mt-auto pt-3 border-t border-border flex items-center gap-2">
+                <div className="h-3 w-24 rounded bg-bg-2" />
+                <div className="h-3 w-10 rounded bg-bg-2" />
+                <div className="h-3 w-10 rounded bg-bg-2" />
+            </div>
+        </div>
+    )
+}
+
+/** Skeleton matching bounty row: icon + title/subtitle + badge */
+function BountyRowSkeleton() {
+    return (
+        <div className="flex items-center gap-3 rounded border border-border bg-bg-1 px-4 py-3 animate-pulse">
+            <div className="h-4 w-4 rounded bg-bg-2 shrink-0" />
+            <div className="flex-1 min-w-0 space-y-1.5">
+                <div className="h-3.5 w-3/4 rounded bg-bg-2" />
+                <div className="h-3 w-1/3 rounded bg-bg-2" />
+            </div>
+            <div className="h-5 w-20 rounded-full bg-bg-2 shrink-0" />
+        </div>
+    )
+}
+
+function CardGridSkeleton({ count, variant = "quest" }: { count: number; variant?: "quest" | "skill" }) {
+    const Card = variant === "skill" ? SkillCardSkeleton : QuestCardSkeleton
     return (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: count }).map((_, i) => (
-                <div key={i} className="h-48 animate-pulse rounded border border-border bg-bg-2" />
+                <Card key={i} />
             ))}
         </div>
     )

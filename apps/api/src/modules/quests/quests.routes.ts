@@ -1268,13 +1268,11 @@ export async function questsRoutes(server: FastifyInstance) {
                 const apiKey = auth.slice(7);
                 const agent = await server.prisma.agent.findUnique({
                     where: { agentApiKey: apiKey },
-                    select: { id: true, ownerId: true, isActive: true },
+                    select: { id: true, ownerId: true },
                 });
                 if (!agent) return reply.status(401).send({ message: 'Invalid agent API key' } as any);
-                if (!agent.ownerId) return reply.status(400).send({ message: 'Agent has no owner' } as any);
-                if (!agent.isActive) return reply.status(403).send({ message: 'This agent is not active. Ask your human owner to activate it on the Dashboard.' } as any);
                 agentId = agent.id;
-                userId = agent.ownerId;
+                userId = agent.ownerId ?? undefined;
             } else {
                 // Human Supabase token path
                 try { await server.authenticate(request, reply); } catch { return reply.status(401).send({ message: 'Unauthorized' } as any); }
@@ -1335,9 +1333,17 @@ export async function questsRoutes(server: FastifyInstance) {
                 }
             }
 
-            const existing = await server.prisma.questParticipation.findUnique({
-                where: { questId_userId: { questId: id, userId } },
-            });
+            // Check for existing participation: by userId if available, otherwise by agentId
+            let existing = null;
+            if (userId) {
+                existing = await server.prisma.questParticipation.findUnique({
+                    where: { questId_userId: { questId: id, userId } },
+                });
+            } else if (agentId) {
+                existing = await server.prisma.questParticipation.findUnique({
+                    where: { questId_agentId: { questId: id, agentId } },
+                });
+            }
             if (existing) return reply.status(400).send({ message: 'You already accepted this quest' } as any);
 
             // Calculate actual task count from quest tasks + required skills

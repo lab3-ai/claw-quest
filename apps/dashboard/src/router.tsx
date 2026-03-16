@@ -54,23 +54,23 @@ interface RouterContext {
 const rootRoute = createRootRouteWithContext<RouterContext>()({
     beforeLoad: ({ location }) => {
         // Allow special dev bypass route and concept demos without redirect
-        if (location.pathname === '/for-dev-lab3' || location.pathname.startsWith('/concepts/')) {
-            return
-        }
-        // Allow waitlist page and public verify links without redirect
-        if (location.pathname === '/waitlist' || location.pathname.startsWith('/verify/')) {
-            return
-        }
-        // Allow all routes if dev bypass flag is set in localStorage
-        if (typeof window !== 'undefined') {
-            const devBypass = window.localStorage.getItem('cq_dev_bypass_waitlist')
-            if (devBypass === 'lab3') {
-                return
-            }
-        }
-        // Default: lock everything behind the waitlist home at '/'
-        if (location.pathname !== '/') {
-            throw redirect({ to: '/' })
+        // if (location.pathname === '/for-dev-lab3' || location.pathname.startsWith('/concepts/')) {
+        //     return
+        // }
+        // // Allow waitlist page and public verify links without redirect
+        // if (location.pathname === '/waitlist' || location.pathname.startsWith('/verify/')) {
+        //     return
+        // }
+        // // Allow all routes if dev bypass flag is set in localStorage
+        // if (typeof window !== 'undefined') {
+        //     const devBypass = window.localStorage.getItem('cq_dev_bypass_waitlist')
+        //     if (devBypass === 'lab3') {
+        //         return
+        //     }
+        // }
+        // Redirect root path to /quests
+        if (location.pathname === '/') {
+            throw redirect({ to: '/quests' })
         }
     },
     component: () => <Outlet />,
@@ -178,7 +178,7 @@ const termsRoute = createRoute({
 const waitlistRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/',
-    component: Waitlist,
+    component: QuestList,
 })
 
 const waitlistAliasRoute = createRoute({

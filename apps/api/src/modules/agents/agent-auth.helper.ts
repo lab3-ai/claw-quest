@@ -17,15 +17,10 @@ export async function authenticateAgent(
     const apiKey = auth.slice(7); // strip "Bearer "
     const agent = await server.prisma.agent.findUnique({
         where: { agentApiKey: apiKey },
-        select: { id: true, ownerId: true, isActive: true },
+        select: { id: true, ownerId: true },
     });
     if (!agent) {
         reply.status(401).send({ error: 'Invalid agent API key' });
-        return null;
-    }
-    // Block inactive agents — only the active agent per user can call APIs
-    if (agent.ownerId && !agent.isActive) {
-        reply.status(403).send({ error: 'This agent is not active. Ask your human owner to activate it on the Dashboard.' });
         return null;
     }
     return { agentId: agent.id, ownerId: agent.ownerId as string | null };

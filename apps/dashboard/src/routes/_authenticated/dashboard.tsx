@@ -1,6 +1,6 @@
-import { useState, useEffect, Fragment } from "react"
+import { useState, useEffect } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
-import { useQuery, useQueries, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { QuestersPopup } from "@/components/QuestersPopup"
 import { getDiceBearUrl } from "@/components/avatarUtils"
@@ -9,8 +9,6 @@ import { Badge } from "@/components/ui/badge"
 import { QuestTypeBadge, QuestStatusBadge } from "@/components/quest-badges"
 import { cn } from "@/lib/utils"
 import { PageTitle } from "@/components/page-title"
-import { toast } from "sonner"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import type { Quest } from "@clawquest/shared"
 import { FUNDING_STATUS } from "@clawquest/shared"
 
@@ -37,17 +35,10 @@ interface Agent {
     }[]
 }
 
-interface AgentSkillInfo {
-    name: string
-    version: string | null
-    verified: boolean
-    platform: string | null
-    scannedAt: string | null
-}
 
 type QuestFilter = "all" | "draft" | "live" | "scheduled" | "completed"
 type AcceptedFilter = "all" | "active" | "ended"
-type MainTab = "my-quest" | "accepted" | "agents"
+type MainTab = "my-quest" | "accepted"
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -108,7 +99,7 @@ export function Dashboard() {
     const urlParams = new URLSearchParams(window.location.search)
     const urlTab = urlParams.get('tab')
     const [mainTab, setMainTab] = useState<MainTab>(
-        urlTab === "accepted" || urlTab === "agents" ? urlTab : "my-quest"
+        urlTab === "accepted" ? urlTab : "my-quest"
     )
 
     // Sync URL when tab changes
@@ -129,7 +120,7 @@ export function Dashboard() {
         const handlePopState = () => {
             const params = new URLSearchParams(window.location.search)
             const tab = params.get('tab')
-            const tabParam = tab === "accepted" || tab === "agents" ? tab : "my-quest"
+            const tabParam = tab === "accepted" ? tab : "my-quest"
             setMainTab(tabParam)
         }
         window.addEventListener('popstate', handlePopState)
@@ -138,10 +129,6 @@ export function Dashboard() {
     const [questFilter, setQuestFilter] = useState<QuestFilter>("all")
     const [questView, setQuestView] = useState<"card" | "list">("card")
     const [acceptedFilter, setAcceptedFilter] = useState<AcceptedFilter>("all")
-    const [activatingAgent, setActivatingAgent] = useState<string | null>(null)
-    const [deletingAgent, setDeletingAgent] = useState<string | null>(null)
-    const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null)
-    const [expandedAgent, setExpandedAgent] = useState<string | null>(null)
     const [popupQuest, setPopupQuest] = useState<{ id: string; title: string } | null>(null)
 
     const { data: quests = [], isLoading: questsLoading } = useQuery<MineQuest[]>({
@@ -156,7 +143,7 @@ export function Dashboard() {
         enabled: !!session?.access_token,
     })
 
-    const { data: agents = [], isLoading: agentsLoading } = useQuery<Agent[]>({
+    const { data: agents = [] } = useQuery<Agent[]>({
         queryKey: ["agents"],
         queryFn: async () => {
             const res = await fetch(`${API_BASE}/agents`, {
@@ -181,23 +168,6 @@ export function Dashboard() {
         enabled: !!session?.access_token,
     })
 
-    // ── Agent skills (per agent) ─────────────────────────────────────────────
-    const activeAgents = agents
-    const agentSkillQueries = useQueries({
-        queries: activeAgents.map(agent => ({
-            queryKey: ["agent-skills", agent.id],
-            queryFn: async (): Promise<{ skills: AgentSkillInfo[]; lastScan: string | null }> => {
-                const res = await fetch(`${API_BASE}/agents/${agent.id}/skills`)
-                if (!res.ok) return { skills: [], lastScan: null }
-                return res.json()
-            },
-            staleTime: 60_000,
-        })),
-    })
-    const agentSkillsMap = new Map<string, { skills: AgentSkillInfo[]; lastScan: string | null }>()
-    activeAgents.forEach((agent, i) => {
-        if (agentSkillQueries[i]?.data) agentSkillsMap.set(agent.id, agentSkillQueries[i].data!)
-    })
 
     // ── Publish handler ─────────────────────────────────────────────────────
     async function handlePublish(questId: string) {
@@ -244,58 +214,7 @@ export function Dashboard() {
         : acceptedFilter === "active" ? allAccepted.filter(q => q.status === "live" || q.status === "scheduled")
             : allAccepted.filter(q => isEndedStatus(q.status))
 
-    // Agent filter counts
-    const filteredAgents = agents
 
-    const handleActivateAgent = async (agentId: string) => {
-        if (!session?.access_token) return
-        setActivatingAgent(agentId)
-        try {
-            const res = await fetch(`${API_BASE}/agents/${agentId}/activate`, {
-                method: "PATCH",
-                headers: { Authorization: `Bearer ${session.access_token}` },
-            })
-            if (!res.ok) {
-                const data = await res.json().catch(() => ({}))
-                toast.error(data.error || "Failed to activate agent")
-                return
-            }
-            toast.success("Agent activated!")
-            queryClient.invalidateQueries({ queryKey: ["agents"] })
-        } catch {
-            toast.error("Failed to activate agent")
-        } finally {
-            setActivatingAgent(null)
-        }
-    }
-
-    const handleDeleteAgent = (agentId: string, agentname: string) => {
-        setConfirmDelete({ id: agentId, name: agentname })
-    }
-
-    const handleConfirmDelete = async () => {
-        if (!confirmDelete || !session?.access_token) return
-        const { id, name } = confirmDelete
-        setConfirmDelete(null)
-        setDeletingAgent(id)
-        try {
-            const res = await fetch(`${API_BASE}/agents/${id}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${session.access_token}` },
-            })
-            if (!res.ok) {
-                const data = await res.json().catch(() => ({}))
-                toast.error(data.error || "Failed to delete agent")
-                return
-            }
-            toast.success(`Agent "${name}" deleted`)
-            queryClient.invalidateQueries({ queryKey: ["agents"] })
-        } catch {
-            toast.error("Failed to delete agent")
-        } finally {
-            setDeletingAgent(null)
-        }
-    }
 
     const displayName = user?.user_metadata?.full_name as string | undefined
     const handle = displayName ?? user?.email?.split("@")[0] ?? "user"
@@ -375,15 +294,6 @@ export function Dashboard() {
                             onClick={() => setMainTab("accepted")}
                         >
                             Accepted Quests <span className={cn("text-xs max-sm:text-2xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "accepted" && "bg-(--tone-quest)")}>{acceptedQuests.data?.length ?? 0}</span>
-                        </button>
-                        <button
-                            className={cn(
-                                "px-3.5 max-sm:px-3 py-2.5 max-sm:py-3 text-sm max-sm:text-xs font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground whitespace-nowrap max-sm:min-h-[44px]",
-                                mainTab === "agents" && "text-foreground font-semibold border-b-(--tone-agent)"
-                            )}
-                            onClick={() => setMainTab("agents")}
-                        >
-                            My Agents <span className={cn("text-xs max-sm:text-2xs font-semibold px-1.5 py-px rounded bg-border text-white", mainTab === "agents" && "bg-(--tone-agent)")}>{agents.length}</span>
                         </button>
                     </div>
                 </div>
@@ -1000,314 +910,7 @@ export function Dashboard() {
                     </div>
                 )}
 
-                {/* ── My Agents tab ── */}
-                {mainTab === "agents" && (
-                    <div className="">
-
-                        {agentsLoading && (
-                            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                                <table className="w-full border-collapse">
-                                    <thead>
-                                        <tr>
-                                            <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Agent</th>
-                                            <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Status</th>
-                                            <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Skills</th>
-                                            <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[90px] text-center">Quests</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {[1, 2, 3].map(i => (
-                                            <tr key={i}>
-                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 120, height: 14 }} /></td>
-                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 70, height: 14 }} /></td>
-                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 140, height: 14 }} /></td>
-                                                <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle"><div className="skeleton" style={{ width: 30, height: 14, margin: "0 auto" }} /></td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-
-                        {!agentsLoading && filteredAgents.length === 0 && (
-                            <div className="p-10 text-center text-muted-foreground">
-                                No agents yet.{" "}
-                                <Link to="/dashboard">Register your first agent →</Link>
-                            </div>
-                        )}
-
-                        {filteredAgents.length > 0 && (
-                            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                                <table className="w-full border-collapse">
-                                    <thead>
-                                        <tr>
-                                            <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[30px] text-center"></th>
-                                            <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Agent</th>
-                                            <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Status</th>
-                                            <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted min-w-[180px]">Skills</th>
-                                            <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[90px] text-center">Quests</th>
-                                            <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Registered</th>
-                                            <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[110px]">Verified</th>
-                                            <th className="text-left px-2.5 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted w-[180px]">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {filteredAgents.map(agent => {
-                                            const isExpanded = expandedAgent === agent.id
-                                            return (
-                                                <Fragment key={agent.id}>
-                                                    <tr
-                                                        className="cursor-pointer hover:bg-bg-2/50"
-                                                        onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}
-                                                    >
-                                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[30px] text-center">
-                                                            <span className={cn(
-                                                                "text-xs text-muted-foreground transition-transform duration-150 inline-block",
-                                                                isExpanded && "rotate-90"
-                                                            )}>▸</span>
-                                                        </td>
-                                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle min-w-[180px]">
-                                                            <div className="flex items-center gap-1.5">
-                                                                <span className="font-mono text-xs font-semibold text-foreground">{agent.agentname}</span>
-                                                                {agent.isActive && (
-                                                                    <span className="inline-flex items-center text-2xs font-semibold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400">● Active</span>
-                                                                )}
-                                                            </div>
-                                                            <div className="text-xs text-muted-foreground">id: {agent.id.slice(0, 8)}…</div>
-                                                        </td>
-                                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
-                                                            {agent.status === "questing" ? (
-                                                                <span className="text-(--yellow) font-semibold text-xs">
-                                                                    <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-(--yellow)" /> Questing
-                                                                </span>
-                                                            ) : agent.status === "offline" ? (
-                                                                <span className="text-error font-semibold text-xs">
-                                                                    <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-(--red)" /> Offline
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-accent font-semibold text-xs">
-                                                                    <span className="inline-block h-1.5 w-1.5 rounded-full mr-1 align-middle bg-(--green)" /> Idle
-                                                                </span>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle min-w-[180px]">
-                                                            {(() => {
-                                                                const skillData = agentSkillsMap.get(agent.id)
-                                                                if (!skillData || skillData.skills.length === 0) {
-                                                                    return <span className="text-xs text-muted-foreground">No skills</span>
-                                                                }
-                                                                return (
-                                                                    <div className="flex flex-wrap gap-0.5">
-                                                                        {skillData.skills.map(s => (
-                                                                            <span
-                                                                                key={s.name}
-                                                                                className={cn(
-                                                                                    "inline-flex items-center gap-1 text-xs font-semibold px-1.5 py-0.5 rounded font-mono",
-                                                                                    s.verified
-                                                                                        ? "bg-emerald-500/15 text-emerald-400"
-                                                                                        : "bg-(--skill-bg) text-(--skill-fg)"
-                                                                                )}
-                                                                            >
-                                                                                {s.verified && <span className="text-2xs" title="Verified">✓</span>}
-                                                                                {s.name}
-                                                                            </span>
-                                                                        ))}
-                                                                    </div>
-                                                                )
-                                                            })()}
-                                                        </td>
-                                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[90px] text-center">
-                                                            {agent.status === "questing" ? "1 active" : "0"}
-                                                        </td>
-                                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
-                                                            <div className="text-xs text-muted-foreground" title={agent.createdAt}>
-                                                                {new Date(agent.createdAt).toLocaleDateString()}
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[110px]">
-                                                            <Badge variant="filled-success">Verified</Badge>
-                                                        </td>
-                                                        <td className="px-2.5 py-2.5 text-xs border-b border-border align-middle w-[180px]" onClick={e => e.stopPropagation()}>
-                                                            <div className="flex items-center gap-1.5 flex-wrap">
-                                                                {!agent.isActive && (
-                                                                    <button
-                                                                        type="button"
-                                                                        disabled={activatingAgent === agent.id}
-                                                                        onClick={() => handleActivateAgent(agent.id)}
-                                                                        className="text-xs font-semibold px-2.5 py-1 rounded bg-orange-500/15 text-orange-400 hover:bg-orange-500/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                    >
-                                                                        {activatingAgent === agent.id ? "…" : "Set Active"}
-                                                                    </button>
-                                                                )}
-                                                                {agent.isActive && (
-                                                                    <span className="text-xs font-semibold px-2.5 py-1 rounded bg-emerald-500/15 text-emerald-400 cursor-default select-none">
-                                                                        ● Active
-                                                                    </span>
-                                                                )}
-                                                                {agent.status !== "questing" && (
-                                                                    <button
-                                                                        type="button"
-                                                                        disabled={deletingAgent === agent.id}
-                                                                        onClick={() => handleDeleteAgent(agent.id, agent.agentname)}
-                                                                        className="text-xs font-semibold px-2.5 py-1 rounded bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                    >
-                                                                        {deletingAgent === agent.id ? "Deleting..." : "Delete"}
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                    {isExpanded && (
-                                                        <tr key={`detail-${agent.id}`}>
-                                                            <td colSpan={8} className="p-0 bg-muted">
-                                                                <div className="py-3.5 px-4 pl-[26px] border-b border-border">
-                                                                    <div className="mb-3.5 last:mb-0">
-                                                                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Quest Participation</div>
-                                                                        {(!agent.participations || agent.participations.length === 0) ? (
-                                                                            <p className="text-sm text-muted-foreground">
-                                                                                No quest history yet.{" "}
-                                                                                <Link to="/quests">Browse available quests →</Link>
-                                                                            </p>
-                                                                        ) : (
-                                                                                <table className="w-full border-collapse">
-                                                                                    <thead>
-                                                                                        <tr>
-                                                                                            <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Quest</th>
-                                                                                            <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Progress</th>
-                                                                                            <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Status</th>
-                                                                                            <th className="text-left px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border">Payout</th>
-                                                                                        </tr>
-                                                                                    </thead>
-                                                                                    <tbody>
-                                                                                        {agent.participations.map(p => (
-                                                                                            <tr key={p.id}>
-                                                                                                <td className="px-2 py-1.5 text-xs border-b border-border/50">
-                                                                                                    <Link
-                                                                                                        to="/quests/$questId"
-                                                                                                        params={{ questId: p.quest.id }}
-                                                                                                        className="text-primary no-underline font-medium hover:underline"
-                                                                                                    >
-                                                                                                        {p.quest.title}
-                                                                                                    </Link>
-                                                                                                </td>
-                                                                                                <td className="px-2 py-1.5 text-xs border-b border-border/50">{p.tasksCompleted}/{p.tasksTotal}</td>
-                                                                                                <td className="px-2 py-1.5 text-xs border-b border-border/50">
-                                                                                                    <QuestStatusBadge status={p.status} />
-                                                                                                </td>
-                                                                                                <td className="px-2 py-1.5 text-xs border-b border-border/50">
-                                                                                                    {p.payoutStatus === "paid" ? (
-                                                                                                        <span className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded bg-accent-light text-accent">
-                                                                                                            {(p.quest as any).fundingMethod === "stripe"
-                                                                                                                ? `$${p.payoutAmount?.toFixed(2)} USD`
-                                                                                                                : `${p.payoutAmount?.toFixed(2)} ${p.quest.rewardType}`}
-                                                                                                        </span>
-                                                                                                    ) : p.payoutStatus === "pending" ? (
-                                                                                                        <span className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded bg-warning-light text-warning">Pending</span>
-                                                                                                    ) : (
-                                                                                                        <span className="text-muted-foreground">—</span>
-                                                                                                    )}
-                                                                                                </td>
-                                                                                            </tr>
-                                                                                        ))}
-                                                                                    </tbody>
-                                                                                </table>
-                                                                            )}
-                                                                        </div>
-                                                                    {/* My Skills section */}
-                                                                    {(() => {
-                                                                        const skillData = agentSkillsMap.get(agent.id)
-                                                                        const scanCmd = `npx @clawquest/scan --key <your-agent-api-key> --server ${API_BASE}`
-                                                                        return (
-                                                                            <div className="mt-3.5">
-                                                                                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">My Skills</div>
-                                                                                {(!skillData || skillData.skills.length === 0) ? (
-                                                                                    <div>
-                                                                                        <p className="text-sm text-muted-foreground mb-2">No skills scanned yet. Run Skill Scan to register your agent's skills.</p>
-                                                                                        <div className="flex items-center gap-1.5">
-                                                                                            <code className="flex-1 bg-[#1e1e2e] text-[#cdd6f4] px-2.5 py-1.5 rounded font-mono text-xs select-all overflow-x-auto">{scanCmd}</code>
-                                                                                            <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-bg-2/80 text-xs font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                ) : (
-                                                                                    <div>
-                                                                                        <div className="space-y-1 mb-2">
-                                                                                            {skillData.skills.map(s => (
-                                                                                                <div key={s.name} className="flex items-center gap-2 text-xs">
-                                                                                                    <code className="font-mono text-xs bg-muted px-1 py-px rounded">{s.name}</code>
-                                                                                                    {s.version && <span className="text-muted-foreground">{s.version}</span>}
-                                                                                                    {s.verified ? (
-                                                                                                        <span className="text-emerald-400 font-semibold">✓ Verified</span>
-                                                                                                    ) : (
-                                                                                                        <span className="text-muted-foreground">Unverified</span>
-                                                                                                    )}
-                                                                                                    {s.platform && <span className="text-muted-foreground">{s.platform}</span>}
-                                                                                                </div>
-                                                                                            ))}
-                                                                                        </div>
-                                                                                        <div className="text-xs text-muted-foreground mb-1.5">
-                                                                                            {skillData.lastScan
-                                                                                                ? `Last scan: ${(() => {
-                                                                                                    const diff = Date.now() - new Date(skillData.lastScan).getTime()
-                                                                                                    const hours = Math.floor(diff / 3600000)
-                                                                                                    if (hours < 1) return "just now"
-                                                                                                    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`
-                                                                                                    const days = Math.floor(hours / 24)
-                                                                                                    return `${days} day${days > 1 ? "s" : ""} ago`
-                                                                                                })()}`
-                                                                                                : "Never scanned"}
-                                                                                        </div>
-                                                                                        <div className="flex items-center gap-1.5">
-                                                                                            <code className="flex-1 bg-[#1e1e2e] text-[#cdd6f4] px-2.5 py-1.5 rounded font-mono text-xs select-all overflow-x-auto">{scanCmd}</code>
-                                                                                            <button type="button" className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-bg-2/80 text-xs font-medium transition-colors" onClick={() => navigator.clipboard.writeText(scanCmd)}>Copy</button>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                )}
-                                                                            </div>
-                                                                        )
-                                                                    })()}
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    )}
-                                                </Fragment>
-                                            )
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
-                )}
             </div>
-
-            {/* Confirm Delete Dialog */}
-            <Dialog open={!!confirmDelete} onOpenChange={open => { if (!open) setConfirmDelete(null) }}>
-                <DialogContent className="max-w-sm">
-                    <DialogHeader>
-                        <DialogTitle>Delete Agent</DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to delete <span className="font-mono font-semibold text-foreground">"{confirmDelete?.name}"</span>?
-                            This action cannot be undone.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter className="gap-2 sm:gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setConfirmDelete(null)}
-                            className="flex-1 px-4 py-2 rounded-md text-sm font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleConfirmDelete}
-                            className="flex-1 px-4 py-2 rounded-md text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors"
-                        >
-                            Delete
-                        </button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </>
     )
 }

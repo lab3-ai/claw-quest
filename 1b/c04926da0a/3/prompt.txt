@@ -1,0 +1,13 @@
+Ê mày tìm cái file batch tự động move file ở desktop vào trash tao cái
+
+---
+
+bao lâu nó chạy 1 lần
+
+---
+
+cho 5 tiếng nhé, thế file đầu tiên mày tìm ra có vẻ hơi thừa, xoá đi nha
+
+---
+
+thế nên merge thành 1 file thôi nhỉ?

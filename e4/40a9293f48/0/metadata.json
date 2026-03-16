@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "e440a9293f48",
+  "session_id": "1b1cd0d4-a2fc-4050-a1e0-283f505c1d27",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-15T21:04:25.504621Z",
+  "branch": "refactor/verify-agent",
+  "checkpoints_count": 6,
+  "files_touched": [
+    "apps/dashboard/src/router.tsx",
+    "apps/dashboard/src/routes/_public/verify.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-6",
+  "turn_id": "ec45724c6e05",
+  "token_usage": {
+    "input_tokens": 138,
+    "cache_creation_tokens": 154183,
+    "cache_read_tokens": 10242201,
+    "output_tokens": 16785,
+    "api_call_count": 100
+  },
+  "session_metrics": {
+    "turn_count": 21
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-15T21:04:25.162193Z",
+    "agent_lines": 224,
+    "human_added": 8785,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 9009,
+    "agent_percentage": 2.4864024864024863
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "1bc04926da0a",
+  "strategy": "manual-commit",
+  "branch": "github",
+  "checkpoints_count": 71,
+  "files_touched": [
+    ".env.example",
+    "apps/api/prisma/migrations/20260311180000_add_github_bounty/migration.sql",
+    "apps/api/prisma/schema.prisma",
+    "apps/api/src/__tests__/helpers/test-server.ts",
+    "apps/api/src/__tests__/llm-key-rewards.test.ts",
+    "apps/api/src/__tests__/quest-lifecycle.test.ts",
+    "apps/api/src/__tests__/stripe-webhooks.test.ts",
+    "apps/api/src/app.ts",
+    "apps/api/src/modules/auth/auth.routes.ts",
+    "apps/api/src/modules/github-bounty/github-bounty.routes.ts",
+    "apps/api/src/modules/github-bounty/github-bounty.service.ts",
+    "apps/api/src/modules/github-bounty/github-rest-client.ts",
+    "apps/api/src/modules/quests/quests.publish-validator.ts",
+    "apps/api/src/modules/quests/quests.routes.ts",
+    "apps/api/src/modules/quests/quests.service.ts",
+    "apps/api/src/modules/quests/social-action-verifier.ts",
+    "apps/api/src/modules/stripe/stripe.routes.ts",
+    "apps/api/src/modules/stripe/stripe.service.ts",
+    "apps/api/src/modules/stripe/stripe.webhook.ts",
+    "apps/dashboard/src/router.tsx",
+    "apps/dashboard/src/routes/_authenticated/account.tsx",
+    "apps/dashboard/src/routes/_authenticated/github-bounties/mine.tsx",
+    "apps/dashboard/src/routes/_authenticated/github-bounties/new.tsx",
+    "apps/dashboard/src/routes/_public.tsx",
+    "apps/dashboard/src/routes/_public/github-bounties/detail.tsx",
+    "apps/dashboard/src/routes/_public/github-bounties/index.tsx",
+    "apps/dashboard/src/routes/auth/github-callback.tsx",
+    "apps/dashboard/src/routes/login.tsx",
+    "docs/CHANGELOG.md",
+    "docs/PROJECT_STATUS.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/1b/c04926da0a/0/metadata.json",
+      "transcript": "/1b/c04926da0a/0/full.jsonl",
+      "content_hash": "/1b/c04926da0a/0/content_hash.txt",
+      "prompt": "/1b/c04926da0a/0/prompt.txt"
+    },
+    {
+      "metadata": "/1b/c04926da0a/1/metadata.json",
+      "transcript": "/1b/c04926da0a/1/full.jsonl",
+      "content_hash": "/1b/c04926da0a/1/content_hash.txt",
+      "prompt": "/1b/c04926da0a/1/prompt.txt"
+    },
+    {
+      "metadata": "/1b/c04926da0a/2/metadata.json",
+      "transcript": "/1b/c04926da0a/2/full.jsonl",
+      "content_hash": "/1b/c04926da0a/2/content_hash.txt",
+      "prompt": "/1b/c04926da0a/2/prompt.txt"
+    },
+    {
+      "metadata": "/1b/c04926da0a/3/metadata.json",
+      "transcript": "/1b/c04926da0a/3/full.jsonl",
+      "content_hash": "/1b/c04926da0a/3/content_hash.txt",
+      "prompt": "/1b/c04926da0a/3/prompt.txt"
+    },
+    {
+      "metadata": "/1b/c04926da0a/4/metadata.json",
+      "transcript": "/1b/c04926da0a/4/full.jsonl",
+      "content_hash": "/1b/c04926da0a/4/content_hash.txt",
+      "prompt": "/1b/c04926da0a/4/prompt.txt"
+    },
+    {
+      "metadata": "/1b/c04926da0a/5/metadata.json",
+      "transcript": "/1b/c04926da0a/5/full.jsonl",
+      "content_hash": "/1b/c04926da0a/5/content_hash.txt",
+      "prompt": "/1b/c04926da0a/5/prompt.txt"
+    },
+    {
+      "metadata": "/1b/c04926da0a/6/metadata.json",
+      "transcript": "/1b/c04926da0a/6/full.jsonl",
+      "content_hash": "/1b/c04926da0a/6/content_hash.txt",
+      "prompt": "/1b/c04926da0a/6/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 5713,
+    "cache_creation_tokens": 881377,
+    "cache_read_tokens": 27297942,
+    "output_tokens": 100030,
+    "api_call_count": 333
+  }
+}

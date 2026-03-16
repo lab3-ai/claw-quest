@@ -1,0 +1,72 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "64b4228fef24",
+  "strategy": "manual-commit",
+  "branch": "github",
+  "checkpoints_count": 3,
+  "files_touched": [
+    ".githooks/commit-msg",
+    ".githooks/post-commit",
+    ".githooks/pre-push",
+    ".githooks/prepare-commit-msg",
+    "plans/260306-0341-quest-sponsorship/phase-01-database-and-shared.md",
+    "plans/260306-0341-quest-sponsorship/phase-02-api-collaboration.md",
+    "plans/260306-0341-quest-sponsorship/phase-03-api-funding.md",
+    "plans/260306-0341-quest-sponsorship/phase-04-frontend.md",
+    "plans/260306-0341-quest-sponsorship/plan.md",
+    "plans/260311-1754-github-bounty/phase-01-db-github-oauth.md",
+    "plans/260311-1754-github-bounty/phase-02-github-rest-client-analyze.md",
+    "plans/260311-1754-github-bounty/phase-03-api-crud-submissions.md",
+    "plans/260311-1754-github-bounty/phase-04-dashboard.md",
+    "plans/260311-1754-github-bounty/phase-05-ui-ux-integration.md",
+    "plans/260311-1754-github-bounty/plan.md",
+    "plans/reports/Explore-260303-2350-fund-chain-selection.md",
+    "plans/reports/Explore-260304-0407-account-linking-system.md",
+    "plans/reports/battlecard-260306-2023-clawquest-gtm.md",
+    "plans/reports/brainstorm-260311-1754-github-bounty.md",
+    "plans/reports/brainstormer-260306-0005-team-coordination-improvement.md",
+    "plans/reports/brainstormer-260306-0218-quest-collaboration.md",
+    "plans/reports/brainstormer-260306-2043-llm-token-rewards.md",
+    "plans/reports/code-reviewer-260306-0406-quest-sponsorship-collab.md",
+    "plans/reports/code-reviewer-260311-1937-github-bounties.md",
+    "plans/reports/competitive-analysis-260311-1823-github-growth.md",
+    "plans/reports/gtm-strategy-260306-2031-clawquest-launch.md",
+    "plans/reports/pre-mortem-260306-2029-quest-invite-partner.md",
+    "plans/reports/project-manager-260306-0406-quest-sponsorship-completion.md",
+    "plans/reports/project-manager-260311-1834-github-bounty-completion.md",
+    "plans/reports/researcher-260306-0142-telegram-oidc-login.md",
+    "plans/reports/researcher-260306-0203-telegram-bot-threads.md",
+    "plans/reports/researcher-260306-2023-competitor-battlecard.md",
+    "plans/reports/researcher-260306-2031-gtm-channels-research.md",
+    "plans/reports/researcher-260307-0022-agent-jobs-market.md",
+    "plans/reports/researcher-260307-0025-llm-pricing-arbitrage.md",
+    "plans/reports/tester-260306-0406-comprehensive-test-suite.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/64/b4228fef24/0/metadata.json",
+      "transcript": "/64/b4228fef24/0/full.jsonl",
+      "content_hash": "/64/b4228fef24/0/content_hash.txt",
+      "prompt": "/64/b4228fef24/0/prompt.txt"
+    },
+    {
+      "metadata": "/64/b4228fef24/1/metadata.json",
+      "transcript": "/64/b4228fef24/1/full.jsonl",
+      "content_hash": "/64/b4228fef24/1/content_hash.txt",
+      "prompt": "/64/b4228fef24/1/prompt.txt"
+    },
+    {
+      "metadata": "/64/b4228fef24/2/metadata.json",
+      "transcript": "/64/b4228fef24/2/full.jsonl",
+      "content_hash": "/64/b4228fef24/2/content_hash.txt",
+      "prompt": "/64/b4228fef24/2/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 4156,
+    "cache_creation_tokens": 157955,
+    "cache_read_tokens": 3864396,
+    "output_tokens": 21082,
+    "api_call_count": 74
+  }
+}

@@ -34,9 +34,9 @@
     --fg-2: #a0a0a0;
     --fg-3: #666666;
     --fg-4: #444444;
-    --border-1: #222222;
-    --border-2: #333333;
-    --border-3: #555555;
+    --border-1: #1a1a1a;
+    --border-2: #282828;
+    --border-3: #383838;
     --border-4: #e0e0e0;
 
     --color-bg-base: var(--bg-base);

@@ -16,16 +16,18 @@ export function Footer() {
                 <img src="/appicon.svg" alt="ClawQuest" className="h-5 w-5" />
                 <span className="text-muted-foreground">&copy; {new Date().getFullYear()} ClawQuest</span>
             </div>
-            <nav className="flex flex-wrap items-center justify-end gap-4 flex-1">
-                {LINKS.map(({ href, label, external }) => (
-                    <a
-                        key={href}
-                        href={href}
-                        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                        className="text-muted-foreground no-underline hover:text-foreground transition-colors"
-                    >
-                        {label}
-                    </a>
+            <nav className="flex flex-wrap items-center justify-end gap-2 flex-1">
+                {LINKS.map(({ href, label, external }, i) => (
+                    <span key={href} className="flex items-center gap-2">
+                        {i > 0 && <span className="h-1 w-1 rounded-full bg-border-2" />}
+                        <a
+                            href={href}
+                            {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                            className="text-muted-foreground no-underline hover:text-foreground transition-colors"
+                        >
+                            {label}
+                        </a>
+                    </span>
                 ))}
             </nav>
             

@@ -23,7 +23,7 @@ export function SkillCard({ skill }: { skill: Web3SkillItem }) {
       className="hover-shadow group flex flex-col rounded border border-border bg-bg-1 p-4 max-sm:p-3 no-underline text-fg-1 hover:border-fg-1"
     >
       {/* Top row: category + time — matches quest card top row spacing */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         {skill.category ? (
           <span className="text-xs font-semibold uppercase text-fg-1 flex items-center gap-1">
             <span>#</span>{skill.category}

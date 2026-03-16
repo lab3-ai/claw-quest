@@ -3,174 +3,373 @@ import { Link } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { QuestGridCard } from "@/components/QuestGridCard"
+import { SkillCard } from "@/components/web3-skills/skill-card"
 import { SeoHead } from "@/components/seo-head"
-import { Button } from "@/components/ui/button"
-import { MascotEyes, type MascotMood } from "@/components/waitlist/mascot-eyes"
-import { ArrowRightLine, FlashLine, ClockLine, TrophyLine, StarLine, CalendarLine } from "@mingcute/react"
+import { Badge } from "@/components/ui/badge"
+import { HomeBanner } from "@/components/animated-banner"
+import {
+    ArrowRightLine,
+    FlashLine,
+    ShieldLine,
+    AddLine,
+    CloseLine,
+    GitBranchLine,
+} from "@mingcute/react"
+import { GitHubIcon } from "@/components/github-icon"
+import { cn } from "@/lib/utils"
 import type { Quest } from "@clawquest/shared"
+import type { Web3SkillItem } from "@/hooks/useWeb3Skills"
 
-/** Section config: tab key, label, icon, filter/sort logic */
-const SECTIONS = [
-    { key: "featured", label: "Featured Quests", icon: FlashLine },
-    { key: "ending-soon", label: "Ending Soon", icon: ClockLine },
-    { key: "highest-reward", label: "Highest Reward", icon: TrophyLine },
-    { key: "new", label: "New Quests", icon: StarLine },
-    { key: "upcoming", label: "Upcoming", icon: CalendarLine },
-] as const
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
-type SectionKey = (typeof SECTIONS)[number]["key"]
+/* ═══════════════════════════════════════════
+   Section 1 — Hero
+═══════════════════════════════════════════ */
 
-/** Check if quest deadline has passed */
+function HeroBanner() {
+    return (
+        <section>
+            <HomeBanner />
+        </section>
+    )
+}
+
+/* ═══════════════════════════════════════════
+   Section 2 — Featured Quests
+═══════════════════════════════════════════ */
+
 function isEnded(quest: Quest): boolean {
     if (!quest.expiresAt) return false
     return new Date(quest.expiresAt).getTime() <= Date.now()
 }
 
-/** Get quests for a homepage section (max 4 cards) */
-function getQuestsForSection(quests: Quest[], key: SectionKey): Quest[] {
-    const live = quests.filter(q => q.status === "live" && !isEnded(q))
-
-    switch (key) {
-        case "featured":
-            return [...live]
-                .sort((a, b) => {
-                    const sa = a.rewardAmount * (1 + a.questers)
-                    const sb = b.rewardAmount * (1 + b.questers)
-                    return sb - sa
-                })
-                .slice(0, 3)
-        case "ending-soon":
-            return [...live]
-                .filter(q => q.expiresAt)
-                .sort((a, b) => new Date(a.expiresAt!).getTime() - new Date(b.expiresAt!).getTime())
-                .slice(0, 3)
-        case "highest-reward":
-            return [...live]
-                .sort((a, b) => b.rewardAmount - a.rewardAmount)
-                .slice(0, 3)
-        case "new": {
-            const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
-            const recent = live.filter(q => new Date(q.createdAt).getTime() >= weekAgo)
-            const source = recent.length >= 3 ? recent : live
-            return [...source]
-                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                .slice(0, 3)
-        }
-        case "upcoming":
-            return quests
-                .filter(q => q.status === "scheduled")
-                .sort((a, b) => {
-                    const ta = a.startAt ? new Date(a.startAt).getTime() : Infinity
-                    const tb = b.startAt ? new Date(b.startAt).getTime() : Infinity
-                    return ta - tb
-                })
-                .slice(0, 3)
-        default:
-            return []
-    }
-}
-
-/** Hero banner at top of home page */
-function HeroBanner() {
-    const [mascotMood, setMascotMood] = useState<MascotMood>("normal")
+function FeaturedQuests({ quests, isLoading }: { quests: Quest[] | undefined; isLoading: boolean }) {
+    const featured = quests
+        ?.filter(q => q.status === "live" && !isEnded(q))
+        .sort((a, b) => b.rewardAmount * (1 + b.questers) - a.rewardAmount * (1 + a.questers))
+        .slice(0, 6) ?? []
 
     return (
-        <section className="relative overflow-hidden rounded-lg border border-primary/20 bg-primary/5 p-6 md:p-10">
-            <div className="flex items-center gap-6 md:gap-10">
-                {/* Text content */}
-                <div className="relative z-10 flex-1 min-w-0">
-                    <div className="relative z-10 flex-1 min-w-0 max-w-3xl">
-                    <h1 className="mb-2 text-2xl font-semibold text-foreground md:text-3xl">
-                        Paid Distribution for AI Skills
-                    </h1>
-                    <p className="mb-6 text-sm leading-relaxed text-fg-2 md:text-base">
-                        Sponsors create quests with real rewards. AI agents compete to complete them.
-                        Human owners handle social &amp; marketing tasks.
-                    </p>
-                    <div className="flex flex-wrap gap-3">
-                        <Button asChild>
-                            <Link to="/quests" className="no-underline">
-                                Browse Quests
-                                <ArrowRightLine size={16} />
-                            </Link>
-                        </Button>
-                        <Button asChild variant="outline">
-                            <Link to="/quests/new" className="no-underline">
-                                Create Quest
-                            </Link>
-                        </Button>
-                    </div>
-                    </div>
+        <section>
+            <SectionHeader
+                icon={FlashLine}
+                title="Featured Quests"
+                linkTo="/quests"
+                linkLabel="View all quests"
+            />
+            {isLoading ? (
+                <CardGridSkeleton count={3} />
+            ) : featured.length > 0 ? (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {featured.map(quest => (
+                        <QuestGridCard key={quest.id} quest={quest} />
+                    ))}
                 </div>
+            ) : (
+                <EmptyState message="No live quests yet. Be the first to create one!" />
+            )}
+        </section>
+    )
+}
 
-                {/* Mascot with eye tracking + hover interaction */}
-                <div
-                    className="hidden shrink-0 sm:block scale-125 mr-8"
-                    onMouseEnter={() => setMascotMood("happy")}
-                    onMouseLeave={() => setMascotMood("normal")}
-                >
-                    <MascotEyes size={200} mood={mascotMood} />
+/* ═══════════════════════════════════════════
+   Section 3 — Popular Web3 Skills
+═══════════════════════════════════════════ */
+
+function PopularSkills() {
+    const { data, isLoading } = useQuery({
+        queryKey: ["web3-skills-home"],
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/web3-skills?limit=6&sort=popular`)
+            if (!res.ok) return { items: [] }
+            const json = await res.json()
+            return json.data as { items: Web3SkillItem[] }
+        },
+        staleTime: 120_000,
+    })
+
+    const skills = data?.items ?? []
+
+    return (
+        <section>
+            <SectionHeader
+                icon={ShieldLine}
+                title="Popular Web3 Skills"
+                linkTo="/web3-skills"
+                linkLabel="Browse all skills"
+            />
+            {isLoading ? (
+                <CardGridSkeleton count={3} />
+            ) : skills.length > 0 ? (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {skills.slice(0, 6).map(skill => (
+                        <SkillCard key={skill.slug} skill={skill} />
+                    ))}
                 </div>
+            ) : (
+                <EmptyState message="No skills listed yet." />
+            )}
+        </section>
+    )
+}
+
+/* ═══════════════════════════════════════════
+   Section 4 — Latest Bounties
+═══════════════════════════════════════════ */
+
+interface BountyPreview {
+    id: string
+    repoOwner: string
+    repoName: string
+    title: string
+    rewardAmount: string
+    rewardType: string
+    status: string
+    deadline: string | null
+    _count: { submissions: number }
+}
+
+function LatestBounties() {
+    const { data, isLoading } = useQuery({
+        queryKey: ["bounties-home"],
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE}/github-bounties?limit=4&status=live`)
+            if (!res.ok) return []
+            return res.json() as Promise<BountyPreview[]>
+        },
+        staleTime: 120_000,
+    })
+
+    const bounties = data ?? []
+
+    return (
+        <section>
+            <SectionHeader
+                icon={GitBranchLine}
+                title="Latest Bounties"
+                linkTo="/github-bounties"
+                linkLabel="View all bounties"
+            />
+            {isLoading ? (
+                <div className="space-y-2">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="h-16 animate-pulse rounded border border-border bg-bg-2" />
+                    ))}
+                </div>
+            ) : bounties.length > 0 ? (
+                <div className="space-y-2">
+                    {bounties.map(bounty => (
+                        <Link
+                            key={bounty.id}
+                            to="/github-bounties/$bountyId"
+                            params={{ bountyId: bounty.id }}
+                            className="flex items-center gap-3 rounded border border-border bg-bg-1 px-4 py-3 no-underline hover:border-foreground transition-colors"
+                        >
+                            <GitHubIcon size={16} />
+                            <div className="flex-1 min-w-0">
+                                <div className="text-sm font-semibold text-foreground truncate">
+                                    {bounty.title}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                    {bounty.repoOwner}/{bounty.repoName}
+                                    {bounty._count.submissions > 0 && (
+                                        <> · {bounty._count.submissions} submissions</>
+                                    )}
+                                </div>
+                            </div>
+                            <Badge variant="outline" className="shrink-0 text-success border-success/30">
+                                {bounty.rewardAmount} {bounty.rewardType}
+                            </Badge>
+                        </Link>
+                    ))}
+                </div>
+            ) : (
+                <EmptyState message="No open bounties right now." />
+            )}
+        </section>
+    )
+}
+
+/* ═══════════════════════════════════════════
+   Section 5 — How It Works (features)
+═══════════════════════════════════════════ */
+
+const STEPS = [
+    { image: "/step-1-register.svg", title: "Register your agent", desc: "Connect any compatible AI agent and let us scan its skills." },
+    { image: "/step-2-quest.svg", title: "Accept a quest", desc: "Pick a quest that matches your agent's skills. It gets to work automatically." },
+    { image: "/step-3-paid.svg", title: "Get paid", desc: "Task verified on-chain. Rewards hit your wallet in USDC, crypto, or giftcards." },
+] as const
+
+function HowItWorks() {
+    return (
+        <section>
+            <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3 bg-bg-2 border-b border-border">
+                How it works
+            </h2>
+            <div className="flex flex-col divide-y divide-border">
+                {STEPS.map(({ image, title, desc }, idx) => (
+                    <div key={idx} className="flex items-center gap-4 px-4 py-2">
+                        <div className="flex h-20 w-20 md:h-24 md:w-24 shrink-0 items-center justify-center overflow-hidden rounded">
+                            <object
+                                data={image}
+                                type="image/svg+xml"
+                                className="h-full w-full pointer-events-none"
+                                style={{ filter: "brightness(1.15) saturate(0.9)" }}
+                                aria-label={title}
+                            />
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                            <span className="text-2xs text-accent font-semibold tracking-widest uppercase">
+                                Step {idx + 1}
+                            </span>
+                            <p className="text-sm font-semibold text-foreground">{title}</p>
+                            <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+                        </div>
+                    </div>
+                ))}
             </div>
         </section>
     )
 }
 
-/** A single quest section with header + grid + "View all" link */
-function QuestSection({
-    label,
+/* ═══════════════════════════════════════════
+   Section 6 — FAQs
+═══════════════════════════════════════════ */
+
+const FAQS = [
+    {
+        q: "What is ClawQuest?",
+        a: "ClawQuest is a quest platform where sponsors create tasks with real rewards. AI agents and their human owners compete to complete them and earn USDC, crypto, or LLM API keys.",
+    },
+    {
+        q: "How do rewards work?",
+        a: "Sponsors fund quests upfront. Rewards are held in escrow and distributed automatically when tasks are verified. Three quest types: FCFS (first N agents win), Leaderboard (ranked by score), and Lucky Draw (random draw at deadline).",
+    },
+    {
+        q: "What are Web3 Skills?",
+        a: "Web3 Skills are verified capabilities that AI agents can use to complete quests — like bridging tokens, staking, or interacting with DeFi protocols. Skills are registered on-chain for trust.",
+    },
+    {
+        q: "Do I need an AI agent to participate?",
+        a: "Some quests require AI agents with specific Web3 skills, while others have human tasks like following on X or joining a Telegram channel. Many quests combine both.",
+    },
+    {
+        q: "How do I create a quest as a sponsor?",
+        a: "Click 'Create Quest', define tasks, set rewards and slots, then fund it via Stripe (USD) or crypto (USDC/tokens). Your quest goes live immediately after funding.",
+    },
+    {
+        q: "What are GitHub Bounties?",
+        a: "Bounties let sponsors reward developers for solving real GitHub issues. Submit a PR that gets merged and earn USDC or crypto — no agent required.",
+    },
+    {
+        q: "Is ClawQuest free to use?",
+        a: "Yes — joining quests and submitting entries is completely free. Sponsors only pay when funding a quest. A small platform fee applies on reward distribution.",
+    },
+    {
+        q: "How are quest results verified?",
+        a: "Each task type has its own verification: on-chain checks for Web3 skills, API callbacks for social tasks, and human review for bounties. Results are transparent and auditable.",
+    },
+] as const
+
+function FAQSection() {
+    const [openIdx, setOpenIdx] = useState<number | null>(null)
+
+    return (
+        <section>
+            <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3 bg-bg-2 border-b border-border">
+                Frequently Asked Questions
+            </h2>
+            <div className="flex flex-col divide-y divide-border">
+                {FAQS.map((faq, idx) => {
+                    const isOpen = openIdx === idx
+                    return (
+                        <div key={idx}>
+                            <button
+                                type="button"
+                                className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left bg-transparent border-none cursor-pointer group"
+                                onClick={() => setOpenIdx(isOpen ? null : idx)}
+                            >
+                                <span className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors">
+                                    {faq.q}
+                                </span>
+                                {isOpen ? (
+                                    <CloseLine size={16} className="shrink-0 text-muted-foreground" />
+                                ) : (
+                                    <AddLine size={16} className="shrink-0 text-muted-foreground" />
+                                )}
+                            </button>
+                            <div
+                                className={cn(
+                                    "overflow-hidden transition-all duration-200",
+                                    isOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                                )}
+                            >
+                                <p className="px-4 pb-3 text-xs text-muted-foreground leading-relaxed">
+                                    {faq.a}
+                                </p>
+                            </div>
+                        </div>
+                    )
+                })}
+            </div>
+        </section>
+    )
+}
+
+/* ═══════════════════════════════════════════
+   Shared components
+═══════════════════════════════════════════ */
+
+function SectionHeader({
     icon: Icon,
-    quests,
-    tabKey,
+    title,
+    linkTo,
+    linkLabel,
 }: {
-    label: string
     icon: React.ElementType
-    quests: Quest[]
-    tabKey: string
+    title: string
+    linkTo: string
+    linkLabel: string
 }) {
-    if (quests.length === 0) return null
-
     return (
-        <section>
-            <div className="mb-4 flex items-center justify-between">
-                <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-                    <Icon size={20} />
-                    {label}
-                </h2>
-                <Link
-                    to="/quests"
-                    search={{ tab: tabKey }}
-                    className="flex items-center gap-1 text-sm text-muted-foreground no-underline hover:text-foreground"
-                >
-                    View all
-                    <ArrowRightLine size={14} />
-                </Link>
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {quests.map(quest => (
-                    <QuestGridCard key={quest.id} quest={quest} />
-                ))}
-            </div>
-        </section>
+        <div className="mb-4 flex items-center justify-between">
+            <h2 className="flex items-center gap-1.5 text-base font-semibold text-foreground md:gap-2 md:text-xl">
+                <Icon size={20} className="text-accent md:size-6" />
+                {title}
+            </h2>
+            <Link
+                to={linkTo}
+                className="flex items-center gap-1 text-xs text-muted-foreground no-underline hover:text-accent transition-colors"
+            >
+                <span className="md:hidden">More</span>
+                <span className="hidden md:inline">{linkLabel}</span>
+                <ArrowRightLine size={12} />
+            </Link>
+        </div>
     )
 }
 
-/** Loading skeleton for a section */
-function SectionSkeleton() {
+function CardGridSkeleton({ count }: { count: number }) {
     return (
-        <section>
-            <div className="mb-4 flex items-center justify-between">
-                <div className="h-6 w-40 animate-pulse rounded bg-bg-4" />
-                <div className="h-4 w-16 animate-pulse rounded bg-bg-4" />
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="h-56 animate-pulse rounded border border-border bg-bg-4" />
-                ))}
-            </div>
-        </section>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: count }).map((_, i) => (
+                <div key={i} className="h-48 animate-pulse rounded border border-border bg-bg-2" />
+            ))}
+        </div>
     )
 }
+
+function EmptyState({ message }: { message: string }) {
+    return (
+        <div className="rounded border border-border px-4 py-8 text-center text-xs text-muted-foreground">
+            {message}
+        </div>
+    )
+}
+
+/* ═══════════════════════════════════════════
+   Page export
+═══════════════════════════════════════════ */
 
 export function HomePage() {
     const { session } = useAuth()
@@ -180,7 +379,7 @@ export function HomePage() {
         queryFn: async () => {
             const headers: HeadersInit = {}
             if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/quests`, { headers })
+            const res = await fetch(`${API_BASE}/quests`, { headers })
             if (!res.ok) throw new Error("Failed to fetch quests")
             return res.json() as Promise<Quest[]>
         },
@@ -189,31 +388,26 @@ export function HomePage() {
 
     return (
         <>
-            <SeoHead title="Home" />
+            <SeoHead title="ClawQuest — Paid Distribution for AI Skills" />
 
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-10">
+                {/* 1. Hero */}
                 <HeroBanner />
 
-                {isLoading ? (
-                    <>
-                        <SectionSkeleton />
-                        <SectionSkeleton />
-                        <SectionSkeleton />
-                    </>
-                ) : quests ? (
-                    SECTIONS.map(({ key, label, icon }) => {
-                        const sectionQuests = getQuestsForSection(quests, key)
-                        return (
-                            <QuestSection
-                                key={key}
-                                label={label}
-                                icon={icon}
-                                quests={sectionQuests}
-                                tabKey={key}
-                            />
-                        )
-                    })
-                ) : null}
+                {/* 2. Featured Quests */}
+                <FeaturedQuests quests={quests} isLoading={isLoading} />
+
+                {/* 3. Popular Web3 Skills */}
+                <PopularSkills />
+
+                {/* 4. Latest Bounties */}
+                <LatestBounties />
+
+                {/* 5. How It Works + FAQs — side by side on desktop */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 border border-border rounded divide-y lg:divide-y-0 lg:divide-x divide-border">
+                    <HowItWorks />
+                    <FAQSection />
+                </div>
             </div>
         </>
     )

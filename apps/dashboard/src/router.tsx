@@ -45,6 +45,7 @@ import { Web3SkillDetail } from './routes/_public/web3-skills/$skillSlug'
 import { SubmitWeb3Skill } from './routes/_authenticated/web3-skills/submit'
 import { AdminWeb3Skills } from './routes/_authenticated/admin/web3-skills'
 import { VerifyChallenge } from './routes/_public/verify'
+import { HomePage } from './routes/_public/home'
 
 // Root route
 interface RouterContext {
@@ -52,27 +53,6 @@ interface RouterContext {
 }
 
 const rootRoute = createRootRouteWithContext<RouterContext>()({
-    beforeLoad: ({ location }) => {
-        // Allow special dev bypass route and concept demos without redirect
-        // if (location.pathname === '/for-dev-lab3' || location.pathname.startsWith('/concepts/')) {
-        //     return
-        // }
-        // // Allow waitlist page and public verify links without redirect
-        // if (location.pathname === '/waitlist' || location.pathname.startsWith('/verify/')) {
-        //     return
-        // }
-        // // Allow all routes if dev bypass flag is set in localStorage
-        // if (typeof window !== 'undefined') {
-        //     const devBypass = window.localStorage.getItem('cq_dev_bypass_waitlist')
-        //     if (devBypass === 'lab3') {
-        //         return
-        //     }
-        // }
-        // Redirect root path to /quests
-        if (location.pathname === '/') {
-            throw redirect({ to: '/quests' })
-        }
-    },
     component: () => <Outlet />,
 })
 
@@ -177,8 +157,8 @@ const termsRoute = createRoute({
 
 const waitlistRoute = createRoute({
     getParentRoute: () => rootRoute,
-    path: '/',
-    component: QuestList,
+    path: '/waitlist-old',
+    component: Waitlist,
 })
 
 const waitlistAliasRoute = createRoute({
@@ -204,7 +184,7 @@ const appLayoutRoute = createRoute({
     component: PublicLayout,
 })
 
-// indexRoute not needed — root '/' is handled by waitlistRoute
+// indexRoute not needed — root '/' is handled by homeRoute under appLayoutRoute
 
 // ── Public routes (no auth required) ──
 
@@ -481,6 +461,13 @@ const adminWeb3SkillsRoute = createRoute({
     component: AdminWeb3Skills,
 })
 
+// ── Home page (root route under app layout with navbar+footer) ──
+const homeRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/',
+    component: HomePage,
+})
+
 // ── Skill Verification (public, no auth) ──
 const verifyRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -548,6 +535,7 @@ const routeTree = rootRoute.addChildren([
     waitlistAliasRoute,
     cliAuthRoute,
     appLayoutRoute.addChildren([
+        homeRoute,
         questsRoute,
         claimQuestRoute,
         myQuestsRoute,

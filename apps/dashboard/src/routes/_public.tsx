@@ -7,7 +7,7 @@ export function PublicLayout() {
         <div className="flex min-h-screen flex-col pb-[49px] lg:pb-0">
             <Navbar />
 
-            <div className="max-w-6xl mx-auto w-full py-5 px-6 flex-1">
+            <div className="max-w-6xl mx-auto w-full py-5 px-4 md:px-6 flex-1">
                 <Outlet />
             </div>
 

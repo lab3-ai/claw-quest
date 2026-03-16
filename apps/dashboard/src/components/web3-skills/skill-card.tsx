@@ -1,5 +1,4 @@
-import { Badge } from "@/components/ui/badge"
-import { Download2Line, StarLine, FlashLine } from "@mingcute/react"
+import { StarLine, GroupLine } from "@mingcute/react"
 import type { Web3SkillItem } from "@/hooks/useWeb3Skills"
 
 function formatCount(n: number): string {
@@ -8,59 +7,50 @@ function formatCount(n: number): string {
   return String(n)
 }
 
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  if (days < 1) return "today"
+  if (days < 30) return `${days}d ago`
+  if (days < 365) return `${Math.floor(days / 30)}mo ago`
+  return `${Math.floor(days / 365)}y ago`
+}
+
 export function SkillCard({ skill }: { skill: Web3SkillItem }) {
   return (
     <a
       href={`/web3-skills/${skill.slug}`}
-      className="group flex flex-col rounded-lg border border-border bg-background p-4 no-underline transition-colors hover:border-foreground"
+      className="hover-shadow group flex flex-col rounded border border-border bg-bg-1 p-4 max-sm:p-3 no-underline text-fg-1 hover:border-fg-1"
     >
-      {/* Top: category + featured */}
-      <div className="flex items-center gap-2">
-        {skill.category && (
-          <Badge variant="outline" className="text-xs">
-            {skill.category}
-          </Badge>
-        )}
-        {skill.source === "community" && (
-          <Badge variant="pill" className="text-xs">
-            Community
-          </Badge>
-        )}
-        {skill.featured && (
-          <StarLine size={14} className="ml-auto text-yellow-500" />
-        )}
+      {/* Top row: category + time — matches quest card top row spacing */}
+      <div className="flex items-center justify-between mb-3">
+        {skill.category ? (
+          <span className="text-xs font-semibold uppercase text-fg-1 flex items-center gap-1">
+            <span>#</span>{skill.category}
+          </span>
+        ) : <span />}
+        <span className="text-xs text-fg-3">{timeAgo(skill.createdAt)}</span>
       </div>
 
-      {/* Name + summary */}
-      <h3 className="mt-2 text-base font-semibold text-foreground group-hover:underline">
-        {skill.name}
-      </h3>
-      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+      {/* Title — text-md matches quest card */}
+      <h3 className="text-md font-semibold leading-snug mb-2 line-clamp-2">{skill.name}</h3>
+
+      {/* Summary — flex-1 fills remaining space so cards align */}
+      <p className="flex-1 text-xs text-fg-3 leading-relaxed mb-3 line-clamp-3">
         {skill.summary ?? "No description"}
       </p>
 
-      {/* Stats */}
-      <div className="mt-auto flex items-center gap-4 pt-3 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <Download2Line size={12} />
-          {formatCount(skill.downloads)}
-        </span>
-        <span className="flex items-center gap-1">
-          <StarLine size={12} />
-          {formatCount(skill.stars)}
-        </span>
-        <span className="flex items-center gap-1">
-          <FlashLine size={12} />
-          {formatCount(skill.installs)}
-        </span>
-      </div>
-
-      {/* Owner + version */}
-      <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+      {/* Bottom row: author + stats — matches quest card border-t + pt-3 */}
+      <div className="mt-auto pt-3 border-t border-border flex items-center gap-1 text-xs text-fg-3">
         <span className="truncate">
-          {skill.ownerHandle ? `@${skill.ownerHandle}` : skill.ownerDisplayName ?? "Unknown"}
+          by <strong className="text-fg-1 font-semibold">@{skill.ownerHandle || skill.ownerDisplayName || "unknown"}</strong>
         </span>
-        {skill.version && <span>{skill.version}</span>}
+        <span className="w-1 h-1 rounded-full bg-border mx-1" />
+        <StarLine size={14} />
+        <span>{formatCount(skill.stars)}</span>
+        <span className="w-1 h-1 rounded-full bg-border mx-1" />
+        <GroupLine size={14} />
+        <span>{formatCount(skill.installs)}</span>
       </div>
     </a>
   )

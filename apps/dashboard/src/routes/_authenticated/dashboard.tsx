@@ -1151,7 +1151,7 @@ export function Dashboard() {
                                                                         onClick={() => handleDeleteAgent(agent.id, agent.agentname)}
                                                                         className="text-xs font-semibold px-2.5 py-1 rounded bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                                                     >
-                                                                        {deletingAgent === agent.id ? "…" : "Delete"}
+                                                                        {deletingAgent === agent.id ? "Deleting..." : "Delete"}
                                                                     </button>
                                                                 )}
                                                             </div>

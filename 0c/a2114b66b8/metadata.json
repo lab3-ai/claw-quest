@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "0ca2114b66b8",
+  "strategy": "manual-commit",
+  "branch": "refactor/verify-agent",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/modules/quests/__tests__/quests.service.test.ts",
+    "apps/api/src/modules/quests/__tests__/social-action-verifier.test.ts",
+    "apps/api/src/modules/quests/quests.routes.ts",
+    "apps/api/src/modules/quests/social-action-verifier.ts",
+    "apps/dashboard/src/context/ThemeContext.test.tsx",
+    "apps/dashboard/src/index.css",
+    "apps/dashboard/src/routes/_public/quests/detail.tsx",
+    "docs/design-system/DESIGN_SYSTEM.md",
+    "docs/design-system/UI_PATTERNS.md",
+    "plans/260313-2248-fix-discord-verify/plan.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0c/a2114b66b8/0/metadata.json",
+      "transcript": "/0c/a2114b66b8/0/full.jsonl",
+      "content_hash": "/0c/a2114b66b8/0/content_hash.txt",
+      "prompt": "/0c/a2114b66b8/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 18538,
+    "cache_read_tokens": 686909,
+    "output_tokens": 3858,
+    "api_call_count": 10
+  }
+}

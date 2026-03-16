@@ -2,13 +2,15 @@ import { useState } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { useAuth } from "@/context/AuthContext"
 import { supabase } from "@/lib/supabase"
-import { startTelegramLogin, TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
+import { startTelegramLogin } from "@/lib/telegram-oidc"
 import { SeoHead } from "@/components/seo-head"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { BrandLogo } from "@/components/brand-logo"
 import { PlatformIcon } from "@/components/PlatformIcon"
+import { EyeLine, EyeCloseLine } from "@mingcute/react"
+import { InlineMessage } from "@/components/ui/inline-message"
 
 export function Login() {
     const [email, setEmail] = useState("")
@@ -20,6 +22,7 @@ export function Login() {
     const [twitterLoading, setTwitterLoading] = useState(false)
     const [discordLoading, setDiscordLoading] = useState(false)
     const [githubLoading, setGithubLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
     const { isAuthenticated } = useAuth()
     const navigate = useNavigate()
 
@@ -100,6 +103,12 @@ export function Login() {
         setLoading(true)
         setError("")
 
+        if (!email || !password) {
+            setError("Please fill out all fields")
+            setLoading(false)
+            return
+        }
+
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
 
         if (signInError) {
@@ -122,9 +131,9 @@ export function Login() {
             <SeoHead title="Log In" noindex />
 
             {/* Centered login card */}
-            <div className="flex flex-1 items-center justify-center px-4 py-10">
-                <div className="w-full max-w-md rounded-base border border-border bg-background p-7 text-center">
-                    <div className="mb-1 flex justify-center">
+            <div className="flex flex-1 items-start justify-center px-4 pt-8 md:items-center md:py-10">
+                <div className="w-full max-w-md px-0 py-0 md:rounded-base md:border md:border-border md:bg-bg-1 md:px-4 md:py-7 text-center page-fade-in">
+                    <div className="flex justify-center">
                         <button
                             type="button"
                             onClick={() => navigate({ to: "/quests" })}
@@ -133,28 +142,22 @@ export function Login() {
                             <BrandLogo size="sm" />
                         </button>
                     </div>
-                    <div className="my-6 flex flex-col gap-1">
+                    <div className="mt-4 mb-6 flex flex-col gap-1">
                         <h3 className="text-2xl font-semibold">Sign in to your account</h3>
                         <p className="text-sm text-muted-foreground">Complete quests, earn rewards.</p>
                     </div>
-                    {error && (
-                        <div className="mb-4 bg-error-light px-3 py-2 text-left text-sm text-error">
-                            {error}
-                        </div>
-                    )}
-
                     {/* Google OAuth */}
                     <Button
                         type="button"
                         variant="outline"
                         size="lg"
-                        className="mb-3 flex w-full items-center justify-center gap-2"
+                        className="mb-3 w-full gap-3"
                         onClick={handleGoogleLogin}
                         disabled={googleLoading}
                     >
                         {googleLoading ? "Redirecting..." : (
                             <>
-                                <PlatformIcon name="google" size={16} />
+                                <PlatformIcon name="google" size={20} />
                                 Continue with Google
                             </>
                         )}
@@ -165,7 +168,7 @@ export function Login() {
                         type="button"
                         variant="outline"
                         size="lg"
-                        className="mb-3 flex w-full items-center justify-center gap-2"
+                        className="mb-3 w-full gap-3"
                         onClick={async () => {
                             setTelegramLoading(true)
                             setError("")
@@ -180,7 +183,7 @@ export function Login() {
                     >
                         {telegramLoading ? "Redirecting..." : (
                             <>
-                                <PlatformIcon name="telegram" size={16} colored />
+                                <PlatformIcon name="telegram" size={20} colored />
                                 Continue with Telegram
                             </>
                         )}
@@ -191,7 +194,7 @@ export function Login() {
                         type="button"
                         variant="outline"
                         size="lg"
-                        className="mb-3 flex w-full items-center justify-center gap-2"
+                        className="mb-3 w-full gap-3"
                         onClick={handleTwitterLogin}
                         disabled={twitterLoading}
                     >
@@ -208,13 +211,13 @@ export function Login() {
                         type="button"
                         variant="outline"
                         size="lg"
-                        className="mb-3 flex w-full items-center justify-center gap-2"
+                        className="mb-3 w-full gap-3"
                         onClick={handleDiscordLogin}
                         disabled={discordLoading}
                     >
                         {discordLoading ? "Redirecting..." : (
                             <>
-                                <PlatformIcon name="discord" size={16} colored />
+                                <PlatformIcon name="discord" size={20} colored />
                                 Continue with Discord
                             </>
                         )}
@@ -224,7 +227,8 @@ export function Login() {
                     <Button
                         type="button"
                         variant="outline"
-                        className="w-full mb-4 flex items-center justify-center gap-2 text-base py-2.5"
+                        size="lg"
+                        className="mb-4 w-full gap-3"
                         onClick={handleGithubLogin}
                         disabled={githubLoading}
                     >
@@ -232,7 +236,7 @@ export function Login() {
                             "Redirecting..."
                         ) : (
                             <>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z" />
                                 </svg>
                                 Continue with GitHub
@@ -240,34 +244,46 @@ export function Login() {
                         )}
                     </Button>
 
-                    <div className="flex items-center gap-3 my-5">
+                    <div className="flex items-center gap-3 my-2">
                         <hr className="flex-1 border-border" />
                         <span className="text-xs text-muted-foreground">or sign in with email</span>
                         <hr className="flex-1 border-border" />
                     </div>
 
-                    <form onSubmit={handleEmailLogin}>
+                    {error && (
+                        <InlineMessage variant="error" className="mb-3">{error}</InlineMessage>
+                    )}
+
+                    <form onSubmit={handleEmailLogin} noValidate>
                         <div className="mb-3 space-y-1.5 text-left">
                             <Label className="text-xs">Email</Label>
                             <Input
                                 type="email"
                                 placeholder="you@example.com"
-                                required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
                         <div className="mb-3 space-y-1.5 text-left">
                             <Label className="text-xs">Password</Label>
-                            <Input
-                                type="password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
+                            <div className="relative">
+                                <Input
+                                    type={showPassword ? "text" : "password"}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                >
+                                    {showPassword ? <EyeCloseLine size={16} /> : <EyeLine size={16} />}
+                                </button>
+                            </div>
                         </div>
 
-                        <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
+                        <Button type="submit" variant="primary" size="lg" className="mt-2 w-full" disabled={loading}>
                             {loading ? "Signing in..." : "Sign in"}
                         </Button>
                     </form>
@@ -281,13 +297,20 @@ export function Login() {
                 </div>
             </div>
 
-            {/* Footer */}
-            <footer className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-4 px-4 py-6 text-xs text-muted-foreground">
-                <span>ClawQuest v0.1 beta</span>
-                <a href="/privacy.html" className="hover:text-foreground">Privacy</a>
-                <a href="/terms.html" className="hover:text-foreground">Terms</a>
-                <a href="https://api.clawquest.ai/docs" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">API Docs</a>
-                <a href={`https://t.me/${TELEGRAM_BOT_USERNAME}`} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">Telegram Bot</a>
+            <footer className="flex flex-col items-center gap-3 py-6 text-xs text-muted-foreground">
+                <nav className="flex items-center gap-2">
+                    <a href="/quests" className="hover:text-foreground transition-colors">Quests</a>
+                    <span className="h-1 w-1 rounded-full bg-border-2" />
+                    <a href="/web3-skills" className="hover:text-foreground transition-colors">Skills</a>
+                    <span className="h-1 w-1 rounded-full bg-border-2" />
+                    <a href="/github-bounties" className="hover:text-foreground transition-colors">Bounties</a>
+                    <span className="h-1 w-1 rounded-full bg-border-2" />
+                    <a href="https://api.clawquest.ai/docs" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Docs</a>
+                    <span className="h-1 w-1 rounded-full bg-border-2" />
+                    <a href="https://t.me/clawquest_bot" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Telegram</a>
+                    <span className="h-1 w-1 rounded-full bg-border-2" />
+                    <a href="https://x.com/clawquest" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">X</a>
+                </nav>
             </footer>
         </div>
     )

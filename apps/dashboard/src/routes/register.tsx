@@ -1,70 +1,45 @@
 import { useState } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { supabase } from "@/lib/supabase"
-import { startTelegramLogin, TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 import { SeoHead } from "@/components/seo-head"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { BrandLogo } from "@/components/brand-logo"
-import { PlatformIcon } from "@/components/PlatformIcon"
+import { EyeLine, EyeCloseLine } from "@mingcute/react"
+import { InlineMessage } from "@/components/ui/inline-message"
 
 export function Register() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [confirmPassword, setConfirmPassword] = useState("")
     const [error, setError] = useState("")
     const [success, setSuccess] = useState("")
     const [loading, setLoading] = useState(false)
-    const [googleLoading, setGoogleLoading] = useState(false)
-    const [telegramLoading, setTelegramLoading] = useState(false)
-    const [twitterLoading, setTwitterLoading] = useState(false)
-    const [discordLoading, setDiscordLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
     const navigate = useNavigate()
-
-    const handleGoogleLogin = async () => {
-        setGoogleLoading(true)
-        setError("")
-        const { error: oauthError } = await supabase.auth.signInWithOAuth({
-            provider: "google",
-            options: { redirectTo: `${window.location.origin}/auth/callback` },
-        })
-        if (oauthError) {
-            setError(oauthError.message)
-            setGoogleLoading(false)
-        }
-    }
-
-    const handleTwitterLogin = async () => {
-        setTwitterLoading(true)
-        setError("")
-        const { error: oauthError } = await supabase.auth.signInWithOAuth({
-            provider: "twitter",
-            options: { redirectTo: `${window.location.origin}/auth/callback` },
-        })
-        if (oauthError) {
-            setError(oauthError.message)
-            setTwitterLoading(false)
-        }
-    }
-
-    const handleDiscordLogin = async () => {
-        setDiscordLoading(true)
-        setError("")
-        const { error: oauthError } = await supabase.auth.signInWithOAuth({
-            provider: "discord",
-            options: { redirectTo: `${window.location.origin}/auth/callback` },
-        })
-        if (oauthError) {
-            setError(oauthError.message)
-            setDiscordLoading(false)
-        }
-    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
         setError("")
         setSuccess("")
+
+        if (!email || !password || !confirmPassword) {
+            setError("Please fill out all fields")
+            setLoading(false)
+            return
+        }
+        if (password.length < 8) {
+            setError("Password must be at least 8 characters")
+            setLoading(false)
+            return
+        }
+        if (password !== confirmPassword) {
+            setError("Passwords do not match")
+            setLoading(false)
+            return
+        }
 
         const { error: signUpError } = await supabase.auth.signUp({ email, password })
 
@@ -82,10 +57,9 @@ export function Register() {
         <div className="flex min-h-screen flex-col bg-background">
             <SeoHead title="Sign Up" noindex />
 
-            {/* Centered register card */}
-            <div className="flex flex-1 items-center justify-center px-4 py-10">
-                <div className="w-full max-w-md rounded-base border border-border bg-background p-7 text-center">
-                    <div className="mb-1 flex justify-center">
+            <div className="flex flex-1 items-start justify-center px-4 pt-8 md:items-center md:py-10">
+                <div className="w-full max-w-md px-0 py-0 md:rounded-base md:border md:border-border md:bg-bg-1 md:px-4 md:py-7 text-center page-fade-in">
+                    <div className="flex justify-center">
                         <button
                             type="button"
                             onClick={() => navigate({ to: "/quests" })}
@@ -94,128 +68,67 @@ export function Register() {
                             <BrandLogo size="sm" />
                         </button>
                     </div>
-                    <div className="my-6 flex flex-col gap-1">
+                    <div className="mt-4 mb-6 flex flex-col gap-1">
                         <h3 className="text-2xl font-semibold">Create your account</h3>
                         <p className="text-sm text-muted-foreground">Complete quests, earn rewards.</p>
                     </div>
 
                     {error && (
-                        <div className="mb-4 bg-error-light px-3 py-2 text-left text-sm text-error">
-                            {error}
-                        </div>
+                        <InlineMessage variant="error" className="mb-4">{error}</InlineMessage>
                     )}
                     {success && (
-                        <div className="mb-4 bg-success-light px-3 py-2 text-left text-sm text-success">
-                            {success}
-                        </div>
+                        <InlineMessage variant="success" className="mb-4">{success}</InlineMessage>
                     )}
 
-                    {/* Google OAuth */}
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="lg"
-                        className="mb-3 flex w-full items-center justify-center gap-2"
-                        onClick={handleGoogleLogin}
-                        disabled={googleLoading}
-                    >
-                        {googleLoading ? "Redirecting..." : (
-                            <>
-                                <PlatformIcon name="google" size={16} />
-                                Continue with Google
-                            </>
-                        )}
-                    </Button>
-
-                    {/* Telegram */}
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="lg"
-                        className="mb-3 flex w-full items-center justify-center gap-2"
-                        onClick={async () => {
-                            setTelegramLoading(true)
-                            setError("")
-                            try {
-                                await startTelegramLogin()
-                            } catch (e: any) {
-                                setError(e.message ?? "Failed to start Telegram login")
-                                setTelegramLoading(false)
-                            }
-                        }}
-                        disabled={telegramLoading}
-                    >
-                        {telegramLoading ? "Redirecting..." : (
-                            <>
-                                <PlatformIcon name="telegram" size={16} colored />
-                                Continue with Telegram
-                            </>
-                        )}
-                    </Button>
-
-                    {/* X (Twitter) */}
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="lg"
-                        className="mb-3 flex w-full items-center justify-center gap-2"
-                        onClick={handleTwitterLogin}
-                        disabled={twitterLoading}
-                    >
-                        {twitterLoading ? "Redirecting..." : (
-                            <>
-                                <PlatformIcon name="x" size={16} />
-                                Continue with X (Twitter)
-                            </>
-                        )}
-                    </Button>
-
-                    {/* Discord */}
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="lg"
-                        className="mb-3 flex w-full items-center justify-center gap-2"
-                        onClick={handleDiscordLogin}
-                        disabled={discordLoading}
-                    >
-                        {discordLoading ? "Redirecting..." : (
-                            <>
-                                <PlatformIcon name="discord" size={16} colored />
-                                Continue with Discord
-                            </>
-                        )}
-                    </Button>
-
-                    <div className="my-5 flex items-center gap-3">
-                        <hr className="flex-1 border-border" />
-                        <span className="text-xs text-muted-foreground">or register with email</span>
-                        <hr className="flex-1 border-border" />
-                    </div>
-
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit} noValidate>
                         <div className="mb-3 space-y-1.5 text-left">
                             <Label className="text-xs">Email</Label>
                             <Input
                                 type="email"
                                 placeholder="you@example.com"
-                                required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
                         <div className="mb-3 space-y-1.5 text-left">
                             <Label className="text-xs">Password</Label>
-                            <Input
-                                type="password"
-                                minLength={8}
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
+                            <div className="relative">
+                                <Input
+                                    type={showPassword ? "text" : "password"}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                >
+                                    {showPassword ? <EyeCloseLine size={16} /> : <EyeLine size={16} />}
+                                </button>
+                            </div>
                         </div>
 
-                        <Button type="submit" size="lg" className="mt-2 w-full" disabled={loading}>
+                        <div className="mb-3 space-y-1.5 text-left">
+                            <Label className="text-xs">Confirm Password</Label>
+                            <div className="relative">
+                                <Input
+                                    type={showPassword ? "text" : "password"}
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                >
+                                    {showPassword ? <EyeCloseLine size={16} /> : <EyeLine size={16} />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <Button type="submit" variant="primary" size="lg" className="mt-2 w-full" disabled={loading}>
                             {loading ? "Creating account..." : "Create account"}
                         </Button>
                     </form>
@@ -229,13 +142,20 @@ export function Register() {
                 </div>
             </div>
 
-            {/* Footer */}
-            <footer className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-4 px-4 py-6 text-xs text-muted-foreground">
-                <span>ClawQuest v0.1 beta</span>
-                <a href="/privacy.html" className="hover:text-foreground">Privacy</a>
-                <a href="/terms.html" className="hover:text-foreground">Terms</a>
-                <a href="https://api.clawquest.ai/docs" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">API Docs</a>
-                <a href={`https://t.me/${TELEGRAM_BOT_USERNAME}`} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">Telegram Bot</a>
+            <footer className="flex flex-col items-center gap-3 py-6 text-xs text-muted-foreground">
+                <nav className="flex items-center gap-2">
+                    <a href="/quests" className="hover:text-foreground transition-colors">Quests</a>
+                    <span className="h-1 w-1 rounded-full bg-border-2" />
+                    <a href="/web3-skills" className="hover:text-foreground transition-colors">Skills</a>
+                    <span className="h-1 w-1 rounded-full bg-border-2" />
+                    <a href="/github-bounties" className="hover:text-foreground transition-colors">Bounties</a>
+                    <span className="h-1 w-1 rounded-full bg-border-2" />
+                    <a href="https://api.clawquest.ai/docs" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Docs</a>
+                    <span className="h-1 w-1 rounded-full bg-border-2" />
+                    <a href="https://t.me/clawquest_bot" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Telegram</a>
+                    <span className="h-1 w-1 rounded-full bg-border-2" />
+                    <a href="https://x.com/clawquest" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">X</a>
+                </nav>
             </footer>
         </div>
     )

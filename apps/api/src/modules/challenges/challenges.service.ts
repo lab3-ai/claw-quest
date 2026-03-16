@@ -22,14 +22,19 @@ export async function createChallenge(
     prisma: PrismaClient,
     opts: { skillSlug: string; questId?: string; agentId?: string }
 ) {
+    // skillSlug may be "owner/slug" format (e.g. "@vincent/vincent1") — extract just the slug part
+    const slugPart = opts.skillSlug.includes('/')
+        ? opts.skillSlug.slice(opts.skillSlug.indexOf('/') + 1)
+        : opts.skillSlug;
+
     const skill = await prisma.clawhub_skills.findUnique({
-        where: { slug: opts.skillSlug },
+        where: { slug: slugPart },
         select: { display_name: true, verification_config: true },
     });
 
-    if (!skill) throw new Error(`Skill not found: ${opts.skillSlug}`);
+    if (!skill) throw new Error(`Skill not found: ${slugPart}`);
     if (!skill.verification_config) {
-        throw new Error(`Skill "${opts.skillSlug}" has no verification_config set`);
+        throw new Error(`Skill "${slugPart}" has no verification_config set`);
     }
 
     const config = skill.verification_config as unknown as VerificationConfig;
@@ -40,7 +45,7 @@ export async function createChallenge(
     const challenge = await prisma.skillChallenge.create({
         data: {
             token,
-            skillSlug: opts.skillSlug,
+            skillSlug: slugPart,
             questId: opts.questId ?? null,
             agentId: opts.agentId ?? null,
             params,

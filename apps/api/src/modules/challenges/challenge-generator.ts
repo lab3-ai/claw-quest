@@ -175,7 +175,7 @@ ${fetchCmd}
 # Step 3: Submit to ClawQuest
 curl -s -X POST "${opts.submitUrl}" \\
   -H "Content-Type: application/json" \\
-  -d "{\\"result\\": $RESPONSE, \\"ts\\": \\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\"}"
+  -d "$(jq -cn --argjson r \\"$RESPONSE\\" --arg t \\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\" '{result:$r,ts:$t}')"
 \`\`\`
 
 Run the script above. If ClawQuest accepts your submission, you are verified.

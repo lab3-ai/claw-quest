@@ -141,13 +141,13 @@ export function QuestCard({ quest }: QuestCardProps) {
                         {TYPE_ICON[quest.type] && (() => { const Icon = TYPE_ICON[quest.type]; return <Icon size={14} /> })()}
                         {quest.type}
                     </span>
-                    <span className="w-1 h-1 rounded-full bg-border-heavy inline-block"></span>
+                    <span className="w-1 h-1 rounded-full bg-border inline-block"></span>
                     <span className="text-fg-3 inline-flex items-center gap-1">
                         by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-fg-1 font-semibold">{quest.sponsor}</strong>
                     </span>
                 </div>
-                <div className="text-base max-sm:text-sm font-semibold mb-1 leading-snug">{quest.title}</div>
-                <div className="text-sm max-sm:text-xs text-fg-3 mb-2 leading-relaxed line-clamp-2">{quest.description}</div>
+                <div className="text-base max-sm:text-sm font-semibold mb-1 font-heading">{quest.title}</div>
+                <div className="text-xs text-fg-3 mb-2 leading-relaxed line-clamp-3">{quest.description}</div>
                 {quest.tags && quest.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 max-sm:gap-1 items-center text-xs">
                         {quest.tags.map(tag => (

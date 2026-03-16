@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "abbfbf5f5894",
+  "session_id": "3a390da4-ebee-4e74-b3c0-b762c416f377",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-16T03:51:06.104425Z",
+  "branch": "refactor/verify-agent",
+  "checkpoints_count": 21,
+  "files_touched": [
+    "apps/api/prisma/test-skill-verify-flow.sh",
+    "apps/api/prisma/test-skill-verify-flow.ts",
+    "apps/api/src/modules/admin/admin.routes.ts",
+    "apps/api/src/modules/challenges/challenge-generator.ts",
+    "apps/api/src/modules/challenges/challenges.service.ts",
+    "apps/api/src/modules/quests/quests.routes.ts",
+    "apps/dashboard/src/routes/_public/quests/detail.tsx",
+    "apps/dashboard/src/routes/_public/verify.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-4-6",
+  "turn_id": "85ce670ae951",
+  "token_usage": {
+    "input_tokens": 435,
+    "cache_creation_tokens": 908182,
+    "cache_read_tokens": 40623666,
+    "output_tokens": 141271,
+    "api_call_count": 347
+  },
+  "session_metrics": {
+    "turn_count": 31
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-16T03:51:02.139002Z",
+    "agent_lines": 847,
+    "human_added": 24,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 871,
+    "agent_percentage": 97.24454649827784
+  }
+}

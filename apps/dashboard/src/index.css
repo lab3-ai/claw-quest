@@ -198,10 +198,10 @@
     --fg-2: #555555;
     --fg-3: #888888;
     --fg-4: #aaaaaa;
-    --border-1: #f5f5f5;
-    --border-2: #e5e5e5;
-    --border-3: #dcdcdc;
-    --border-4: #111111;
+    --border-1: #efefef;
+    --border-2: #e0e0e0;
+    --border-3: #c0c0c0;
+    --border-4: #999999;
 
     /* ── Tailwind color mappings (--color-* consumed by utilities) ── */
     --color-bg-base: var(--bg-base);

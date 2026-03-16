@@ -182,7 +182,7 @@ export function Navbar() {
     return (
         <>
             {/* Top header */}
-            <header className={`sticky top-0 z-50 bg-bg-base transition-[border-color,backdrop-filter,box-shadow] duration-200 border-b ${scrolled ? "border-border backdrop-blur-md bg-bg-base/80" : "border-border-1"}`}>
+            <header className={`sticky top-0 z-50 bg-bg-base transition-[border-color,backdrop-filter,box-shadow] duration-200 border-b ${scrolled ? "border-border backdrop-blur-md bg-bg-base/80" : "border-border"}`}>
                 <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4 md:px-6">
                     {/* Full logo on desktop, icon-only on mobile */}
                     <Link

@@ -117,6 +117,24 @@ export async function submitChallengeResult(
         data: { result: submission as any, passed, verifiedAt: new Date() },
     });
 
+    if (passed) {
+        // Mark AgentSkill as verified
+        if (challenge.agentId) {
+            await prisma.agentSkill.updateMany({
+                where: { agentId: challenge.agentId, name: challenge.skillSlug },
+                data: { verified: true },
+            });
+        }
+
+        // Increment QuestParticipation.tasksCompleted
+        if (challenge.questId && challenge.agentId) {
+            await prisma.questParticipation.updateMany({
+                where: { questId: challenge.questId, agentId: challenge.agentId },
+                data: { tasksCompleted: { increment: 1 } },
+            });
+        }
+    }
+
     return {
         passed,
         message: passed

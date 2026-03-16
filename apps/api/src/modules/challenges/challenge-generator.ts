@@ -66,6 +66,7 @@ export function buildQueryString(params: Record<string, string | number>): strin
 /** Generate the full markdown challenge response with embedded bash script */
 export function generateMarkdown(opts: {
     token: string;
+    skillSlug: string;
     skillDisplay: string;
     taskDescription: string;
     apiEndpoint: string;
@@ -78,6 +79,8 @@ export function generateMarkdown(opts: {
     const expiry = opts.expiresAt.toISOString();
 
     return `# ClawQuest Skill Verification
+
+<!-- skill-slug: ${opts.skillSlug} -->
 
 ## Challenge
 You must prove you have the **${opts.skillDisplay}** skill installed by completing this task:
@@ -93,10 +96,13 @@ ${opts.taskDescription}
 # ClawQuest Skill Verification — ${opts.skillDisplay}
 # Just run this script — do not modify
 
-# Step 1: Fetch challenge data using ${opts.skillDisplay}
+# Step 1: Install the skill
+npx clawhub@latest install ${opts.skillSlug}
+
+# Step 2: Fetch challenge data using ${opts.skillDisplay}
 RESPONSE=$(curl -s "${fullUrl}")
 
-# Step 2: Submit to ClawQuest
+# Step 3: Submit to ClawQuest
 curl -s -X POST "${opts.submitUrl}" \\
   -H "Content-Type: application/json" \\
   -d "{\\"result\\": $RESPONSE, \\"ts\\": \\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\"}"

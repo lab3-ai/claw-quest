@@ -163,6 +163,36 @@ export function QuestDetail() {
     const [claimError, setClaimError] = useState("")
     const [verifyingIndex, setVerifyingIndex] = useState<number | null>(null)
     const [openedTasks, setOpenedTasks] = useState<Set<number>>(new Set())
+    const [challengeLoading, setChallengeLoading] = useState<string | null>(null)
+
+    const openVerifyChallenge = async (skillSlug: string, questId: string) => {
+        if (!isAuthenticated || !session?.access_token) {
+            window.location.href = `/login?redirect=${encodeURIComponent(`/quests/${questId}`)}`
+            return
+        }
+        setChallengeLoading(skillSlug)
+        try {
+            const res = await fetch(`${API_BASE}/quests/challenges`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({ skillSlug, questId }),
+            })
+            const data = await res.json()
+            if (res.status === 401) {
+                window.location.href = `/login?redirect=${encodeURIComponent(`/quests/${questId}`)}`
+                return
+            }
+            if (!res.ok) throw new Error(data.error ?? 'Failed to create challenge')
+            navigate({ to: '/verify/$token', params: { token: data.token } })
+        } catch (err: any) {
+            alert(err.message)
+        } finally {
+            setChallengeLoading(null)
+        }
+    }
     const [taskErrors, setTaskErrors] = useState<Record<number, string>>({})
     const [proofUrls, setProofUrls] = useState<Record<number, string>>({})
     const claimAttempted = useRef(false)
@@ -850,8 +880,9 @@ export function QuestDetail() {
                                     const match = agentSkillMap.get(skill)
                                     const status = !isAuthenticated || !firstAgentId ? "pending"
                                         : match?.verified ? "done"
-                                            : match ? "verifying" // reported but not verified
-                                                : "pending" // missing
+                                            : match ? "verifying"
+                                                : "pending"
+                                    const isLoading = challengeLoading === skill
 
                                     return (
                                         <div key={idx} className="border border-border rounded mb-2.5 overflow-hidden last:mb-0">
@@ -869,7 +900,14 @@ export function QuestDetail() {
                                                         {match?.verified ? "Verified" : match ? "Reported" : "Missing"}
                                                     </span>
                                                 )}
-                                                <Badge variant="pill">Skill</Badge>
+                                                <button
+                                                    type="button"
+                                                    disabled={isLoading}
+                                                    onClick={() => openVerifyChallenge(skill, quest.id)}
+                                                    className="text-xs font-semibold px-1.5 py-0.5 rounded border border-border bg-transparent text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                                                >
+                                                    {isLoading ? "Loading…" : "How to verify"}
+                                                </button>
                                             </div>
                                         </div>
                                     )

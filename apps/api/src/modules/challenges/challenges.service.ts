@@ -75,6 +75,7 @@ export async function getChallengeMarkdown(
 
     return generateMarkdown({
         token,
+        skillSlug: challenge.skillSlug,
         skillDisplay: skill.display_name,
         taskDescription,
         apiEndpoint: config.api_endpoint,
@@ -104,7 +105,7 @@ export async function submitChallengeResult(
     }
 
     const config = skill.verification_config as unknown as VerificationConfig;
-    const passed = validateResult(submission.result, config);
+    const passed = validateResult(submission, config);
 
     await prisma.skillChallenge.update({
         where: { token },

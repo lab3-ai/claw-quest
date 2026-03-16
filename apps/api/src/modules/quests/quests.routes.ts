@@ -25,6 +25,7 @@ import { validatePublishRequirements } from './quests.publish-validator';
 import { validateSocialTarget } from './social-validator';
 import { verifySocialAction, VerificationContext } from './social-action-verifier';
 import { notifyQuestCancelled, notifyProofVerified } from '../telegram/services/bot-notification.service';
+import { createChallenge } from '../challenges/challenges.service';
 
 const CreateQuestSchema = QuestSchema.omit({
     id: true,
@@ -488,6 +489,87 @@ export async function questsRoutes(server: FastifyInstance) {
                 take: limit,
             });
             return reply.send({ data: rows });
+        }
+    );
+
+    // ── Skill Verification Info (public) ────────────────────────────────────────
+    server.get(
+        '/skills/:slug/verification-info',
+        {
+            schema: {
+                tags: ['Quests'],
+                summary: 'Get verification_config for a skill (null if not configured)',
+                params: z.object({ slug: z.string() }),
+                response: {
+                    200: z.object({
+                        slug: z.string(),
+                        display_name: z.string(),
+                        verification_config: z.unknown().nullable(),
+                    }),
+                    404: z.object({ error: z.string() }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const { slug } = request.params as { slug: string };
+            const skill = await server.prisma.clawhub_skills.findUnique({
+                where: { slug },
+                select: { slug: true, display_name: true, verification_config: true },
+            });
+            if (!skill) return reply.status(404).send({ error: 'Skill not found' });
+            return reply.send(skill);
+        }
+    );
+
+    // ── Create Skill Challenge (JWT auth, on behalf of user's agent) ────────────
+    // Human user clicks "How to verify" on quest detail — creates a challenge token
+    // and returns the /verify/:token URL for redirect.
+    server.post(
+        '/challenges',
+        {
+            preHandler: [server.authenticate],
+            schema: {
+                tags: ['Quests'],
+                summary: 'Create a skill verification challenge (JWT auth)',
+                body: z.object({
+                    skillSlug: z.string().min(1),
+                    questId: z.string().optional(),
+                }),
+                response: {
+                    200: z.object({
+                        token: z.string(),
+                        verifyUrl: z.string(),
+                        expiresAt: z.string(),
+                    }),
+                    400: z.object({ error: z.string() }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const userId = (request.user as any).id as string;
+
+            // Find the user's first agent (optional — challenge still works without one)
+            const agent = await server.prisma.agent.findFirst({
+                where: { ownerId: userId },
+                orderBy: { createdAt: 'asc' },
+                select: { id: true },
+            });
+
+            const { skillSlug, questId } = request.body;
+            try {
+                const { token, verifyUrl, challenge } = await createChallenge(server.prisma, {
+                    skillSlug,
+                    questId,
+                    agentId: agent?.id ?? undefined,
+                });
+                return reply.status(200).send({
+                    token,
+                    verifyUrl,
+                    expiresAt: challenge.expiresAt.toISOString(),
+                });
+            } catch (err: any) {
+                return reply.status(400).send({ error: err.message });
+            }
         }
     );
 

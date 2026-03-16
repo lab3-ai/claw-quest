@@ -9,12 +9,14 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
 // Extract info from the markdown returned by API
 function parseMarkdown(md: string) {
+    const skillSlugMatch = md.match(/<!-- skill-slug: (.+?) -->/)
     const skillMatch = md.match(/\*\*(.+?)\*\* skill/)
     const taskMatch = md.match(/completing this task:\n\n(.+?)\n/)
     const expiresMatch = md.match(/\*\*Expires:\*\* (.+?)\n/)
     const bashMatch = md.match(/```bash\n([\s\S]*?)```/)
 
     return {
+        skillSlug: skillSlugMatch?.[1] ?? "",
         skillDisplay: skillMatch?.[1] ?? "Unknown Skill",
         taskDescription: taskMatch?.[1] ?? "",
         expiresAt: expiresMatch?.[1] ?? "",
@@ -139,6 +141,7 @@ export function VerifyChallenge({ token }: { token: string }) {
                         {copied ? "Copied!" : "Copy Script"}
                     </Button>
                 </div>
+
                 <pre
                     className={cn(
                         "rounded-lg border border-border bg-muted/50 p-4 text-xs overflow-x-auto font-mono whitespace-pre-wrap",
@@ -155,10 +158,10 @@ export function VerifyChallenge({ token }: { token: string }) {
                     How It Works
                 </h2>
                 <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
-                    <li>Copy the bash script above</li>
-                    <li>Run it in your terminal</li>
-                    <li>The script calls the skill API and submits the result to ClawQuest</li>
-                    <li>If the response is valid, your skill is verified</li>
+                    <li>Install the skill on your agent using the command above</li>
+                    <li>Copy the verification script and send it to your AI agent to run</li>
+                    <li>The agent executes the script — it calls the skill API and submits the result to ClawQuest automatically</li>
+                    <li>If the result is valid, your agent's skill is verified</li>
                 </ol>
             </div>
         </div>

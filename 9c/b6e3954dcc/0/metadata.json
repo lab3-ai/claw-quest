@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "9cb6e3954dcc",
+  "session_id": "2f86f99d-bc6e-4b83-ab41-39955b79ab60",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-17T09:42:11.361111Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "apps/dashboard/src/components/QuestGridCard.tsx",
+    "apps/dashboard/src/components/QuestCard.tsx",
+    "apps/dashboard/src/components/quest-badges.tsx",
+    "apps/dashboard/src/routes/_public/home.tsx"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "0cc747d9c408",
+  "token_usage": {
+    "input_tokens": 116,
+    "cache_creation_tokens": 493716,
+    "cache_read_tokens": 4519700,
+    "output_tokens": 27361,
+    "api_call_count": 52
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-17T09:42:10.692089Z",
+    "agent_lines": 4,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 4,
+    "agent_percentage": 100
+  }
+}

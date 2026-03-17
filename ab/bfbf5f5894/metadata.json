@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "abbfbf5f5894",
+  "strategy": "manual-commit",
+  "branch": "refactor/verify-agent",
+  "checkpoints_count": 21,
+  "files_touched": [
+    "apps/api/prisma/test-skill-verify-flow.sh",
+    "apps/api/prisma/test-skill-verify-flow.ts",
+    "apps/api/src/modules/admin/admin.routes.ts",
+    "apps/api/src/modules/challenges/challenge-generator.ts",
+    "apps/api/src/modules/challenges/challenges.service.ts",
+    "apps/api/src/modules/quests/quests.routes.ts",
+    "apps/dashboard/src/routes/_public/quests/detail.tsx",
+    "apps/dashboard/src/routes/_public/verify.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ab/bfbf5f5894/0/metadata.json",
+      "transcript": "/ab/bfbf5f5894/0/full.jsonl",
+      "content_hash": "/ab/bfbf5f5894/0/content_hash.txt",
+      "prompt": "/ab/bfbf5f5894/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 435,
+    "cache_creation_tokens": 908182,
+    "cache_read_tokens": 40623666,
+    "output_tokens": 141271,
+    "api_call_count": 347
+  }
+}

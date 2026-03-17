@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "32db5690cf04",
+  "session_id": "2f86f99d-bc6e-4b83-ab41-39955b79ab60",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-17T08:34:58.4538Z",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "files_touched": [
+    ".github/workflows/admin-deploy.yml",
+    ".github/workflows/dashboard-deploy.yml",
+    "apps/admin/package.json",
+    "apps/admin/wrangler.toml",
+    "apps/dashboard/package.json",
+    "apps/dashboard/wrangler.toml",
+    "package.json",
+    "pnpm-lock.yaml"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-6",
+  "turn_id": "78c40a7d62fe",
+  "token_usage": {
+    "input_tokens": 87,
+    "cache_creation_tokens": 171896,
+    "cache_read_tokens": 2828471,
+    "output_tokens": 17454,
+    "api_call_count": 34
+  },
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-17T08:34:58.111683Z",
+    "agent_lines": 598,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 598,
+    "agent_percentage": 100
+  }
+}

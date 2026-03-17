@@ -1,0 +1,18 @@
+I check log like images, but not fill env? how to setup, or check?
+
+---
+
+Cool, silimar with '/Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/dashboard'
+
+---
+
+Oh, I can CICD automation by cloudflare application? I create application project connect with github so it automation trigger deploy when member commit to github? 
+So dont want to setup .github/workflows/ or deploy from my local
+
+---
+
+Hold up. Where is  "Build output dir", I cannot find it
+
+---
+
+Maybe it always it worker, not pages. How to create application for pages on cloudllare?

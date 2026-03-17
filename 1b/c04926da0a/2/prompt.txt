@@ -1,0 +1,41 @@
+Mô tả lại luồng tạo github bounty test tại frontend phát
+
+---
+
+/pm-market-research:competitive-analysis có bên nào dùng AI phân tích các Repo trên github để phục vụ các mục đích như scan security, tìm kiếm các idea về product mà đã có mã nguồn mở (đỡ phải làm hoặc có thể phát triển trên mã nguồn có sẵn chưa)
+
+---
+
+/pm-product-discovery:discover Hiện tao thấy các skill hầu hết là free và thường nằm trên github, liệu có nhu cầu về việc folk một skill sẵn có nhưng custom kỹ hơn cho nhu cầu của 1 doanh nghiệp, 1 cá nhân ko nhỉ? Kiểu như 1 marketplace cho việc build 1 skill base trên 1 opensource skill? Tuyển luôn Agent , hoặc Human làm. Hơi hơi giống Github bounty mà tao đang làm
+
+---
+
+"Giống npm nhưng cho AI skills — fork, customize, publish, hire người build" là sao mày nhỉ
+
+---
+
+/ck:brainstorm đánh giá tính thương mại của hướng tiếp cận ở trên
+
+---
+
+Bussiness model cho những trang ntn là gì mày nhỉ ? https://skills.sh/
+
+---
+
+/pm-product-discovery:discover Cho tao overview toàn cảnh về skills marketplace cho các agents và tương lai của mảng này, monitization models các thứ
+
+---
+
+Liệu mô hình questN (skills publisher trả tiền để quảng bá skills có thực sự hợp lý ở timing này) Do đa số các skills đang free?
+
+---
+
+Thực ra các skills bên web3 cũng sẽ mass adoptions ko mày?
+
+---
+
+/research xem trên github có skill marektplace nào opensource ko nha
+
+---
+
+Protocol post bounty "Build best Uniswap skill, reward 500 USDC <-- cái này đâu cần Uniswap build đâu đúng ko nhỉ? web3 khác ở chỗ nó toàn onchain nên thực ra build skill cho bất kỳ 1 web3 protocol nào thì ai cũng build được?

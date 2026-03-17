@@ -1,0 +1,36 @@
+/superpowers:write-plan Tôi muốn deploy 2 submodule (admin và dashboard lên cloudflare pages) 
+Plan tạo 2 command để tôi chỉ việc run `npx wrangler deploy admin` như ảnh là sẽ tự ăn build-deploy cho admin 
+tương tự với app dành cho dashboard submodule
+
+---
+
+Oh, I want we deploy also for api submodule on cloudflare-worker, Is it possible? 
+And I want: I will create application on cloudflare 
+- 1 application: api 
+- 1 application: admin 
+- 1 application: dashboard 
+- 1 application: llm (already existed) 
+- 1 application: mcp  (already existed)
+
+---
+
+Oh, I want we deploy also for api submodule on cloudflare-worker, Is it possible? 
+And I want: I will create application on cloudflare 
+- 1 application: api 
+- 1 application: admin 
+- 1 application: dashboard 
+- 1 application: llm (already existed) 
+- 1 application: mcp  (already existed) 
+And application on cloudflare auto trigger CICD for them (we dont need setup by .github/workflow)
+
+---
+
+So cool, let do it.
+
+---
+
+I want to deploy @apps/api/ into Cloudflare-worker, Is it okay?
+
+---
+
+Okay, cool. I setup already for 2 project admin + dashboard. Let commit this change for admin + dashboard deploy config.

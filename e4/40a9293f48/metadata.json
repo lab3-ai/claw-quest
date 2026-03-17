@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "e440a9293f48",
+  "strategy": "manual-commit",
+  "branch": "refactor/verify-agent",
+  "checkpoints_count": 6,
+  "files_touched": [
+    "apps/dashboard/src/router.tsx",
+    "apps/dashboard/src/routes/_public/verify.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e4/40a9293f48/0/metadata.json",
+      "transcript": "/e4/40a9293f48/0/full.jsonl",
+      "content_hash": "/e4/40a9293f48/0/content_hash.txt",
+      "prompt": "/e4/40a9293f48/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 138,
+    "cache_creation_tokens": 154183,
+    "cache_read_tokens": 10242201,
+    "output_tokens": 16785,
+    "api_call_count": 100
+  }
+}

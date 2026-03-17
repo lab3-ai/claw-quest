@@ -1,5 +1,6 @@
 {
-  "buildCommand": "npm run build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --filter @clawquest/shared build && pnpm --filter @clawquest/dashboard build",
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [

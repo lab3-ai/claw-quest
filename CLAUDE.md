@@ -14,9 +14,10 @@ Reward types: `USDC`/`USD` (crypto/fiat), `LLM_KEY` (personal LLM API key with t
 apps/
 ├── api/           # Fastify + Prisma + grammY (REST API + Telegram bot)
 ├── dashboard/     # React 18 + TanStack Router + Vite (sponsor & human UI)
+├── admin/         # React 19 + TanStack Router + Vite (internal admin dashboard)
 ├── llm-server/    # Hono + Cloudflare Workers + D1 (LLM key issuance & proxy)
 packages/
-└── shared/        # Zod schemas + TypeScript types (shared between api & dashboard)
+└── shared/        # Zod schemas + TypeScript types (shared between api, dashboard & admin)
 ```
 
 - Package manager: **pnpm** (never use npm or yarn)
@@ -41,8 +42,14 @@ pnpm --filter dashboard dev    # start Vite dev server
 pnpm --filter dashboard build  # tsc + vite build
 pnpm --filter dashboard lint   # eslint
 
+# Admin dashboard
+pnpm dev:admin                              # shortcut
+pnpm --filter @clawquest/admin dev          # Vite dev server (port 5174)
+pnpm --filter @clawquest/admin build        # tsc + vite build
+pnpm --filter @clawquest/admin lint         # eslint
+
 # Shared package
-pnpm --filter @clawquest/shared build   # must build before API/Dashboard can use it
+pnpm --filter @clawquest/shared build   # must build before API/Dashboard/Admin can use it
 
 # Database
 pnpm db:migrate           # prisma migrate dev (creates migration)
@@ -127,11 +134,26 @@ API docs auto-generated via `@fastify/swagger` + Scalar at `/docs`.
 /verify                    → Verify Agent (protected)
 ```
 
+## Admin dashboard (`apps/admin`)
+
+Internal admin dashboard for managing quests, users, escrow, LLM models, and skills. See `apps/admin/CLAUDE.md` for full details.
+
+**Key stack differences from main dashboard:**
+
+| Aspect | `apps/dashboard` | `apps/admin` |
+|--------|-------------------|--------------|
+| React | 18 | 19 |
+| Tailwind | v3 (CSS vars) | v4 (`@tailwindcss/vite`) |
+| Icons | MingCute | Lucide |
+| Tables | — | TanStack Table |
+| Charts | — | Recharts |
+| Forms | — | react-hook-form + zod |
+
 ## Shared package (`packages/shared`)
 
-- All Zod schemas and TypeScript types shared between API and Dashboard
+- All Zod schemas and TypeScript types shared between API, Dashboard, and Admin
 - Build with tsup: `pnpm --filter @clawquest/shared build`
-- Must be rebuilt after changes before API/Dashboard can see them
+- Must be rebuilt after changes before API/Dashboard/Admin can see them
 - Key exports: `AgentSchema`, `QuestSchema`, `QuestTaskSchema`, `QuestParticipationSchema`, `QUEST_STATUS`, `QUEST_TYPE`, `FUNDING_STATUS`
 
 ## Telegram bot
@@ -173,9 +195,12 @@ See `.env.example` and `apps/llm-server/.env.sample`. Key vars:
 ## Deployment
 
 - **Dashboard**: Vercel (static SPA)
+- **Admin**: Vercel (static SPA, separate project)
 - **API**: Railway (Docker container, see `Dockerfile`)
 - **DB**: Supabase managed PostgreSQL
 - **LLM server**: Cloudflare Workers (`wrangler deploy` from `apps/llm-server/`)
+
+Each app has independent CI/CD via GitHub Actions path-based triggers (`.github/workflows/`).
 
 ## Code style & conventions
 

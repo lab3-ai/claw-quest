@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --filter api --filter dashboard --parallel run dev",
+    "dev:admin": "pnpm --filter @clawquest/admin dev",
     "dev:llm": "pnpm --filter @clawquest/llm-server run dev",
     "dev:all": "pnpm -r --parallel run dev",
     "build": "pnpm -r run build",

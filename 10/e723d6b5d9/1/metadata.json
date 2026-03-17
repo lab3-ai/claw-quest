@@ -1,9 +1,11 @@
 {
   "cli_version": "0.5.0",
   "checkpoint_id": "10e723d6b5d9",
+  "session_id": "a2fc2c1d-a353-4e88-a380-9610ee09d349",
   "strategy": "manual-commit",
+  "created_at": "2026-03-17T16:11:47.498334Z",
   "branch": "hiru-uiux",
-  "checkpoints_count": 6,
+  "checkpoints_count": 3,
   "files_touched": [
     ".github/workflows/api-deploy.yml",
     ".github/workflows/shared-build.yml",
@@ -77,25 +79,26 @@
     "plans/260317-1501-cloudflare-pages-deploy/plan.md",
     "pnpm-lock.yaml"
   ],
-  "sessions": [
-    {
-      "metadata": "/10/e723d6b5d9/0/metadata.json",
-      "transcript": "/10/e723d6b5d9/0/full.jsonl",
-      "content_hash": "/10/e723d6b5d9/0/content_hash.txt",
-      "prompt": "/10/e723d6b5d9/0/prompt.txt"
-    },
-    {
-      "metadata": "/10/e723d6b5d9/1/metadata.json",
-      "transcript": "/10/e723d6b5d9/1/full.jsonl",
-      "content_hash": "/10/e723d6b5d9/1/content_hash.txt",
-      "prompt": "/10/e723d6b5d9/1/prompt.txt"
-    }
-  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-6[1m]",
+  "turn_id": "757a3e546b4a",
   "token_usage": {
-    "input_tokens": 2261,
-    "cache_creation_tokens": 237552,
-    "cache_read_tokens": 8679377,
-    "output_tokens": 17449,
-    "api_call_count": 88
+    "input_tokens": 28,
+    "cache_creation_tokens": 103498,
+    "cache_read_tokens": 1210487,
+    "output_tokens": 1419,
+    "api_call_count": 16
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-17T16:11:47.45329Z",
+    "agent_lines": 10689,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 24,
+    "total_committed": 10689,
+    "agent_percentage": 100
   }
 }

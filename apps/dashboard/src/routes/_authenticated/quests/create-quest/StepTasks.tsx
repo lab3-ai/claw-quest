@@ -101,7 +101,8 @@ interface StepTasksProps {
     onTruncateDesc: (text: string, id: string) => React.ReactNode
     onChipStatus: (platform: string, actionType: string, value: string) => ChipStatus | undefined
     onPrevious: () => void
-    onNext: () => void
+    tasksNextAttempted: boolean
+    onTasksNext: () => void
     SocialEntryBody: React.ComponentType<{
         task: SocialEntry
         idx: number
@@ -156,7 +157,8 @@ export function StepTasks({
     onTruncateDesc,
     onChipStatus,
     onPrevious,
-    onNext,
+    tasksNextAttempted,
+    onTasksNext,
     SocialEntryBody,
     isSkillUrl,
     fetchSkillFromUrl,
@@ -200,9 +202,9 @@ export function StepTasks({
                                 ClawHub
                             </a>.
                         </div>
-                        {!isValid && humanTasks.length === 0 && requiredSkills.length === 0 && (
+                        {tasksNextAttempted && humanTasks.length === 0 && requiredSkills.length === 0 && (
                             <div className="px-3 py-2.5 bg-warning-light border border-warning rounded text-xs text-foreground mb-4">
-                                <strong>⚠️ At least one task is required:</strong> Add at least one human task (social action) or one agent task (required skill) to continue.
+                                <strong>At least one task is required:</strong> add a human (social) task or an agent skill from ClawHub.
                             </div>
                         )}
 
@@ -495,17 +497,17 @@ export function StepTasks({
 
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <Button variant="secondary" onClick={onPrevious}>← Details</Button>
-                        <Button onClick={onNext} disabled={!isValid}>
+                        <Button type="button" onClick={onTasksNext}>
                             Next: Reward →
                         </Button>
                     </div>
-                    {!isValid && (
+                    {tasksNextAttempted && !isValid && (
                         <div className="text-xs text-destructive mt-2 text-center">
                             {humanTasks.length === 0 && requiredSkills.length === 0
-                                ? "At least one task (human or agent) is required"
+                                ? "Add at least one task above"
                                 : taskErrors.length > 0
-                                    ? "Please fix task errors before continuing"
-                                    : "Please complete the tasks step to continue"}
+                                    ? "Fix the highlighted task fields above"
+                                    : "Complete this step to continue"}
                         </div>
                     )}
                 </div></div>

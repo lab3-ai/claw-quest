@@ -849,6 +849,15 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     }
 
     const [taskErrors, setTaskErrors] = useState<TaskValidationError[]>([])
+    const [tasksNextAttempted, setTasksNextAttempted] = useState(false)
+    const prevTabRef = useRef<Tab | null>(null)
+    useEffect(() => {
+        if (tab === "tasks" && prevTabRef.current !== null && prevTabRef.current !== "tasks") {
+            setTasksNextAttempted(false)
+            setTaskErrors([])
+        }
+        prevTabRef.current = tab
+    }, [tab])
 
     const setTaskParam = (i: number, key: string, val: string) => {
         setHumanTasks(prev => prev.map((t, idx) => idx === i ? { ...t, params: { ...t.params, [key]: val } } : t))
@@ -1172,7 +1181,6 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                         <StepDetails
                             isActive={tab === "details"}
                             isDone={tabDone.details && tab !== "details"}
-                            isValid={tabValid.details}
                             form={{
                                 title: form.title,
                                 description: form.description,
@@ -1237,10 +1245,22 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             onTruncateDesc={truncateDesc}
                             onChipStatus={(platform, actionType, value) => socialValidation.getStatus(platform, actionType, value)}
                             onPrevious={() => setTab("details")}
-                            onNext={() => {
-                                if (tabValid.tasks) {
-                                    setTab("reward")
+                            tasksNextAttempted={tasksNextAttempted}
+                            onTasksNext={() => {
+                                if (humanTasks.length === 0 && requiredSkills.length === 0) {
+                                    setTasksNextAttempted(true)
+                                    return
                                 }
+                                const errors = validateSocialTasks(humanTasks)
+                                if (errors.length > 0) {
+                                    setTaskErrors(errors)
+                                    setExpandedTask(errors[0].index)
+                                    setTasksNextAttempted(true)
+                                    return
+                                }
+                                setTaskErrors([])
+                                setTasksNextAttempted(false)
+                                setTab("reward")
                             }}
                             SocialEntryBody={SocialEntryBody}
                             isSkillUrl={isSkillUrl}
@@ -1253,7 +1273,6 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                         <StepReward
                             isActive={tab === "reward"}
                             isDone={tabDone.reward && tab !== "reward"}
-                            isValid={tabValid.reward}
                             isFuture={TABS.indexOf(tab as Tab) < TABS.indexOf("reward") && !tabDone.reward}
                             form={{
                                 rail: form.rail,

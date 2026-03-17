@@ -1,8 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Dashboard — Create Quest wizard validation
+
+- [Change] Steps Details, Tasks, Reward: no inline “required” errors until user clicks **Next**; then only invalid fields show messages. Next is always clickable (not greyed out). LLM rail shows model/budget errors after Next.
+
+---
+
 ## v0.15.1 — Stripe Coming Soon (2026-03-12)
 
 ### Stripe — Disabled with "Coming Soon"
+
 - [Change] All Stripe API routes return **400** with body `{ message: "Coming Soon" }` via `onRequest` hook (no handler runs).
 - [Change] FE: Quest fund page — "Pay with Card" button disabled, tooltip "Coming Soon".
 - [Change] FE: Create/Edit Quest — Fiat (USD) reward pill disabled with tooltip "Coming Soon"; "Save & Pay with Card" / "Update & Pay with Card" disabled with tooltip.
@@ -18,9 +27,11 @@
 ## v0.15.0 — Web3 Skills Marketplace (2026-03-12)
 
 ### Quests API — Production schema fix
+
 - [Fix] GET /quests 500 "Response doesn't match the schema": normalize `llmKeyTokenLimit` so 0 or non-positive is returned as `null` (QuestSchema expects positive or null); strip `creatorTelegramId` (BigInt) from response to avoid serialization/schema issues.
 
 ### Web3 Skills — Curated Skill Marketplace
+
 - [New] Web3 keyword classification job: auto-detects web3 skills from ClawHub data using 60+ keywords
 - [New] Category auto-assignment (DeFi, NFT, L1/L2, Wallet, Bridge, DAO, Infrastructure, Storage, Gaming, Data/Analytics, Security, Social, Other)
 - [New] False-positive handling for ambiguous "token" keyword (auth/jwt/api tokens excluded)
@@ -41,6 +52,7 @@
 ## v0.14.0 — GitHub Bounty MVP (2026-03-11)
 
 ### GitHub Bounty — Independent Bounty Module
+
 - [New] GitHubBounty + GitHubBountySubmission Prisma models
 - [New] GitHub REST client: getRepo, getRepoIssues, getReadme, getContributing, getPullRequest
 - [New] Repo analyzer: LLM-assisted bounty suggestion generation

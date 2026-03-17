@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -7,7 +8,6 @@ import { cn } from "@/lib/utils"
 interface StepDetailsProps {
     isActive: boolean
     isDone: boolean
-    isValid: boolean
     form: {
         title: string
         description: string
@@ -23,18 +23,40 @@ interface StepDetailsProps {
 export function StepDetails({
     isActive,
     isDone,
-    isValid,
     form,
     stepSummary,
     onToggle,
     onFieldChange,
     onNext,
 }: StepDetailsProps) {
-    const titleError = !form.title.trim() && isActive
-    const descriptionError = !form.description.trim() && isActive
-    const startAtError = !form.startAt.trim() && isActive
-    const endAtError = !form.endAt.trim() && isActive
-    const dateOrderError = form.startAt && form.endAt && new Date(form.endAt) <= new Date(form.startAt) && isActive
+    const [attemptedNext, setAttemptedNext] = useState(false)
+    useEffect(() => {
+        if (!isActive) setAttemptedNext(false)
+    }, [isActive])
+
+    const isValid =
+        !!form.title.trim() &&
+        !!form.description.trim() &&
+        !!form.startAt.trim() &&
+        !!form.endAt.trim() &&
+        (!form.startAt || !form.endAt || new Date(form.endAt) > new Date(form.startAt))
+
+    const showErr = attemptedNext
+    const titleError = showErr && !form.title.trim()
+    const descriptionError = showErr && !form.description.trim()
+    const startAtError = showErr && !form.startAt.trim()
+    const endAtError = showErr && !form.endAt.trim()
+    const dateOrderError =
+        showErr && !!form.startAt && !!form.endAt && new Date(form.endAt) <= new Date(form.startAt)
+
+    const handleNext = () => {
+        if (isValid) {
+            setAttemptedNext(false)
+            onNext()
+        } else {
+            setAttemptedNext(true)
+        }
+    }
     return (
         <div className={cn(
             "relative mb-0 border-none rounded-none",
@@ -124,13 +146,13 @@ export function StepDetails({
                     </div>
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <span />
-                        <Button onClick={onNext} disabled={!isValid}>
+                        <Button type="button" onClick={handleNext}>
                             Next: Tasks →
                         </Button>
                     </div>
-                    {!isValid && (
+                    {attemptedNext && !isValid && (
                         <div className="text-xs text-destructive mt-2 text-center">
-                            Please fill in all required fields to continue
+                            Fix the fields above to continue
                         </div>
                     )}
                 </div></div>

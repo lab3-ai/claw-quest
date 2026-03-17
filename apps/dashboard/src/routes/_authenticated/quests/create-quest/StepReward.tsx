@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { REWARD_TYPE } from "@clawquest/shared"
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
@@ -15,7 +16,6 @@ type PaymentRail = "crypto" | "fiat" | "llm"
 interface StepRewardProps {
     isActive: boolean
     isDone: boolean
-    isValid: boolean
     isFuture: boolean
     form: {
         rail: PaymentRail
@@ -42,7 +42,6 @@ interface StepRewardProps {
 export function StepReward({
     isActive,
     isDone,
-    isValid,
     isFuture,
     form,
     stepSummary,
@@ -62,16 +61,32 @@ export function StepReward({
         staleTime: 5 * 60 * 1000,
     })
 
+    const [attemptedNext, setAttemptedNext] = useState(false)
+    useEffect(() => {
+        if (!isActive) setAttemptedNext(false)
+    }, [isActive])
+
     const activeTotal = parseFloat(form.total) || 0
     const activeWinners = parseInt(form.winners) || 1
     const perWinner = form.rail === "llm"
         ? `$${parseFloat(form.tokenBudgetPerWinner || "0").toFixed(2)}`
         : activeWinners > 0 ? (activeTotal / activeWinners).toFixed(2) : "0.00"
 
-    const totalError = form.rail !== "llm" && activeTotal <= 0 && isActive
-    const winnersError = activeWinners <= 0 && isActive
-    const drawTimeError = form.type === "LUCKY_DRAW" && !form.drawTime.trim() && isActive
-    const leaderboardError = form.type === "LEADERBOARD" && activeWinners < 2 && isActive
+    const stepValid =
+        activeWinners > 0 &&
+        (form.rail === "llm"
+            ? !!form.llmModelId && parseFloat(form.tokenBudgetPerWinner) > 0
+            : activeTotal > 0) &&
+        (form.type !== "LUCKY_DRAW" || !!form.drawTime.trim()) &&
+        (form.type !== "LEADERBOARD" || activeWinners >= 2)
+
+    const showErr = attemptedNext
+    const totalError = showErr && form.rail !== "llm" && activeTotal <= 0
+    const winnersError = showErr && activeWinners <= 0
+    const drawTimeError = showErr && form.type === "LUCKY_DRAW" && !form.drawTime.trim()
+    const leaderboardError = showErr && form.type === "LEADERBOARD" && activeWinners < 2
+    const llmModelError = showErr && form.rail === "llm" && !form.llmModelId.trim()
+    const llmBudgetError = showErr && form.rail === "llm" && parseFloat(form.tokenBudgetPerWinner) <= 0
 
     const tokenLabel = form.rail === "llm" ? "tokens" : getTokenSymbol(form.rail, form.token, form.network)
 
@@ -221,7 +236,10 @@ export function StepReward({
                             <div className="space-y-1.5">
                                 <Label>Model <span className="text-destructive">*</span></Label>
                                 <select
-                                    className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+                                    className={cn(
+                                        "flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring",
+                                        llmModelError && "border-destructive focus-visible:ring-destructive"
+                                    )}
                                     value={form.llmModelId}
                                     onChange={e => onSetLlmModelId(e.target.value)}
                                 >
@@ -240,6 +258,9 @@ export function StepReward({
                                         )
                                     })}
                                 </select>
+                                {llmModelError && (
+                                    <div className="text-xs text-destructive mt-0.5">Select a model</div>
+                                )}
                             </div>
                             <div className="space-y-1.5">
                                 <Label>Budget per Winner (USD) <span className="text-destructive">*</span></Label>
@@ -250,7 +271,11 @@ export function StepReward({
                                     value={form.tokenBudgetPerWinner}
                                     onChange={e => onSetTokenBudgetPerWinner(e.target.value)}
                                     placeholder="5.00"
+                                    className={cn(llmBudgetError && "border-destructive focus-visible:ring-destructive")}
                                 />
+                                {llmBudgetError && (
+                                    <div className="text-xs text-destructive mt-0.5">Budget per winner must be greater than 0</div>
+                                )}
                                 <p className="text-xs text-muted-foreground">
                                     USD worth of LLM tokens each winner can spend on the selected model.
                                 </p>
@@ -310,16 +335,16 @@ export function StepReward({
                         <div style={{ marginTop: 12 }}>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {form.rail !== "llm" && (
-                                <div className="space-y-1.5 mb-3.5">
-                                    <Label>Total Reward ({tokenLabel}) <span className="text-destructive">*</span></Label>
-                                    <Input
-                                        className={cn("font-mono text-xs", totalError && "border-destructive focus-visible:ring-destructive")}
-                                        type="text"
-                                        value={form.total}
-                                        onChange={e => onFieldChange("total", e.target.value)}
-                                    />
-                                    {totalError && <div className="text-xs text-destructive mt-0.5">Total reward must be greater than 0</div>}
-                                </div>
+                                    <div className="space-y-1.5 mb-3.5">
+                                        <Label>Total Reward ({tokenLabel}) <span className="text-destructive">*</span></Label>
+                                        <Input
+                                            className={cn("font-mono text-xs", totalError && "border-destructive focus-visible:ring-destructive")}
+                                            type="text"
+                                            value={form.total}
+                                            onChange={e => onFieldChange("total", e.target.value)}
+                                        />
+                                        {totalError && <div className="text-xs text-destructive mt-0.5">Total reward must be greater than 0</div>}
+                                    </div>
                                 )}
                                 <div className="space-y-1.5 mb-3.5">
                                     <Label>
@@ -435,51 +460,61 @@ export function StepReward({
 
                     {/* LLM Key Bonus Reward */}
                     {form.rail !== "llm" && (
-                    <div className="space-y-3 mb-6">
-                        <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Bonus Reward</div>
-                        <div className="flex items-start justify-between gap-3 p-3 border border-border rounded bg-transparent">
-                            <div className="flex-1">
-                                <div className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                    <span>🤖</span> LLM API Key
+                        <div className="space-y-3 mb-6">
+                            <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Bonus Reward</div>
+                            <div className="flex items-start justify-between gap-3 p-3 border border-border rounded bg-transparent">
+                                <div className="flex-1">
+                                    <div className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                                        <span>🤖</span> LLM API Key
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-0.5 leading-snug">
+                                        Each winner receives a free LLM API key compatible with OpenAI SDK. They can use it immediately.
+                                    </div>
                                 </div>
-                                <div className="text-xs text-muted-foreground mt-0.5 leading-snug">
-                                    Each winner receives a free LLM API key compatible with OpenAI SDK. They can use it immediately.
-                                </div>
+                                <button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={llmKeyRewardEnabled}
+                                    onClick={() => onSetLlmKeyRewardEnabled(!llmKeyRewardEnabled)}
+                                    className={cn(
+                                        "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                                        llmKeyRewardEnabled ? "bg-accent" : "bg-muted"
+                                    )}
+                                >
+                                    <span className={cn(
+                                        "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform",
+                                        llmKeyRewardEnabled ? "translate-x-4" : "translate-x-0"
+                                    )} />
+                                </button>
                             </div>
-                            <button
-                                type="button"
-                                role="switch"
-                                aria-checked={llmKeyRewardEnabled}
-                                onClick={() => onSetLlmKeyRewardEnabled(!llmKeyRewardEnabled)}
-                                className={cn(
-                                    "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                                    llmKeyRewardEnabled ? "bg-accent" : "bg-muted"
-                                )}
-                            >
-                                <span className={cn(
-                                    "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform",
-                                    llmKeyRewardEnabled ? "translate-x-4" : "translate-x-0"
-                                )} />
-                            </button>
+                            {llmKeyRewardEnabled && (
+                                <div className="flex items-center gap-2 px-3 py-2 bg-accent-light border border-accent/30 rounded text-xs text-foreground leading-relaxed">
+                                    <span className="text-sm shrink-0">✅</span>
+                                    <span>Winners will receive a personal <strong>LLM API key</strong> (OpenAI-compatible) shown on their quest result page.</span>
+                                </div>
+                            )}
                         </div>
-                        {llmKeyRewardEnabled && (
-                            <div className="flex items-center gap-2 px-3 py-2 bg-accent-light border border-accent/30 rounded text-xs text-foreground leading-relaxed">
-                                <span className="text-sm shrink-0">✅</span>
-                                <span>Winners will receive a personal <strong>LLM API key</strong> (OpenAI-compatible) shown on their quest result page.</span>
-                            </div>
-                        )}
-                    </div>
                     )}
 
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <Button variant="secondary" onClick={onPrevious}>← Tasks</Button>
-                        <Button onClick={onNext} disabled={!isValid}>
+                        <Button
+                            type="button"
+                            onClick={() => {
+                                if (stepValid) {
+                                    setAttemptedNext(false)
+                                    onNext()
+                                } else {
+                                    setAttemptedNext(true)
+                                }
+                            }}
+                        >
                             Next: Preview →
                         </Button>
                     </div>
-                    {!isValid && (
+                    {attemptedNext && !stepValid && (
                         <div className="text-xs text-destructive mt-2 text-center">
-                            Please fill in all required fields to continue
+                            Fix the fields above to continue
                         </div>
                     )}
                 </div></div>

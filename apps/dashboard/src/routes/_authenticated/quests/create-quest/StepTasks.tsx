@@ -64,6 +64,7 @@ interface StepTasksProps {
     isDone: boolean
     isValid: boolean
     isFuture: boolean
+    showErrors?: boolean
     stepSummary?: string
     activePlatform: string | null
     expandedTask: number | null
@@ -121,6 +122,7 @@ export function StepTasks({
     isDone,
     isValid,
     isFuture,
+    showErrors = false,
     stepSummary,
     activePlatform,
     expandedTask,
@@ -200,7 +202,7 @@ export function StepTasks({
                                 ClawHub
                             </a>.
                         </div>
-                        {!isValid && humanTasks.length === 0 && requiredSkills.length === 0 && (
+                        {showErrors && !isValid && humanTasks.length === 0 && requiredSkills.length === 0 && (
                             <div className="px-3 py-2.5 bg-warning-light border border-warning rounded text-xs text-foreground mb-4">
                                 <strong>⚠️ At least one task is required:</strong> Add at least one human task (social action) or one agent task (required skill) to continue.
                             </div>
@@ -495,11 +497,11 @@ export function StepTasks({
 
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <Button variant="secondary" onClick={onPrevious}>← Details</Button>
-                        <Button onClick={onNext} disabled={!isValid}>
+                        <Button onClick={onNext}>
                             Next: Reward →
                         </Button>
                     </div>
-                    {!isValid && (
+                    {showErrors && !isValid && (
                         <div className="text-xs text-destructive mt-2 text-center">
                             {humanTasks.length === 0 && requiredSkills.length === 0
                                 ? "At least one task (human or agent) is required"

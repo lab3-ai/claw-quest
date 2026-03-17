@@ -691,6 +691,12 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const { session } = useAuth()
     const isEditMode = !!editQuestId
     const [tab, setTab] = useState<Tab | null>("details")
+    const [attempted, setAttempted] = useState<Record<Tab, boolean>>({
+        details: false,
+        tasks: false,
+        reward: false,
+        preview: false,
+    })
     const [form, setForm] = useState<FormData>({
         title: "", description: "", startAt: "", endAt: "",
         rail: "crypto", network: DEFAULT_NETWORK, token: REWARD_TYPE.USDC, type: "FCFS",
@@ -703,8 +709,6 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const [expandedTask, setExpandedTask] = useState<number | null>(null)
     const [requiredSkills, setRequiredSkills] = useState<Pick<ClawHubSkill, "id" | "name" | "desc" | "agents" | "version">[]>([])
     const [requireVerified, setRequireVerified] = useState(false)
-    const [llmKeyRewardEnabled, setLlmKeyRewardEnabled] = useState(false)
-    const [llmKeyTokenLimit] = useState("1000000")
     const [llmModelId, setLlmModelId] = useState("")
     const [tokenBudgetPerWinner, setTokenBudgetPerWinner] = useState("")
     const { query: skillSearch, setQuery: setSkillSearch, results: skillSearchResults, isLoading: skillSearchLoading } = useSkillSearch()
@@ -826,6 +830,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     }
 
     const set = (key: keyof FormData, val: string) => setForm(prev => ({ ...prev, [key]: val }))
+    const markAttempted = (t: Tab) => setAttempted(prev => (prev[t] ? prev : { ...prev, [t]: true }))
 
     // ── Human tasks ──────────────────────────────────────────────────────────
     const addHumanTask = (platform: string, action: ActionDef) => {
@@ -923,8 +928,6 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 totalSlots: slots,
                 requiredSkills: requiredSkills.map(s => s.id),
                 requireVerified,
-                llmKeyRewardEnabled: form.rail === "llm" ? false : llmKeyRewardEnabled,
-                llmKeyTokenLimit: form.rail !== "llm" ? (parseInt(llmKeyTokenLimit) || 1000000) : undefined,
                 tasks,
                 expiresAt: form.endAt ? new Date(form.endAt).toISOString() : undefined,
                 startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
@@ -1173,6 +1176,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             isActive={tab === "details"}
                             isDone={tabDone.details && tab !== "details"}
                             isValid={tabValid.details}
+                            showErrors={attempted.details}
                             form={{
                                 title: form.title,
                                 description: form.description,
@@ -1183,9 +1187,9 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             onToggle={() => handleStepToggle("details")}
                             onFieldChange={(key, value) => set(key, value)}
                             onNext={() => {
-                                if (tabValid.details) {
-                                    setTab("tasks")
-                                }
+                                markAttempted("details")
+                                if (!validateDetails()) return
+                                setTab("tasks")
                             }}
                         />
 
@@ -1194,6 +1198,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             isActive={tab === "tasks"}
                             isDone={tabDone.tasks && tab !== "tasks"}
                             isValid={tabValid.tasks}
+                            showErrors={attempted.tasks}
                             isFuture={TABS.indexOf(tab as Tab) < TABS.indexOf("tasks") && !tabDone.tasks}
                             stepSummary={stepSummaries.tasks}
                             activePlatform={activePlatform}
@@ -1238,9 +1243,16 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             onChipStatus={(platform, actionType, value) => socialValidation.getStatus(platform, actionType, value)}
                             onPrevious={() => setTab("details")}
                             onNext={() => {
-                                if (tabValid.tasks) {
-                                    setTab("reward")
+                                markAttempted("tasks")
+                                // validate human task fields if any exist
+                                const errors = humanTasks.length > 0 ? validateSocialTasks(humanTasks) : []
+                                setTaskErrors(errors)
+                                if (errors.length > 0) {
+                                    setExpandedTask(errors[0].index)
+                                    return
                                 }
+                                if (!validateTasks()) return
+                                setTab("reward")
                             }}
                             SocialEntryBody={SocialEntryBody}
                             isSkillUrl={isSkillUrl}
@@ -1254,6 +1266,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             isActive={tab === "reward"}
                             isDone={tabDone.reward && tab !== "reward"}
                             isValid={tabValid.reward}
+                            showErrors={attempted.reward}
                             isFuture={TABS.indexOf(tab as Tab) < TABS.indexOf("reward") && !tabDone.reward}
                             form={{
                                 rail: form.rail,
@@ -1273,10 +1286,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             onFieldChange={(key, value) => {
                                 if (key === "rail") {
                                     if (value === "llm") {
-                                        setLlmKeyRewardEnabled(false)
                                         setForm(prev => ({ ...prev, rail: "llm" as PaymentRail }))
                                     } else {
-                                        setLlmKeyRewardEnabled(false)
                                         const fundingMethod: "crypto" | "stripe" = value === "fiat" ? "stripe" : "crypto"
                                         setForm(prev => ({ ...prev, rail: value as PaymentRail, fundingMethod }))
                                     }
@@ -1292,12 +1303,10 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                     set(key, value as string)
                                 }
                             }}
-                            llmKeyRewardEnabled={llmKeyRewardEnabled}
-                            onSetLlmKeyRewardEnabled={setLlmKeyRewardEnabled}
                             onNext={() => {
-                                if (tabValid.reward) {
-                                    setTab("preview")
-                                }
+                                markAttempted("reward")
+                                if (!validateReward()) return
+                                setTab("preview")
                             }}
                             onPrevious={() => setTab("tasks")}
                         />
@@ -1330,7 +1339,6 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 isError: mutation.isError,
                                 error: mutation.error as Error | null,
                             }}
-                            llmKeyTokenLimit={parseInt(llmKeyTokenLimit) || 1000000}
                             onToggle={() => handleStepToggle("preview")}
                             onPrevious={() => setTab("reward")}
                             onSaveDraft={() => { fundAfterSave.current = false; mutation.mutate() }}

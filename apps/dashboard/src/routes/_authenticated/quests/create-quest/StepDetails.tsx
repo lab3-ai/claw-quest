@@ -8,6 +8,7 @@ interface StepDetailsProps {
     isActive: boolean
     isDone: boolean
     isValid: boolean
+    showErrors?: boolean
     form: {
         title: string
         description: string
@@ -24,17 +25,18 @@ export function StepDetails({
     isActive,
     isDone,
     isValid,
+    showErrors = false,
     form,
     stepSummary,
     onToggle,
     onFieldChange,
     onNext,
 }: StepDetailsProps) {
-    const titleError = !form.title.trim() && isActive
-    const descriptionError = !form.description.trim() && isActive
-    const startAtError = !form.startAt.trim() && isActive
-    const endAtError = !form.endAt.trim() && isActive
-    const dateOrderError = form.startAt && form.endAt && new Date(form.endAt) <= new Date(form.startAt) && isActive
+    const titleError = showErrors && !form.title.trim() && isActive
+    const descriptionError = showErrors && !form.description.trim() && isActive
+    const startAtError = showErrors && !form.startAt.trim() && isActive
+    const endAtError = showErrors && !form.endAt.trim() && isActive
+    const dateOrderError = showErrors && form.startAt && form.endAt && new Date(form.endAt) <= new Date(form.startAt) && isActive
     return (
         <div className={cn(
             "relative mb-0 border-none rounded-none",
@@ -68,7 +70,7 @@ export function StepDetails({
                 <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
                     <div className="space-y-4 mb-6">
                         <div className="space-y-1.5 mb-3.5">
-                            <Label>Title <span className="text-destructive">*</span></Label>
+                            <Label>Title {showErrors && <span className="text-destructive">*</span>}</Label>
                             <Input
                                 type="text"
                                 placeholder="e.g. Register & trade shares on ClawFriend"
@@ -80,7 +82,7 @@ export function StepDetails({
                             {titleError && <div className="text-xs text-destructive mt-0.5">Title is required</div>}
                         </div>
                         <div className="space-y-1.5 mb-3.5">
-                            <Label>Description <span className="text-destructive">*</span></Label>
+                            <Label>Description {showErrors && <span className="text-destructive">*</span>}</Label>
                             <div className="text-xs text-muted-foreground mb-1 leading-snug">Agent-readable. Explain the overall quest goal.</div>
                             <Textarea
                                 rows={3}
@@ -96,7 +98,7 @@ export function StepDetails({
                         <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Timing</div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="space-y-1.5 mb-3.5">
-                                <Label>Start <span className="text-destructive">*</span></Label>
+                                <Label>Start {showErrors && <span className="text-destructive">*</span>}</Label>
                                 <input
                                     className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", (startAtError || dateOrderError) && "border-destructive focus-visible:ring-destructive")}
                                     type="datetime-local"
@@ -108,7 +110,7 @@ export function StepDetails({
                                 {startAtError && <div className="text-xs text-destructive mt-0.5">Start date is required</div>}
                             </div>
                             <div className="space-y-1.5 mb-3.5">
-                                <Label>End <span className="text-destructive">*</span></Label>
+                                <Label>End {showErrors && <span className="text-destructive">*</span>}</Label>
                                 <input
                                     className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", (endAtError || dateOrderError) && "border-destructive focus-visible:ring-destructive")}
                                     type="datetime-local"
@@ -124,11 +126,11 @@ export function StepDetails({
                     </div>
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <span />
-                        <Button onClick={onNext} disabled={!isValid}>
+                        <Button onClick={onNext}>
                             Next: Tasks →
                         </Button>
                     </div>
-                    {!isValid && (
+                    {showErrors && !isValid && (
                         <div className="text-xs text-destructive mt-2 text-center">
                             Please fill in all required fields to continue
                         </div>

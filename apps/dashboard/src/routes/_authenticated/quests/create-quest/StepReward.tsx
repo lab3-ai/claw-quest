@@ -17,6 +17,7 @@ interface StepRewardProps {
     isDone: boolean
     isValid: boolean
     isFuture: boolean
+    showErrors?: boolean
     form: {
         rail: PaymentRail
         network: string
@@ -29,10 +30,8 @@ interface StepRewardProps {
         tokenBudgetPerWinner: string
     }
     stepSummary?: string
-    llmKeyRewardEnabled: boolean
     onToggle: () => void
     onFieldChange: (key: keyof Omit<StepRewardProps["form"], "llmModelId" | "tokenBudgetPerWinner">, value: string | PaymentRail | QuestType) => void
-    onSetLlmKeyRewardEnabled: (v: boolean) => void
     onSetLlmModelId: (v: string) => void
     onSetTokenBudgetPerWinner: (v: string) => void
     onNext: () => void
@@ -44,12 +43,11 @@ export function StepReward({
     isDone,
     isValid,
     isFuture,
+    showErrors = false,
     form,
     stepSummary,
-    llmKeyRewardEnabled,
     onToggle,
     onFieldChange,
-    onSetLlmKeyRewardEnabled,
     onSetLlmModelId,
     onSetTokenBudgetPerWinner,
     onNext,
@@ -68,10 +66,10 @@ export function StepReward({
         ? `$${parseFloat(form.tokenBudgetPerWinner || "0").toFixed(2)}`
         : activeWinners > 0 ? (activeTotal / activeWinners).toFixed(2) : "0.00"
 
-    const totalError = form.rail !== "llm" && activeTotal <= 0 && isActive
-    const winnersError = activeWinners <= 0 && isActive
-    const drawTimeError = form.type === "LUCKY_DRAW" && !form.drawTime.trim() && isActive
-    const leaderboardError = form.type === "LEADERBOARD" && activeWinners < 2 && isActive
+    const totalError = showErrors && form.rail !== "llm" && activeTotal <= 0 && isActive
+    const winnersError = showErrors && activeWinners <= 0 && isActive
+    const drawTimeError = showErrors && form.type === "LUCKY_DRAW" && !form.drawTime.trim() && isActive
+    const leaderboardError = showErrors && form.type === "LEADERBOARD" && activeWinners < 2 && isActive
 
     const tokenLabel = form.rail === "llm" ? "tokens" : getTokenSymbol(form.rail, form.token, form.network)
 
@@ -219,7 +217,7 @@ export function StepReward({
                         <div className="space-y-4 mb-6">
                             <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">LLM Token Reward</div>
                             <div className="space-y-1.5">
-                                <Label>Model <span className="text-destructive">*</span></Label>
+                                <Label>Model {showErrors && <span className="text-destructive">*</span>}</Label>
                                 <select
                                     className="flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                                     value={form.llmModelId}
@@ -242,7 +240,7 @@ export function StepReward({
                                 </select>
                             </div>
                             <div className="space-y-1.5">
-                                <Label>Budget per Winner (USD) <span className="text-destructive">*</span></Label>
+                                <Label>Budget per Winner (USD) {showErrors && <span className="text-destructive">*</span>}</Label>
                                 <Input
                                     type="number"
                                     min="0.01"
@@ -310,20 +308,20 @@ export function StepReward({
                         <div style={{ marginTop: 12 }}>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {form.rail !== "llm" && (
-                                <div className="space-y-1.5 mb-3.5">
-                                    <Label>Total Reward ({tokenLabel}) <span className="text-destructive">*</span></Label>
-                                    <Input
-                                        className={cn("font-mono text-xs", totalError && "border-destructive focus-visible:ring-destructive")}
-                                        type="text"
-                                        value={form.total}
-                                        onChange={e => onFieldChange("total", e.target.value)}
-                                    />
-                                    {totalError && <div className="text-xs text-destructive mt-0.5">Total reward must be greater than 0</div>}
-                                </div>
+                                    <div className="space-y-1.5 mb-3.5">
+                                        <Label>Total Reward ({tokenLabel}) {showErrors && <span className="text-destructive">*</span>}</Label>
+                                        <Input
+                                            className={cn("font-mono text-xs", totalError && "border-destructive focus-visible:ring-destructive")}
+                                            type="text"
+                                            value={form.total}
+                                            onChange={e => onFieldChange("total", e.target.value)}
+                                        />
+                                        {totalError && <div className="text-xs text-destructive mt-0.5">Total reward must be greater than 0</div>}
+                                    </div>
                                 )}
                                 <div className="space-y-1.5 mb-3.5">
                                     <Label>
-                                        Number of Winners <span className="text-destructive">*</span>
+                                        Number of Winners {showErrors && <span className="text-destructive">*</span>}
                                         {form.type === "LEADERBOARD" && (
                                             <span style={{ fontSize: 10, color: "var(--fg-muted)", marginLeft: 4 }}>(min 2, max 100)</span>
                                         )}
@@ -368,7 +366,7 @@ export function StepReward({
                                     All eligible submissions enter a raffle. N winners drawn at end.
                                 </div>
                                 <div className="space-y-1.5 mb-3.5">
-                                    <Label>Draw Time <span className="text-destructive">*</span></Label>
+                                    <Label>Draw Time {showErrors && <span className="text-destructive">*</span>}</Label>
                                     <input
                                         className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", drawTimeError && "border-destructive focus-visible:ring-destructive")}
                                         type="datetime-local"
@@ -433,51 +431,13 @@ export function StepReward({
                         )}
                     </div>
 
-                    {/* LLM Key Bonus Reward */}
-                    {form.rail !== "llm" && (
-                    <div className="space-y-3 mb-6">
-                        <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Bonus Reward</div>
-                        <div className="flex items-start justify-between gap-3 p-3 border border-border rounded bg-transparent">
-                            <div className="flex-1">
-                                <div className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                    <span>🤖</span> LLM API Key
-                                </div>
-                                <div className="text-xs text-muted-foreground mt-0.5 leading-snug">
-                                    Each winner receives a free LLM API key compatible with OpenAI SDK. They can use it immediately.
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                role="switch"
-                                aria-checked={llmKeyRewardEnabled}
-                                onClick={() => onSetLlmKeyRewardEnabled(!llmKeyRewardEnabled)}
-                                className={cn(
-                                    "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                                    llmKeyRewardEnabled ? "bg-accent" : "bg-muted"
-                                )}
-                            >
-                                <span className={cn(
-                                    "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform",
-                                    llmKeyRewardEnabled ? "translate-x-4" : "translate-x-0"
-                                )} />
-                            </button>
-                        </div>
-                        {llmKeyRewardEnabled && (
-                            <div className="flex items-center gap-2 px-3 py-2 bg-accent-light border border-accent/30 rounded text-xs text-foreground leading-relaxed">
-                                <span className="text-sm shrink-0">✅</span>
-                                <span>Winners will receive a personal <strong>LLM API key</strong> (OpenAI-compatible) shown on their quest result page.</span>
-                            </div>
-                        )}
-                    </div>
-                    )}
-
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <Button variant="secondary" onClick={onPrevious}>← Tasks</Button>
-                        <Button onClick={onNext} disabled={!isValid}>
+                        <Button onClick={onNext}>
                             Next: Preview →
                         </Button>
                     </div>
-                    {!isValid && (
+                    {showErrors && !isValid && (
                         <div className="text-xs text-destructive mt-2 text-center">
                             Please fill in all required fields to continue
                         </div>

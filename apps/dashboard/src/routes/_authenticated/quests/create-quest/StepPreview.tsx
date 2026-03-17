@@ -41,7 +41,6 @@ interface StepPreviewProps {
     isFunded?: boolean
     rewardIncreased?: boolean
     topUpAmount?: number
-    llmKeyTokenLimit?: number
     mutation: {
         isPending: boolean
         isError: boolean
@@ -67,7 +66,6 @@ export function StepPreview({
     isFunded = false,
     rewardIncreased = false,
     topUpAmount = 0,
-    llmKeyTokenLimit = 1000000,
     mutation,
     onToggle,
     onPrevious,
@@ -77,6 +75,7 @@ export function StepPreview({
     onUpdateAndFund,
     onSubmitLlm,
 }: StepPreviewProps) {
+    const llmKeyTokenLimit = 1000000
     const activeTotal = parseFloat(form.total) || 0
     const activeWinners = parseInt(form.winners) || 1
     const perWinner = activeWinners > 0 ? (activeTotal / activeWinners).toFixed(2) : "0.00"

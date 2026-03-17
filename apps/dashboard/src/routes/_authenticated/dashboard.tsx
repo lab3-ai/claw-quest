@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Link, useNavigate } from "@tanstack/react-router"
+import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
 import { QuestersPopup } from "@/components/QuestersPopup"
@@ -17,24 +17,6 @@ type MineQuest = Quest & { fundingStatus?: string; previewToken?: string }
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Agent {
-    id: string
-    agentname: string
-    status: "idle" | "questing" | "offline"
-    isActive: boolean
-    createdAt: string
-    participations?: {
-        id: string
-        status: string
-        quest: { id: string; title: string; rewardAmount: number; rewardType: string; fundingMethod?: string }
-        tasksCompleted: number
-        tasksTotal: number
-        payoutAmount: number | null
-        payoutStatus: string
-    }[]
-}
-
 
 type QuestFilter = "all" | "draft" | "live" | "scheduled" | "completed"
 type AcceptedFilter = "all" | "active" | "ended"
@@ -95,37 +77,16 @@ export function Dashboard() {
         }
     }, [isLoading, isAuthenticated, navigate])
 
-    // Get tab from URL search params, default to "my-quest"
-    const urlParams = new URLSearchParams(window.location.search)
-    const urlTab = urlParams.get('tab')
-    const [mainTab, setMainTab] = useState<MainTab>(
-        urlTab === "accepted" ? urlTab : "my-quest"
-    )
+    const search = useSearch({ strict: false }) as { tab?: string }
+    const mainTab: MainTab = search.tab === "accepted" ? "accepted" : "my-quest"
 
-    // Sync URL when tab changes
-    useEffect(() => {
-        const tabParam = mainTab === "my-quest" ? undefined : mainTab
-        const newParams = new URLSearchParams(window.location.search)
-        if (tabParam) {
-            newParams.set('tab', tabParam)
-        } else {
-            newParams.delete('tab')
-        }
-        const newUrl = `${window.location.pathname}${newParams.toString() ? `?${newParams.toString()}` : ''}`
-        window.history.replaceState({}, '', newUrl)
-    }, [mainTab])
-
-    // Sync state when URL changes (listen to popstate)
-    useEffect(() => {
-        const handlePopState = () => {
-            const params = new URLSearchParams(window.location.search)
-            const tab = params.get('tab')
-            const tabParam = tab === "accepted" ? tab : "my-quest"
-            setMainTab(tabParam)
-        }
-        window.addEventListener('popstate', handlePopState)
-        return () => window.removeEventListener('popstate', handlePopState)
-    }, [])
+    const setMainTab = (tab: MainTab) => {
+        navigate({
+            to: "/dashboard",
+            search: tab === "my-quest" ? {} : { tab },
+            replace: true,
+        })
+    }
     const [questFilter, setQuestFilter] = useState<QuestFilter>("all")
     const [questView, setQuestView] = useState<"card" | "list">("card")
     const [acceptedFilter, setAcceptedFilter] = useState<AcceptedFilter>("all")
@@ -136,18 +97,6 @@ export function Dashboard() {
         queryFn: async () => {
             const res = await fetch(`${API_BASE}/quests/mine`, {
                 headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
-            })
-            if (!res.ok) return []
-            return res.json()
-        },
-        enabled: !!session?.access_token,
-    })
-
-    const { data: agents = [] } = useQuery<Agent[]>({
-        queryKey: ["agents"],
-        queryFn: async () => {
-            const res = await fetch(`${API_BASE}/agents`, {
-                headers: { Authorization: `Bearer ${session?.access_token}` },
             })
             if (!res.ok) return []
             return res.json()
@@ -235,7 +184,7 @@ export function Dashboard() {
                 {/* Page header */}
                 <PageTitle
                     title="Dashboard"
-                    description={<>{displayName ? handle : `@${handle}`} · {agents.length} agents · {quests.length} quests</>}
+                    description={<>{displayName ? handle : `@${handle}`} · {quests.length} quests</>}
                     border
                     actions={<>
                         <Button asChild>
@@ -243,36 +192,6 @@ export function Dashboard() {
                         </Button>
                     </>}
                 />
-
-                {/* Stripe earnings / pending rewards banner */}
-                {(() => {
-                    const allParticipations = agents.flatMap(a => a.participations ?? [])
-                    const paidUsd = allParticipations.filter(p => p.payoutStatus === "paid" && (p.quest as any).fundingMethod === "stripe")
-                    const pendingUsd = allParticipations.filter(p =>
-                        (p.status === "completed" || p.status === "submitted" || p.status === "verified") &&
-                        p.payoutStatus !== "paid" && (p.quest as any).fundingMethod === "stripe"
-                    )
-                    const totalEarned = paidUsd.reduce((sum, p) => sum + (p.payoutAmount ?? 0), 0)
-
-                    if (paidUsd.length === 0 && pendingUsd.length === 0) return null
-
-                    return (
-                        <div className="flex flex-wrap gap-3 mt-4 max-sm:mt-3 max-sm:gap-2">
-                            {totalEarned > 0 && (
-                                <div className="flex items-center gap-2 rounded border border-border bg-background px-4 py-2.5">
-                                    <span className="text-xs font-semibold text-muted-foreground">Total USD Earned</span>
-                                    <span className="text-sm font-semibold text-accent">${totalEarned.toFixed(2)}</span>
-                                </div>
-                            )}
-                            {pendingUsd.length > 0 && (
-                                <div className="flex items-center gap-2 rounded border border-warning/30 bg-warning/10 px-4 py-2.5 text-xs">
-                                    <span>You have {pendingUsd.length} pending fiat reward{pendingUsd.length > 1 ? "s" : ""}. Make sure your Stripe account is set up.</span>
-                                    <Link to="/stripe-connect" className="font-semibold underline whitespace-nowrap">Set up Stripe &rarr;</Link>
-                                </div>
-                            )}
-                        </div>
-                    )
-                })()}
 
                 {/* Main tabs */}
                 <div className="flex items-center border-b border-border overflow-x-auto scrollbar-hide">
@@ -728,9 +647,6 @@ export function Dashboard() {
                                 {filteredAcceptedQuests.map(quest => {
                                     const time = formatTimeLeft(quest.expiresAt ?? null)
                                     const slotsLeft = quest.totalSlots - quest.filledSlots
-                                    const participation = agents
-                                        .flatMap(a => a.participations ?? [])
-                                        .find(p => p.quest.id === quest.id)
 
                                     return (
                                         <li
@@ -745,14 +661,6 @@ export function Dashboard() {
                                                     </span>
                                                     <span className="text-xs text-muted-foreground">total reward</span>
                                                 </div>
-                                                {participation && (
-                                                    <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
-                                                        <span className="text-md font-semibold leading-tight font-mono text-foreground">
-                                                            {participation.tasksCompleted}/{participation.tasksTotal}
-                                                        </span>
-                                                        <span className="text-xs text-muted-foreground">tasks completed</span>
-                                                    </div>
-                                                )}
                                                 {quest.questers > 0 && quest.questerDetails && (
                                                     <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
                                                         <div
@@ -799,9 +707,6 @@ export function Dashboard() {
                                                 <div className="flex items-center gap-1.5 flex-wrap">
                                                     <QuestTypeBadge type={quest.type} />
                                                     <QuestStatusBadge status={quest.status} />
-                                                    {participation && (
-                                                        <QuestStatusBadge status={participation.status} />
-                                                    )}
                                                     {quest.tags?.slice(0, 2).map(tag => (
                                                         <Badge key={tag} variant="pill">{tag}</Badge>
                                                     ))}
@@ -847,9 +752,6 @@ export function Dashboard() {
                                         {filteredAcceptedQuests.map(quest => {
                                             const time = formatTimeLeft(quest.expiresAt ?? null)
                                             const slotsLeft = quest.totalSlots - quest.filledSlots
-                                            const participation = agents
-                                                .flatMap(a => a.participations ?? [])
-                                                .find(p => p.quest.id === quest.id)
 
                                             return (
                                                 <tr key={quest.id} className="hover:bg-bg-2" data-status={quest.status}>
@@ -866,14 +768,7 @@ export function Dashboard() {
                                                         <div className="text-xs text-muted-foreground">by <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
                                                     </td>
                                                     <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
-                                                        {participation ? (
-                                                            <div>
-                                                                <span className="text-sm font-semibold">{participation.tasksCompleted}/{participation.tasksTotal}</span>
-                                                                <div className="text-xs text-muted-foreground mt-0.5">tasks</div>
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-muted-foreground text-xs">—</span>
-                                                        )}
+                                                        <span className="text-muted-foreground text-xs">—</span>
                                                     </td>
                                                     <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
                                                         <QuestTypeBadge type={quest.type} />
@@ -894,11 +789,6 @@ export function Dashboard() {
                                                     </td>
                                                     <td className="px-2 py-2.5 text-xs border-b border-border align-top w-[100px]">
                                                         <QuestStatusBadge status={quest.status} />
-                                                        {participation && (
-                                                            <div className="mt-1">
-                                                                <QuestStatusBadge status={participation.status} />
-                                                            </div>
-                                                        )}
                                                     </td>
                                                 </tr>
                                             )

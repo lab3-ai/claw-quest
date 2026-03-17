@@ -11,7 +11,7 @@ import {
 import { ThemeSwitcher } from "@/components/theme-switcher"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import { Dashboard4Line, Dashboard4Fill, AddLine, Compass3Line, Compass3Fill, CodeLine, CodeFill, TrophyLine, TrophyFill, Home4Line, Home4Fill, User3Line, User3Fill, ExitLine, ExitFill } from "@mingcute/react"
-import { getDiceBearUrl, getUserAvatarUrl } from "@/components/avatarUtils"
+import { getUserAvatarUrl } from "@/components/avatarUtils"
 import { useEffect, useState } from "react"
 import { BrandLogo } from "@/components/brand-logo"
 

@@ -230,7 +230,7 @@ export function StepReward({
                         <div className="space-y-4 mb-6">
                             <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">LLM Token Reward</div>
                             <div className="space-y-1.5">
-                                <Label>Model <span className="text-destructive">*</span></Label>
+                                <Label>Model {showErr && <span className="text-destructive">*</span>}</Label>
                                 <select
                                     className={cn(
                                         "flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring",
@@ -259,7 +259,7 @@ export function StepReward({
                                 )}
                             </div>
                             <div className="space-y-1.5">
-                                <Label>Budget per Winner (USD) <span className="text-destructive">*</span></Label>
+                                <Label>Budget per Winner (USD) {showErr && <span className="text-destructive">*</span>}</Label>
                                 <Input
                                     type="number"
                                     min="0.01"
@@ -344,7 +344,7 @@ export function StepReward({
                                 )}
                                 <div className="space-y-1.5 mb-3.5">
                                     <Label>
-                                        Number of Winners <span className="text-destructive">*</span>
+                                        Number of Winners {showErr && <span className="text-destructive">*</span>}
                                         {form.type === "LEADERBOARD" && (
                                             <span style={{ fontSize: 10, color: "var(--fg-muted)", marginLeft: 4 }}>(min 2, max 100)</span>
                                         )}
@@ -389,7 +389,7 @@ export function StepReward({
                                     All eligible submissions enter a raffle. N winners drawn at end.
                                 </div>
                                 <div className="space-y-1.5 mb-3.5">
-                                    <Label>Draw Time <span className="text-destructive">*</span></Label>
+                                    <Label>Draw Time {showErr && <span className="text-destructive">*</span>}</Label>
                                     <input
                                         className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", drawTimeError && "border-destructive focus-visible:ring-destructive")}
                                         type="datetime-local"

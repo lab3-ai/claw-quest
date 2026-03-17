@@ -90,7 +90,7 @@ export function StepDetails({
                 <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
                     <div className="space-y-4 mb-6">
                         <div className="space-y-1.5 mb-3.5">
-                            <Label>Title <span className="text-destructive">*</span></Label>
+                            <Label>Title {showErr && <span className="text-destructive">*</span>}</Label>
                             <Input
                                 type="text"
                                 placeholder="e.g. Register & trade shares on ClawFriend"
@@ -102,7 +102,7 @@ export function StepDetails({
                             {titleError && <div className="text-xs text-destructive mt-0.5">Title is required</div>}
                         </div>
                         <div className="space-y-1.5 mb-3.5">
-                            <Label>Description <span className="text-destructive">*</span></Label>
+                            <Label>Description {showErr && <span className="text-destructive">*</span>}</Label>
                             <div className="text-xs text-muted-foreground mb-1 leading-snug">Agent-readable. Explain the overall quest goal.</div>
                             <Textarea
                                 rows={3}
@@ -118,7 +118,7 @@ export function StepDetails({
                         <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Timing</div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="space-y-1.5 mb-3.5">
-                                <Label>Start <span className="text-destructive">*</span></Label>
+                                <Label>Start {showErr && <span className="text-destructive">*</span>}</Label>
                                 <input
                                     className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", (startAtError || dateOrderError) && "border-destructive focus-visible:ring-destructive")}
                                     type="datetime-local"
@@ -130,7 +130,7 @@ export function StepDetails({
                                 {startAtError && <div className="text-xs text-destructive mt-0.5">Start date is required</div>}
                             </div>
                             <div className="space-y-1.5 mb-3.5">
-                                <Label>End <span className="text-destructive">*</span></Label>
+                                <Label>End {showErr && <span className="text-destructive">*</span>}</Label>
                                 <input
                                     className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", (endAtError || dateOrderError) && "border-destructive focus-visible:ring-destructive")}
                                     type="datetime-local"

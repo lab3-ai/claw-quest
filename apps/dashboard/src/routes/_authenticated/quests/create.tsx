@@ -1188,9 +1188,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             onToggle={() => handleStepToggle("details")}
                             onFieldChange={(key, value) => set(key, value)}
                             onNext={() => {
-                                if (tabValid.details) {
-                                    setTab("tasks")
-                                }
+                                if (!validateDetails()) return
+                                setTab("tasks")
                             }}
                         />
 
@@ -1307,9 +1306,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 }
                             }}
                             onNext={() => {
-                                if (tabValid.reward) {
-                                    setTab("preview")
-                                }
+                                if (!validateReward()) return
+                                setTab("preview")
                             }}
                             onPrevious={() => setTab("tasks")}
                         />
@@ -1342,7 +1340,6 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 isError: mutation.isError,
                                 error: mutation.error as Error | null,
                             }}
-                            llmKeyTokenLimit={1_000_000}
                             onToggle={() => handleStepToggle("preview")}
                             onPrevious={() => setTab("reward")}
                             onSaveDraft={() => { fundAfterSave.current = false; mutation.mutate() }}

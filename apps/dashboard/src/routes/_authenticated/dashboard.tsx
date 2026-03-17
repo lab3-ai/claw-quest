@@ -77,7 +77,6 @@ export function Dashboard() {
         }
     }, [isLoading, isAuthenticated, navigate])
 
-    // Tab from URL via TanStack Router (stays in sync when URL/search changes)
     const search = useSearch({ strict: false }) as { tab?: string }
     const mainTab: MainTab = search.tab === "accepted" ? "accepted" : "my-quest"
 
@@ -193,7 +192,6 @@ export function Dashboard() {
                         </Button>
                     </>}
                 />
-
 
                 {/* Main tabs */}
                 <div className="flex items-center border-b border-border overflow-x-auto scrollbar-hide">

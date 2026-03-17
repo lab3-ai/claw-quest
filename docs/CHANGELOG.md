@@ -6,6 +6,7 @@
 
 - [Change] Steps Details, Tasks, Reward: no inline “required” errors until user clicks **Next**; then only invalid fields show messages. Next is always clickable (not greyed out). LLM rail shows model/budget errors after Next.
 - [Change] Create Quest (crypto/fiat): removed optional **Bonus LLM API Key** toggle; payload always sends `llmKeyRewardEnabled: false`.
+- [Remove] Stop fetching agents on `/dashboard` (Agent tab removed; `/agents` API call eliminated).
 
 ---
 

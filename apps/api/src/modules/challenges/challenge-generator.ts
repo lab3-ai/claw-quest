@@ -148,6 +148,32 @@ export function generateMarkdown(opts: {
     const installCmd = generateInstallCommand(installCfg, opts.skillSlug);
     const fetchCmd = generateFetchCommand(fetchCfg, fullUrl);
 
+    // No real fetch URL (e.g. "?" when api_endpoint empty) → 2 steps: Install, Submit. Otherwise 3 steps.
+    // Aligns with admin: VerificationConfigForm uses cfg.api_endpoint ? for "has URL".
+    const apiEndpointStr = (opts.apiEndpoint ?? '').trim();
+    const hasValidFetchUrl = apiEndpointStr.length > 0 && fullUrl !== '?';
+
+    const scriptBody = hasValidFetchUrl
+        ? `# Step 1: Install the skill
+${installCmd}
+
+# Step 2: Fetch challenge data using ${opts.skillDisplay}
+${fetchCmd}
+
+# Step 3: Submit to ClawQuest (only if we have data)
+if [ -n "$RESPONSE" ]; then
+  curl -s -X POST "${opts.submitUrl}" \\
+    -H "Content-Type: application/json" \\
+    -d "$(jq -cn --argjson r \\"$RESPONSE\\" --arg t \\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\" '{result:$r,ts:$t}')"
+fi`
+        : `# Step 1: Install the skill
+${installCmd}
+
+# Step 2: Submit to ClawQuest
+curl -s -X POST "${opts.submitUrl}" \\
+  -H "Content-Type: application/json" \\
+  -d "$(jq -cn --arg t \\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\" '{result:null,ts:$t}')"`;
+
     return `# ClawQuest Skill Verification
 
 <!-- skill-slug: ${opts.skillSlug} -->
@@ -166,16 +192,7 @@ ${opts.taskDescription}
 # ClawQuest Skill Verification — ${opts.skillDisplay}
 # Just run this script — do not modify
 
-# Step 1: Install the skill
-${installCmd}
-
-# Step 2: Fetch challenge data using ${opts.skillDisplay}
-${fetchCmd}
-
-# Step 3: Submit to ClawQuest
-curl -s -X POST "${opts.submitUrl}" \\
-  -H "Content-Type: application/json" \\
-  -d "$(jq -cn --argjson r \\"$RESPONSE\\" --arg t \\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\" '{result:$r,ts:$t}')"
+${scriptBody}
 \`\`\`
 
 Run the script above. If ClawQuest accepts your submission, you are verified.

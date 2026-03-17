@@ -27,6 +27,21 @@ export async function createChallenge(
         ? opts.skillSlug.slice(opts.skillSlug.indexOf('/') + 1)
         : opts.skillSlug;
 
+    // If challenge is tied to a quest, check quest hasn't expired
+    if (opts.questId) {
+        const quest = await prisma.quest.findUnique({
+            where: { id: opts.questId },
+            select: { expiresAt: true, status: true },
+        });
+        if (!quest) throw new Error('Quest not found');
+        if (quest.expiresAt && quest.expiresAt < new Date()) {
+            throw new Error('Quest has expired — verification is no longer available');
+        }
+        if (quest.status === 'completed') {
+            throw new Error('Quest is completed — verification is no longer available');
+        }
+    }
+
     const skill = await prisma.clawhub_skills.findUnique({
         where: { slug: slugPart },
         select: { display_name: true, verification_config: true },

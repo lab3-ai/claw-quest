@@ -11,7 +11,9 @@
     "test": "pnpm -r run test",
     "lint": "pnpm -r run lint",
     "db:migrate": "pnpm --filter api db:migrate",
-    "db:seed": "pnpm --filter api db:seed"
+    "db:seed": "pnpm --filter api db:seed",
+    "deploy:admin": "pnpm --filter @clawquest/shared build && pnpm --filter @clawquest/admin build && pnpm --filter @clawquest/admin exec wrangler deploy",
+    "deploy:dashboard": "pnpm --filter @clawquest/shared build && pnpm --filter @clawquest/dashboard build && pnpm --filter @clawquest/dashboard exec wrangler deploy"
   },
   "devDependencies": {
     "eslint": "^8.57.0",

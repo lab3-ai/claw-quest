@@ -308,18 +308,31 @@ Flat design — no decorative shadows.
 
 | Token | Value | Use |
 |-------|-------|-----|
-| `--duration-fast` | `80ms` | Hover color changes |
-| `--duration-base` | `150ms` | Most transitions |
-| `--duration-slow` | `250ms` | Modals, overlays |
+| `--duration-fast` | `80ms` | Tooltip hide, micro-feedback |
+| `--duration-base` | `150ms` | Button hover/active, standard transitions |
+| `--duration-input` | `200ms` | Input/textarea focus & hover border |
+| `--duration-slow` | `250ms` | Modals, overlays, page transitions |
 | `--ease-out` | `cubic-bezier(0.16, 1, 0.3, 1)` | Enter animations |
 | `--ease-in-out` | `cubic-bezier(0.45, 0, 0.55, 1)` | Symmetric transitions |
+
+### Component Durations (Industry Standard)
+
+| Component | Duration | Tailwind | Rationale |
+|-----------|----------|----------|-----------|
+| Button hover/active | 150ms | `duration-150` | Snappy response, no perceived delay |
+| Input/textarea focus | 200ms | `duration-200` | Smooth border change when tabbing |
+| Tooltip show | 150ms delay + 120ms fade | — | Avoids flash on quick mouse pass |
+| Tooltip hide | 80ms | — | Disappear faster than appear |
+| Dropdown/popover | 150–200ms | `duration-150` | Balanced between smooth and fast |
+| Modal/dialog | 250ms | `duration-250` | Needs clear recognition |
 
 ### Shorthand Variables
 
 | Token | Value | Use |
 |-------|-------|-----|
-| `--transition-fast` | `80ms ease-out` | Quick hover feedback |
-| `--transition-normal` | `150ms ease-out` | Standard transitions |
+| `--transition-fast` | `80ms ease-out` | Quick hover feedback, tooltip hide |
+| `--transition-normal` | `150ms ease-out` | Buttons, dropdowns |
+| `--transition-input` | `200ms ease-out` | Input/textarea state changes |
 
 ### CSS Animations
 
@@ -332,8 +345,10 @@ Flat design — no decorative shadows.
 
 ### Rules
 
-- All interactive elements: `transition: all var(--transition-normal)`
-- **State transitions are mandatory**: Any UI element that changes visual state (variant swap, active/inactive, expand/collapse, show/hide) MUST have a CSS transition. Use `transition-all duration-200` as default. No abrupt visual jumps.
+- All interactive elements: `transition: all` with appropriate duration
+- **Buttons**: `transition-all duration-150` (150ms) — snappy hover/active
+- **Inputs/textareas**: `transition-all duration-200` (200ms) — smooth focus/hover border
+- **State transitions are mandatory**: Any UI element that changes visual state (variant swap, active/inactive, expand/collapse, show/hide) MUST have a CSS transition. No abrupt visual jumps.
 - Respect `prefers-reduced-motion: reduce`
 - No layout-shifting animations (use `transform` + `opacity` only)
 - Loading states: skeleton shimmer or subtle spinner (no bouncing)

@@ -149,7 +149,7 @@ export function Login() {
                     {/* Google OAuth */}
                     <Button
                         type="button"
-                        variant="outline"
+                        variant="default-tonal"
                         size="lg"
                         className="mb-3 w-full gap-3"
                         onClick={handleGoogleLogin}
@@ -166,7 +166,7 @@ export function Login() {
                     {/* Telegram */}
                     <Button
                         type="button"
-                        variant="outline"
+                        variant="default-tonal"
                         size="lg"
                         className="mb-3 w-full gap-3"
                         onClick={async () => {
@@ -192,7 +192,7 @@ export function Login() {
                     {/* X (Twitter) */}
                     <Button
                         type="button"
-                        variant="outline"
+                        variant="default-tonal"
                         size="lg"
                         className="mb-3 w-full gap-3"
                         onClick={handleTwitterLogin}
@@ -209,7 +209,7 @@ export function Login() {
                     {/* Discord */}
                     <Button
                         type="button"
-                        variant="outline"
+                        variant="default-tonal"
                         size="lg"
                         className="mb-3 w-full gap-3"
                         onClick={handleDiscordLogin}
@@ -226,7 +226,7 @@ export function Login() {
                     {/* GitHub OAuth button */}
                     <Button
                         type="button"
-                        variant="outline"
+                        variant="default-tonal"
                         size="lg"
                         className="mb-4 w-full gap-3"
                         onClick={handleGithubLogin}

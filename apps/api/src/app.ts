@@ -79,6 +79,7 @@ const corsOrigins = process.env.CORS_ORIGIN
         'https://clawquest.ai',
         'https://www.clawquest.ai',
         'https://admin.clawquest.ai',
+        'https://claw-quest-admin.pages.dev',
     ];
 
 server.register(cors, {

@@ -25,12 +25,12 @@
 
 | Foreground | Background | Ratio | Level | Notes |
 |------------|------------|-------|-------|-------|
-| `#111111` (fg) | `#ffffff` (bg) | 18.9:1 | AAA | Primary text |
-| `#555555` (fg-secondary) | `#ffffff` (bg) | 7.5:1 | AAA | Secondary text |
-| `#888888` (fg-muted) | `#ffffff` (bg) | 3.5:1 | AA Large | Muted text — use >= 18px or pair with icon |
-| `#ffffff` (white) | `#FF574B` (accent) | 3.1:1 | AA Large | Button text — only for large/bold text |
-| `#ffffff` (white) | `#E64A3F` (accent-hover) | 3.9:1 | AA Large | Hover state |
-| `#FF574B` (accent) | `#FFF0EF` (accent-light) | 2.8:1 | **FAIL** | Never use accent text on accent-light bg alone — pair with border/icon |
+| `#171717` (fg-1) | `#ffffff` (bg-1) | 18.0:1 | AAA | Primary text |
+| `#404040` (fg-2) | `#ffffff` (bg-1) | 9.0:1 | AAA | Secondary text |
+| `#737373` (fg-3) | `#ffffff` (bg-1) | 5.2:1 | AA | Muted text — acceptable for >= 18px or with icon |
+| `#ffffff` (white) | `#ff574b` (accent) | 3.1:1 | AA Large | Button text — only for large/bold text |
+| `#ffffff` (white) | `#e64a3f` (accent-hover) | 3.9:1 | AA Large | Hover state |
+| `#ff574b` (accent) | `#fff0ef` (accent-light) | 2.8:1 | **FAIL** | Never use accent text on accent-light bg alone — pair with border/icon |
 | `#16a34a` (success) | `#f0fdf4` (success-light) | 3.1:1 | AA Large | Success — use >= 18px or pair with icon |
 | `#ff4444` (error) | `#fff0f0` (error-light) | 3.1:1 | AA Large | Error — use >= 18px or pair with icon |
 | `#ffaa00` (warning) | `#fff8e6` (warning-light) | 1.8:1 | **FAIL** | Warning text on warning-light — always pair with icon + fg text |
@@ -40,12 +40,12 @@
 
 | Foreground | Background | Ratio | Level | Notes |
 |------------|------------|-------|-------|-------|
-| `#e0e0e0` (fg) | `#050505` (bg-base) | 16.2:1 | AAA | Primary text on page bg |
-| `#e0e0e0` (fg) | `#0e0e0e` (bg-1) | 15.0:1 | AAA | Primary text on cards |
-| `#a0a0a0` (fg-secondary) | `#050505` (bg-base) | 8.2:1 | AAA | Secondary text |
-| `#666666` (fg-muted) | `#050505` (bg-base) | 3.7:1 | AA Large | Muted text — use >= 18px or pair with icon |
-| `#000000` (black) | `#FF6B61` (accent) | 7.5:1 | AAA | Button text |
-| `#FF6B61` (accent) | `#3D1512` (accent-light) | 5.7:1 | AA | Accent on dark accent bg |
+| `#f5f5f5` (fg-1) | `#020202` (bg-base) | 20.0:1 | AAA | Primary text on page bg |
+| `#f5f5f5` (fg-1) | `#0a0a0a` (bg-1) | 18.5:1 | AAA | Primary text on cards |
+| `#d4d4d4` (fg-2) | `#020202` (bg-base) | 14.0:1 | AAA | Secondary text |
+| `#737373` (fg-3) | `#020202` (bg-base) | 5.1:1 | AA | Muted text — acceptable for >= 18px or with icon |
+| `#000000` (black) | `#ff6b61` (accent) | 7.5:1 | AAA | Button text |
+| `#ff6b61` (accent) | `#3d1512` (accent-light) | 5.7:1 | AA | Accent on dark accent bg |
 | `#22c55e` (success) | `#052e16` (success-light) | 6.5:1 | AA | Success in dark mode |
 
 ### Contrast Rules

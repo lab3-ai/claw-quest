@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router"
+import { Link, useRouterState } from "@tanstack/react-router"
 import { useAuth } from "@/context/AuthContext"
 import { Button } from "@/components/ui/button"
 import {
@@ -63,13 +63,14 @@ function BottomNav() {
 }
 
 /** Desktop right-side actions (theme, create quest, user menu) */
-function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email, avatarUrl }: {
+function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email, avatarUrl, useOutlineCreate }: {
     isAuthenticated: boolean
     logout: () => void
     handle: string
     handleLabel: string
     email?: string
     avatarUrl: string
+    useOutlineCreate?: boolean
 }) {
     return (
         <TooltipProvider delayDuration={300}>
@@ -80,7 +81,7 @@ function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email, a
                 <>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button asChild variant="primary">
+                            <Button asChild variant={useOutlineCreate ? "primary-outline" : "primary"}>
                                 <Link to="/quests/new" className="no-underline">
                                     <AddLine size={16} />
                                     Create Quest
@@ -150,7 +151,7 @@ function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email, a
                             Log in
                         </Link>
                     </Button>
-                    <Button asChild variant="primary">
+                    <Button asChild variant={useOutlineCreate ? "primary-outline" : "primary"}>
                         <Link to="/quests/new" className="no-underline">
                             <AddLine size={16} />
                             Create Quest
@@ -171,13 +172,23 @@ export function Navbar() {
     const handleLabel = displayName ? handle : `@${handle}`
     const avatarUrl = getUserAvatarUrl(user, handle, 40)
 
+    const pathname = useRouterState({ select: s => s.location.pathname })
+    const isHome = pathname === "/"
+
     const [scrolled, setScrolled] = useState(false)
+    const [pastHero, setPastHero] = useState(false)
     useEffect(() => {
-        const onScroll = () => setScrolled(window.scrollY > 8)
+        const onScroll = () => {
+            setScrolled(window.scrollY > 8)
+            setPastHero(window.scrollY > 400)
+        }
         onScroll()
         window.addEventListener("scroll", onScroll, { passive: true })
         return () => window.removeEventListener("scroll", onScroll)
     }, [])
+
+    /** On Home page before scrolling past hero, use outline style for Create Quest */
+    const useOutlineCreate = isHome && !pastHero
 
     return (
         <>
@@ -202,7 +213,7 @@ export function Navbar() {
                         <ThemeSwitcher />
                         {isAuthenticated ? (
                             <>
-                                <Button asChild variant="primary" size="default">
+                                <Button asChild variant={useOutlineCreate ? "primary-outline" : "primary"} size="default">
                                     <Link to="/quests/new" className="no-underline">
                                         <AddLine size={16} />
                                         Create
@@ -257,7 +268,7 @@ export function Navbar() {
                                 <Button asChild variant="outline" size="default">
                                     <Link to="/login" className="no-underline">Log in</Link>
                                 </Button>
-                                <Button asChild variant="primary" size="default">
+                                <Button asChild variant={useOutlineCreate ? "primary-outline" : "primary"} size="default">
                                     <Link to="/quests/new" className="no-underline">
                                         <AddLine size={16} />
                                         Create
@@ -274,6 +285,7 @@ export function Navbar() {
                         handleLabel={handleLabel}
                         email={user?.email}
                         avatarUrl={avatarUrl}
+                        useOutlineCreate={useOutlineCreate}
                     />
                 </div>
             </header>

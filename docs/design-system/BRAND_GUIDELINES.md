@@ -84,45 +84,47 @@
 
 ### Primary Palette
 
-| Name | Hex | CSS Variable | Use |
-|------|-----|-------------|-----|
-| **ClawQuest Coral** | `#FF574B` | `--accent` / `--primary` | Brand accent, CTAs, links |
-| **Coral Hover** | `#E64A3F` | `--accent-hover` | Hover states |
-| **Coral Light** | `#FFF0EF` | `--accent-light` | Tinted backgrounds |
-| **Dark Text** | `#111111` | `--fg-1` | Primary text (near-black) |
-| **Secondary Text** | `#555555` | `--fg-2` | Secondary text |
-| **Muted Text** | `#888888` | `--fg-3` | Placeholder, disabled |
-| **Page Background** | `#FAFAFA` | `--bg-base` | Body/page background |
-| **Card White** | `#FFFFFF` | `--bg-1` | Cards, popovers, inputs |
+Light mode and dark mode values differ per token. Base values are light mode unless overridden by dark mode.
+
+| Name | Hex (Light) | Hex (Dark) | CSS Variable | Use |
+|------|-----|-------|-------------|-----|
+| **ClawQuest Coral** | `#ff574b` | `#ff6b61` | `--accent` / `--primary` | Brand accent, CTAs, links |
+| **Coral Hover** | `#e64a3f` | `#ff574b` | `--accent-hover` | Hover states |
+| **Coral Light** | `#fff0ef` | `#3d1512` | `--accent-light` | Tinted backgrounds |
+| **Dark Text** | `#171717` | `#f5f5f5` | `--fg-1` | Primary text |
+| **Secondary Text** | `#404040` | `#d4d4d4` | `--fg-2` | Secondary text |
+| **Muted Text** | `#737373` | `#737373` | `--fg-3` | Placeholder, disabled |
+| **Page Background** | `#fafafa` | `#020202` | `--bg-base` | Body/page background |
+| **Card White** | `#ffffff` | `#0a0a0a` | `--bg-1` | Cards, popovers, inputs |
 
 ### Actor Colors — Monochrome
 
-DS v3 uses grayscale actors (not colored) for terminal aesthetic:
+DS v3 uses grayscale actors (not colored) for terminal aesthetic. Each actor has light and dark mode values.
 
-| Actor | FG | BG | Border | Use |
-|-------|----|----|--------|-----|
-| **Human** | `#555555` | `#f0f0f0` | `#cccccc` | Social tasks, human actions |
-| **Agent** | `#FF574B` | `#FFF0EF` | `#FF574B` | AI tasks, agent identity |
-| **Skill** | `#555555` | `#f0f0f0` | `#cccccc` | Skills, tags |
-| **Social** | `#555555` | `#f0f0f0` | — | Social task text/bg |
+| Actor | FG (L/D) | BG (L/D) | Border (L/D) | Use |
+|-------|----------|----------|----------|-----|
+| **Human** | `#555555`/`#a0a0a0` | `#f0f0f0`/`#1a1a1a` | `#cccccc`/`#333333` | Social tasks, human actions |
+| **Agent** | `#ff574b`/`#ff6b61` | `#fff0ef`/`#3d1512` | `#ff574b`/`#ff574b` | AI tasks, agent identity |
+| **Skill** | `#555555`/`#a0a0a0` | `#f0f0f0`/`#1a1a1a` | `#cccccc`/`#333333` | Skills, tags |
+| **Social** | `#555555`/`#a0a0a0` | `#f0f0f0`/`#1a1a1a` | — | Social task text/bg |
 
 ### Platform Colors
 
-Official brand colors for third-party integrations:
+Official brand colors for third-party integrations. Values are consistent across light and dark modes.
 
 | Platform | Hex | CSS Variable | Source |
 |----------|-----|-------------|--------|
-| Telegram | `#229ED9` | `--telegram` | Official brand |
-| Discord | `#5865F2` | `--discord` | Official brand |
+| Telegram | `#229ed9` | `--telegram` | Official brand |
+| Discord | `#5865f2` | `--discord` | Official brand |
 | X/Twitter | `#111111` | `--x-twitter` | Official brand |
-| Stripe | `#635BFF` / `#F3F0FF` | `--stripe-fg` / `--stripe-bg` | Official brand |
+| Stripe | `#635bff` / `#f3f0ff` | `--stripe-fg` / `--stripe-bg` | Official brand |
 
 ### Tone Colors — Brand
 
-| Context | FG | Dark | BG |
-|---------|-----|------|-----|
-| Quest | `#FF574B` | `#E64A3F` | `#FFF0EF` |
-| Agent | `#FF574B` | `#E64A3F` | `#FFF0EF` |
+| Context | FG (L/D) | Dark (L/D) | BG (L/D) |
+|---------|---------|----------|---------|
+| Quest | `#ff574b`/`#ff6b61` | `#e64a3f`/`#ff574b` | `#fff0ef`/`#3d1512` |
+| Agent | `#ff574b`/`#ff6b61` | `#e64a3f`/`#ff574b` | `#fff0ef`/`#3d1512` |
 
 ---
 
@@ -182,7 +184,7 @@ See `DESIGN_SYSTEM.md` for full type scale and other theme fonts.
 
 | Do | Don't |
 |----|-------|
-| Use coral `#FF574B` for primary CTAs only | Coral on every element |
+| Use coral `#ff574b` (light) / `#ff6b61` (dark) for primary CTAs | Coral on every element |
 | Use grayscale actor colors (DS v3) | Use colored actors from v1 |
 | Reference "quests" and "agents" | Use generic "tasks" and "bots" |
 | Show real reward amounts | Use vague "earn rewards" |

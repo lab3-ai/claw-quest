@@ -261,7 +261,7 @@ export function QuestList() {
                     <div className="relative inline-flex border border-border p-0.5 gap-0.5 rounded-button overflow-hidden ml-auto shrink-0 max-lg:hidden">
                         {/* Sliding highlight */}
                         <span
-                            className="absolute top-0.5 bottom-0.5 rounded-button bg-bg-3 transition-all duration-200 ease-out z-0"
+                            className="absolute top-0.5 bottom-0.5 rounded-button bg-bg-4 transition-all duration-200 ease-out z-0"
                             style={{ left: viewIndicatorStyle.left, width: viewIndicatorStyle.width }}
                         />
                         <Tooltip>
@@ -417,36 +417,36 @@ export function QuestList() {
                         <div className="sm:hidden text-xs text-muted-foreground mb-2 text-center flex items-center justify-center gap-1 animate-pulse">
                             <span>←</span> Swipe to view all columns <span>→</span>
                         </div>
-                        <table className="w-full border-collapse min-w-[640px]">
+                        <table className="w-full min-w-[640px] border border-border rounded bg-bg-1 overflow-hidden border-separate border-spacing-0">
                             <thead>
                                 <tr>
-                                    <th className="text-left px-2 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[140px]">Reward</th>
-                                    <th className="text-left px-2 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[240px]">Name</th>
-                                    <th className="text-left px-2 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
-                                    <th className="text-left px-2 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none">Questers</th>
-                                    <th className="text-right px-2 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none">Slots</th>
-                                    <th className="text-right px-2 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none">Time Left</th>
+                                    <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[140px]">Reward</th>
+                                    <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[240px]">Name</th>
+                                    <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
+                                    <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none">Questers</th>
+                                    <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none">Slots</th>
+                                    <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none">Time Left</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {sorted.length === 0 ? (
-                                    <tr><td colSpan={6} className="px-2 py-4 text-xs border-b border-border align-top text-center py-8 text-muted-foreground">{emptyMessage}</td></tr>
+                                    <tr><td colSpan={6} className="px-4 py-4 text-xs border-b border-border align-top text-center py-8 text-muted-foreground">{emptyMessage}</td></tr>
                                 ) : sorted.map(quest => {
                                     const time = formatTimeShort(quest.expiresAt)
                                     return (
                                         <tr key={quest.id} className="hover:bg-bg-2 cursor-pointer transition-colors" onClick={() => navigate({ to: "/quests/$questId", params: { questId: quest.id } })}>
-                                            <td className="px-2 py-4 text-xs border-b border-border align-top whitespace-nowrap">
+                                            <td className="px-4 py-4 text-xs border-b border-border align-top whitespace-nowrap">
                                                 <span className="inline-flex items-center gap-2 text-sm font-semibold text-success whitespace-nowrap">
                                                     <TokenIcon token={quest.rewardType} size={16} />
                                                     {quest.rewardAmount.toLocaleString()} {quest.rewardType}
                                                 </span>
                                             </td>
-                                            <td className="px-2 pt-4 pb-4 text-xs border-b border-border align-top min-w-[240px]">
+                                            <td className="px-4 pt-4 pb-4 text-xs border-b border-border align-top min-w-[240px]">
                                                 <div className="text-base font-semibold leading-snug mb-0.5 mt-[-2px] font-heading">{quest.title}</div>
                                                 <div className="text-xs text-muted-foreground leading-snug line-clamp-3 my-0.5 hidden">{quest.description}</div>
                                                 <div className="text-xs text-muted-foreground inline-flex items-center gap-1 mt-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
                                             </td>
-                                            <td className="px-2 py-4 text-xs border-b border-border align-top">
+                                            <td className="px-4 py-4 text-xs border-b border-border align-top">
                                                 <span className={cn("inline-flex items-center gap-1 text-xs font-semibold uppercase", typeColorClass(quest.type))}>
                                                     {quest.type === "FCFS" && <RunLine size={14} />}
                                                     {quest.type === "LEADERBOARD" && <TrophyLine size={14} />}
@@ -454,7 +454,7 @@ export function QuestList() {
                                                     {quest.type}
                                                 </span>
                                             </td>
-                                            <td className="px-2 py-4 text-xs border-b border-border align-top whitespace-nowrap">
+                                            <td className="px-4 py-4 text-xs border-b border-border align-top whitespace-nowrap">
                                                 {quest.questers > 0 ? (
                                                     <QuestersAvatarStack
                                                         details={(quest.questerDetails ?? []) as QuesterDetail[]}
@@ -465,8 +465,8 @@ export function QuestList() {
                                                     <span className="text-xs text-muted-foreground">—</span>
                                                 )}
                                             </td>
-                                            <td className="px-2 py-4 text-xs border-b border-border align-top text-right">{quest.totalSlots - quest.filledSlots}</td>
-                                            <td className="px-2 py-4 text-xs border-b border-border align-top text-right">
+                                            <td className="px-4 py-4 text-xs border-b border-border align-top text-right">{quest.totalSlots - quest.filledSlots}</td>
+                                            <td className="px-4 py-4 text-xs border-b border-border align-top text-right">
                                                 <div className={cn(
                                                     "font-mono text-xs font-semibold whitespace-nowrap",
                                                     time.cls === "warning" && "text-warning",

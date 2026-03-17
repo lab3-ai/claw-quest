@@ -136,7 +136,7 @@ export function Login() {
                     <div className="flex justify-center">
                         <button
                             type="button"
-                            onClick={() => navigate({ to: "/quests" })}
+                            onClick={() => navigate({ to: "/" })}
                             className="cursor-pointer"
                         >
                             <BrandLogo size="sm" />
@@ -273,13 +273,15 @@ export function Login() {
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="pr-10"
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                                >
-                                    {showPassword ? <EyeCloseLine size={16} /> : <EyeLine size={16} />}
-                                </button>
+                                {password && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                    >
+                                        {showPassword ? <EyeCloseLine size={16} /> : <EyeLine size={16} />}
+                                    </button>
+                                )}
                             </div>
                         </div>
 

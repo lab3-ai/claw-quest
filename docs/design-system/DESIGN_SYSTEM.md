@@ -57,17 +57,17 @@ Principles:
 
 ### Scale
 
-| Token | Size | Line height | Tailwind | Use |
-|-------|------|-------------|----------|-----|
-| `--text-2xs` | 10px | 14px | `text-2xs` | Micro labels, uppercase tracking |
-| `--text-xs` | 12px | 16px | `text-xs` | Captions, timestamps, meta |
-| `--text-sm` | 14px | 20px | `text-sm` | Labels, secondary text, nav |
-| `--text-base` | 16px | 24px | `text-base` | Body text (default) |
-| `--text-md` | 16px | 24px | `text-md` | Alias for base |
-| `--text-lg` | 18px | 28px | `text-lg` | Section titles |
-| `--text-xl` | 20px | 28px | `text-xl` | Card headings |
-| `--text-2xl` | 24px | 32px | `text-2xl` | Page titles |
-| `--text-3xl` | 28px | 36px | `text-3xl` | Hero headings |
+| Token | Size | Tailwind | Use |
+|-------|------|----------|-----|
+| `--text-2xs` | 10px | `text-2xs` | Micro labels, uppercase tracking |
+| `--text-xs` | 12px | `text-xs` | Captions, timestamps, meta |
+| `--text-sm` | 14px | `text-sm` | Labels, secondary text, nav |
+| `--text-base` | 16px | `text-base` | Body text (default) |
+| `--text-md` | 16px | `text-md` | Alias for base |
+| `--text-lg` | 18px | `text-lg` | Section titles |
+| `--text-xl` | 20px | `text-xl` | Card headings |
+| `--text-2xl` | 24px | `text-2xl` | Page titles |
+| `--text-3xl` | 28px | `text-3xl` | Hero headings |
 
 ### Font weights
 
@@ -122,42 +122,42 @@ Direction flips between modes so that **the same class works in both**: `bg-bg-b
 
 #### Background
 
-| Token | Tailwind | Hex | Use |
-|-------|----------|-----|-----|
-| `--bg-base` | `bg-bg-base` | `#fafafa` | **Body/page background**, navbar |
-| `--bg-1` | `bg-bg-1` | `#ffffff` | Card bg, popovers, inputs |
-| `--bg-2` | `bg-bg-2` | `#f5f5f5` | Secondary surfaces, hover states |
-| `--bg-3` | `bg-bg-3` | `#e5e5e5` | Sidebar, section bg, skeleton |
-| `--bg-4` | `bg-bg-4` | `#dcdcdc` | Disabled bg, muted backgrounds |
+| Token | Tailwind | Hex (Light) | Hex (Dark) | Use |
+|-------|----------|------|-------|-----|
+| `--bg-base` | `bg-bg-base` | `#fafafa` | `#020202` | **Body/page background**, navbar |
+| `--bg-1` | `bg-bg-1` | `#ffffff` | `#0a0a0a` | Card bg, popovers, inputs |
+| `--bg-2` | `bg-bg-2` | `#fafafa` | `#171717` | Secondary surfaces, hover states |
+| `--bg-3` | `bg-bg-3` | `#f5f5f5` | `#262626` | Sidebar, section bg, skeleton |
+| `--bg-4` | `bg-bg-4` | `#e5e5e5` | `#404040` | Disabled bg, muted backgrounds |
 
 #### Foreground
 
-| Token | Tailwind | Hex | Use |
-|-------|----------|-----|-----|
-| `--fg-1` | `text-fg-1` | `#111111` | Primary text (near-black) |
-| `--fg-2` | `text-fg-2` | `#555555` | Secondary text, badge labels |
-| `--fg-3` | `text-fg-3` | `#888888` | Muted text, placeholders |
-| `--fg-4` | `text-fg-4` | `#aaaaaa` | Disabled text, lightest foreground |
+| Token | Tailwind | Hex (Light) | Hex (Dark) | Use |
+|-------|----------|------|-------|-----|
+| `--fg-1` | `text-fg-1` | `#171717` | `#f5f5f5` | Primary text |
+| `--fg-2` | `text-fg-2` | `#404040` | `#d4d4d4` | Secondary text, badge labels |
+| `--fg-3` | `text-fg-3` | `#737373` | `#737373` | Muted text, placeholders |
+| `--fg-4` | `text-fg-4` | `#d4d4d4` | `#404040` | Disabled text |
 
 #### Border
 
-| Token | Tailwind | Hex | Use |
-|-------|----------|-----|-----|
-| `--border-1` | `border-border-1` | `#efefef` | Card borders, subtle dividers |
-| `--border-2` | `border-border-2` | `#e0e0e0` | Default borders, dividers (shadcn `border`) |
-| `--border-3` | `border-border-3` | `#c0c0c0` | Active borders, emphasis |
-| `--border-4` | `border-border-4` | `#999999` | Strong contrast borders |
+| Token | Tailwind | Hex (Light) | Hex (Dark) | Use |
+|-------|----------|------|-------|-----|
+| `--border-1` | `border-border-1` | `#f5f5f5` | `#171717` | Card borders, subtle dividers |
+| `--border-2` | `border-border-2` | `#e5e5e5` | `#262626` | Default borders, dividers (shadcn `border`) |
+| `--border-3` | `border-border-3` | `#d4d4d4` | `#404040` | Active borders, emphasis |
+| `--border-4` | `border-border-4` | `#a3a3a3` | `#525252` | Strong contrast borders |
 
 ### Dark Surfaces
 
 For code blocks, dark cards, and inverted sections:
 
-| Token | Hex | Use |
-|-------|-----|-----|
-| `--surface-dark` | `#1a1a1a` | Dark card background |
-| `--surface-dark-subtle` | `#2a2a2a` | Dark card hover/secondary |
-| `--surface-dark-fg` | `#ffffff` | Text on dark surfaces |
-| `--surface-dark-muted` | `#999999` | Muted text on dark surfaces |
+| Token | Hex (Light) | Hex (Dark) | Use |
+|-------|-----|-------|-----|
+| `--surface-dark` | `#1a1a1a` | `#111111` | Dark card background |
+| `--surface-dark-subtle` | `#2a2a2a` | `#1a1a1a` | Dark card hover/secondary |
+| `--surface-dark-fg` | `#ffffff` | `#ffffff` | Text on dark surfaces |
+| `--surface-dark-muted` | `#999999` | `#777777` | Muted text on dark surfaces |
 
 ### Brand / Accent — `#FF574B` (Coral Red)
 
@@ -165,56 +165,56 @@ For code blocks, dark cards, and inverted sections:
 
 | Token | Light | Dark | Use |
 |-------|-------|------|-----|
-| `--accent` | `#FF574B` | `#FF6B61` | Accent/highlight color |
-| `--accent-hover` | `#E64A3F` | `#FF574B` | Accent hover state |
-| `--accent-light` | `#FFF0EF` | `#3D1512` | Accent tinted background |
-| `--accent-border` | `#FF574B` | `#FF574B` | Accent borders |
+| `--accent` | `#ff574b` | `#ff6b61` | Accent/highlight color |
+| `--accent-hover` | `#e64a3f` | `#ff574b` | Accent hover state |
+| `--accent-light` | `#fff0ef` | `#3d1512` | Accent tinted background |
+| `--accent-border` | `#ff574b` | `#ff574b` | Accent borders |
 | `--accent-fg` | `#ffffff` | `#000000` | Text on accent background |
 
 ### Primary (Buttons) — brand color
 
 | Token | Light | Dark | Use |
 |-------|-------|------|-----|
-| `--primary` | `#FF574B` | `#FF6B61` | Button background |
-| `--primary-hover` | `#E64A3F` | `#FF574B` | Button hover state |
+| `--primary` | `#ff574b` | `#ff6b61` | Button background |
+| `--primary-hover` | `#e64a3f` | `#ff574b` | Button hover state |
 | `--primary-fg` | `#ffffff` | `#000000` | Button text |
 
 ### Links
 
 | Token | Light | Dark | Use |
 |-------|-------|------|-----|
-| `--link` | `#FF574B` | `#FF6B61` | Inline link text |
-| `--link-visited` | `#E64A3F` | `#FF8A82` | Visited link text |
+| `--link` | `#ff574b` | `#ff6b61` | Inline link text |
+| `--link-visited` | `#e64a3f` | `#ff8a82` | Visited link text |
 
 ### Semantic
 
-Each semantic color has 3 tokens: **base** (text/icon), **light** (background), **border**.
+Each semantic color has 3 tokens: **base** (text/icon), **light** (background), **border**. Light mode and dark mode values are identical for semantic colors across themes.
 
 | Group | Token | Tailwind | Hex | Use |
 |-------|-------|----------|-----|-----|
-| Success | `--success` | `text-success` / `bg-success` | `#16a34a` | Completed, funded, connected |
-| | `--success-light` | `bg-success-light` | `#f0fdf4` | Success background |
-| | `--success-border` | `border-border-success` | `#86efac` | Success borders |
-| Error | `--error` | `text-error` / `bg-error` | `#ff4444` | Errors, failed, cancelled |
-| | `--error-light` | `bg-error-light` | `#fff0f0` | Error background |
-| | `--error-border` | `border-border-error` | `#ff8888` | Error borders |
-| Warning | `--warning` | `text-warning` / `bg-warning` | `#ffaa00` | Caution, expiring soon |
-| | `--warning-light` | `bg-warning-light` | `#fff8e6` | Warning background |
-| | `--warning-border` | `border-border-warning` | `#ffcc66` | Warning borders |
-| Info | `--info` | `text-info` / `bg-info` | `#4488ff` | Info, external links |
-| | `--info-light` | `bg-info-light` | `#e6f0ff` | Info background |
-| | `--info-border` | `border-border-info` | `#88bbff` | Info borders |
+| Success | `--success` | `text-success` / `bg-success` | `#16a34a` (L), `#22c55e` (D) | Completed, funded, connected |
+| | `--success-light` | `bg-success-light` | `#f0fdf4` (L), `#052e16` (D) | Success background |
+| | `--success-border` | `border-border-success` | `#86efac` (L), `#166534` (D) | Success borders |
+| Error | `--error` | `text-error` / `bg-error` | `#ff4444` (L), `#ef4444` (D) | Errors, failed, cancelled |
+| | `--error-light` | `bg-error-light` | `#fff0f0` (L), `#450a0a` (D) | Error background |
+| | `--error-border` | `border-border-error` | `#ff8888` (L), `#991b1b` (D) | Error borders |
+| Warning | `--warning` | `text-warning` / `bg-warning` | `#ffaa00` (L), `#eab308` (D) | Caution, expiring soon |
+| | `--warning-light` | `bg-warning-light` | `#fff8e6` (L), `#422006` (D) | Warning background |
+| | `--warning-border` | `border-border-warning` | `#ffcc66` (L), `#854d0e` (D) | Warning borders |
+| Info | `--info` | `text-info` / `bg-info` | `#4488ff` (L), `#3b82f6` (D) | Info, external links |
+| | `--info-light` | `bg-info-light` | `#e6f0ff` (L), `#172554` (D) | Info background |
+| | `--info-border` | `border-border-info` | `#88bbff` (L) | Info borders |
 
 ### Actor Colors — monochrome
 
-All actor colors use grayscale to match the monochromatic theme:
+All actor colors use grayscale to match the monochromatic theme. Light and dark mode values are independent per actor.
 
-| Actor | FG | BG | Border | Use |
-|-------|----|----|--------|-----|
-| Human | `#555555` | `#f0f0f0` | `#cccccc` | Human tasks, social tasks |
-| Agent | `#FF574B` | `#FFF0EF` | `#FF574B` | Agent tasks, AI agents |
-| Skill | `#555555` | `#f0f0f0` | `#cccccc` | Skills, tags |
-| Social | `#555555` | `#f0f0f0` | — | Social task text/bg |
+| Actor | FG (L) | BG (L) | Border (L) | FG (D) | BG (D) | Border (D) | Use |
+|-------|--------|--------|-----------|--------|--------|-----------|-----|
+| Human | `#555555` | `#f0f0f0` | `#cccccc` | `#a0a0a0` | `#1a1a1a` | `#333333` | Human tasks, social tasks |
+| Agent | `#ff574b` | `#fff0ef` | `#ff574b` | `#ff6b61` | `#3d1512` | `#ff574b` | Agent tasks, AI agents |
+| Skill | `#555555` | `#f0f0f0` | `#cccccc` | `#a0a0a0` | `#1a1a1a` | `#333333` | Skills, tags |
+| Social | `#555555` | `#f0f0f0` | — | `#a0a0a0` | `#1a1a1a` | — | Social task text/bg |
 
 ### Platform Colors
 
@@ -229,12 +229,12 @@ All actor colors use grayscale to match the monochromatic theme:
 
 | Token | Light | Dark | Use |
 |-------|-------|------|-----|
-| `--tone-quest` | `#FF574B` | `#FF6B61` | Quest-themed foreground |
-| `--tone-quest-dark` | `#E64A3F` | `#FF574B` | Quest-themed hover |
-| `--tone-quest-bg` | `#FFF0EF` | `#3D1512` | Quest-themed background |
-| `--tone-agent` | `#FF574B` | `#FF6B61` | Agent-themed foreground |
-| `--tone-agent-dark` | `#E64A3F` | `#FF574B` | Agent-themed hover |
-| `--tone-agent-bg` | `#FFF0EF` | `#3D1512` | Agent-themed background |
+| `--tone-quest` | `#ff574b` | `#ff6b61` | Quest-themed foreground |
+| `--tone-quest-dark` | `#e64a3f` | `#ff574b` | Quest-themed hover |
+| `--tone-quest-bg` | `#fff0ef` | `#3d1512` | Quest-themed background |
+| `--tone-agent` | `#ff574b` | `#ff6b61` | Agent-themed foreground |
+| `--tone-agent-dark` | `#e64a3f` | `#ff574b` | Agent-themed hover |
+| `--tone-agent-bg` | `#fff0ef` | `#3d1512` | Agent-themed background |
 
 ### Legacy Color Aliases
 
@@ -333,6 +333,7 @@ Flat design — no decorative shadows.
 ### Rules
 
 - All interactive elements: `transition: all var(--transition-normal)`
+- **State transitions are mandatory**: Any UI element that changes visual state (variant swap, active/inactive, expand/collapse, show/hide) MUST have a CSS transition. Use `transition-all duration-200` as default. No abrupt visual jumps.
 - Respect `prefers-reduced-motion: reduce`
 - No layout-shifting animations (use `transform` + `opacity` only)
 - Loading states: skeleton shimmer or subtle spinner (no bouncing)

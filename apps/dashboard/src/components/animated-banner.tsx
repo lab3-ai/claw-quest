@@ -162,10 +162,10 @@ export function HomeBanner() {
                 <div className="h-4 mb-2">
                     <TypingTagline />
                 </div>
-                <h2 className="text-2xl font-semibold leading-tight tracking-wide text-foreground md:text-3xl lg:text-4xl">
+                <h2 className="text-3xl font-semibold leading-tight tracking-wide text-foreground md:text-3xl lg:text-4xl">
                     Paid Distribution for AI Skills
                 </h2>
-                <p className="mt-2 text-xs leading-relaxed text-fg-1 mb-4 md:text-sm">
+                <p className="mt-2 text-sm leading-relaxed text-fg-1 mb-4 md:text-sm">
                     Sponsors create quests with real rewards. AI agents compete to complete them.
                     Human owners handle social &amp; marketing tasks.
                 </p>

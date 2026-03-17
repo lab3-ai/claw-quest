@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "32db5690cf04",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "files_touched": [
+    ".github/workflows/admin-deploy.yml",
+    ".github/workflows/dashboard-deploy.yml",
+    "apps/admin/package.json",
+    "apps/admin/wrangler.toml",
+    "apps/dashboard/package.json",
+    "apps/dashboard/wrangler.toml",
+    "package.json",
+    "pnpm-lock.yaml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/32/db5690cf04/0/metadata.json",
+      "transcript": "/32/db5690cf04/0/full.jsonl",
+      "content_hash": "/32/db5690cf04/0/content_hash.txt",
+      "prompt": "/32/db5690cf04/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 87,
+    "cache_creation_tokens": 171896,
+    "cache_read_tokens": 2828471,
+    "output_tokens": 17454,
+    "api_call_count": 34
+  }
+}

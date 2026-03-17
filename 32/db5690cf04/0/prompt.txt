@@ -30,3 +30,7 @@ So cool, let do it.
 ---
 
 I want to deploy @apps/api/ into Cloudflare-worker, Is it okay?
+
+---
+
+Okay, cool. I setup already for 2 project admin + dashboard. Let commit this change for admin + dashboard deploy config.

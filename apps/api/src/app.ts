@@ -325,6 +325,12 @@ const start = async () => {
         //     console.error('⚠️  ClawHub sync job failed (non-fatal):', err.message);
         // });
 
+        // Backfill verification_config for skills missing it (startup + every 6h)
+        const { startVerificationConfigBackfillJob } = await import('./modules/clawhub/verification-config-backfill.job');
+        startVerificationConfigBackfillJob(server).catch((err) => {
+            console.error('⚠️  Verification config backfill failed (non-fatal):', err.message);
+        });
+
         const port = parseInt(process.env.PORT || '3000', 10);
         // Railway requires :: (IPv6) to expose service on public/private network
         await server.listen({ port, host: '::' });

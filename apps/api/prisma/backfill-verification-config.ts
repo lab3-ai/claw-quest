@@ -4,11 +4,11 @@
 //
 // Usage: npx tsx prisma/backfill-verification-config.ts
 
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-function buildDefaultConfig(slug: string, displayName: string) {
+function buildDefaultConfig(displayName: string) {
     return {
         type: 'api_call',
         skill_display: displayName,
@@ -23,8 +23,9 @@ function buildDefaultConfig(slug: string, displayName: string) {
 }
 
 async function main() {
+    // Prisma requires DbNull (not JS null) to match SQL NULL on Json fields
     const skills = await prisma.clawhub_skills.findMany({
-        where: { verification_config: { equals: null } },
+        where: { verification_config: { equals: Prisma.DbNull } },
         select: { id: true, slug: true, display_name: true },
     });
 
@@ -32,7 +33,7 @@ async function main() {
 
     let updated = 0;
     for (const skill of skills) {
-        const config = buildDefaultConfig(skill.slug, skill.display_name);
+        const config = buildDefaultConfig(skill.display_name);
 
         await prisma.clawhub_skills.update({
             where: { id: skill.id },

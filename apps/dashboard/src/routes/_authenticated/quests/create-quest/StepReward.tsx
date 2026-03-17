@@ -29,10 +29,8 @@ interface StepRewardProps {
         tokenBudgetPerWinner: string
     }
     stepSummary?: string
-    llmKeyRewardEnabled: boolean
     onToggle: () => void
     onFieldChange: (key: keyof Omit<StepRewardProps["form"], "llmModelId" | "tokenBudgetPerWinner">, value: string | PaymentRail | QuestType) => void
-    onSetLlmKeyRewardEnabled: (v: boolean) => void
     onSetLlmModelId: (v: string) => void
     onSetTokenBudgetPerWinner: (v: string) => void
     onNext: () => void
@@ -45,10 +43,8 @@ export function StepReward({
     isFuture,
     form,
     stepSummary,
-    llmKeyRewardEnabled,
     onToggle,
     onFieldChange,
-    onSetLlmKeyRewardEnabled,
     onSetLlmModelId,
     onSetTokenBudgetPerWinner,
     onNext,
@@ -457,44 +453,6 @@ export function StepReward({
                             </div>
                         )}
                     </div>
-
-                    {/* LLM Key Bonus Reward */}
-                    {form.rail !== "llm" && (
-                        <div className="space-y-3 mb-6">
-                            <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Bonus Reward</div>
-                            <div className="flex items-start justify-between gap-3 p-3 border border-border rounded bg-transparent">
-                                <div className="flex-1">
-                                    <div className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                                        <span>🤖</span> LLM API Key
-                                    </div>
-                                    <div className="text-xs text-muted-foreground mt-0.5 leading-snug">
-                                        Each winner receives a free LLM API key compatible with OpenAI SDK. They can use it immediately.
-                                    </div>
-                                </div>
-                                <button
-                                    type="button"
-                                    role="switch"
-                                    aria-checked={llmKeyRewardEnabled}
-                                    onClick={() => onSetLlmKeyRewardEnabled(!llmKeyRewardEnabled)}
-                                    className={cn(
-                                        "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                                        llmKeyRewardEnabled ? "bg-accent" : "bg-muted"
-                                    )}
-                                >
-                                    <span className={cn(
-                                        "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform",
-                                        llmKeyRewardEnabled ? "translate-x-4" : "translate-x-0"
-                                    )} />
-                                </button>
-                            </div>
-                            {llmKeyRewardEnabled && (
-                                <div className="flex items-center gap-2 px-3 py-2 bg-accent-light border border-accent/30 rounded text-xs text-foreground leading-relaxed">
-                                    <span className="text-sm shrink-0">✅</span>
-                                    <span>Winners will receive a personal <strong>LLM API key</strong> (OpenAI-compatible) shown on their quest result page.</span>
-                                </div>
-                            )}
-                        </div>
-                    )}
 
                     <div className="flex justify-between mt-5 pt-4 border-t border-border">
                         <Button variant="secondary" onClick={onPrevious}>← Tasks</Button>

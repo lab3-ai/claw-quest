@@ -703,8 +703,6 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
     const [expandedTask, setExpandedTask] = useState<number | null>(null)
     const [requiredSkills, setRequiredSkills] = useState<Pick<ClawHubSkill, "id" | "name" | "desc" | "agents" | "version">[]>([])
     const [requireVerified, setRequireVerified] = useState(false)
-    const [llmKeyRewardEnabled, setLlmKeyRewardEnabled] = useState(false)
-    const [llmKeyTokenLimit] = useState("1000000")
     const [llmModelId, setLlmModelId] = useState("")
     const [tokenBudgetPerWinner, setTokenBudgetPerWinner] = useState("")
     const { query: skillSearch, setQuery: setSkillSearch, results: skillSearchResults, isLoading: skillSearchLoading } = useSkillSearch()
@@ -932,8 +930,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 totalSlots: slots,
                 requiredSkills: requiredSkills.map(s => s.id),
                 requireVerified,
-                llmKeyRewardEnabled: form.rail === "llm" ? false : llmKeyRewardEnabled,
-                llmKeyTokenLimit: form.rail !== "llm" ? (parseInt(llmKeyTokenLimit) || 1000000) : undefined,
+                llmKeyRewardEnabled: false,
                 tasks,
                 expiresAt: form.endAt ? new Date(form.endAt).toISOString() : undefined,
                 startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
@@ -1292,10 +1289,8 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                             onFieldChange={(key, value) => {
                                 if (key === "rail") {
                                     if (value === "llm") {
-                                        setLlmKeyRewardEnabled(false)
                                         setForm(prev => ({ ...prev, rail: "llm" as PaymentRail }))
                                     } else {
-                                        setLlmKeyRewardEnabled(false)
                                         const fundingMethod: "crypto" | "stripe" = value === "fiat" ? "stripe" : "crypto"
                                         setForm(prev => ({ ...prev, rail: value as PaymentRail, fundingMethod }))
                                     }
@@ -1311,8 +1306,6 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                     set(key, value as string)
                                 }
                             }}
-                            llmKeyRewardEnabled={llmKeyRewardEnabled}
-                            onSetLlmKeyRewardEnabled={setLlmKeyRewardEnabled}
                             onNext={() => {
                                 if (tabValid.reward) {
                                     setTab("preview")
@@ -1349,7 +1342,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                                 isError: mutation.isError,
                                 error: mutation.error as Error | null,
                             }}
-                            llmKeyTokenLimit={parseInt(llmKeyTokenLimit) || 1000000}
+                            llmKeyTokenLimit={1_000_000}
                             onToggle={() => handleStepToggle("preview")}
                             onPrevious={() => setTab("reward")}
                             onSaveDraft={() => { fundAfterSave.current = false; mutation.mutate() }}

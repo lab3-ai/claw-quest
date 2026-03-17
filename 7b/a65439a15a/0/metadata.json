@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "7ba65439a15a",
+  "session_id": "5ed34e73-a7dc-4787-84b6-ff5f3ff661c6",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-17T16:57:41.652377Z",
+  "branch": "hiru-uiux",
+  "checkpoints_count": 13,
+  "files_touched": [
+    "apps/dashboard/src/components/ui/button.tsx",
+    "apps/dashboard/src/components/ui/input.tsx",
+    "apps/dashboard/src/components/ui/textarea.tsx",
+    "apps/dashboard/src/index.css",
+    "apps/dashboard/src/routes/login.tsx",
+    "docs/design-system/DESIGN_SYSTEM.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-6[1m]",
+  "turn_id": "70315ec1621a",
+  "token_usage": {
+    "input_tokens": 2359,
+    "cache_creation_tokens": 337432,
+    "cache_read_tokens": 22108224,
+    "output_tokens": 35790,
+    "api_call_count": 159
+  },
+  "session_metrics": {
+    "turn_count": 21
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-17T16:57:40.131233Z",
+    "agent_lines": 0,
+    "human_added": 11,
+    "human_modified": 77,
+    "human_removed": 0,
+    "total_committed": 43,
+    "agent_percentage": 0
+  }
+}

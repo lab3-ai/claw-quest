@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "7ba65439a15a",
+  "strategy": "manual-commit",
+  "branch": "hiru-uiux",
+  "checkpoints_count": 13,
+  "files_touched": [
+    "apps/dashboard/src/components/ui/button.tsx",
+    "apps/dashboard/src/components/ui/input.tsx",
+    "apps/dashboard/src/components/ui/textarea.tsx",
+    "apps/dashboard/src/index.css",
+    "apps/dashboard/src/routes/login.tsx",
+    "docs/design-system/DESIGN_SYSTEM.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/7b/a65439a15a/0/metadata.json",
+      "transcript": "/7b/a65439a15a/0/full.jsonl",
+      "content_hash": "/7b/a65439a15a/0/content_hash.txt",
+      "prompt": "/7b/a65439a15a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2359,
+    "cache_creation_tokens": 337432,
+    "cache_read_tokens": 22108224,
+    "output_tokens": 35790,
+    "api_call_count": 159
+  }
+}

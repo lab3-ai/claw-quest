@@ -1,0 +1,81 @@
+entire
+
+---
+
+entire enable
+
+---
+
+brew install entireio/tap/entire
+
+---
+
+entire enable
+
+---
+
+dau phien
+
+---
+
+1
+
+---
+
+solved conflict make sure build sucess
+
+---
+
+kiểm tra lại, local đang trắng
+
+---
+
+thiếu .env anh tạo rồi. kill hết server và khởi động lại
+
+---
+
+dùng button tonal
+
+---
+
+button variant tonnal dùng bg-bg-3
+
+---
+
+màu bg-base đang trùng vơi bg-2. em cân chỉnh lại màu làm sao để bg-base tối hơn bg-1 và sáng hơn bg-2.
+
+---
+
+bg-base nhạt quá
+
+---
+
+toàn bộ button trên light theme sẽ có màu bg tối hơn khoảng 10%  khi hover
+
+---
+
+kiểm tra lại contrast khi hover. anh thấy hâu hết các filled variant đang bị lỗi contrast khi hover
+
+---
+
+solution của em ko ổn đâu. các variant outline và tonal rất xấu nếu dùng kiểu box-shadow. dùng function tính cụ thể cho từng màu và từng variant
+
+---
+
+ghost hover và default-tonal đang quá nhạt. tăng lên 1 cấp
+
+---
+
+kiểm tra lại input component. chắc chắn đã có transition các state như design system
+
+---
+
+duration transition cho button, input, tooltip... theo inddustry standard là bao nhiêu?
+
+---
+
+ok em. cập nhật luôn ds nhé
+
+---
+
+ket phien

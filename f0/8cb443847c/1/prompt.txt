@@ -133,3 +133,8 @@ apps/dashboard build$ tsc && vite build
  ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @clawquest/dashboard@0.1.0 build: `tsc && vite build`
 Exit status 2
  ELIFECYCLE  Command failed with exit code 2.
+
+---
+
+Hãy commit các file liên quan tới session (feature này) nhé
+đừng commit các file trong plans của onchain-os nha

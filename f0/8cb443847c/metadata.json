@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "f08cb443847c",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/api/src/app.ts",
+    "apps/api/src/modules/quests/quests.routes.ts",
+    "apps/api/src/utils/__tests__/supabase-jwt.test.ts",
+    "apps/api/src/utils/__tests__/ttl-cache.test.ts",
+    "apps/api/src/utils/supabase-jwt.ts",
+    "apps/api/src/utils/ttl-cache.ts",
+    "apps/dashboard/src/components/QuestCard.tsx",
+    "apps/dashboard/src/components/QuestGridCard.tsx",
+    "apps/dashboard/src/components/quest-badges.tsx",
+    "apps/dashboard/src/routes/_public/home.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f0/8cb443847c/0/metadata.json",
+      "transcript": "/f0/8cb443847c/0/full.jsonl",
+      "content_hash": "/f0/8cb443847c/0/content_hash.txt",
+      "prompt": "/f0/8cb443847c/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2514,
+    "cache_creation_tokens": 50105,
+    "cache_read_tokens": 2428379,
+    "output_tokens": 16448,
+    "api_call_count": 23
+  }
+}

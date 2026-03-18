@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "96a6c47a154a",
+  "session_id": "1f14f363-eeb5-475e-b30e-995a28d37328",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-18T10:37:35.347566Z",
+  "branch": "main",
+  "checkpoints_count": 10,
+  "files_touched": [
+    ".playwright-mcp/page-2026-03-18T10-30-49-531Z.png",
+    "apps/api/.env.sample",
+    "apps/api/src/app.ts",
+    "apps/api/src/modules/onchain/onchain.routes.ts",
+    "apps/api/src/modules/onchain/onchain.schemas.ts",
+    "apps/api/src/modules/onchain/onchain.service.ts",
+    "apps/dashboard/src/components/WalletPortfolio.tsx",
+    "apps/dashboard/src/components/navbar.tsx",
+    "apps/dashboard/src/router.tsx",
+    "apps/dashboard/src/routes/_public/wallet/portfolio.tsx",
+    "docs/superpowers/plans/2026-03-18-onchain-os-token-price-feed.md",
+    "docs/superpowers/plans/2026-03-18-onchain-os-wallet-portfolio.md",
+    "docs/superpowers/specs/2026-03-18-onchain-os-integration-design.md"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "77adcaf30882",
+  "token_usage": {
+    "input_tokens": 7222,
+    "cache_creation_tokens": 211504,
+    "cache_read_tokens": 21794033,
+    "output_tokens": 48329,
+    "api_call_count": 132
+  },
+  "session_metrics": {
+    "turn_count": 14
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-18T10:37:34.293838Z",
+    "agent_lines": 452,
+    "human_added": 1110,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1562,
+    "agent_percentage": 28.937259923175418
+  }
+}

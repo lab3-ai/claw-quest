@@ -145,6 +145,9 @@ docs/design-system/STATUS.md
 reference-skill
 # Claude Code artifacts
 .claude/worktrees/
+# Personal skills (not shared with team)
+.claude/skills/hiru-dau-phien/
+.claude/skills/hiru-ket-phien/
 *.bak
 
 # Agent plans and reports

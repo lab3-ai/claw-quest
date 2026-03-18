@@ -768,9 +768,10 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
         editPopulated.current = true
 
         const isFiat = editQuest.fundingMethod === "stripe"
+        const isLlm = editQuest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER
         const token = editQuest.rewardType || REWARD_TYPE.USDC
         // Check if token is a native token (not USDC/USDT)
-        const isNative = !isFiat && token !== REWARD_TYPE.USDC && token !== REWARD_TYPE.USDT
+        const isNative = !isFiat && !isLlm && token !== REWARD_TYPE.USDC && token !== REWARD_TYPE.USDT
         // Determine fundingMethod from existing quest or default based on rail
         const fundingMethod = editQuest.fundingMethod || (isFiat ? "stripe" : "crypto")
 
@@ -779,7 +780,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
             description: editQuest.description || "",
             startAt: editQuest.startAt ? new Date(editQuest.startAt).toISOString().slice(0, 16) : "",
             endAt: editQuest.expiresAt ? new Date(editQuest.expiresAt).toISOString().slice(0, 16) : "",
-            rail: isFiat ? "fiat" : "crypto",
+            rail: isLlm ? "llm" : isFiat ? "fiat" : "crypto",
             network: editQuest.network || "Base",
             token: isNative ? REWARD_TYPE.NATIVE : token,
             type: (editQuest.type || "FCFS") as QuestType,
@@ -801,6 +802,12 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
             })))
         }
         if (editQuest.requireVerified) setRequireVerified(true)
+
+        // Populate LLM reward fields when rewardType is LLMTOKEN_OPENROUTER
+        if (isLlm) {
+            setLlmModelId(editQuest.llmModelId || editQuest.llmModel?.id || "")
+            setTokenBudgetPerWinner(String(editQuest.tokenBudgetPerWinner ?? ""))
+        }
 
         // Track funding state for top-up logic
         setOriginalRewardAmount(editQuest.rewardAmount ?? 0)

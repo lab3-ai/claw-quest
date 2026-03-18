@@ -165,9 +165,9 @@ export function FundQuest() {
             return res.json()
         },
         enabled: !!questId && !authLoading, // Wait for auth to finish loading
-        refetchOnMount: true, // Refetch when component mounts
-        refetchOnWindowFocus: true, // Refetch when window gets focus
-        staleTime: 0, // Always consider data stale, force refetch
+        staleTime: 0, // Always refetch to avoid stale data after edit/fund
+        refetchOnMount: 'always', // Force refetch every time page is visited
+        refetchOnWindowFocus: true,
         refetchInterval: (query) => {
             const data = query.state.data as any
             return data?.fundingStatus === 'pending' ? 5000 : false

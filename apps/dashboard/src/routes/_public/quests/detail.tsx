@@ -292,6 +292,7 @@ export function QuestDetail() {
             return res.json()
         },
         enabled: !isAuthLoading,
+        staleTime: 0, // Always refetch to avoid stale data after edit/fund
         refetchOnMount: true,
         refetchOnWindowFocus: true,
     })
@@ -1387,7 +1388,7 @@ const response = await client.chat.completions.create({
 })`
 
     function copyText(text: string) {
-        navigator.clipboard.writeText(text).catch(() => {})
+        navigator.clipboard.writeText(text).catch(() => { })
     }
 
     return (

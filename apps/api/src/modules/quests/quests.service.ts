@@ -332,14 +332,14 @@ export async function updateQuest(
     if (input.requireVerified !== undefined) data.requireVerified = input.requireVerified;
     // Auto-resolve Discord invite → guildId for join_server tasks missing guildId (same as createQuest)
     if (input.tasks !== undefined) {
-      for (const task of input.tasks as QuestTask[]) {
-        if (task.actionType === 'join_server' && task.params?.inviteUrl && !task.params.guildId) {
-          const code = (task.params.inviteUrl as string).replace(/^https?:\/\/(discord\.gg|discord\.com\/invite)\//, '')
-          const guild = await resolveInvite(code)
-          if (guild) task.params.guildId = guild.guildId
+        for (const task of input.tasks as QuestTask[]) {
+            if (task.actionType === 'join_server' && task.params?.inviteUrl && !task.params.guildId) {
+                const code = (task.params.inviteUrl as string).replace(/^https?:\/\/(discord\.gg|discord\.com\/invite)\//, '')
+                const guild = await resolveInvite(code)
+                if (guild) task.params.guildId = guild.guildId
+            }
         }
-      }
-      data.tasks = input.tasks as any
+        data.tasks = input.tasks as any
     }
     if (input.expiresAt !== undefined) data.expiresAt = input.expiresAt ? new Date(input.expiresAt) : null;
     if (input.startAt !== undefined) data.startAt = input.startAt ? new Date(input.startAt) : null;
@@ -368,6 +368,27 @@ export async function updateQuest(
     } else {
         if (input.llmModelId !== undefined) data.llmModelId = input.llmModelId;
         if (input.tokenBudgetPerWinner !== undefined) data.tokenBudgetPerWinner = input.tokenBudgetPerWinner;
+    }
+
+    // Recalculate fundingStatus when rewardAmount changes (quest has deposits, not yet distributed/refunded)
+    const newRewardAmount = data.rewardAmount != null ? Number(data.rewardAmount) : Number(quest.rewardAmount);
+    const totalFunded = Number(quest.totalFunded ?? 0);
+    if (
+        data.rewardAmount !== undefined &&
+        totalFunded > 0 &&
+        quest.fundingStatus !== 'distributed' &&
+        quest.fundingStatus !== 'refunded'
+    ) {
+        const newFundingStatus = totalFunded >= newRewardAmount ? 'confirmed' : 'partial';
+        data.fundingStatus = newFundingStatus;
+        // If now fully funded and still draft, transition to live/scheduled (same as escrow handler)
+        if (
+            newFundingStatus === 'confirmed' &&
+            quest.status === 'draft' &&
+            input.status === undefined
+        ) {
+            data.status = quest.startAt && quest.startAt > new Date() ? 'scheduled' : 'live';
+        }
     }
 
     // Handle status changes with validation

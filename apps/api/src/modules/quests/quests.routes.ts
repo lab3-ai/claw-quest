@@ -1489,6 +1489,10 @@ export async function questsRoutes(server: FastifyInstance) {
                     drawTime: z.string().datetime().nullable().optional(),
                     startAt: z.string().datetime().nullable().optional(),
                     fundingMethod: z.enum(['crypto', 'stripe']).optional(),
+                    llmKeyRewardEnabled: z.boolean().optional(),
+                    llmKeyTokenLimit: z.number().int().positive().optional(),
+                    llmModelId: z.string().uuid().optional(),
+                    tokenBudgetPerWinner: z.number().positive().optional(),
                 }),
                 response: {
                     200: QuestSchema,
@@ -1522,8 +1526,26 @@ export async function questsRoutes(server: FastifyInstance) {
                     }
                 }
 
-                const updated = await updateQuest(server.prisma, id, userId, body, true);
-                return formatQuestResponse(updated);
+                await updateQuest(server.prisma, id, userId, body, true);
+                // Re-fetch with llmModel include so response has full model info
+                const updated = await server.prisma.quest.findUnique({
+                    where: { id },
+                    include: {
+                        _count: { select: { participations: true } },
+                        participations: {
+                            take: 5,
+                            include: {
+                                user: { select: USER_IDENTITY_SELECT },
+                                agent: { select: { agentname: true } },
+                            },
+                            orderBy: { joinedAt: 'asc' },
+                        },
+                        llmModel: true,
+                    },
+                });
+                if (!updated) return reply.status(404).send({ message: 'Quest not found', code: 'NOT_FOUND' } as any);
+                const { participations: p, _count } = updated;
+                return formatQuestResponse(updated, p, _count?.participations ?? 0);
             } catch (err: any) {
                 if (err instanceof QuestNotFoundError) return reply.status(404).send({ message: err.message, code: err.code } as any);
                 if (err instanceof QuestNotEditableError) return reply.status(400).send({ message: err.message, code: err.code } as any);

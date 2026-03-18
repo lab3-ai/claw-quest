@@ -4,13 +4,24 @@
   "strategy": "manual-commit",
   "branch": "main",
   "checkpoints_count": 1,
-  "files_touched": null,
+  "files_touched": [
+    "apps/dashboard/src/components/QuestCard.tsx",
+    "apps/dashboard/src/components/QuestGridCard.tsx",
+    "apps/dashboard/src/components/quest-badges.tsx",
+    "apps/dashboard/src/routes/_public/home.tsx"
+  ],
   "sessions": [
     {
       "metadata": "/b5/bcd342b878/0/metadata.json",
       "transcript": "/b5/bcd342b878/0/full.jsonl",
       "content_hash": "/b5/bcd342b878/0/content_hash.txt",
       "prompt": "/b5/bcd342b878/0/prompt.txt"
+    },
+    {
+      "metadata": "/b5/bcd342b878/1/metadata.json",
+      "transcript": "/b5/bcd342b878/1/full.jsonl",
+      "content_hash": "/b5/bcd342b878/1/content_hash.txt",
+      "prompt": "/b5/bcd342b878/1/prompt.txt"
     }
   ],
   "token_usage": {

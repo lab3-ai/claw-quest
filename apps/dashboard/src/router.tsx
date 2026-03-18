@@ -47,6 +47,7 @@ import { SubmitWeb3Skill } from './routes/_authenticated/web3-skills/submit'
 import { AdminWeb3Skills } from './routes/_authenticated/admin/web3-skills'
 import { VerifyChallenge } from './routes/_public/verify'
 import { HomePage } from './routes/_public/home'
+import { WalletPortfolioPage } from './routes/_public/wallet/portfolio'
 
 // Root route
 interface RouterContext {
@@ -462,6 +463,22 @@ const adminWeb3SkillsRoute = createRoute({
     component: AdminWeb3Skills,
 })
 
+// ── Wallet Portfolio (public, no auth) ──
+const walletPortfolioRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/wallet',
+    component: WalletPortfolioPage,
+})
+
+const walletPortfolioAddressRoute = createRoute({
+    getParentRoute: () => appLayoutRoute,
+    path: '/wallet/$address',
+    component: function WalletPortfolioAddressPage() {
+        const { address } = walletPortfolioAddressRoute.useParams()
+        return <WalletPortfolioPage address={address} />
+    },
+})
+
 // ── Home page (root route under app layout with navbar+footer) ──
 const homeRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
@@ -571,6 +588,8 @@ const routeTree = rootRoute.addChildren([
         submitWeb3SkillRoute,
         web3SkillDetailRoute,
         adminWeb3SkillsRoute,
+        walletPortfolioRoute,
+        walletPortfolioAddressRoute,
     ]),
     verifyRoute,
 ])

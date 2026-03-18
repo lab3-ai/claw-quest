@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ThemeSwitcher } from "@/components/theme-switcher"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
-import { Dashboard4Line, Dashboard4Fill, AddLine, Compass3Line, Compass3Fill, CodeLine, CodeFill, TrophyLine, TrophyFill, Home4Line, Home4Fill, User3Line, User3Fill, ExitLine, ExitFill } from "@mingcute/react"
+import { Dashboard4Line, Dashboard4Fill, AddLine, Compass3Line, Compass3Fill, CodeLine, CodeFill, TrophyLine, TrophyFill, Home4Line, Home4Fill, User3Line, User3Fill, ExitLine, ExitFill, Wallet4Line, Wallet4Fill } from "@mingcute/react"
 import { getUserAvatarUrl } from "@/components/avatarUtils"
 import { useEffect, useState } from "react"
 import { BrandLogo } from "@/components/brand-logo"
@@ -20,6 +20,7 @@ const NAV_ITEMS = [
     { to: "/quests", label: "Quests", icon: Compass3Line, iconActive: Compass3Fill },
     { to: "/web3-skills", label: "Web3 Skills", icon: CodeLine, iconActive: CodeFill },
     { to: "/github-bounties", label: "Bounties", icon: TrophyLine, iconActive: TrophyFill },
+    { to: "/wallet", label: "Wallet", icon: Wallet4Line, iconActive: Wallet4Fill },
 ] as const
 
 /** Desktop nav links with active state styling */

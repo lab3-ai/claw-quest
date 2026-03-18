@@ -25,6 +25,7 @@ import { githubBountyRoutes } from './modules/github-bounty/github-bounty.routes
 import { llmModelsRoutes } from './modules/llm-models/llm-models.routes';
 import { web3SkillsRoutes } from './modules/web3-skills/web3-skills.routes';
 import { challengesRoutes } from './modules/challenges/challenges.routes';
+import { onchainRoutes } from './modules/onchain/onchain.routes';
 
 // ─── Supabase Admin Client ──────────────────────────────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
@@ -301,6 +302,7 @@ server.register(githubBountyRoutes, { prefix: '/github-bounties' });
 server.register(llmModelsRoutes, { prefix: '/llm-models' });
 server.register(web3SkillsRoutes, { prefix: '/web3-skills' });
 server.register(challengesRoutes);
+server.register(onchainRoutes, { prefix: '/onchain' });
 
 // Telegram Bot (Polling for local dev)
 import { TelegramService } from './modules/telegram/telegram.service';

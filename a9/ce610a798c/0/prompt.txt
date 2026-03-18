@@ -1,0 +1,21 @@
+entire status
+
+---
+
+update "cuoi phien" cho anh thêm vụ update task của anh vào .team/ACTIVE.md nhé
+
+---
+
+update "dau phien" cho anh thêm task cập nhật ACTIVE.md nhé
+
+---
+
+sync main
+
+---
+
+2 skill này anh muốn dùng cho cá nhân thôi. nhưng lại có liên quan đến dự án này thì làm sao?
+
+---
+
+1

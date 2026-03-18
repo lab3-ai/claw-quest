@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "a9ce610a798c",
+  "strategy": "manual-commit",
+  "branch": "hiru-uiux",
+  "checkpoints_count": 5,
+  "files_touched": [
+    ".claude/skills/hiru-dau-phien/SKILL.md",
+    ".claude/skills/hiru-ket-phien/SKILL.md",
+    ".gitignore"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a9/ce610a798c/0/metadata.json",
+      "transcript": "/a9/ce610a798c/0/full.jsonl",
+      "content_hash": "/a9/ce610a798c/0/content_hash.txt",
+      "prompt": "/a9/ce610a798c/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 45,
+    "cache_creation_tokens": 173673,
+    "cache_read_tokens": 3764402,
+    "output_tokens": 5518,
+    "api_call_count": 31
+  }
+}

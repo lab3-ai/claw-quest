@@ -1,0 +1,5 @@
+/brainstorming  "chúng ta đang build dự án clawquest với toàn bộ kĩ thuật trong project này
+Giờ đang có cơ hội gọi vốn từ dự án OKX,
+OKX đang có bộ onchainos Skills: https://github.com/okx/onchainos-skills/
+Bạn hãy brainstorming xem chúng ta có thể sử dụng kỹ thuật gì hay anyway một cách nào đó, để sử dụng một cách đơn giản không?
+Report/Suggest tôi, để tôi đi nói chuyện với OKX"

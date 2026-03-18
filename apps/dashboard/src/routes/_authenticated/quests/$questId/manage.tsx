@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
+import { REWARD_TYPE } from '@clawquest/shared'
 
 const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL ?? window.location.origin
 
@@ -645,7 +646,7 @@ export function ManageQuest() {
                         </div>
                         <div className="flex justify-between items-center text-xs text-muted-foreground py-[0.35rem] border-t border-border">
                             <span>Reward</span>
-                            <span className="font-semibold text-foreground">
+                            <span className="font-semibold text-foreground line-clamp-1">
                                 {quest.fundingMethod === "stripe"
                                     ? `$${quest.rewardAmount.toLocaleString()} USD`
                                     : `${quest.rewardAmount.toLocaleString()} ${quest.rewardType}`}
@@ -685,19 +686,19 @@ export function ManageQuest() {
                             <div className="grid grid-cols-2 gap-2">
                                 <div className="bg-bg-3 border border-border rounded-md px-[0.8rem] py-[0.6rem]">
                                     <div className="text-2xs text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Deposited</div>
-                                    <div className="text-[13px] font-semibold text-foreground">{escrow.depositedHuman} {data.quest.rewardType}</div>
+                                    <div className="text-[13px] font-semibold text-foreground">{escrow.depositedHuman} {data.quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER ? 'LLMTOKEN' : data.quest.rewardType}</div>
                                 </div>
                                 <div className="bg-bg-3 border border-border rounded-md px-[0.8rem] py-[0.6rem]">
                                     <div className="text-2xs text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Distributed</div>
-                                    <div className="text-[13px] font-semibold text-foreground">{escrow.distributedHuman} {data.quest.rewardType}</div>
+                                    <div className="text-[13px] font-semibold text-foreground">{escrow.distributedHuman} {data.quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER ? 'LLMTOKEN' : data.quest.rewardType}</div>
                                 </div>
                                 <div className="bg-bg-3 border border-border rounded-md px-[0.8rem] py-[0.6rem]">
                                     <div className="text-2xs text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Refunded</div>
-                                    <div className="text-[13px] font-semibold text-foreground">{escrow.refundedHuman} {data.quest.rewardType}</div>
+                                    <div className="text-[13px] font-semibold text-foreground">{escrow.refundedHuman} {data.quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER ? 'LLMTOKEN' : data.quest.rewardType}</div>
                                 </div>
                                 <div className="bg-bg-3 border border-border rounded-md px-[0.8rem] py-[0.6rem]">
                                     <div className="text-2xs text-muted-foreground uppercase tracking-[0.04em] mb-[2px]">Remaining</div>
-                                    <div className="text-[13px] font-semibold text-foreground">{escrow.remainingHuman} {data.quest.rewardType}</div>
+                                    <div className="text-[13px] font-semibold text-foreground">{escrow.remainingHuman} {data.quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER ? 'LLMTOKEN' : data.quest.rewardType}</div>
                                 </div>
                             </div>
                         ) : (

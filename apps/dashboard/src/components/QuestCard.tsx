@@ -10,7 +10,7 @@ import { TokenIcon } from "./token-icon"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
-const TYPE_ICON: Record<string, React.ElementType> = {
+const TYPE_ICON: Record<string, React.ComponentType<object>> = {
     FCFS: RunLine,
     LEADERBOARD: TrophyLine,
     LUCKY_DRAW: RandomLine,

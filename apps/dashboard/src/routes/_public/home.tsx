@@ -357,10 +357,17 @@ function SectionHeader({
   linkTo,
   linkLabel,
 }: {
+<<<<<<< Updated upstream
   icon: React.ElementType;
   title: string;
   linkTo: string;
   linkLabel: string;
+=======
+    icon: React.ComponentType<object>
+    title: string
+    linkTo: string
+    linkLabel: string
+>>>>>>> Stashed changes
 }) {
   return (
     <div className="mb-4 flex items-center justify-between">

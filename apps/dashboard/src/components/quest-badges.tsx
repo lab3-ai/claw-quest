@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 
 /* ── Quest Type — plain colored text + icon ── */
 
-const TYPE_ICON: Record<string, React.ElementType> = {
+const TYPE_ICON: Record<string, React.ComponentType<object>> = {
     FCFS: RunLine,
     LEADERBOARD: TrophyLine,
     LUCKY_DRAW: RandomLine,

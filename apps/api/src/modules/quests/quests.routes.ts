@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { QuestSchema, QuestTaskSchema, QuestersResponseSchema, QUEST_STATUS, QUEST_TYPE, REWARD_TYPE } from '@clawquest/shared';
+import { TtlCache } from '../../utils/ttl-cache';
 import type { QuestTask } from '@clawquest/shared';
 import {
     createQuest,
@@ -70,6 +71,22 @@ const CreateQuestSchema = QuestSchema.omit({
     }
 );
 
+// Quest cache — module-level singletons, shared across all requests
+// TTL: 30s for list, 60s for detail
+const questListCache = new TtlCache<any[]>();
+const questDetailCache = new TtlCache<any>();
+
+/** Build cache key for quest list from query params. */
+function listCacheKey(status?: string, type?: string, limit?: number, offset?: number): string {
+    return `quests:list:${status ?? ''}:${type ?? ''}:${limit ?? 50}:${offset ?? 0}`;
+}
+
+/** Invalidate all cache entries for a quest (call after any write). */
+function invalidateQuestCache(questId: string): void {
+    questDetailCache.delete(questId);
+    questListCache.deleteByPrefix('quests:list:');
+}
+
 export async function questsRoutes(server: FastifyInstance) {
     // List Quests
     server.get(
@@ -91,6 +108,11 @@ export async function questsRoutes(server: FastifyInstance) {
         },
         async (request) => {
             const { status, type, limit, offset } = request.query as any;
+
+            // Check cache first
+            const cacheKey = listCacheKey(status, type, limit, offset);
+            const cachedList = questListCache.get(cacheKey);
+            if (cachedList) return cachedList;
 
             const where: any = {};
             if (status === 'ended') {
@@ -128,9 +150,11 @@ export async function questsRoutes(server: FastifyInstance) {
                 },
             });
 
-            return quests.map(({ _count, participations, ...q }) =>
+            const result = quests.map(({ _count, participations, ...q }) =>
                 formatQuestResponse(q, participations, _count.participations)
             );
+            questListCache.set(cacheKey, result, 30_000);
+            return result;
         }
     );
 
@@ -180,129 +204,143 @@ export async function questsRoutes(server: FastifyInstance) {
             const { id } = request.params as any;
             const { token } = (request.query as any) ?? {};
 
-            const quest = await server.prisma.quest.findUnique({
-                where: { id },
-                include: {
-                    _count: { select: { participations: true } },
-                    participations: {
-                        take: 5,
-                        include: {
-                            user: { select: USER_IDENTITY_SELECT },
-                            agent: { select: { agentname: true } },
+            // For non-draft public quests, check cache first
+            let cachedBase = questDetailCache.get(id);
+            let quest: any = null;
+
+            if (!cachedBase) {
+                quest = await server.prisma.quest.findUnique({
+                    where: { id },
+                    include: {
+                        _count: { select: { participations: true } },
+                        participations: {
+                            take: 5,
+                            include: {
+                                user: { select: USER_IDENTITY_SELECT },
+                                agent: { select: { agentname: true } },
+                            },
+                            orderBy: { joinedAt: 'asc' },
                         },
-                        orderBy: { joinedAt: 'asc' },
+                        llmModel: true,
                     },
-                    llmModel: true,
-                },
-            });
+                });
 
-            if (!quest) {
-                return reply.status(404).send({ message: 'Quest not found', code: 'NOT_FOUND' } as any);
-            }
-
-            // Auto-check and reset Stripe session if canceled/expired (background, non-blocking)
-            if (quest.fundingStatus === 'pending' && quest.stripeSessionId && quest.fundingMethod === 'stripe') {
-                // Check session status asynchronously (don't block response)
-                (async () => {
-                    try {
-                        const { stripe, isStripeConfigured } = await import('../stripe/stripe.config');
-                        if (!isStripeConfigured() || !stripe) return;
-
-                        const session = await stripe.checkout.sessions.retrieve(quest.stripeSessionId!);
-
-                        // If session is not paid, reset funding status
-                        if (session.payment_status !== 'paid') {
-                            const currentQuest = await server.prisma.quest.findUnique({
-                                where: { id },
-                                select: { fundingStatus: true },
-                            });
-
-                            // Only reset if still pending (idempotency)
-                            if (currentQuest?.fundingStatus === 'pending') {
-                                await server.prisma.quest.update({
-                                    where: { id },
-                                    data: {
-                                        fundingStatus: 'unfunded',
-                                        fundingMethod: null,
-                                        stripeSessionId: null,
-                                        stripePaymentId: null,
-                                    },
-                                });
-
-                                server.log.info(
-                                    { questId: id, sessionId: quest.stripeSessionId, paymentStatus: session.payment_status },
-                                    '[quests:get] Auto-reset funding status (session canceled/expired)'
-                                );
-                            }
-                        }
-                    } catch (err: any) {
-                        // Silently fail - session might not exist or Stripe API error
-                        server.log.debug(
-                            { questId: id, sessionId: quest.stripeSessionId, error: err.message },
-                            '[quests:get] Failed to check session status'
-                        );
-                    }
-                })();
-            }
-
-            // Draft access control: require token or creator auth
-            if (quest.status === 'draft') {
-                let hasAccess = false;
-
-                // Check preview token
-                if (token && quest.previewToken === token) {
-                    hasAccess = true;
-                }
-
-                // Check if authenticated creator or partner
-                if (!hasAccess) {
-                    const authHeader = request.headers.authorization;
-                    if (authHeader?.startsWith('Bearer ') && !authHeader.startsWith('Bearer cq_')) {
-                        try {
-                            await (server as any).authenticate(request, reply);
-                            const user = (request as any).user;
-                            if (user?.id) {
-                                if (quest.creatorUserId === user.id) {
-                                    hasAccess = true;
-                                } else {
-                                    // Check if user is an accepted partner
-                                    const partnerRecord = await server.prisma.questCollaborator.findFirst({
-                                        where: { questId: id, userId: user.id, acceptedAt: { not: null } },
-                                        select: { id: true },
-                                    });
-                                    if (partnerRecord) hasAccess = true;
-                                }
-                            }
-                        } catch {
-                            if (reply.sent) return
-                            // Not authenticated — that's fine, just check token
-                        }
-                    }
-                }
-
-                if (!hasAccess) {
+                if (!quest) {
                     return reply.status(404).send({ message: 'Quest not found', code: 'NOT_FOUND' } as any);
                 }
+            } // end: cachedBase branch
 
-                // Return with preview flags
+            if (!cachedBase) {
+                // quest is the full Prisma object — handle Stripe background check and draft access
+
+                // Auto-check and reset Stripe session if canceled/expired (background, non-blocking)
+                if (quest.fundingStatus === 'pending' && quest.stripeSessionId && quest.fundingMethod === 'stripe') {
+                    // Check session status asynchronously (don't block response)
+                    (async () => {
+                        try {
+                            const { stripe, isStripeConfigured } = await import('../stripe/stripe.config');
+                            if (!isStripeConfigured() || !stripe) return;
+
+                            const session = await stripe.checkout.sessions.retrieve(quest.stripeSessionId!);
+
+                            // If session is not paid, reset funding status
+                            if (session.payment_status !== 'paid') {
+                                const currentQuest = await server.prisma.quest.findUnique({
+                                    where: { id },
+                                    select: { fundingStatus: true },
+                                });
+
+                                // Only reset if still pending (idempotency)
+                                if (currentQuest?.fundingStatus === 'pending') {
+                                    await server.prisma.quest.update({
+                                        where: { id },
+                                        data: {
+                                            fundingStatus: 'unfunded',
+                                            fundingMethod: null,
+                                            stripeSessionId: null,
+                                            stripePaymentId: null,
+                                        },
+                                    });
+
+                                    server.log.info(
+                                        { questId: id, sessionId: quest.stripeSessionId, paymentStatus: session.payment_status },
+                                        '[quests:get] Auto-reset funding status (session canceled/expired)'
+                                    );
+                                }
+                            }
+                        } catch (err: any) {
+                            // Silently fail - session might not exist or Stripe API error
+                            server.log.debug(
+                                { questId: id, sessionId: quest.stripeSessionId, error: err.message },
+                                '[quests:get] Failed to check session status'
+                            );
+                        }
+                    })();
+                }
+
+                // Draft access control: require token or creator auth
+                if (quest.status === 'draft') {
+                    let hasAccess = false;
+
+                    // Check preview token
+                    if (token && quest.previewToken === token) {
+                        hasAccess = true;
+                    }
+
+                    // Check if authenticated creator or partner
+                    if (!hasAccess) {
+                        const authHeader = request.headers.authorization;
+                        if (authHeader?.startsWith('Bearer ') && !authHeader.startsWith('Bearer cq_')) {
+                            try {
+                                await (server as any).authenticate(request, reply);
+                                const user = (request as any).user;
+                                if (user?.id) {
+                                    if (quest.creatorUserId === user.id) {
+                                        hasAccess = true;
+                                    } else {
+                                        // Check if user is an accepted partner
+                                        const partnerRecord = await server.prisma.questCollaborator.findFirst({
+                                            where: { questId: id, userId: user.id, acceptedAt: { not: null } },
+                                            select: { id: true },
+                                        });
+                                        if (partnerRecord) hasAccess = true;
+                                    }
+                                }
+                            } catch {
+                                if (reply.sent) return
+                                // Not authenticated — that's fine, just check token
+                            }
+                        }
+                    }
+
+                    if (!hasAccess) {
+                        return reply.status(404).send({ message: 'Quest not found', code: 'NOT_FOUND' } as any);
+                    }
+
+                    // Return with preview flags (drafts are never cached)
+                    const { _count, participations, ...q } = quest;
+                    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+                    const draftUser = (request as any).user;
+                    const isCreator = !!(draftUser?.id && quest.creatorUserId === draftUser.id);
+                    return {
+                        ...formatQuestResponse(q, participations, _count.participations),
+                        isPreview: true,
+                        isCreator,
+                        isSponsor: !isCreator && hasAccess && !!draftUser?.id,
+                        fundingRequired: quest.fundingStatus === 'unfunded',
+                        previewToken: quest.previewToken,
+                        fundUrl: `${frontendUrl}/quests/${quest.id}/fund`,
+                    };
+                }
+
+                // Public quest (live, completed, etc.) — format and store in cache
                 const { _count, participations, ...q } = quest;
-                const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-                const draftUser = (request as any).user;
-                const isCreator = !!(draftUser?.id && quest.creatorUserId === draftUser.id);
-                return {
-                    ...formatQuestResponse(q, participations, _count.participations),
-                    isPreview: true,
-                    isCreator,
-                    isSponsor: !isCreator && hasAccess && !!draftUser?.id,
-                    fundingRequired: quest.fundingStatus === 'unfunded',
-                    previewToken: quest.previewToken,
-                    fundUrl: `${frontendUrl}/quests/${quest.id}/fund`,
-                };
+                cachedBase = formatQuestResponse(q, participations, _count.participations);
+                questDetailCache.set(id, cachedBase, 60_000);
             }
 
-            // Public quest (live, completed, etc.)
-            const { _count, participations, ...q } = quest;
-            const response: any = formatQuestResponse(q, participations, _count.participations);
+            // Build response from cached base (user-specific data never cached)
+            const response: any = { ...cachedBase };
 
             // Include user's participation + isCreator if authenticated
             const authHeader = request.headers.authorization;
@@ -311,7 +349,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     await (server as any).authenticate(request, reply);
                     const user = (request as any).user;
                     if (user?.id) {
-                        response.isCreator = quest.creatorUserId === user.id;
+                        response.isCreator = quest ? quest.creatorUserId === user.id : cachedBase.creatorUserId === user.id;
                         // Check if user is a co-sponsor (accepted collaborator)
                         const sponsorRecord = await server.prisma.questCollaborator.findFirst({
                             where: { questId: id, userId: user.id, acceptedAt: { not: null } },
@@ -1167,6 +1205,8 @@ export async function questsRoutes(server: FastifyInstance) {
             try {
                 const result = await createQuest(server.prisma, body, creator);
 
+                questListCache.deleteByPrefix('quests:list:');
+
                 return reply.code(201).send({
                     ...formatQuestResponse(result.quest),
                     telegramDeeplink: result.telegramDeeplink,
@@ -1381,6 +1421,8 @@ export async function questsRoutes(server: FastifyInstance) {
             }
             await Promise.all(sideEffects);
 
+            invalidateQuestCache(id);
+
             return { message: 'Quest accepted', participationId: participation.id };
         }
     );
@@ -1453,6 +1495,8 @@ export async function questsRoutes(server: FastifyInstance) {
                     meta: { questId, participationId: participation.id, proofCount: proof.length },
                 },
             });
+
+            invalidateQuestCache(questId);
 
             return {
                 message: '✅ Proof submitted. Awaiting operator verification.',
@@ -1544,6 +1588,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     },
                 });
                 if (!updated) return reply.status(404).send({ message: 'Quest not found', code: 'NOT_FOUND' } as any);
+                invalidateQuestCache(id);
                 const { participations: p, _count } = updated;
                 return formatQuestResponse(updated, p, _count?.participations ?? 0);
             } catch (err: any) {
@@ -1613,6 +1658,8 @@ export async function questsRoutes(server: FastifyInstance) {
                 data: { status: newStatus },
             });
 
+            invalidateQuestCache(id);
+
             return {
                 questId: id,
                 previousStatus,
@@ -1678,6 +1725,8 @@ export async function questsRoutes(server: FastifyInstance) {
                 data: { status: 'live' },
             });
 
+            invalidateQuestCache(id);
+
             return {
                 questId: id,
                 previousStatus,
@@ -1736,6 +1785,8 @@ export async function questsRoutes(server: FastifyInstance) {
                 where: { id },
                 data: { status: 'completed' },
             });
+
+            invalidateQuestCache(id);
 
             return {
                 questId: id,
@@ -2059,6 +2110,7 @@ export async function questsRoutes(server: FastifyInstance) {
                 }
             }
 
+            invalidateQuestCache(id);
             notifyQuestCancelled(server, id).catch(() => { });
             return { message: 'Quest cancelled', questId: id };
         }
@@ -2330,6 +2382,7 @@ export async function questsRoutes(server: FastifyInstance) {
 
             try {
                 const participation = await verifyParticipation(server.prisma, questId, pid, action, reason);
+                invalidateQuestCache(questId);
                 notifyProofVerified(server, pid, action === 'approve' ? 'approved' : 'rejected').catch(() => { });
                 return {
                     message: `Proof ${action === 'approve' ? 'approved' : 'rejected'}`,
@@ -2382,7 +2435,9 @@ export async function questsRoutes(server: FastifyInstance) {
             if (!allowed) return reply.status(403).send({ message: 'Only quest creator or admin can verify proofs' } as any);
 
             try {
-                return await bulkVerifyParticipations(server.prisma, questId, items);
+                const result = await bulkVerifyParticipations(server.prisma, questId, items);
+                invalidateQuestCache(questId);
+                return result;
             } catch (err: any) {
                 if (err instanceof QuestNotFoundError) {
                     return reply.status(404).send({ message: err.message } as any);
@@ -2623,6 +2678,8 @@ export async function questsRoutes(server: FastifyInstance) {
                 }
             }
 
+            invalidateQuestCache(questId);
+
             return {
                 distributed,
                 failed,
@@ -2701,6 +2758,7 @@ export async function questsRoutes(server: FastifyInstance) {
 
             try {
                 const participation = await verifyParticipation(server.prisma, questId, participationId, action, reason);
+                invalidateQuestCache(questId);
                 notifyProofVerified(server, participationId, action === 'approve' ? 'approved' : 'rejected').catch(() => { });
                 return {
                     message: `Proof ${action === 'approve' ? 'approved' : 'rejected'}`,

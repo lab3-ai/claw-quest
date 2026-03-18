@@ -4,6 +4,7 @@ import swagger from '@fastify/swagger';
 import scalarPlugin from '@scalar/fastify-api-reference';
 import { serializerCompiler, validatorCompiler, ZodTypeProvider, jsonSchemaTransform } from 'fastify-type-provider-zod';
 import { createClient } from '@supabase/supabase-js';
+import { createSupabaseJwtVerifier, isJwtError } from './utils/supabase-jwt';
 
 // Load env vars
 import 'dotenv/config';
@@ -34,6 +35,11 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 }
 
 export const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '');
+
+// Initialize once at module load — jose caches JWKS internally
+const jwtVerifier = SUPABASE_URL
+    ? createSupabaseJwtVerifier(SUPABASE_URL)
+    : null;
 
 // ─── Type extensions ────────────────────────────────────────────────────────
 declare module 'fastify' {
@@ -123,47 +129,87 @@ server.decorate('authenticate', async (request: FastifyRequest, reply: FastifyRe
         return;
     }
 
-    // ── Fall back to Supabase token verification ──────────────────────────────
-    const { data, error } = await supabaseAdmin.auth.getUser(token);
+    // ── Local JWT verification (no network call) ──────────────────────────────
+    let supabaseId: string;
+    let supabaseEmail: string;
+    let supabaseUserMetadata: Record<string, unknown> = {};
 
-    if (error || !data.user) {
-        return reply.status(401).send({ message: 'Invalid or expired token' });
+    if (jwtVerifier) {
+        try {
+            const payload = await jwtVerifier.verifyToken(token);
+            supabaseId = payload.sub;
+            supabaseEmail = payload.email;
+            supabaseUserMetadata = payload.user_metadata;
+        } catch (err) {
+            if (isJwtError(err)) {
+                return reply.status(401).send({ message: 'Invalid or expired token' });
+            }
+            // Network/JWKS failure — fall back to Supabase HTTP API
+            const { data, error } = await supabaseAdmin.auth.getUser(token);
+            if (error || !data.user) {
+                return reply.status(401).send({ message: 'Invalid or expired token' });
+            }
+            supabaseId = data.user.id;
+            supabaseEmail = data.user.email!;
+            supabaseUserMetadata = data.user.user_metadata ?? {};
+        }
+    } else {
+        // No SUPABASE_URL configured — fall back to HTTP (dev without env vars)
+        const { data, error } = await supabaseAdmin.auth.getUser(token);
+        if (error || !data.user) {
+            return reply.status(401).send({ message: 'Invalid or expired token' });
+        }
+        supabaseId = data.user.id;
+        supabaseEmail = data.user.email!;
+        supabaseUserMetadata = data.user.user_metadata ?? {};
     }
 
-    const supabaseUser = data.user;
+    // ── Check user cache before DB lookup ─────────────────────────────────────
+    const cachedUser = jwtVerifier?.getCachedUser(supabaseId);
+    if (cachedUser) {
+        request.user = {
+            id: cachedUser.id,
+            email: cachedUser.email,
+            username: cachedUser.username,
+            displayName: cachedUser.displayName,
+            supabaseId,
+            role: cachedUser.role ?? 'user',
+        };
+        return;
+    }
 
-    // Find or create local Prisma user
+    // ── Find or create local Prisma user ──────────────────────────────────────
     let user = await server.prisma.user.findUnique({
-        where: { supabaseId: supabaseUser.id },
+        where: { supabaseId },
     });
 
     if (!user) {
         // Also check by email (for legacy seeded users)
         user = await server.prisma.user.findUnique({
-            where: { email: supabaseUser.email! },
+            where: { email: supabaseEmail },
         });
 
         if (user) {
             // Link existing user to Supabase
             user = await server.prisma.user.update({
                 where: { id: user.id },
-                data: { supabaseId: supabaseUser.id },
+                data: { supabaseId },
             });
         } else {
             // Create new Prisma user
-            const fullName = (supabaseUser.user_metadata?.full_name as string) || null;
+            const fullName = (supabaseUserMetadata?.full_name as string) || null;
             user = await server.prisma.user.create({
                 data: {
-                    supabaseId: supabaseUser.id,
-                    email: supabaseUser.email!,
+                    supabaseId,
+                    email: supabaseEmail,
                     displayName: fullName,
                 },
             });
         }
     }
 
-    // Sync displayName from Supabase metadata if not yet set
-    const metaFullName = (supabaseUser.user_metadata?.full_name as string) || null;
+    // Sync displayName from metadata if not yet set
+    const metaFullName = (supabaseUserMetadata?.full_name as string) || null;
     if (!user.displayName && metaFullName) {
         user = await server.prisma.user.update({
             where: { id: user.id },
@@ -171,25 +217,15 @@ server.decorate('authenticate', async (request: FastifyRequest, reply: FastifyRe
         });
     }
 
-    // Sync GitHub handle/id from Supabase identity (set on first GitHub login)
-    const githubIdentity = supabaseUser.identities?.find(i => i.provider === 'github');
-    if (githubIdentity && !user.githubHandle) {
-        const handle = (githubIdentity.identity_data?.user_name as string) || null;
-        const ghId = githubIdentity.identity_data?.sub ? String(githubIdentity.identity_data.sub) : null;
-        if (handle || ghId) {
-            user = await server.prisma.user.update({
-                where: { id: user.id },
-                data: { githubHandle: handle, githubId: ghId },
-            });
-        }
-    }
+    // Cache user for subsequent requests (5-min TTL)
+    jwtVerifier?.cacheUser(supabaseId, user);
 
     request.user = {
         id: user.id,
         email: user.email,
         username: user.username,
         displayName: user.displayName,
-        supabaseId: supabaseUser.id,
+        supabaseId,
         role: user.role ?? 'user',
     };
 });

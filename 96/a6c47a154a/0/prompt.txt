@@ -1,0 +1,60 @@
+Tôi đang muốn triển theo 2 option A và B
+
+---
+
+1. Ngày trước chưa có logic này, nên hiện tại minWalletBalance = 0 nhé.
+2. tổng USD value + top 5 tokens cho dễ
+3.  chỉ hiện trên quest card/detail thôi 
+Hãy luôn làm tối giản và đơn giản nhất nhé
+
+---
+
+Tạm thời triển option B trước nhé.. OptionA để dạng plan thôi
+
+---
+
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/modules/quests/quests.routes.ts in the IDE. This may or may not be related to the current task.</ide_opened_file>
+Cool, hãy executive luôn optionB 2026-03-18-onchain-os-wallet-portfolio.md nhé
+
+---
+
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/.env in the IDE. This may or may not be related to the current task.</ide_opened_file>
+Bạn hãy thêm rule là không commit gì tự động nhé, tôi tự commit manual
+Giờ tôi muốn testing tính năng mới thì flow như nào?
+
+---
+
+Oh. Tôi nhớ đã có flow để xoá agent rồi, làm gì còn agent-id nữa?
+Theo tôi thì bạn nên check theo user/user-id chứ nhỉ? 
+Tôi thấy WalletLink là mapping với UserId mà. Hãy plan sửa lại nhé
+
+---
+
+Vậy ở site (UI) sẽ flow như nào để tới được làm WalletPortFolio?
+home -> ? -> ?
+
+---
+
+Làm gì có flow từ Dashboard -> Agents nữa. Và tôi cũng không muốn có agents
+Bạn hãy suggest flow mới đi
+
+---
+
+CÓ flow mới là Không cần login vào dashboard nhé
+và vẫn có thể xem được WalletPortFolio của user khác.
+
+---
+
+Triển thôi
+
+---
+
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/app.ts in the IDE. This may or may not be related to the current task.</ide_opened_file>
+hãy testing nhé, dùng playwright check site http://localhost:5173/
+tôi suggest http://localhost:5173/wallet/0xe0AEC7965d1450EAa9704f36A9eB5EFe704E7091
+tuy nhiên chưa ra data gì
+
+---
+
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/.env in the IDE. This may or may not be related to the current task.</ide_opened_file>
+Cool, mọi thứ work well rồi. Hãy thêm 1 router Wallet ở header này nhé, link tới /wallet

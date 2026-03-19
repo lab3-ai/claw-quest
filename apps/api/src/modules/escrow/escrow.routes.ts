@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { getDepositParams, getEscrowStatus, executeDistribute, executeRefund } from './escrow.service';
 import { isEscrowConfigured, escrowConfig, isChainAllowed } from './escrow.config';
+import { issueLlmKeysForQuest } from '../quests/llm-key-reward.service';
 import { getPublicClient } from './escrow.client';
 import { escrowPollerHealth } from './escrow.poller';
 // ─── Escrow Routes ───────────────────────────────────────────────────────────
@@ -177,7 +178,7 @@ export async function escrowRoutes(server: FastifyInstance) {
         {
             schema: {
                 tags: ['Escrow'],
-                summary: 'Trigger on-chain distribution (creator or admin)',
+                summary: 'Distribute rewards (on-chain for crypto, LLM keys for LLM quests)',
                 security: [{ bearerAuth: [] }],
                 params: z.object({ questId: z.string().uuid() }),
                 body: z.object({
@@ -186,7 +187,9 @@ export async function escrowRoutes(server: FastifyInstance) {
                 response: {
                     200: z.object({
                         message: z.string(),
-                        txHash: z.string(),
+                        txHash: z.string().optional(),
+                        issued: z.number().optional(),
+                        failed: z.number().optional(),
                     }),
                 },
             },
@@ -210,15 +213,37 @@ export async function escrowRoutes(server: FastifyInstance) {
                 return reply.status(403).send({ message: 'Only quest creator or admin can distribute' } as any);
             }
 
-            if (quest.fundingStatus !== 'confirmed') {
-                return reply.status(400).send({ message: 'Quest is not funded' } as any);
-            }
-
             const questEnded =
                 ['completed', 'expired', 'cancelled'].includes(quest.status) ||
                 (quest.expiresAt != null && new Date() >= quest.expiresAt);
             if (!questEnded) {
                 return reply.status(400).send({ message: 'Quest has not ended yet' } as any);
+            }
+
+            // LLM reward quests: issue API keys instead of on-chain distribution
+            const isLlmReward = quest.rewardType === 'LLMTOKEN_OPENROUTER' || quest.rewardType === 'LLM_KEY';
+            if (isLlmReward) {
+                try {
+                    const result = await issueLlmKeysForQuest(server.prisma, questId);
+                    // Mark quest as distributed
+                    await server.prisma.quest.update({
+                        where: { id: questId },
+                        data: { fundingStatus: 'distributed', status: 'completed' },
+                    });
+                    return {
+                        message: `LLM keys issued: ${result.issued} success, ${result.failed} failed`,
+                        issued: result.issued,
+                        failed: result.failed,
+                    };
+                } catch (err: any) {
+                    server.log.error({ err, questId }, '[escrow:distribute] LLM key issuance failed');
+                    return reply.status(500).send({ message: `Distribution failed: ${err.message}` } as any);
+                }
+            }
+
+            // Crypto quests: on-chain distribution
+            if (quest.fundingStatus !== 'confirmed') {
+                return reply.status(400).send({ message: 'Quest is not funded' } as any);
             }
 
             const targetChainId = chainId || quest.cryptoChainId || escrowConfig.defaultChainId;

@@ -1,0 +1,4 @@
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/admin/.env.sample in the IDE. This may or may not be related to the current task.</ide_opened_file>
+Tôi không rõ setup github mới + cloudlfare pages mới và domain ra sao.
+Bạn hãy đoán giúp tôi.
+Giờ tôi login google với clawquest.ai luôn bị redirect về localhost:3000

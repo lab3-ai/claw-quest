@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "96c65c3eb9a0",
+  "strategy": "manual-commit",
+  "branch": "hiru-uiux",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "docs/design-system/design/D-DINExp-Bold.otf",
+    "docs/design-system/design/D-DINExp-Italic.otf",
+    "docs/design-system/design/D-DINExp.otf",
+    "docs/design-system/design/images/appicon.png",
+    "docs/design-system/design/images/appicon.svg",
+    "docs/design-system/design/images/generated-1773823436150.png",
+    "docs/design-system/design/images/generated-1773823476676.png",
+    "docs/design-system/design/images/generated-1773823500536.png",
+    "docs/design-system/design/images/generated-1773823522281.png",
+    "docs/design-system/design/images/logo-clawquest-white.png",
+    "docs/design-system/design/images/logo-clawquest-white.svg",
+    "docs/design-system/design/images/logo-clawquest.png",
+    "docs/design-system/design/landingpage.pen"
+  ],
+  "sessions": [
+    {
+      "metadata": "/96/c65c3eb9a0/0/metadata.json",
+      "transcript": "/96/c65c3eb9a0/0/full.jsonl",
+      "content_hash": "/96/c65c3eb9a0/0/content_hash.txt",
+      "prompt": "/96/c65c3eb9a0/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 155,
+    "cache_creation_tokens": 68667,
+    "cache_read_tokens": 712085,
+    "output_tokens": 957,
+    "api_call_count": 12
+  }
+}

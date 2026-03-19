@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "96c65c3eb9a0",
+  "session_id": "19d4acce-cddc-4968-abe5-7a15efb09148",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-18T10:57:37.859516Z",
+  "branch": "hiru-uiux",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "docs/design-system/design/images/appicon.png",
+    "docs/design-system/design/images/appicon.svg",
+    "docs/design-system/design/images/generated-1773823436150.png",
+    "docs/design-system/design/images/logo-clawquest.png",
+    "docs/design-system/design/landingpage.pen",
+    "docs/design-system/design/D-DINExp-Bold.otf",
+    "docs/design-system/design/D-DINExp-Italic.otf",
+    "docs/design-system/design/D-DINExp.otf",
+    "docs/design-system/design/images/generated-1773823476676.png",
+    "docs/design-system/design/images/generated-1773823500536.png",
+    "docs/design-system/design/images/generated-1773823522281.png",
+    "docs/design-system/design/images/logo-clawquest-white.png",
+    "docs/design-system/design/images/logo-clawquest-white.svg"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-6[1m]",
+  "turn_id": "4f828a65292f",
+  "token_usage": {
+    "input_tokens": 155,
+    "cache_creation_tokens": 68667,
+    "cache_read_tokens": 712085,
+    "output_tokens": 957,
+    "api_call_count": 12
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-18T10:57:37.708692Z",
+    "agent_lines": 4916,
+    "human_added": 3010,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 7926,
+    "agent_percentage": 62.02371940449155
+  }
+}

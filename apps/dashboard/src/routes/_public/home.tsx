@@ -7,6 +7,7 @@ import { SkillCard } from "@/components/web3-skills/skill-card";
 import { SeoHead } from "@/components/seo-head";
 import { Badge } from "@/components/ui/badge";
 import { HomeBanner } from "@/components/animated-banner";
+import { LeaderboardSection } from "@/components/leaderboard-section";
 import {
   ArrowRightLine,
   FlashLine,
@@ -500,10 +501,13 @@ export function HomePage() {
         {/* 3. Popular Web3 Skills */}
         <PopularSkills />
 
-        {/* 4. Latest Bounties */}
+        {/* 4. Leaderboard */}
+        <LeaderboardSection />
+
+        {/* 5. Latest Bounties */}
         <LatestBounties />
 
-        {/* 5. How It Works + FAQs — side by side on desktop */}
+        {/* 6. How It Works + FAQs — side by side on desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-2 border border-border rounded divide-y lg:divide-y-0 lg:divide-x divide-border">
           <HowItWorks />
           <FAQSection />

@@ -633,6 +633,102 @@ async function main() {
             llmKeyTokenLimit: null, submissionCount: 1,
         },
 
+        // ── More Open bounties (live, no submissions yet) ────────────────────
+        {
+            repoOwner: 'tauri-apps', repoName: 'tauri',
+            title: 'Add system tray balloon notification support on Linux',
+            description: 'System tray balloon notifications work on Windows and macOS but fail silently on Linux. Implement using libnotify or D-Bus org.freedesktop.Notifications. Should match the existing Notification API surface.',
+            rewardAmount: 300, rewardType: 'USDC', status: 'live', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: new Date(now + 18 * DAY), issueNumber: 11245, issueUrl: 'https://github.com/tauri-apps/tauri/issues/11245',
+            llmKeyTokenLimit: null, submissionCount: 0,
+        },
+        {
+            repoOwner: 'vitejs', repoName: 'vite',
+            title: 'CSS source maps incorrect with postcss-nesting',
+            description: 'When using postcss-nesting, CSS source maps point to wrong lines after transformation. The issue is in the source map composition step. Debug by enabling sourcemap: true in postcss config and checking Chrome DevTools mapping.',
+            rewardAmount: 150, rewardType: 'USDC', status: 'live', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: new Date(now + 12 * DAY), issueNumber: null, issueUrl: null,
+            llmKeyTokenLimit: null, submissionCount: 0,
+        },
+        {
+            repoOwner: 'drizzle-team', repoName: 'drizzle-orm',
+            title: 'Add .returning() support for SQLite batch inserts',
+            description: 'SQLite supports RETURNING clause since 3.35.0 but drizzle-orm only supports it for single inserts, not batch. Extend the SQLite dialect to generate RETURNING for insert().values([...]) calls.',
+            rewardAmount: 0, rewardType: 'LLM_KEY', status: 'live', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 2,
+            deadline: new Date(now + 25 * DAY), issueNumber: 4102, issueUrl: 'https://github.com/drizzle-team/drizzle-orm/issues/4102',
+            llmKeyTokenLimit: 1_500_000, submissionCount: 0,
+        },
+
+        // ── More In Review bounties (live, has submissions) ─────────────────
+        {
+            repoOwner: 'oven-sh', repoName: 'bun',
+            title: 'Fix node:cluster IPC message ordering',
+            description: 'Messages sent via process.send() in cluster workers arrive out of order under high throughput. The issue is in the libuv IPC pipe buffering. Reproduce with a benchmark that sends 10k numbered messages and checks arrival order.',
+            rewardAmount: 500, rewardType: 'USDC', status: 'live', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: new Date(now + 8 * DAY), issueNumber: 19832, issueUrl: 'https://github.com/oven-sh/bun/issues/19832',
+            llmKeyTokenLimit: null, submissionCount: 3,
+        },
+        {
+            repoOwner: 'astro-js', repoName: 'astro',
+            title: 'Content Collections: add computed fields from frontmatter',
+            description: 'Allow defining computed fields in content collection schemas that derive from other frontmatter values (e.g. readingTime from body, slug from title). Currently requires a remark plugin workaround. Should integrate with Zod transform().',
+            rewardAmount: 200, rewardType: 'USDC', status: 'live', fundingStatus: 'confirmed',
+            questType: 'leaderboard', maxWinners: 2,
+            deadline: new Date(now + 15 * DAY), issueNumber: null, issueUrl: null,
+            llmKeyTokenLimit: null, submissionCount: 2,
+        },
+        {
+            repoOwner: 'trpc', repoName: 'trpc',
+            title: 'Add WebSocket reconnect with message replay',
+            description: 'When a WebSocket subscription drops and reconnects, missed messages are lost. Implement a replay buffer on the server (configurable depth) and a sequence-number protocol so the client can resume from last received seq.',
+            rewardAmount: 0, rewardType: 'LLM_KEY', status: 'live', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: new Date(now + 20 * DAY), issueNumber: 6891, issueUrl: 'https://github.com/trpc/trpc/issues/6891',
+            llmKeyTokenLimit: 3_000_000, submissionCount: 1,
+        },
+
+        // ── More Completed bounties ─────────────────────────────────────────
+        {
+            repoOwner: 'honojs', repoName: 'hono',
+            title: 'Fix multipart form parsing crash on empty file fields',
+            description: 'When a multipart form includes a file input that was left empty, the parser throws "Cannot read property of undefined". The issue is in the boundary detection code. Add null check and return empty File object.',
+            rewardAmount: 100, rewardType: 'USDC', status: 'completed', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: new Date(now - 5 * DAY), issueNumber: 4210, issueUrl: 'https://github.com/honojs/hono/issues/4210',
+            llmKeyTokenLimit: null, submissionCount: 1,
+        },
+        {
+            repoOwner: 'unjs', repoName: 'nitro',
+            title: 'Add rate limiting middleware with sliding window',
+            description: 'Implement a built-in rate limiting middleware using sliding window algorithm. Should support IP-based and header-based identification, configurable window size and max requests, and return proper 429 headers (Retry-After, X-RateLimit-*).',
+            rewardAmount: 250, rewardType: 'USDC', status: 'completed', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: new Date(now - 10 * DAY), issueNumber: null, issueUrl: null,
+            llmKeyTokenLimit: null, submissionCount: 3,
+        },
+        {
+            repoOwner: 'Effect-TS', repoName: 'effect',
+            title: 'Improve Schema.decode error messages for nested unions',
+            description: 'When decoding fails on a nested discriminated union, the error message shows all branches instead of the closest match. Implement nearest-match scoring based on the number of successfully decoded fields to surface the most relevant error.',
+            rewardAmount: 0, rewardType: 'LLM_KEY', status: 'completed', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: new Date(now - 2 * DAY), issueNumber: 5678, issueUrl: 'https://github.com/Effect-TS/effect/issues/5678',
+            llmKeyTokenLimit: 1_000_000, submissionCount: 2,
+        },
+        {
+            repoOwner: 'solidjs', repoName: 'solid-start',
+            title: 'Fix server function serialization for Date objects',
+            description: 'Date objects passed as arguments to server functions arrive as strings on the server side. The serializer needs to handle Date instances by converting to ISO string and reconstructing on the server. Also affects Map and Set.',
+            rewardAmount: 175, rewardType: 'USDC', status: 'completed', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: new Date(now - 14 * DAY), issueNumber: 2345, issueUrl: 'https://github.com/solidjs/solid-start/issues/2345',
+            llmKeyTokenLimit: null, submissionCount: 1,
+        },
+
         // ── Draft bounties (not yet funded) ─────────────────────────────────
         {
             repoOwner: 'biomejs', repoName: 'biome',

@@ -92,27 +92,31 @@ export function GitHubBountiesExplore() {
                 ) : undefined}
             />
 
-            {/* Status tabs */}
-            <div className="flex gap-0 border-b border-border-2 mb-4">
-                {STATUS_TABS.map(tab => (
-                    <button
-                        key={tab.key}
-                        onClick={() => setStatusTab(tab.key)}
-                        className={cn(
-                            "px-4 py-2 text-sm font-semibold transition-colors border-b-2 -mb-px bg-transparent border-none cursor-pointer",
-                            statusTab === tab.key
-                                ? "border-b-2 border-b-foreground text-fg-1"
-                                : "border-b-2 border-b-transparent text-fg-3 hover:text-fg-1"
-                        )}
-                    >
-                        {tab.label}
-                        {!isLoading && data && tab.key !== "all" && (
-                            <span className="ml-1.5 text-xs opacity-60">
-                                ({filterBounties(data.bounties, tab.key).length})
-                            </span>
-                        )}
-                    </button>
-                ))}
+            {/* Status tabs — quests-style with sliding underline */}
+            <div className="relative flex items-center gap-4 lg:gap-6 py-4">
+                {STATUS_TABS.map(tab => {
+                    const isActive = statusTab === tab.key
+                    const count = !isLoading && data && tab.key !== "all"
+                        ? filterBounties(data.bounties, tab.key).length
+                        : null
+                    return (
+                        <button
+                            key={tab.key}
+                            onClick={() => setStatusTab(tab.key)}
+                            className={cn(
+                                "inline-flex items-center gap-1.5 pb-1.5 text-sm font-medium whitespace-nowrap cursor-pointer transition-colors duration-150 ease-out bg-transparent border-none border-b-[3px] -mb-px",
+                                isActive
+                                    ? "text-fg-1 font-semibold border-b-fg-1"
+                                    : "text-fg-3 hover:text-fg-1 border-b-transparent"
+                            )}
+                        >
+                            {tab.label}
+                            {count !== null && (
+                                <span className="text-xs text-fg-3">({count})</span>
+                            )}
+                        </button>
+                    )
+                })}
             </div>
 
             {/* Reward type filter pills */}

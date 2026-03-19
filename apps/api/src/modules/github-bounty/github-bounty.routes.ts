@@ -49,6 +49,7 @@ const UpdateSubmissionSchema = z.object({
 const ListQuerySchema = z.object({
     page: z.coerce.number().int().positive().default(1),
     limit: z.coerce.number().int().positive().max(50).default(20),
+    status: z.enum(['live', 'completed']).optional(),
     rewardType: z.enum(['USDC', 'USD', 'LLM_KEY']).optional(),
     repoOwner: z.string().optional(),
     repoName: z.string().optional(),

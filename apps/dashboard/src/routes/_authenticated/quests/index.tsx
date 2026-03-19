@@ -118,6 +118,24 @@ export function QuestList() {
       stored && ["grid", "compact"].includes(stored) ? stored : "grid"
     ) as View;
   });
+
+  // Auto-switch to grid on mobile (compact/table not available below lg)
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    const handler = (e: MediaQueryListEvent) => {
+      if (!e.matches && view === "compact") {
+        setView("grid");
+        sessionStorage.setItem("cq-quest-view", "grid");
+      }
+    };
+    // Check on mount
+    if (!mql.matches && view === "compact") {
+      setView("grid");
+      sessionStorage.setItem("cq-quest-view", "grid");
+    }
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, [view]);
   const [popupQuest, setPopupQuest] = useState<{
     id: string;
     title: string;
@@ -501,11 +519,11 @@ export function QuestList() {
             <table className="w-full min-w-[640px] border border-border-2 border-b-0 rounded bg-bg-1 overflow-hidden border-separate border-spacing-0">
               <thead>
                 <tr>
-                  <th className="text-left px-4 py-2.5 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none min-w-36">
-                    Reward
-                  </th>
                   <th className="text-left px-4 py-2.5 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none min-w-60">
                     Name
+                  </th>
+                  <th className="text-left px-4 py-2.5 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none min-w-36">
+                    Reward
                   </th>
                   <th className="text-left px-4 py-2.5 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none">
                     Type
@@ -545,19 +563,9 @@ export function QuestList() {
                           })
                         }
                       >
-                        <td className="px-4 py-4 text-xs border-b border-border-2 align-top whitespace-nowrap">
-                          <span className="inline-flex items-center gap-2 text-sm font-semibold text-primary whitespace-nowrap">
-                            <TokenIcon token={quest.rewardType} size={16} />
-                            {quest.rewardAmount.toLocaleString()}{" "}
-                            {quest.rewardType}
-                          </span>
-                        </td>
                         <td className="px-4 pt-4 pb-4 text-xs border-b border-border-2 align-top min-w-60">
                           <div className="text-base font-semibold leading-snug -mt-0.5 font-heading">
                             {quest.title}
-                          </div>
-                          <div className="text-xs text-fg-3 leading-snug line-clamp-3 hidden">
-                            {quest.description}
                           </div>
                           <div className="text-xs text-fg-3 inline-flex items-center mt-1 gap-1">
                             by <SponsorLogo sponsor={quest.sponsor} size={14} />{" "}
@@ -565,6 +573,13 @@ export function QuestList() {
                               {quest.sponsor}
                             </strong>
                           </div>
+                        </td>
+                        <td className="px-4 py-4 text-xs border-b border-border-2 align-top whitespace-nowrap">
+                          <span className="inline-flex items-center gap-2 text-sm font-semibold whitespace-nowrap">
+                            <TokenIcon token={quest.rewardType} size={16} />
+                            {quest.rewardAmount.toLocaleString()}{" "}
+                            {quest.rewardType}
+                          </span>
                         </td>
                         <td className="px-4 py-4 text-xs border-b border-border-2 align-top">
                           <span

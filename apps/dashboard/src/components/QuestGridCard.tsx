@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import type { Quest } from "@clawquest/shared";
 import { formatTimeLeft } from "./quest-utils";
@@ -30,15 +30,26 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
   }, [time.ticking]);
   const isLuckyDraw = quest.type === "LUCKY_DRAW";
 
+  // Dynamic desc line-clamp: title 1 line → desc 3 lines, title 2 lines → desc 2 lines
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const [descClamp, setDescClamp] = useState(3);
+  useEffect(() => {
+    if (!titleRef.current) return;
+    const lineH =
+      parseFloat(getComputedStyle(titleRef.current).lineHeight) || 22;
+    const lines = Math.round(titleRef.current.scrollHeight / lineH);
+    setDescClamp(lines >= 2 ? 2 : 3);
+  }, [quest.title]);
+
   return (
     <Link
       to="/quests/$questId"
       params={{ questId: quest.id }}
-      className="group hover-shadow flex flex-col border border-border-2 rounded p-4 max-sm:p-3 no-underline text-fg-1 hover:border-fg-1 bg-bg-1"
+      className="group hover-shadow flex flex-col h-full border border-border-2 rounded p-4 max-sm:p-3 no-underline text-fg-1 hover:border-fg-1 bg-bg-1"
     >
       {/* Reward + Time */}
       <div className="flex items-center justify-between mb-2">
-        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+        <span className="inline-flex items-center gap-1.5 text-sm font-semibold">
           <TokenIcon token={quest.rewardType} size={16} />
           {quest.rewardAmount.toLocaleString()} {quest.rewardType}
         </span>
@@ -56,13 +67,21 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
         )}
       </div>
 
-      {/* Title */}
-      <h3 className="text-md font-semibold leading-snug mb-1.5 line-clamp-2">
+      {/* Title — max 2 lines */}
+      <h3
+        ref={titleRef}
+        className="text-md font-semibold leading-snug mb-1.5 line-clamp-2"
+      >
         {quest.title}
       </h3>
 
-      {/* Description excerpt */}
-      <p className="flex-1 text-xs text-fg-3 group-hover:text-fg-1 transition-colors leading-relaxed mb-3 line-clamp-2">
+      {/* Description — dynamic clamp: 3 lines if title 1 line, 2 lines if title 2 lines */}
+      <p
+        className={cn(
+          "flex-1 text-xs text-fg-3 group-hover:text-fg-1 transition-colors leading-relaxed mb-3 overflow-hidden",
+          descClamp === 2 ? "line-clamp-2" : "line-clamp-3",
+        )}
+      >
         {quest.description}
       </p>
 
@@ -100,11 +119,39 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
       <div className="mt-auto flex flex-col gap-3 pt-4 border-t border-border-2">
         {/* Progress */}
         {isLuckyDraw ? (
-          <div className="text-xs text-fg-3">
-            <strong className="text-fg-1 font-semibold">
-              {quest.filledSlots}
-            </strong>{" "}
-            entered
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-fg-3">
+                <strong className="text-fg-1">
+                  {quest.filledSlots.toLocaleString()}
+                </strong>
+                /{quest.totalSlots.toLocaleString()} entered
+              </span>
+            </div>
+            <div className="flex gap-px w-full">
+              {Array.from({ length: 10 }, (_, i) => {
+                const pct =
+                  quest.totalSlots > 0
+                    ? (quest.filledSlots / quest.totalSlots) * 100
+                    : 0;
+                const filled = pct >= (i + 1) * 10;
+                const partial = !filled && pct > i * 10;
+                return (
+                  <div key={i} className="flex-1 h-1.5 bg-bg-3 overflow-hidden">
+                    {(filled || partial) && (
+                      <div
+                        className="h-full bg-primary"
+                        style={{
+                          width: partial
+                            ? `${((pct - i * 10) / 10) * 100}%`
+                            : "100%",
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-1">
@@ -116,10 +163,7 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
                 /{quest.totalSlots.toLocaleString()} slots
               </span>
               <span className="text-fg-3">
-                {quest.totalSlots > 0
-                  ? ((quest.filledSlots / quest.totalSlots) * 100).toFixed(1)
-                  : 0}
-                %
+                <strong className="text-fg-1 font-semibold">{(quest.totalSlots - quest.filledSlots).toLocaleString()}</strong> left
               </span>
             </div>
             <div className="flex gap-px w-full">

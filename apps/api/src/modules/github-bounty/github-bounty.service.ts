@@ -273,13 +273,16 @@ export async function createBounties(prisma: PrismaClient, userId: string, input
 
 /** List live bounties, paginated. */
 export async function listBounties(prisma: PrismaClient, opts: {
-    page?: number; limit?: number; rewardType?: string; repoOwner?: string; repoName?: string;
+    page?: number; limit?: number; rewardType?: string; repoOwner?: string; repoName?: string; status?: string;
 }) {
     const page = opts.page ?? 1;
     const limit = Math.min(opts.limit ?? 20, 50);
     const skip = (page - 1) * limit;
 
-    const where: Record<string, unknown> = { status: 'live' };
+    // Allow filtering by status; default to live+completed (public-visible)
+    const where: Record<string, unknown> = {
+        status: opts.status ? opts.status : { in: ['live', 'completed'] },
+    };
     if (opts.rewardType) where.rewardType = opts.rewardType;
     if (opts.repoOwner) where.repoOwner = opts.repoOwner;
     if (opts.repoName) where.repoName = opts.repoName;

@@ -10,12 +10,15 @@ import { SeoHead } from "@/components/seo-head"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { useAccount } from "wagmi"
 import { Badge } from "@/components/ui/badge"
-import { QuestTypeBadge, QuestStatusBadge, RewardBadge } from "@/components/quest-badges"
+import { QuestStatusBadge, RewardBadge } from "@/components/quest-badges"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { cn } from "@/lib/utils"
 import { QuestGridCard } from "@/components/QuestGridCard"
+import { TokenIcon } from "@/components/token-icon"
+import { formatTimeLeft } from "@/components/quest-utils"
+import { QuestersAvatarStack } from "@/components/QuestCard"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 const REDIRECT_KEY = "clawquest_redirect_after_login"
@@ -147,9 +150,9 @@ interface QuestWithParticipation extends Quest {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function QuestDetail() {
-    const { questId } = useParams({ from: "/_app/quests/$questId" })
-    const { token, claim } = useSearch({ from: "/_app/quests/$questId" })
+export function QuestDetailV2() {
+    const { questId } = useParams({ from: "/_app/quests/$questId/v2" })
+    const { token, claim } = useSearch({ from: "/_app/quests/$questId/v2" })
     const { isAuthenticated, session, isLoading: isAuthLoading } = useAuth()
     const queryClient = useQueryClient()
     const navigate = useNavigate()
@@ -289,7 +292,6 @@ export function QuestDetail() {
                 ? { Authorization: `Bearer ${session.access_token}` }
                 : {}
             let res = await fetch(`${API_BASE}/quests/${questId}${tokenParam}`, { headers })
-            // If auth token expired/invalid, retry without auth to get public quest data
             if (res.status === 401 && session?.access_token) {
                 res = await fetch(`${API_BASE}/quests/${questId}${tokenParam}`)
             }
@@ -453,7 +455,7 @@ export function QuestDetail() {
     }, [quest?.myParticipation, hasAccepted])
 
     // Local countdown for quest.expiresAt
-    const liveCountdown = useCountdown(quest?.expiresAt ?? null)
+    useCountdown(quest?.expiresAt ?? null)
 
     if (isLoading) {
         return (
@@ -582,7 +584,7 @@ export function QuestDetail() {
 
     const isLuckyDraw = quest.type === "LUCKY_DRAW"
     const slotsLeft = isLuckyDraw ? Infinity : quest.totalSlots - quest.filledSlots
-    const spotsPercent = quest.totalSlots > 0 ? Math.round((quest.filledSlots / quest.totalSlots) * 100) : 0
+
     const isLive = quest.status === "live"
     const isCompleted = quest.status === "completed"
 
@@ -671,79 +673,48 @@ export function QuestDetail() {
                 </div>
             )}
 
-            {/* Page header */}
+            {/* Page header — hero row */}
             <div className="py-4 border-b border-border-2 mb-6">
-                <h1 className="text-2xl font-semibold text-fg-1 leading-tight">{quest.title}</h1>
-                <div className="flex items-center gap-2 mt-2.5 text-xs text-fg-3 flex-wrap">
+                {(() => {
+                    const time = formatTimeLeft(quest.expiresAt ?? null)
+                    return (
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="inline-flex items-center gap-1.5 text-lg font-semibold text-primary">
+                                <TokenIcon token={quest.rewardType} size={20} />
+                                {quest.rewardAmount.toLocaleString()} {quest.rewardType}
+                            </span>
+                            <span className={cn(
+                                "font-mono text-sm",
+                                time.cls === "urgent" && "text-error",
+                                time.cls === "warning" && "text-warning",
+                                time.cls === "normal" && "text-fg-3",
+                            )}>{time.label}</span>
+                        </div>
+                    )
+                })()}
+                <div className="flex items-center gap-2 text-xs text-fg-3 mb-3 flex-wrap">
                     <QuestStatusBadge status={quest.status} />
-                    <span className="w-1 h-1 rounded-full bg-border inline-block" />
-                    <span className="inline-flex items-center gap-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-fg-1">{quest.sponsor}</strong></span>
-                    <span className="w-1 h-1 rounded-full bg-border inline-block" />
-                    <span>{new Date(quest.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                    <Badge variant="outline" className="uppercase text-2xs">{quest.type.replace("_", " ")}</Badge>
+                    <span>by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-fg-1">{quest.sponsor}</strong></span>
                     {quest.sponsorNames && quest.sponsorNames.length > 0 && (
-                        <>
-                            <span className="w-1 h-1 rounded-full bg-border inline-block" />
-                            <span className="text-fg-3">Sponsored by {quest.sponsorNames.join(', ')}</span>
-                        </>
+                        <span className="text-fg-3">· Sponsored by {quest.sponsorNames.join(', ')}</span>
                     )}
                 </div>
+                <h1 className="text-2xl font-semibold font-heading mb-2">{quest.title}</h1>
+                <p className="text-sm text-fg-3 leading-relaxed mb-3">{quest.description}</p>
+                {quest.tags && quest.tags.length > 0 && (
+                    <div className="flex gap-1.5 flex-wrap">
+                        {quest.tags.map(tag => (
+                            <Badge key={tag} variant="pill">{tag}</Badge>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* 2-column grid */}
             <div className="flex flex-col md:flex-row gap-8 items-start">
                 {/* ── Left: main content ── */}
                 <div className="flex-1 min-w-0">
-                    {/* Description */}
-                    <div className="mb-6">
-                        <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider mb-3">About this Quest</h2>
-                        <p className="text-sm leading-relaxed text-fg-1">{quest.description}</p>
-                    </div>
-
-                    {/* Reward grid */}
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                        <div className="px-3.5 py-3 border border-border-2 rounded">
-                            <div className="text-2xs text-fg-3 uppercase tracking-wider mb-1">total reward</div>
-                            <div className="text-sm font-semibold text-accent font-mono">
-                                {quest.rewardType === REWARD_TYPE.LLM_KEY
-                                    ? `${(quest.llmKeyTokenLimit ?? 0).toLocaleString()} tokens/winner`
-                                    : quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER
-                                        ? llmTokenBudget
-                                            ? `${Math.round(llmTokenBudget.perWinner).toLocaleString()} tokens/winner`
-                                            : `${quest.rewardAmount.toLocaleString()} USDC`
-                                        : quest.fundingMethod === FUNDING_METHOD.STRIPE
-                                            ? `$${quest.rewardAmount.toLocaleString()} ${REWARD_TYPE.USD}`
-                                            : `${quest.rewardAmount.toLocaleString()} ${quest.rewardType}`}
-                            </div>
-                        </div>
-                        <div className="px-3.5 py-3 border border-border-2 rounded">
-                            <div className="text-2xs text-fg-3 uppercase tracking-wider mb-1">total slots</div>
-                            <div className="text-sm font-semibold text-fg-1">{quest.totalSlots}</div>
-                        </div>
-                        <div className="px-3.5 py-3 border border-border-2 rounded">
-                            <div className="text-2xs text-fg-3 uppercase tracking-wider mb-1">slots left</div>
-                            <div className={cn("text-sm font-semibold", slotsLeft < 5 ? "text-error" : "text-fg-1")}>
-                                {slotsLeft}
-                            </div>
-                        </div>
-                        <div className="px-3.5 py-3 border border-border-2 rounded">
-                            <div className="text-2xs text-fg-3 uppercase tracking-wider mb-1">questers</div>
-                            <div className="text-sm font-semibold text-fg-1">
-                                <Link to="/quests/$questId/questers" params={{ questId: quest.id }} className="hover:text-accent transition-colors">
-                                    {quest.questers} →
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Tags */}
-                    {quest.tags && quest.tags.length > 0 && (
-                        <div className="mb-6 flex gap-1.5 flex-wrap">
-                            {quest.tags.map(tag => (
-                                <Badge key={tag} variant="pill">{tag}</Badge>
-                            ))}
-                        </div>
-                    )}
-
                     {/* Human Tasks (from quest.tasks) */}
                     {quest.tasks && quest.tasks.length > 0 && (
                         <div className="mb-6 pl-3.5 border-l-4 border-l-(--human-fg)">
@@ -996,51 +967,35 @@ export function QuestDetail() {
 
                 {/* ── Right: sidebar ── */}
                 <div className="w-full md:min-w-2xs md:max-w-xs shrink-0">
-                    <div className="border border-border-2 rounded mb-3.5 sticky top-[55px]">
-                        {/* Reward hero */}
-                        <div className="px-3 py-4 text-center border-b border-border-2">
-                            <div className="text-[28px] font-semibold font-mono text-accent leading-tight">
-                                {quest.rewardType === REWARD_TYPE.LLM_KEY
-                                    ? (quest.llmKeyTokenLimit ?? 0).toLocaleString()
-                                    : quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER && llmTokenBudget
-                                        ? Math.round(llmTokenBudget.total).toLocaleString()
-                                        : quest.rewardAmount.toLocaleString()}
-                            </div>
-                            <div className="flex justify-center gap-2 mt-2 text-xs">
+                    <div className="border border-border-2 rounded mb-3.5 sticky top-14">
+                        {/* Sidebar header: reward summary */}
+                        <div className="px-3 py-3 border-b border-border-2">
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent font-mono">
+                                    <TokenIcon token={quest.rewardType} size={16} />
+                                    {quest.rewardType === REWARD_TYPE.LLM_KEY
+                                        ? `${(quest.llmKeyTokenLimit ?? 0).toLocaleString()} tokens`
+                                        : quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER && llmTokenBudget
+                                            ? `${Math.round(llmTokenBudget.total).toLocaleString()} tokens`
+                                            : quest.fundingMethod === FUNDING_METHOD.STRIPE
+                                                ? `$${quest.rewardAmount.toLocaleString()} ${REWARD_TYPE.USD}`
+                                                : `${quest.rewardAmount.toLocaleString()} ${quest.rewardType}`}
+                                </span>
                                 <RewardBadge type={quest.fundingMethod === FUNDING_METHOD.STRIPE ? REWARD_TYPE.USD : quest.rewardType} />
-                                <QuestTypeBadge type={quest.type} />
                             </div>
-                            <div className="text-xs text-fg-3 mt-0.5">
+                            <div className="text-2xs text-fg-3">
                                 {quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER && llmTokenBudget
                                     ? 'total LLM tokens'
                                     : 'total reward pool'}
                             </div>
                         </div>
 
-                        {/* Countdown */}
+                        {/* Deadline */}
                         {isLive && quest.expiresAt && (
-                            <div className="px-3 py-2.5 border-b border-border-2 text-center">
-                                <div className="text-xs font-semibold uppercase tracking-wider text-fg-3 mb-1">Time remaining</div>
-                                <div className="flex justify-center gap-1 font-mono">
-                                    <div className="flex flex-col items-center min-w-[40px]">
-                                        <span className={cn("text-xl font-semibold leading-tight", liveCountdown.d === 0 && liveCountdown.h < 6 ? "text-error" : "text-fg-1")}>{String(liveCountdown.d).padStart(2, "0")}</span>
-                                        <span className="text-xs text-fg-3 uppercase tracking-wide">d</span>
-                                    </div>
-                                    <span className="text-lg text-input pt-0.5">:</span>
-                                    <div className="flex flex-col items-center min-w-[40px]">
-                                        <span className={cn("text-xl font-semibold leading-tight", liveCountdown.d === 0 && liveCountdown.h < 6 ? "text-error" : "text-fg-1")}>{String(liveCountdown.h).padStart(2, "0")}</span>
-                                        <span className="text-xs text-fg-3 uppercase tracking-wide">h</span>
-                                    </div>
-                                    <span className="text-lg text-input pt-0.5">:</span>
-                                    <div className="flex flex-col items-center min-w-[40px]">
-                                        <span className="text-xl font-semibold text-fg-1 leading-tight">{String(liveCountdown.m).padStart(2, "0")}</span>
-                                        <span className="text-xs text-fg-3 uppercase tracking-wide">m</span>
-                                    </div>
-                                    <span className="text-lg text-input pt-0.5">:</span>
-                                    <div className="flex flex-col items-center min-w-[40px]">
-                                        <span className="text-xl font-semibold text-fg-1 leading-tight">{String(liveCountdown.s).padStart(2, "0")}</span>
-                                        <span className="text-xs text-fg-3 uppercase tracking-wide">s</span>
-                                    </div>
+                            <div className="px-3 py-2.5 border-b border-border-2">
+                                <div className="text-2xs font-semibold uppercase tracking-wider text-fg-3 mb-0.5">Deadline</div>
+                                <div className="text-xs text-fg-1">
+                                    {new Date(quest.expiresAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                                 </div>
                             </div>
                         )}
@@ -1050,9 +1005,9 @@ export function QuestDetail() {
                             </div>
                         )}
 
-                        {/* Spots bar */}
+                        {/* Spots — segmented bar */}
                         <div className="px-3 py-2.5 border-b border-border-2">
-                            <div className="flex justify-between text-xs mb-1">
+                            <div className="flex justify-between text-xs mb-2">
                                 {isLuckyDraw ? (
                                     <>
                                         <span className="text-fg-3 font-semibold">{quest.filledSlots} entered</span>
@@ -1068,10 +1023,33 @@ export function QuestDetail() {
                                 )}
                             </div>
                             {!isLuckyDraw && (
-                                <div className="h-1.5 bg-bg-3 rounded overflow-hidden">
-                                    <div
-                                        className={cn("h-full rounded transition-[width] duration-300", slotsLeft < 5 ? "bg-red-600" : "bg-accent")}
-                                        style={{ width: `${spotsPercent}%` }}
+                                <div className="flex gap-px w-full">
+                                    {Array.from({ length: 10 }, (_, i) => {
+                                        const pct = quest.totalSlots > 0 ? (quest.filledSlots / quest.totalSlots) * 100 : 0
+                                        const filled = pct >= (i + 1) * 10
+                                        const partial = !filled && pct > i * 10
+                                        return (
+                                            <div key={i} className="flex-1 h-1.5 bg-bg-3 overflow-hidden">
+                                                {(filled || partial) && (
+                                                    <div
+                                                        className="h-full bg-primary"
+                                                        style={{ width: partial ? `${((pct - i * 10) / 10) * 100}%` : '100%' }}
+                                                    />
+                                                )}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )}
+                            {/* Questers avatar stack */}
+                            {quest.questers > 0 && quest.questerDetails && (
+                                <div className="mt-2.5 flex items-center justify-between">
+                                    <Link to="/quests/$questId/questers" params={{ questId: quest.id }} className="text-2xs text-fg-3 hover:text-accent transition-colors">
+                                        {quest.questers} questers →
+                                    </Link>
+                                    <QuestersAvatarStack
+                                        details={quest.questerDetails}
+                                        total={quest.questers}
                                     />
                                 </div>
                             )}

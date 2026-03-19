@@ -289,6 +289,7 @@ Terminal theme: all `2px` (subtly rounded). Other themes override these tokens.
 | `--radius-xl` | `2px` | Large cards, featured items |
 | `--radius-full` | `9999px` | Avatars, pills, toggles |
 | `--radius-button` | `2px` | Button corners |
+| **Progress bar** | `0` (no radius) | Quest progress indicators, no rounded corners |
 
 ---
 
@@ -417,7 +418,7 @@ Naming: `variant="primary"`, `variant="primary-tonal"`, `variant="primary-outlin
 - Font: `text-xs font-semibold`, inline-flex with `gap-1`
 - Variant groups:
   - **Semantic** (text only): `default` (fg-1), `success`, `error`, `warning`, `info`, `muted` (fg-3)
-  - **Pill** (border + rounded): `pill` — border-border-2, text-fg-2, px-2 py-0.5, rounded-md
+  - **Pill** (border + rounded): `pill` — border-border-2, text-fg-2, `uppercase text-2xs font-normal`, px-2 py-0.5, rounded-md. Pills auto-uppercase with smaller text and regular weight
   - **Filled** (solid bg): `filled-success`, `filled-error`, `filled-warning`, `filled-muted` (bg-bg-3 text-fg-3)
   - **Outline** (border + light bg): `outline` (border-border-2 bg-bg-2 text-fg-1), `outline-success`, `outline-error`, `outline-warning`, `outline-primary` (new variant)
   - **Count** (small filled pill for numbers): `count` (bg-fg-1 text-bg-1), `count-muted` (bg-bg-3 text-fg-2), `count-outline`, `count-primary`, `count-primary-inverted`, `count-success`, `count-error`, `count-warning`, `count-info`
@@ -481,9 +482,10 @@ Naming: `variant="primary"`, `variant="primary-tonal"`, `variant="primary-outlin
 
 ### View Toggle
 
-- Container: `border border-border p-0.5` with sliding indicator (`bg-fg-1`)
-- Active: `text-bg-1` (inverted on dark highlight)
+- Container: `border border-border-2 p-0.5` with sliding indicator (`bg-bg-3`)
+- Active: `text-fg-1` (strong text on highlight)
 - Inactive: `text-fg-3`, hover: `text-fg-1`
+- **2 views only**: grid + compact (table). List view removed
 - **Hidden on mobile**: `max-lg:hidden` — mobile uses grid view only
 
 ---

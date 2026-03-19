@@ -47,32 +47,56 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 
 ## Component Patterns
 
-### Quest Card
+### Quest Card — Grid View
 
 ```
 +----------------------------------+
-| [Badge: FCFS] [Badge: Live]     |
+| [Icon] $500 USDC    2d 14h left |
 | Quest Title (truncate 2 lines)   |
-| Sponsor name · 2d 14h left      |
+| Short description (2 lines)      |
 |                                  |
-| [Progress bar: 8/10 spots]      |
-| [Reward: 500 USDC]  [→ View]   |
+| [FCFS Badge] [tag] [tag] +N     |
+| [██████████] 8/10 slots (50%)   |
+| by Sponsor  [Avatars]           |
 +----------------------------------+
 ```
 
-- Hover: `hover:bg-bg-2` (subtle bg shift, no shadow)
+- Hover: `hover:border-fg-1` (border color shift, no bg change)
 - Click: entire card is clickable (`cursor-pointer`)
-- Badge colors: status-based (see DESIGN_SYSTEM.md)
-- Border: `border border-border-1` (1px, lightest border token)
+- Type badge: `outline` variant with icon
+- Tags: `pill` variant, truncated with +N counter
+- Progress bar: 10-segment linear bar, no rounded corners
+- Border: `border border-border-2` (1px)
+- Radius: `rounded` (2px Terminal theme)
+
+### Quest Card — Compact (Table) View
+
+2-column layout: **left** (reward + timer + progress + questers) | **right** (title + desc + type + tags + sponsor)
+
+```
++--------+------------------------------------+
+| $USDC  | Quest Title                        |
+| 2d 14h | Brief description one-line         |
+| ██████ | [FCFS] [tag] [tag]                |
+| [⚙⚙⚙] | by Sponsor                        |
++--------+------------------------------------+
+```
+
+- Hover: `hover:border-fg-1` (border color shift)
+- Desktop: 2-column flex layout with `gap-8`
+- Mobile: stacked layout with mobile-specific spacing
+- Type badge: `outline` variant
+- Progress: simplified bar with percentage label
+- Border: `border border-border-2` (1px)
 - Radius: `rounded` (2px Terminal theme)
 
 #### Responsive Behavior
 
-| Breakpoint | Layout |
-|------------|--------|
-| Mobile (< 640px) | Single column, full-width cards |
-| Tablet (md: 768px) | 2-column grid |
-| Desktop (xl: 1280px) | 3-column grid |
+| Breakpoint | Grid View | Compact View |
+|------------|-----------|------|
+| Mobile (< 640px) | Single column, full-width cards | Stacked layout (reward above title) |
+| Tablet (md: 768px) | 2-column grid | 2-column flex layout |
+| Desktop (xl: 1280px) | 3-column grid | 2-column flex layout |
 
 ### Empty State
 
@@ -252,9 +276,10 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 | Component | Mobile | Tablet (md:) | Desktop (xl:) |
 |-----------|--------|-------------|---------------|
 | Quest cards | 1 col, full width | 2 col grid | 3 col grid |
+| Card layout | Grid only (compact hidden) | Grid + compact toggle visible | Same |
 | Detail page | Stacked (sidebar on top) | 2-col `[1fr_280px]` | Same |
 | Tables | Stack to card list | Full table | Same |
 | Navbar | Bottom nav bar (Apple HIG) | Full nav in header | Same |
 | Buttons | Full width (`w-full`) | Auto width | Same |
 | Tabs | Horizontal scroll + fade mask | Full row | Same |
-| View toggle | Hidden (grid only) | Visible | Same |
+| View toggle | Hidden | Visible (grid + compact only) | Same |

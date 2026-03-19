@@ -148,10 +148,12 @@ export function generateMarkdown(opts: {
     const installCmd = generateInstallCommand(installCfg, opts.skillSlug);
     const fetchCmd = generateFetchCommand(fetchCfg, fullUrl);
 
-    // No real fetch URL (e.g. "?" when api_endpoint empty) → 2 steps: Install, Submit. Otherwise 3 steps.
-    // Aligns with admin: VerificationConfigForm uses cfg.api_endpoint ? for "has URL".
+    // Determine whether to include the Fetch step (3-step vs 2-step script).
+    // Include fetch when: api_endpoint has a valid URL, OR fetch type is 'custom' with its own command.
     const apiEndpointStr = (opts.apiEndpoint ?? '').trim();
-    const hasValidFetchUrl = apiEndpointStr.length > 0 && fullUrl !== '?';
+    const hasApiEndpoint = apiEndpointStr.length > 0 && fullUrl !== '?';
+    const hasCustomFetch = fetchCfg.type === 'custom' && !!fetchCfg.command?.trim();
+    const hasValidFetchUrl = hasApiEndpoint || hasCustomFetch;
 
     const scriptBody = hasValidFetchUrl
         ? `# Step 1: Install the skill

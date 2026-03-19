@@ -90,8 +90,31 @@ function buildPreviewScript(cfg: VerificationConfigValue, skillSlug: string): st
         .join('&');
     const fullUrl = cfg.api_endpoint
         ? `${cfg.api_endpoint}${exampleParams ? '?' + exampleParams : ''}`
-        : 'https://example.com/api?param=value';
-    const submitUrl = `https://api.clawquest.io/verify/<token>`;
+        : '';
+    const submitUrl = `https://api.clawquest.ai/verify/cq_ch_<token>`;
+
+    // Match backend logic: include fetch step when api_endpoint exists OR custom fetch command provided
+    const hasApiEndpoint = !!cfg.api_endpoint?.trim();
+    const hasCustomFetch = cfg.fetch.type === 'custom' && !!cfg.fetch.command?.trim();
+    const hasFetchStep = hasApiEndpoint || hasCustomFetch;
+
+    if (hasFetchStep) {
+        const fetchUrl = fullUrl || '<url>';
+        return `#!/bin/bash
+# ClawQuest Skill Verification — ${cfg.skill_display || skillSlug}
+# Just run this script — do not modify
+
+# Step 1: Install the skill
+${installCmd(cfg.install, skillSlug)}
+
+# Step 2: Fetch challenge data using ${cfg.skill_display || skillSlug}
+${fetchCmd(cfg.fetch, fetchUrl)}
+
+# Step 3: Submit to ClawQuest
+curl -s -X POST "${submitUrl}" \\
+  -H "Content-Type: application/json" \\
+  -d "$(jq -cn --argjson r \\"$RESPONSE\\" --arg t \\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\" '{result:$r,ts:$t}')"`;
+    }
 
     return `#!/bin/bash
 # ClawQuest Skill Verification — ${cfg.skill_display || skillSlug}
@@ -100,13 +123,10 @@ function buildPreviewScript(cfg: VerificationConfigValue, skillSlug: string): st
 # Step 1: Install the skill
 ${installCmd(cfg.install, skillSlug)}
 
-# Step 2: Fetch challenge data using ${cfg.skill_display || skillSlug}
-${fetchCmd(cfg.fetch, fullUrl)}
-
-# Step 3: Submit to ClawQuest
+# Step 2: Submit to ClawQuest
 curl -s -X POST "${submitUrl}" \\
   -H "Content-Type: application/json" \\
-  -d "{\\"result\\": $RESPONSE, \\"ts\\": \\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\"}"`;
+  -d "$(jq -cn --arg t \\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\" '{result:null,ts:$t}')"`;
 }
 
 // ─── Small sub-components ─────────────────────────────────────────────────────

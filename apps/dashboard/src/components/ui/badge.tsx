@@ -15,7 +15,7 @@ const badgeVariants = cva(
         info: "text-info",
         muted: "text-fg-3",
         /* Pill — rounded, border (for tags, skills, categories) */
-        pill: "border border-border-2 rounded-md px-2 py-0.5 text-fg-2",
+        pill: "border border-border-2 rounded-md px-2 py-0.5 text-fg-2 uppercase text-2xs font-normal",
         /* Filled — solid bg (for status indicators) */
         "filled-success":
           "rounded-md bg-success-light text-success px-2 py-0.5",

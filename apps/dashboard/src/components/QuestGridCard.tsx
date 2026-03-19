@@ -34,7 +34,7 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
     <Link
       to="/quests/$questId"
       params={{ questId: quest.id }}
-      className="hover-shadow flex flex-col border border-border-2 rounded p-4 max-sm:p-3 no-underline text-fg-1 hover:border-fg-1 bg-bg-1"
+      className="group hover-shadow flex flex-col border border-border-2 rounded p-4 max-sm:p-3 no-underline text-fg-1 hover:border-fg-1 bg-bg-1"
     >
       {/* Reward + Time */}
       <div className="flex items-center justify-between mb-2">
@@ -44,7 +44,7 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
         </span>
         <span
           className={cn(
-            "font-mono text-xs font-semibold",
+            "font-mono text-xs font-normal tracking-wide",
             time.cls === "urgent" && "text-error",
             time.cls === "warning" && "text-warning",
             time.cls === "normal" && "text-fg-3",
@@ -60,13 +60,16 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
       </h3>
 
       {/* Description excerpt */}
-      <p className="flex-1 text-xs text-fg-3 leading-relaxed mb-3 line-clamp-2">
+      <p className="flex-1 text-xs text-fg-3 group-hover:text-fg-1 transition-colors leading-relaxed mb-3 line-clamp-2">
         {quest.description}
       </p>
 
       {/* Type badge + Tags (single row, overflow → +N) */}
       <div className="flex gap-1 mb-4 items-center overflow-hidden">
-        <Badge variant="outline" className="uppercase shrink-0">
+        <Badge
+          variant="outline"
+          className="uppercase shrink-0 text-2xs text-fg-3 group-hover:border-primary/40 group-hover:bg-primary/10 group-hover:text-primary transition-colors"
+        >
           {TYPE_ICON[quest.type] &&
             (() => {
               const Icon = TYPE_ICON[quest.type];
@@ -76,7 +79,11 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
         </Badge>
         {quest.tags &&
           quest.tags.slice(0, 2).map((tag) => (
-            <Badge key={tag} variant="pill" className="shrink-0">
+            <Badge
+              key={tag}
+              variant="pill"
+              className="shrink-0 text-fg-3 group-hover:text-fg-1 transition-colors"
+            >
               {tag}
             </Badge>
           ))}
@@ -101,12 +108,12 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between text-xs">
               <span className="text-fg-3">
-                <strong className="text-fg-1 font-semibold">
+                <strong className="text-fg-1">
                   {quest.filledSlots.toLocaleString()}
                 </strong>
                 /{quest.totalSlots.toLocaleString()} slots
               </span>
-              <span className="text-fg-2 font-medium">
+              <span className="text-fg-3">
                 {quest.totalSlots > 0
                   ? ((quest.filledSlots / quest.totalSlots) * 100).toFixed(1)
                   : 0}
@@ -123,13 +130,10 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
                 const filled = pct >= segThreshold;
                 const partial = !filled && pct > i * 10;
                 return (
-                  <div
-                    key={i}
-                    className="flex-1 h-1.5 bg-bg-3 rounded-sm overflow-hidden"
-                  >
+                  <div key={i} className="flex-1 h-1.5 bg-bg-3 overflow-hidden">
                     {(filled || partial) && (
                       <div
-                        className="h-full bg-primary rounded-sm"
+                        className="h-full bg-primary"
                         style={{
                           width: partial
                             ? `${((pct - i * 10) / 10) * 100}%`

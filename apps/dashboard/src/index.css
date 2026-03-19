@@ -196,7 +196,7 @@
   --fg-1: #171717;
   --fg-2: #404040;
   --fg-3: #737373;
-  --fg-4: #d4d4d4;
+  --fg-4: #a3a3a3;
   --border-1: #f5f5f5;
   --border-2: #e5e5e5;
   --border-3: #d4d4d4;
@@ -306,7 +306,7 @@
     "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas",
     monospace;
 
-  --text-2xs: 10px;
+  --text-2xs: 11px;
   --text-xs: 12px;
   --text-sm: 14px;
   --text-base: 16px;

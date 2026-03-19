@@ -5,11 +5,15 @@ import { getDiceBearUrl } from "./avatarUtils";
 import { SponsorLogo } from "./sponsor-logo";
 import { QuestersPopup } from "./QuestersPopup";
 import { RunLine, TrophyLine, RandomLine } from "@mingcute/react";
-import { formatTimeLeft, typeColorClass } from "./quest-utils";
+import { formatTimeLeft } from "./quest-utils";
 import { TokenIcon } from "./token-icon";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 const TYPE_ICON: Record<string, React.ElementType> = {
   FCFS: RunLine,
@@ -43,7 +47,7 @@ export function QuestersAvatarStack({
 
   return (
     <div
-      className="flex items-center cursor-pointer group"
+      className="flex items-center cursor-pointer group/avatars"
       onClick={onClick}
     >
       {displayed.map((d, i) => (
@@ -58,19 +62,23 @@ export function QuestersAvatarStack({
             </div>
           </TooltipTrigger>
           <TooltipContent side="top" className="text-xs">
-            <span className="text-surface-dark-muted">Human</span> <span className="font-semibold">@{d.humanHandle}</span>
+            <span className="text-surface-dark-muted">Human</span>{" "}
+            <span className="font-semibold">@{d.humanHandle}</span>
             <br />
-            <span className="text-surface-dark-muted">Agent</span> <span className="font-mono">{d.agentName}</span>
+            <span className="text-surface-dark-muted">Agent</span>{" "}
+            <span className="font-mono">{d.agentName}</span>
           </TooltipContent>
         </Tooltip>
       ))}
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="h-4 ml-1 text-xs text-fg-2 whitespace-nowrap group-hover:text-primary leading-none flex items-center font-medium cursor-default">
+          <div className="h-4 ml-1 text-xs text-fg-3 whitespace-nowrap group-hover/avatars:text-primary leading-none flex items-center cursor-default">
             {extra > 0 ? <span>+{extra}</span> : <span>{total}</span>}
           </div>
         </TooltipTrigger>
-        <TooltipContent side="top">{total.toLocaleString()} questers joined</TooltipContent>
+        <TooltipContent side="top">
+          {total.toLocaleString()} questers joined
+        </TooltipContent>
       </Tooltip>
     </div>
   );
@@ -79,9 +87,6 @@ export function QuestersAvatarStack({
 export function QuestCard({ quest }: QuestCardProps) {
   const time = formatTimeLeft(quest.expiresAt);
   const isLuckyDraw = quest.type === "LUCKY_DRAW";
-  const slotsLeft = isLuckyDraw
-    ? Infinity
-    : quest.totalSlots - quest.filledSlots;
   const [showPopup, setShowPopup] = useState(false);
 
   return (
@@ -96,33 +101,74 @@ export function QuestCard({ quest }: QuestCardProps) {
       <Link
         to="/quests/$questId"
         params={{ questId: quest.id }}
-        className="hover-shadow flex gap-6 max-sm:gap-3 max-sm:flex-col p-4 max-sm:p-3 border border-border-2 rounded items-start no-underline text-fg-1 hover:border-fg-1 bg-bg-1"
+        className="group hover-shadow flex gap-8 max-sm:flex-col p-4 max-sm:p-3 border border-border-2 rounded no-underline text-fg-1 hover:border-fg-1 bg-bg-1"
       >
-        {/* Mobile-only stats row */}
-        <div className="sm:hidden flex items-center justify-between gap-3 pb-2 mb-2 border-b border-border-2 w-full text-xs">
-          <span className="inline-flex items-center gap-2 text-sm font-semibold text-success">
-            <TokenIcon token={quest.rewardType} size={14} />
+        {/* Left column: Reward + Timer + Progress */}
+        <div className="flex flex-col gap-2 w-50 max-sm:w-full shrink-0 max-sm:flex-row max-sm:items-center max-sm:justify-between max-sm:pb-2 max-sm:mb-2 max-sm:border-b max-sm:border-border-2">
+          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+            <TokenIcon token={quest.rewardType} size={16} />
             {quest.rewardAmount.toLocaleString()} {quest.rewardType}
           </span>
           <span
             className={cn(
-              "font-mono text-sm font-semibold",
+              "font-mono text-xs font-normal tracking-wide",
               time.cls === "urgent" && "text-error",
               time.cls === "warning" && "text-warning",
+              time.cls === "normal" && "text-fg-3",
             )}
           >
             {time.label}
           </span>
-        </div>
-
-        {/* Stats column (desktop only) */}
-        <div className="hidden sm:flex flex-col items-end gap-1.5 w-[140px] shrink-0 text-xs text-fg-3 text-right pt-0.5">
-          <span className="inline-flex items-center gap-2 text-sm font-semibold text-success">
-            <TokenIcon token={quest.rewardType} size={16} />
-            {quest.rewardAmount.toLocaleString()} {quest.rewardType}
-          </span>
+          {/* Progress (desktop) */}
+          <div className="max-sm:hidden">
+            {isLuckyDraw ? (
+              <span className="text-xs text-fg-3">
+                <strong className="text-fg-1 font-semibold">
+                  {quest.filledSlots.toLocaleString()}
+                </strong>{" "}
+                entered
+              </span>
+            ) : (
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-fg-3">
+                  <strong className="text-fg-1">
+                    {quest.filledSlots.toLocaleString()}
+                  </strong>
+                  /{quest.totalSlots.toLocaleString()} slots
+                </span>
+                <div className="flex gap-px w-full">
+                  {Array.from({ length: 10 }, (_, i) => {
+                    const pct =
+                      quest.totalSlots > 0
+                        ? (quest.filledSlots / quest.totalSlots) * 100
+                        : 0;
+                    const filled = pct >= (i + 1) * 10;
+                    const partial = !filled && pct > i * 10;
+                    return (
+                      <div
+                        key={i}
+                        className="flex-1 h-1.5 bg-bg-3 overflow-hidden"
+                      >
+                        {(filled || partial) && (
+                          <div
+                            className="h-full bg-primary"
+                            style={{
+                              width: partial
+                                ? `${((pct - i * 10) / 10) * 100}%`
+                                : "100%",
+                            }}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+          {/* Questers (desktop) */}
           {quest.questers > 0 && (
-            <div className="flex flex-col items-end">
+            <div className="max-sm:hidden">
               <QuestersAvatarStack
                 details={quest.questerDetails ?? []}
                 total={quest.questers}
@@ -134,85 +180,56 @@ export function QuestCard({ quest }: QuestCardProps) {
               />
             </div>
           )}
-          <div className="flex flex-col items-end">
-            {isLuckyDraw ? (
-              <>
-                <span className="text-sm font-semibold text-fg-1 leading-tight">
-                  {quest.filledSlots}
-                </span>
-                <span className="text-xs text-fg-3">entered</span>
-              </>
-            ) : (
-              <>
-                <span
-                  className={cn(
-                    "text-sm font-semibold leading-tight",
-                    slotsLeft < 5 ? "text-error" : "text-fg-1",
-                  )}
-                >
-                  {slotsLeft}
-                </span>
-                <span className="text-xs text-fg-3">slots left</span>
-              </>
-            )}
-          </div>
         </div>
 
-        {/* Body */}
+        {/* Right: Body */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 text-xs">
-            <span
-              className={cn(
-                "inline-flex items-center gap-1 font-semibold uppercase",
-                typeColorClass(quest.type),
-              )}
+          <div className="text-base max-sm:text-sm font-semibold mb-1 font-heading">
+            {quest.title}
+          </div>
+          <div className="text-xs text-fg-3 group-hover:text-fg-1 transition-colors mb-2 leading-relaxed line-clamp-1">
+            {quest.description}
+          </div>
+
+          {/* Type + Tags */}
+          <div className="flex gap-1 items-center overflow-hidden">
+            <Badge
+              variant="outline"
+              className="uppercase shrink-0 text-2xs text-fg-3 group-hover:border-primary/40 group-hover:bg-primary/10 group-hover:text-primary transition-colors"
             >
               {TYPE_ICON[quest.type] &&
                 (() => {
                   const Icon = TYPE_ICON[quest.type];
-                  return <Icon size={14} />;
+                  return <Icon size={12} />;
                 })()}
-              {quest.type}
-            </span>
-            <span className="w-1 h-1 rounded-full bg-border inline-block"></span>
-            <span className="text-fg-3 inline-flex items-center gap-1">
-              by <SponsorLogo sponsor={quest.sponsor} size={14} />{" "}
+              {quest.type.replace("_", " ")}
+            </Badge>
+            {quest.tags &&
+              quest.tags.slice(0, 3).map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="pill"
+                  className="shrink-0 text-fg-3 group-hover:text-fg-1 transition-colors"
+                >
+                  {tag}
+                </Badge>
+              ))}
+            {quest.tags && quest.tags.length > 3 && (
+              <span className="text-fg-3 px-1 py-0.5 text-xs shrink-0">
+                +{quest.tags.length - 3}
+              </span>
+            )}
+          </div>
+
+          {/* Sponsor + Questers (desktop) */}
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-xs text-fg-3 flex items-center gap-1.5 leading-none">
+              by <SponsorLogo sponsor={quest.sponsor} size={16} />{" "}
               <strong className="text-fg-1 font-semibold">
                 {quest.sponsor}
               </strong>
             </span>
           </div>
-          <div className="text-base max-sm:text-sm font-semibold mb-1 font-heading">
-            {quest.title}
-          </div>
-          <div className="text-xs text-fg-3 mb-2 leading-relaxed line-clamp-3">
-            {quest.description}
-          </div>
-          {quest.tags && quest.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 max-sm:gap-1 items-center text-xs">
-              {quest.tags.map((tag) => (
-                <Badge key={tag} variant="pill">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Time column */}
-        <div className="hidden sm:flex flex-col items-end justify-start min-w-[100px] text-right pt-0.5 shrink-0">
-          <span
-            className={cn(
-              "font-mono text-sm font-semibold text-fg-1 leading-tight whitespace-nowrap",
-              time.cls === "urgent" && "text-error",
-              time.cls === "warning" && "text-warning",
-            )}
-          >
-            {time.label}
-          </span>
-          {time.sublabel && (
-            <span className="text-xs text-fg-3 mt-0.5">{time.sublabel}</span>
-          )}
         </div>
       </Link>
     </>

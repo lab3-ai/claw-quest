@@ -204,12 +204,12 @@ function StepRepo({
             {/* Show Analyze button when repo list is loaded, otherwise Browse/Analyze */}
             {repos !== null ? (
                 <Button onClick={handleAnalyzeSelected} disabled={!selectedRepo || isLoading} className="gap-2">
-                    <GitHubIcon size={13} />
+                    <GitHubIcon size={14} />
                     {analyzeMutation.isPending ? "Analyzing with AI…" : "Analyze Repo"}
                 </Button>
             ) : (
                 <Button onClick={handleSubmit} disabled={!url || isLoading} className="gap-2">
-                    <GitHubIcon size={13} />
+                    <GitHubIcon size={14} />
                     {listMutation.isPending ? "Loading repos…" : analyzeMutation.isPending ? "Analyzing with AI…" : "Next"}
                 </Button>
             )}

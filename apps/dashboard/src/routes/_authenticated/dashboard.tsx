@@ -341,9 +341,9 @@ export function Dashboard() {
                                                             {quest.questerDetails.slice(0, 5).map((d, i) => (
                                                                 <div
                                                                     key={i}
-                                                                    className="group/avatar w-5 h-5 -ml-1.5 first:ml-0 rounded-full border-[1.5px] border-background shrink-0 relative overflow-visible hover:z-10 hover:-translate-y-px transition-transform"
+                                                                    className="group/avatar w-6 h-6 -ml-2 first:ml-0 rounded-full border-[1.5px] border-background shrink-0 relative overflow-visible hover:z-10 hover:-translate-y-px transition-transform"
                                                                 >
-                                                                    <img src={getDiceBearUrl(d.agentName, 40)} alt={d.humanHandle} className="w-full h-full rounded-full" />
+                                                                    <img src={getDiceBearUrl(d.agentName, 48)} alt={d.humanHandle} className="w-full h-full rounded-full" />
                                                                     <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 bg-foreground text-white text-xs px-2 py-1.5 rounded whitespace-nowrap z-100 pointer-events-none leading-relaxed text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-foreground">
                                                                         <span className="text-surface-dark-muted text-xs">Human</span> <span className="font-semibold text-white">@{d.humanHandle}</span>
                                                                         <br />
@@ -490,9 +490,9 @@ export function Dashboard() {
                                                                 {quest.questerDetails.slice(0, 3).map((d, i) => (
                                                                     <img
                                                                         key={i}
-                                                                        src={getDiceBearUrl(d.agentName, 40)}
+                                                                        src={getDiceBearUrl(d.agentName, 48)}
                                                                         alt={d.humanHandle}
-                                                                        className="w-5 h-5 -ml-1.5 first:ml-0 rounded-full border-[1.5px] border-background shrink-0"
+                                                                        className="w-6 h-6 -ml-2 first:ml-0 rounded-full border-[1.5px] border-background shrink-0"
                                                                     />
                                                                 ))}
                                                                 <span className="ml-1 text-xs text-muted-foreground whitespace-nowrap group-hover:text-primary">
@@ -673,9 +673,9 @@ export function Dashboard() {
                                                             {quest.questerDetails.slice(0, 5).map((d, i) => (
                                                                 <div
                                                                     key={i}
-                                                                    className="group/avatar w-5 h-5 -ml-1.5 first:ml-0 rounded-full border-[1.5px] border-background shrink-0 relative overflow-visible hover:z-10 hover:-translate-y-px transition-transform"
+                                                                    className="group/avatar w-6 h-6 -ml-2 first:ml-0 rounded-full border-[1.5px] border-background shrink-0 relative overflow-visible hover:z-10 hover:-translate-y-px transition-transform"
                                                                 >
-                                                                    <img src={getDiceBearUrl(d.agentName, 40)} alt={d.humanHandle} className="w-full h-full rounded-full" />
+                                                                    <img src={getDiceBearUrl(d.agentName, 48)} alt={d.humanHandle} className="w-full h-full rounded-full" />
                                                                     <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 bg-foreground text-white text-xs px-2 py-1.5 rounded whitespace-nowrap z-100 pointer-events-none leading-relaxed text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-foreground">
                                                                         <span className="text-surface-dark-muted text-xs">Human</span> <span className="font-semibold text-white">@{d.humanHandle}</span>
                                                                         <br />

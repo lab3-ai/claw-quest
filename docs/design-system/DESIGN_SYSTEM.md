@@ -618,14 +618,31 @@ Currently **only Terminal theme is active** (light/dark). Other themes (Glass, B
 
 **Library:** MingCute (`@mingcute/react`) — 24x24 grid, 2px stroke.
 
-### Sizing
+### Icon Sizing Standard
 
-| Context | Size | Example |
-|---------|------|---------|
-| Inline (badges, meta) | 14–16px | `<WifiLine size={14} />` in status badge |
-| Nav / buttons | 18–20px | `<AddLine size={20} />` in navbar |
-| Section headers | 20–24px | Card section title icon |
-| Empty states / errors | 48px | `<Search2Line size={48} />` centered |
+Only use these sizes. No arbitrary values (13px, 15px, 17px, etc.).
+
+| Size | Tailwind | Context | Example |
+|------|----------|---------|---------|
+| **12px** | `size={12}` | Badge/tag inline, micro indicators | Icon inside `<Badge>` |
+| **14px** | `size={14}` | Compact buttons, quest type badge | `<RunLine size={14} />` in type badge |
+| **16px** | `size={16}` | **Default** — buttons, nav items, general UI | `<AddLine size={16} />` |
+| **20px** | `size={20}` | Section headers, CTA buttons | Card section title icon |
+| **24px** | `size={24}` | Nav active state, hero elements | Active nav icon |
+| **48px** | `size={48}` | Empty states, error states only | `<Search2Line size={48} />` centered |
+
+### Avatar Sizing Standard
+
+Always request **2x display size** from DiceBear for crisp rendering on retina.
+
+| Display | Tailwind | DiceBear request | Context |
+|---------|----------|-----------------|---------|
+| **24px** | `w-6 h-6` | `getDiceBearUrl(seed, 48)` | Avatar stack (overlap) |
+| **32px** | `w-8 h-8` | `getDiceBearUrl(seed, 64)` | Table row, popup list, detail list |
+| **36px** | `w-9 h-9` | `getDiceBearUrl(seed, 72)` | Navbar user profile |
+| **64px** | `w-16 h-16` | `getDiceBearUrl(seed, 128)` | Profile header, agent detail |
+
+**Avatar stack overlap:** `-ml-2 first:ml-0` for 24px avatars.
 
 ### Variant Rules
 

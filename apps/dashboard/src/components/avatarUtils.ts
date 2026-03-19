@@ -15,12 +15,9 @@ export function getInitials(name: string): string {
     return name.slice(0, 2).toUpperCase()
 }
 
-/** DiceBear fun-emoji avatar URL — deterministic per seed, happy/neutral only */
+/** DiceBear bottts avatar URL — deterministic per seed, robot/bot style, transparent bg */
 export function getDiceBearUrl(seed: string, size = 40): string {
-    const bgColors = AVATAR_COLORS.map((c) => c.replace("#", "")).join(",")
-    const eyes = "cute,closed,love,stars,wink,wink2"
-    const mouth = "cute,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile"
-    return `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(seed)}&size=${size}&backgroundColor=${bgColors}&eyes=${eyes}&mouth=${mouth}`
+    return `https://api.dicebear.com/9.x/bottts/svg?seed=${encodeURIComponent(seed)}&size=${size}&backgroundColor=transparent`
 }
 
 /** Get user avatar: OAuth provider avatar → DiceBear fallback */

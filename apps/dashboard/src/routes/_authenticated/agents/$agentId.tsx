@@ -95,7 +95,7 @@ function StatusBadge({ status }: { status: Agent["status"] }) {
 }
 
 function AgentHeader({ agent }: { agent: Agent }) {
-    const avatarUrl = getDiceBearUrl(agent.agentname)
+    const avatarUrl = getDiceBearUrl(agent.agentname, 128)
     return (
         <div className="flex items-start gap-4 p-5 border border-border-1 bg-card hover:bg-bg-2 transition-colors">
             <img

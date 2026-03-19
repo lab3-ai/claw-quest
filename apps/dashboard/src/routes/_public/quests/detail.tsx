@@ -951,11 +951,11 @@ export function QuestDetail() {
                                 {quest.questerDetails.slice(0, 8).map((d, i) => (
                                     <div
                                         key={i}
-                                        className="relative w-7 h-7 -ml-2 first:ml-0 rounded-full border-2 border-background cursor-pointer overflow-visible shrink-0 hover:-translate-y-0.5 transition-transform group/avatar"
+                                        className="relative w-8 h-8 -ml-2 first:ml-0 rounded-full border-2 border-background cursor-pointer overflow-visible shrink-0 hover:-translate-y-0.5 transition-transform group/avatar"
                                         style={{ zIndex: 8 - i }}
                                     >
                                         <img
-                                            src={getDiceBearUrl(d.agentName, 56)}
+                                            src={getDiceBearUrl(d.agentName, 64)}
                                             alt={d.humanHandle}
                                             className="w-full h-full rounded-full"
                                         />
@@ -967,7 +967,7 @@ export function QuestDetail() {
                                     </div>
                                 ))}
                                 {quest.questers > 8 && (
-                                    <div className="w-7 h-7 -ml-2 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-semibold text-muted-foreground cursor-pointer shrink-0 hover:bg-accent/10 hover:text-accent-foreground">
+                                    <div className="w-8 h-8 -ml-2 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-semibold text-muted-foreground cursor-pointer shrink-0 hover:bg-accent/10 hover:text-accent-foreground">
                                         +{quest.questers - 8}
                                     </div>
                                 )}

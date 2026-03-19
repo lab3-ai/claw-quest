@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react"
 import { Link } from "@tanstack/react-router"
 import type { Quest } from "@clawquest/shared"
-import { formatTimeLeft, typeColorClass } from "./quest-utils"
+import { formatTimeLeft } from "./quest-utils"
 import { SponsorLogo } from "./sponsor-logo"
 import { RunLine, TrophyLine, RandomLine } from "@mingcute/react"
 import { TokenIcon } from "./token-icon"
+import { QuestersAvatarStack } from "./QuestCard"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
@@ -28,7 +29,6 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
         return () => clearInterval(id)
     }, [time.ticking])
     const isLuckyDraw = quest.type === "LUCKY_DRAW"
-    const slotsLeft = isLuckyDraw ? null : quest.totalSlots - quest.filledSlots
 
     return (
         <Link
@@ -36,14 +36,14 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
             params={{ questId: quest.id }}
             className="hover-shadow flex flex-col border border-border rounded p-4 max-sm:p-3 no-underline text-fg-1 hover:border-fg-1 bg-bg-1"
         >
-            {/* Top row: type badge + time */}
-            <div className="flex justify-between items-center mb-2">
-                <span className={cn("inline-flex items-center gap-1 text-xs max-sm:text-xs font-semibold uppercase", typeColorClass(quest.type))}>
-                    {TYPE_ICON[quest.type] && (() => { const Icon = TYPE_ICON[quest.type]; return <Icon size={14} className="max-sm:w-3 max-sm:h-3" /> })()}
-                    {quest.type}
-                </span>
+            {/* Reward + Time */}
+            <div className="flex items-center justify-between mb-2">
+                <Badge variant="outline-success" className="text-sm font-semibold gap-1.5 px-2.5 py-1">
+                    <TokenIcon token={quest.rewardType} size={16} />
+                    {quest.rewardAmount.toLocaleString()} {quest.rewardType}
+                </Badge>
                 <span className={cn(
-                    "font-mono text-xs max-sm:text-xs font-semibold",
+                    "font-mono text-xs font-semibold",
                     time.cls === "urgent" && "text-error",
                     time.cls === "warning" && "text-warning",
                     time.cls === "normal" && "text-fg-3",
@@ -51,44 +51,69 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
             </div>
 
             {/* Title */}
-            <h3 className="text-md font-semibold leading-snug mb-2 line-clamp-2">{quest.title}</h3>
+            <h3 className="text-md font-semibold leading-snug mb-1.5 line-clamp-2">{quest.title}</h3>
 
             {/* Description excerpt */}
             <p className="flex-1 text-xs text-fg-3 leading-relaxed mb-3 line-clamp-2">{quest.description}</p>
 
-            {/* Tags */}
-            {quest.tags && quest.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-3 items-center">
-                    {quest.tags.slice(0, 3).map(tag => (
-                        <Badge key={tag} variant="pill">{tag}</Badge>
-                    ))}
-                    {quest.tags.length > 3 && (
-                        <span className="text-fg-3 px-1 py-0.5 text-xs">+{quest.tags.length - 3}</span>
-                    )}
-                </div>
-            )}
+            {/* Type badge + Tags (single row, overflow → +N) */}
+            <div className="flex gap-1 mb-3 items-center overflow-hidden max-h-[26px]">
+                <Badge variant="outline" className="uppercase shrink-0 border-border-2 bg-bg-2">
+                    {TYPE_ICON[quest.type] && (() => { const Icon = TYPE_ICON[quest.type]; return <Icon size={12} /> })()}
+                    {quest.type.replace("_", " ")}
+                </Badge>
+                {quest.tags && quest.tags.slice(0, 2).map(tag => (
+                    <Badge key={tag} variant="pill" className="shrink-0">{tag}</Badge>
+                ))}
+                {quest.tags && quest.tags.length > 2 && (
+                    <span className="text-fg-3 px-1 py-0.5 text-xs shrink-0">+{quest.tags.length - 2}</span>
+                )}
+            </div>
 
             {/* Bottom stats */}
-            <div className="mt-auto pt-3 border-t border-border flex justify-between items-end gap-2">
-                <div className="flex flex-col gap-1.5">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-success">
-                        <TokenIcon token={quest.rewardType} size={16} />
-                        {quest.rewardAmount.toLocaleString()} {quest.rewardType}
+            <div className="mt-auto pt-3 border-t border-border flex flex-col gap-2">
+                {/* Progress */}
+                {isLuckyDraw ? (
+                    <div className="text-xs text-fg-3">
+                        <strong className="text-fg-1 font-semibold">{quest.filledSlots}</strong> entered
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-1">
+                        <div className="flex items-center justify-between text-xs">
+                            <span className="text-fg-3"><strong className="text-fg-1 font-semibold">{quest.filledSlots}</strong> of {quest.totalSlots} slots filled</span>
+                            <span className="text-fg-2 font-medium">{quest.totalSlots > 0 ? ((quest.filledSlots / quest.totalSlots) * 100).toFixed(1) : 0}%</span>
+                        </div>
+                        <div className="flex gap-px w-full">
+                            {Array.from({ length: 10 }, (_, i) => {
+                                const pct = quest.totalSlots > 0 ? (quest.filledSlots / quest.totalSlots) * 100 : 0
+                                const segThreshold = (i + 1) * 10
+                                const filled = pct >= segThreshold
+                                const partial = !filled && pct > i * 10
+                                return (
+                                    <div key={i} className="flex-1 h-1.5 bg-bg-3 rounded-sm overflow-hidden">
+                                        {(filled || partial) && (
+                                            <div
+                                                className="h-full bg-primary rounded-sm"
+                                                style={{ width: partial ? `${((pct - i * 10) / 10) * 100}%` : '100%' }}
+                                            />
+                                        )}
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/* Sponsor + Questers */}
+                <div className="flex items-center justify-between min-h-[20px]">
+                    <span className="text-xs text-fg-3 flex items-center gap-1.5 leading-none">
+                        by <SponsorLogo sponsor={quest.sponsor} size={16} /> <strong className="text-fg-1 font-semibold">{quest.sponsor}</strong>
                     </span>
-                    <span className="text-xs text-fg-3 flex items-center gap-1">
-                        by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-fg-1 font-semibold">{quest.sponsor}</strong>
-                    </span>
-                </div>
-                <div className="text-right text-fg-3 h-full flex flex-col justify-center gap-auto">
-                    {isLuckyDraw ? (
-                        <span className="block text-sm font-semibold text-fg-1">{quest.filledSlots} <span className="text-xs font-normal text-fg-3">entered</span></span>
-                    ) : (
-                        <span className={cn("block text-sm font-semibold", slotsLeft !== null && slotsLeft < 5 ? "text-error" : "text-fg-1")}>
-                            {slotsLeft} <span className="text-xs font-normal text-fg-3">slots</span>
-                        </span>
-                    )}
                     {quest.questers > 0 && (
-                        <span className="block text-xs mt-0.5">{quest.questers} questers</span>
+                        <QuestersAvatarStack
+                            details={quest.questerDetails ?? []}
+                            total={quest.questers}
+                        />
                     )}
                 </div>
             </div>

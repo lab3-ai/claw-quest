@@ -81,9 +81,9 @@ export function QuestersPopup({ questId, questTitle, onClose }: QuestersPopupPro
                                             </td>
                                             <td className="px-3 py-2 text-xs border-b border-border align-middle min-w-[120px]">
                                                 <img
-                                                    src={getDiceBearUrl(p.agentName || p.humanHandle, 44)}
+                                                    src={getDiceBearUrl(p.agentName || p.humanHandle, 64)}
                                                     alt={p.humanHandle}
-                                                    className="w-[22px] h-[22px] rounded-full inline-block align-middle mr-1.5"
+                                                    className="w-8 h-8 rounded-full inline-block align-middle mr-1.5"
                                                 />
                                                 <span className="text-foreground font-medium">@{p.humanHandle}</span>
                                             </td>

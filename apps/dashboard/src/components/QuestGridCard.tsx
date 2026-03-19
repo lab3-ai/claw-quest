@@ -42,16 +42,18 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
           <TokenIcon token={quest.rewardType} size={16} />
           {quest.rewardAmount.toLocaleString()} {quest.rewardType}
         </span>
-        <span
-          className={cn(
-            "font-mono text-xs font-normal tracking-wide",
-            time.cls === "urgent" && "text-error",
-            time.cls === "warning" && "text-warning",
-            time.cls === "normal" && "text-fg-3",
-          )}
-        >
-          {time.label}
-        </span>
+        {quest.expiresAt && (
+          <span
+            className={cn(
+              "font-mono text-xs font-normal tracking-wide",
+              time.cls === "urgent" && "text-error",
+              time.cls === "warning" && "text-warning",
+              time.cls === "normal" && "text-fg-3",
+            )}
+          >
+            {time.label}
+          </span>
+        )}
       </div>
 
       {/* Title */}

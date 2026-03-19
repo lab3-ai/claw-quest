@@ -25,6 +25,11 @@ type MainTab = "my-quest" | "accepted"
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 
+function formatRewardLabel(rewardType: string): string {
+    if (rewardType === "LLMTOKEN_OPENROUTER" || rewardType === "LLM_KEY") return "LLM Tokens"
+    return rewardType
+}
+
 function getPublishErrors(quest: MineQuest): Record<string, string> {
     const errors: Record<string, string> = {}
     if (!quest.title?.trim()) errors.title = 'Title required'
@@ -323,7 +328,7 @@ export function Dashboard() {
                                             <div className="flex flex-col items-end gap-2 min-w-[120px] text-right pt-0.5 shrink-0 md:flex-col flex-row md:gap-2 gap-3 md:min-w-[120px] min-w-0 md:items-end items-center">
                                                 <div className="min-w-[150px] flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
                                                     <span className="text-md font-semibold text-(--green) leading-tight font-mono">
-                                                        {quest.rewardAmount.toLocaleString()} {quest.rewardType === "LLMTOKEN_OPENROUTER" ? "LLM Tokens" : quest.rewardType}
+                                                        {quest.rewardAmount.toLocaleString()} {formatRewardLabel(quest.rewardType)}
                                                     </span>
                                                     <span className="text-xs text-muted-foreground">total reward</span>
                                                 </div>
@@ -461,7 +466,7 @@ export function Dashboard() {
                                             return (
                                                 <tr key={quest.id} className="hover:bg-bg-2" data-status={quest.status}>
                                                     <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
-                                                        <span className="text-md font-semibold text-success whitespace-nowrap leading-tight">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</span>
+                                                        <span className="text-md font-semibold text-success whitespace-nowrap leading-tight">{quest.rewardAmount.toLocaleString()} {formatRewardLabel(quest.rewardType)}</span>
                                                     </td>
                                                     <td className="px-2 py-2.5 text-xs border-b border-border align-top min-w-[220px]">
                                                         <div>
@@ -653,9 +658,9 @@ export function Dashboard() {
                                             data-status={quest.status}
                                         >
                                             <div className="flex flex-col items-end gap-2 min-w-[120px] text-right pt-0.5 shrink-0 md:flex-col flex-row md:gap-2 gap-3 md:min-w-[120px] min-w-0 md:items-end items-center">
-                                                <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
+                                                <div className="min-w-[150px] flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
                                                     <span className="text-md font-semibold text-(--green) leading-tight font-mono">
-                                                        {quest.rewardAmount.toLocaleString()} {quest.rewardType}
+                                                        {quest.rewardAmount.toLocaleString()} {formatRewardLabel(quest.rewardType)}
                                                     </span>
                                                     <span className="text-xs text-muted-foreground">total reward</span>
                                                 </div>
@@ -754,7 +759,7 @@ export function Dashboard() {
                                             return (
                                                 <tr key={quest.id} className="hover:bg-bg-2" data-status={quest.status}>
                                                     <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
-                                                        <span className="text-md font-semibold text-success whitespace-nowrap leading-tight">{quest.rewardAmount.toLocaleString()} {quest.rewardType}</span>
+                                                        <span className="text-md font-semibold text-success whitespace-nowrap leading-tight">{quest.rewardAmount.toLocaleString()} {formatRewardLabel(quest.rewardType)}</span>
                                                     </td>
                                                     <td className="px-2 py-2.5 text-xs border-b border-border align-top min-w-[220px]">
                                                         <div>

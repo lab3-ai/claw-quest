@@ -321,9 +321,9 @@ export function Dashboard() {
                                             data-status={quest.status}
                                         >
                                             <div className="flex flex-col items-end gap-2 min-w-[120px] text-right pt-0.5 shrink-0 md:flex-col flex-row md:gap-2 gap-3 md:min-w-[120px] min-w-0 md:items-end items-center">
-                                                <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
+                                                <div className="min-w-[150px] flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
                                                     <span className="text-md font-semibold text-(--green) leading-tight font-mono">
-                                                        {quest.rewardAmount.toLocaleString()} {quest.rewardType}
+                                                        {quest.rewardAmount.toLocaleString()} {quest.rewardType === "LLMTOKEN_OPENROUTER" ? "LLM Tokens" : quest.rewardType}
                                                     </span>
                                                     <span className="text-xs text-muted-foreground">total reward</span>
                                                 </div>
@@ -498,7 +498,7 @@ export function Dashboard() {
                                                             <span className="text-muted-foreground text-xs">—</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap text-right">
                                                         {isDraft ? (() => {
                                                             const errors = getPublishErrors(quest)
                                                             const canPublish = Object.keys(errors).length === 0
@@ -525,7 +525,7 @@ export function Dashboard() {
                                                                 </Button>
                                                             </div>
                                                         ) : (
-                                                            <>
+                                                            <div className="flex flex-col gap-1.5 items-end">
                                                                 <div className={cn(
                                                                     "font-mono text-xs font-semibold whitespace-nowrap",
                                                                     time.cls === "urgent" && "text-error",
@@ -534,10 +534,10 @@ export function Dashboard() {
                                                                     time.cls === "muted" && "text-muted-foreground font-normal"
                                                                 )}>{time.val}</div>
                                                                 {time.label && <div className="font-sans text-xs font-normal text-muted-foreground">{time.label}</div>}
-                                                                <Button asChild variant="secondary" size="sm" className="mt-1 inline-block">
+                                                                <Button asChild variant="secondary" size="sm">
                                                                     <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
                                                                 </Button>
-                                                            </>
+                                                            </div>
                                                         )}
                                                     </td>
                                                     <td className="px-2 py-2.5 text-xs border-b border-border align-top w-[100px]">

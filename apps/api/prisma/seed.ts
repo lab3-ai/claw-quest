@@ -520,6 +520,204 @@ async function main() {
         });
         console.log(`  🧠 ${model.name} (${model.tier}) — in: $${model.inputPricePer1M}/1M, out: $${model.outputPricePer1M}/1M`);
     }
+
+    // ── 7. GitHub Bounties ──────────────────────────────────────────────────
+    console.log('\n💰 Seeding GitHub bounties...');
+
+    // Find or create a sponsor user for bounties
+    const bountyCreator = await prisma.user.upsert({
+        where: { email: 'sponsor@clawquest.dev' },
+        update: {},
+        create: {
+            email: 'sponsor@clawquest.dev',
+            displayName: 'ClawQuest Team',
+            username: 'clawquest-team',
+            role: 'user',
+        },
+    });
+
+    interface BountySeed {
+        repoOwner: string;
+        repoName: string;
+        title: string;
+        description: string;
+        rewardAmount: number;
+        rewardType: string;
+        status: string;
+        fundingStatus: string;
+        questType: string;
+        maxWinners: number;
+        deadline: Date | null;
+        issueNumber: number | null;
+        issueUrl: string | null;
+        llmKeyTokenLimit: number | null;
+        submissionCount: number; // how many fake submissions to generate
+    }
+
+    const bounties: BountySeed[] = [
+        // ── Live USDC bounties ──────────────────────────────────────────────
+        {
+            repoOwner: 'anthropics', repoName: 'claude-code',
+            title: 'Add MCP resource caching to reduce latency',
+            description: 'Implement a TTL-based cache layer for MCP resource reads. When a resource is fetched, cache it locally with configurable TTL. Support cache invalidation via resource change notifications. Include unit tests and update docs.',
+            rewardAmount: 500, rewardType: 'USDC', status: 'live', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: new Date(now + 14 * DAY), issueNumber: 4521, issueUrl: 'https://github.com/anthropics/claude-code/issues/4521',
+            llmKeyTokenLimit: null, submissionCount: 2,
+        },
+        {
+            repoOwner: 'vercel', repoName: 'ai',
+            title: 'Implement streaming retry with exponential backoff',
+            description: 'Add configurable retry logic to streamText() that handles transient provider errors. Use exponential backoff with jitter. Retry should resume from last received token when possible. Must work with all providers.',
+            rewardAmount: 300, rewardType: 'USDC', status: 'live', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 2,
+            deadline: new Date(now + 10 * DAY), issueNumber: null, issueUrl: null,
+            llmKeyTokenLimit: null, submissionCount: 3,
+        },
+        {
+            repoOwner: 'denoland', repoName: 'deno',
+            title: 'Fix WASM module hot-reload in --watch mode',
+            description: 'When using --watch mode, changes to .wasm files are detected but the module is not properly reloaded. The cached compiled module needs to be invalidated. Reproduce: create a Rust→WASM project, run with deno --watch, modify the .rs file and rebuild.',
+            rewardAmount: 200, rewardType: 'USDC', status: 'live', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: new Date(now + 7 * DAY), issueNumber: 28134, issueUrl: 'https://github.com/denoland/deno/issues/28134',
+            llmKeyTokenLimit: null, submissionCount: 1,
+        },
+        {
+            repoOwner: 'shadcn-ui', repoName: 'ui',
+            title: 'Add multi-select Combobox component',
+            description: 'Create a new multi-select variant of the Combobox component. Support chip display of selected items, search/filter, keyboard navigation, and clear-all. Follow existing component patterns (Radix + Tailwind). Include registry entry and docs.',
+            rewardAmount: 150, rewardType: 'USDC', status: 'live', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: new Date(now + 21 * DAY), issueNumber: null, issueUrl: null,
+            llmKeyTokenLimit: null, submissionCount: 0,
+        },
+
+        // ── Live LLM_KEY bounties (no funding needed) ───────────────────────
+        {
+            repoOwner: 'langchain-ai', repoName: 'langchainjs',
+            title: 'Add Qdrant vector store sparse+dense hybrid search',
+            description: 'Implement hybrid search for the Qdrant integration using both sparse (BM25) and dense vectors. The existing QdrantVectorStore class needs a new hybridSearch() method. Include integration test with a real Qdrant instance via Docker.',
+            rewardAmount: 0, rewardType: 'LLM_KEY', status: 'live', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 3,
+            deadline: new Date(now + 30 * DAY), issueNumber: 7892, issueUrl: 'https://github.com/langchain-ai/langchainjs/issues/7892',
+            llmKeyTokenLimit: 2_000_000, submissionCount: 1,
+        },
+        {
+            repoOwner: 'supabase', repoName: 'supabase',
+            title: 'Implement realtime presence cursors for Dashboard SQL editor',
+            description: 'Add collaborative cursor presence to the SQL editor in the Supabase dashboard. Show other users\' cursor positions and selections in real-time using Supabase Realtime Presence. Color-code by user. Debounce position updates to 100ms.',
+            rewardAmount: 0, rewardType: 'LLM_KEY', status: 'live', fundingStatus: 'confirmed',
+            questType: 'leaderboard', maxWinners: 2,
+            deadline: new Date(now + 14 * DAY), issueNumber: null, issueUrl: null,
+            llmKeyTokenLimit: 5_000_000, submissionCount: 4,
+        },
+
+        // ── Completed bounties ──────────────────────────────────────────────
+        {
+            repoOwner: 'prisma', repoName: 'prisma',
+            title: 'Add JSON path filtering for PostgreSQL JSONB columns',
+            description: 'Extend Prisma Client to support PostgreSQL JSONB path operators (->>, #>>, @>) in where clauses. Currently only basic Json filtering is supported. This should generate proper SQL using pg jsonb operators.',
+            rewardAmount: 400, rewardType: 'USDC', status: 'completed', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: new Date(now - 3 * DAY), issueNumber: 18750, issueUrl: 'https://github.com/prisma/prisma/issues/18750',
+            llmKeyTokenLimit: null, submissionCount: 2,
+        },
+        {
+            repoOwner: 'TanStack', repoName: 'router',
+            title: 'Fix type inference for nested catch-all routes',
+            description: 'Route params type inference breaks when using nested catch-all routes ($...rest inside a layout route). The generated route types show `unknown` instead of `string[]`. Reproducible with file-based routing in a Vite project.',
+            rewardAmount: 100, rewardType: 'USDC', status: 'completed', fundingStatus: 'confirmed',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: new Date(now - 7 * DAY), issueNumber: 3421, issueUrl: 'https://github.com/TanStack/router/issues/3421',
+            llmKeyTokenLimit: null, submissionCount: 1,
+        },
+
+        // ── Draft bounties (not yet funded) ─────────────────────────────────
+        {
+            repoOwner: 'biomejs', repoName: 'biome',
+            title: 'Add auto-fix for useExhaustiveDeps rule',
+            description: 'The useExhaustiveDeps lint rule currently only reports missing deps but offers no auto-fix. Implement a safe auto-fix that adds missing dependencies to the dependency array. Must handle ref deps correctly (skip stable refs).',
+            rewardAmount: 250, rewardType: 'USDC', status: 'draft', fundingStatus: 'unfunded',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: null, issueNumber: null, issueUrl: null,
+            llmKeyTokenLimit: null, submissionCount: 0,
+        },
+        {
+            repoOwner: 'cloudflare', repoName: 'workers-sdk',
+            title: 'Support Durable Object alarms in wrangler dev --local',
+            description: 'Durable Object alarms (setAlarm/deleteAlarm) are not supported in local development mode. Implement alarm scheduling and firing in the local miniflare runtime. Should respect the alarm handler and support getAlarm().',
+            rewardAmount: 350, rewardType: 'USDC', status: 'draft', fundingStatus: 'unfunded',
+            questType: 'fcfs', maxWinners: 1,
+            deadline: null, issueNumber: 8234, issueUrl: 'https://github.com/cloudflare/workers-sdk/issues/8234',
+            llmKeyTokenLimit: null, submissionCount: 0,
+        },
+    ];
+
+    // Find existing agents for submissions
+    const submitterAgents = await prisma.agent.findMany({
+        take: 10,
+        select: { id: true, agentname: true },
+        orderBy: { createdAt: 'asc' },
+    });
+
+    for (const b of bounties) {
+        // Skip if already seeded (check by title + repo)
+        const existing = await prisma.gitHubBounty.findFirst({
+            where: { repoOwner: b.repoOwner, repoName: b.repoName, title: b.title },
+        });
+        if (existing) {
+            console.log(`  ⏭️  ${b.repoOwner}/${b.repoName}: already exists, skipping`);
+            continue;
+        }
+
+        const bounty = await prisma.gitHubBounty.create({
+            data: {
+                creatorUserId: bountyCreator.id,
+                repoOwner: b.repoOwner,
+                repoName: b.repoName,
+                title: b.title,
+                description: b.description,
+                rewardAmount: b.rewardAmount,
+                rewardType: b.rewardType,
+                status: b.status,
+                fundingStatus: b.fundingStatus,
+                questType: b.questType,
+                maxWinners: b.maxWinners,
+                deadline: b.deadline,
+                issueNumber: b.issueNumber,
+                issueUrl: b.issueUrl,
+                llmKeyTokenLimit: b.llmKeyTokenLimit,
+            },
+        });
+
+        // Create submissions from agents
+        if (b.submissionCount > 0 && submitterAgents.length > 0) {
+            const agents = submitterAgents.slice(0, b.submissionCount);
+            for (let i = 0; i < agents.length; i++) {
+                const agent = agents[i];
+                const prNum = 100 + Math.floor(Math.random() * 900);
+                const subStatus = b.status === 'completed' && i === 0 ? 'approved' : 'pending';
+                await prisma.gitHubBountySubmission.create({
+                    data: {
+                        bountyId: bounty.id,
+                        agentId: agent.id,
+                        prUrl: `https://github.com/${b.repoOwner}/${b.repoName}/pull/${prNum}`,
+                        prNumber: prNum,
+                        status: subStatus,
+                    },
+                }).catch(() => {
+                    // skip if duplicate (bountyId, agentId) — idempotent
+                });
+            }
+        }
+
+        const statusIcon = b.status === 'live' ? '🟢' : b.status === 'completed' ? '✅' : '📝';
+        const reward = b.rewardType === 'LLM_KEY' ? `${(b.llmKeyTokenLimit! / 1_000_000).toFixed(0)}M tokens` : `$${b.rewardAmount} ${b.rewardType}`;
+        console.log(`  ${statusIcon} ${b.repoOwner}/${b.repoName}: ${b.title.slice(0, 50)}... (${reward}, ${b.submissionCount} subs)`);
+    }
+
+    console.log(`\n✅ Seeded ${bounties.length} GitHub bounties`);
 }
 
 main()

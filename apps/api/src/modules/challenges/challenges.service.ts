@@ -169,12 +169,26 @@ export async function submitChallengeResult(
             });
         }
 
-        // Increment tasksCompleted on the quester's participation
+        // Increment tasksCompleted on the quester's participation, then auto-complete if all done
         if (challenge.questId) {
-            await prisma.questParticipation.updateMany({
+            const participation = await prisma.questParticipation.findFirst({
                 where: { questId: challenge.questId, userId: challenge.userId },
-                data: { tasksCompleted: { increment: 1 } },
+                select: { id: true, tasksCompleted: true, tasksTotal: true },
             });
+            if (participation) {
+                const newTasksCompleted = participation.tasksCompleted + 1;
+                const allDone = newTasksCompleted >= participation.tasksTotal;
+                await prisma.questParticipation.update({
+                    where: { id: participation.id },
+                    data: {
+                        tasksCompleted: newTasksCompleted,
+                        ...(allDone && {
+                            status: 'completed',
+                            completedAt: new Date(),
+                        }),
+                    },
+                });
+            }
         }
     }
 

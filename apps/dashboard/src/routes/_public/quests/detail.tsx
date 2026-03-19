@@ -110,7 +110,7 @@ function getTaskBtnLabel(actionType: string, opened: boolean): string {
 function TaskActionBtn({ status, disabled, onClick, label }: {
     status: string; disabled?: boolean; onClick?: () => void; label: string
 }) {
-    if (status === "done") return <Button size="sm" variant="outline" disabled className="bg-accent-light text-accent border-green-600 cursor-default">Done ✓</Button>
+    if (status === "done") return <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-green-100 text-success">Verified</span>
     if (status === "verifying") return <Button size="sm" variant="outline" disabled className="bg-(--agent-bg) text-(--agent-fg) border-(--agent-border) cursor-default">Checking…</Button>
     if (status === "failed") return <Button size="sm" onClick={onClick} className="border-error">Retry →</Button>
     if (disabled) return (
@@ -600,6 +600,15 @@ export function QuestDetail() {
             const slug = sk.includes('/') ? sk.slice(sk.indexOf('/') + 1) : sk
             return !myVerifiedSkills.has(sk) && !myVerifiedSkills.has(slug)
         })
+    // All agent tasks (requiredSkills) must be verified before claiming reward
+    const allAgentTasksDone = !quest.requiredSkills || quest.requiredSkills.length === 0 ||
+        quest.requiredSkills.every((sk: string) => {
+            const slug = sk.includes('/') ? sk.slice(sk.indexOf('/') + 1) : sk
+            return myVerifiedSkills.has(sk) || myVerifiedSkills.has(slug)
+        })
+    // All human tasks (social tasks) must be verified before claiming reward
+    const humanTasksTotal = quest.tasks?.length ?? 0
+    const allTasksDone = allAgentTasksDone && (humanTasksTotal === 0 || (quest.myParticipation?.proof?.verifiedIndices?.length ?? 0) >= humanTasksTotal)
 
     return (
         <div className="">
@@ -880,14 +889,13 @@ export function QuestDetail() {
                                                     </span>
                                                 )}
                                                 {!isVerified && (
-                                                    <button
-                                                        type="button"
+                                                    <Button
+                                                        size="sm"
                                                         disabled={isLoading}
                                                         onClick={() => openVerifyChallenge(skill, quest.id)}
-                                                        className="text-xs font-semibold px-1.5 py-0.5 rounded border border-border bg-transparent text-foreground hover:bg-muted transition-colors disabled:opacity-50"
                                                     >
-                                                        {isLoading ? "Loading…" : "How to verify"}
-                                                    </button>
+                                                        {isLoading ? "Loading…" : "How to verify →"}
+                                                    </Button>
                                                 )}
                                             </div>
                                         </div>
@@ -1234,7 +1242,8 @@ export function QuestDetail() {
                         {/* ── Claim Reward Section ── */}
                         {/* ── Fiat Payout Section (Stripe) ── */}
                         {isAuthenticated && quest.fundingMethod === FUNDING_METHOD.STRIPE && quest.myParticipation &&
-                            (quest.myParticipation.status === "completed" || quest.myParticipation.status === "submitted") && (
+                            (quest.myParticipation.status === "completed" || quest.myParticipation.status === "submitted") &&
+                            allTasksDone && (
                                 <div className="mt-4 px-3 pt-4 border-t border-border">
                                     <div className="text-center">
                                         {quest.myParticipation.payoutStatus === "paid" ? (
@@ -1267,7 +1276,8 @@ export function QuestDetail() {
 
                         {/* ── Claim Reward Section (Crypto) ── */}
                         {isAuthenticated && quest.fundingMethod === "crypto" && quest.myParticipation &&
-                            (quest.myParticipation.status === "completed" || quest.myParticipation.status === "submitted") && (
+                            (quest.myParticipation.status === "completed" || quest.myParticipation.status === "submitted") &&
+                            allTasksDone && (
                                 <div className="mt-4 px-3 pt-4 border-t border-border">
                                     {quest.myParticipation.payoutWallet ? (
                                         // Already claimed

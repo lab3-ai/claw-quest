@@ -38,6 +38,38 @@ export async function challengesRoutes(app: FastifyInstance) {
         }
     );
 
+    // ── GET /verify/:token/status — poll challenge result (public) ──────────
+    server.get(
+        '/verify/:token/status',
+        {
+            schema: {
+                tags: ['Challenges'],
+                summary: 'Poll skill verification status',
+                params: z.object({ token: z.string() }),
+                response: {
+                    200: z.object({
+                        passed: z.boolean().nullable(),
+                        questId: z.string().nullable(),
+                        verifiedAt: z.string().nullable(),
+                    }),
+                },
+            },
+        },
+        async (request, reply) => {
+            const { token } = request.params;
+            const challenge = await server.prisma.skillChallenge.findUnique({
+                where: { token },
+                select: { passed: true, questId: true, verifiedAt: true },
+            });
+            if (!challenge) return reply.status(404).send({ error: 'Not found' } as any);
+            return reply.send({
+                passed: challenge.passed,
+                questId: challenge.questId,
+                verifiedAt: challenge.verifiedAt?.toISOString() ?? null,
+            });
+        }
+    );
+
     // ── POST /verify/:token — submit result (public, token is the secret) ───
     server.post(
         '/verify/:token',

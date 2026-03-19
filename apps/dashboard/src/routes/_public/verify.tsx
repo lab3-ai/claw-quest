@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { useNavigate } from "@tanstack/react-router"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -49,8 +50,106 @@ function useCountdown(expiresAt: string) {
     return { timeLeft, expired }
 }
 
+function VerifiedScreen({ questId }: { questId: string | null }) {
+    const navigate = useNavigate()
+    const [progress, setProgress] = useState(0)
+
+    useEffect(() => {
+        const DURATION = 2500
+        const TICK = 30
+        let elapsed = 0
+        const id = setInterval(() => {
+            elapsed += TICK
+            setProgress(Math.min((elapsed / DURATION) * 100, 100))
+            if (elapsed >= DURATION) {
+                clearInterval(id)
+                if (questId) {
+                    navigate({ to: "/quests/$questId", params: { questId } })
+                }
+            }
+        }, TICK)
+        return () => clearInterval(id)
+    }, [questId, navigate])
+
+    return (
+        <div className="max-w-md mx-auto py-20 flex flex-col items-center gap-6">
+            <style>{`
+                @keyframes cq-pop {
+                    0%   { transform: scale(0.3); opacity: 0; }
+                    60%  { transform: scale(1.15); opacity: 1; }
+                    80%  { transform: scale(0.95); }
+                    100% { transform: scale(1); }
+                }
+                @keyframes cq-ripple {
+                    0%   { transform: scale(1);   opacity: 0.4; }
+                    100% { transform: scale(2.2); opacity: 0; }
+                }
+                @keyframes cq-fadein {
+                    from { opacity: 0; transform: translateY(8px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                .cq-pop     { animation: cq-pop 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+                .cq-ripple  { animation: cq-ripple 1.2s ease-out infinite; }
+                .cq-fadein  { animation: cq-fadein 0.5s ease-out 0.4s both; }
+                .cq-fadein2 { animation: cq-fadein 0.5s ease-out 0.7s both; }
+            `}</style>
+
+            {/* Checkmark with ripple */}
+            <div className="relative flex items-center justify-center">
+                <div className="cq-ripple absolute w-24 h-24 rounded-full bg-success/30" />
+                <div className="cq-ripple absolute w-24 h-24 rounded-full bg-success/20" style={{ animationDelay: "0.4s" }} />
+                <div className="cq-pop w-24 h-24 rounded-full bg-success flex items-center justify-center shadow-lg">
+                    <svg viewBox="0 0 24 24" className="w-12 h-12 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                </div>
+            </div>
+
+            {/* Text */}
+            <div className="cq-fadein text-center space-y-1">
+                <h1 className="text-2xl font-bold text-foreground">Skill Verified!</h1>
+                <p className="text-muted-foreground text-sm">Your skill has been successfully confirmed.</p>
+            </div>
+
+            {/* Progress bar */}
+            {questId && (
+                <div className="cq-fadein2 w-full space-y-1.5">
+                    <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-success rounded-full transition-none"
+                            style={{ width: `${progress}%` }}
+                        />
+                    </div>
+                    <p className="text-xs text-muted-foreground text-center">Redirecting to your quest…</p>
+                </div>
+            )}
+        </div>
+    )
+}
+
 export function VerifyChallenge({ token }: { token: string }) {
     const [copied, setCopied] = useState(false)
+    const [verifiedQuestId, setVerifiedQuestId] = useState<string | null | false>(false)
+    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+    // navigate lives in VerifiedScreen; no navigate needed here
+
+    useEffect(() => {
+        pollRef.current = setInterval(async () => {
+            try {
+                const res = await fetch(`${API_BASE}/verify/${token}/status`)
+                if (!res.ok) return
+                const status = await res.json() as { passed: boolean | null; questId: string | null }
+                if (status.passed === true) {
+                    clearInterval(pollRef.current!)
+                    setVerifiedQuestId(status.questId)
+                }
+            } catch {
+                // silently ignore poll errors
+            }
+        }, 1000)
+
+        return () => { if (pollRef.current) clearInterval(pollRef.current) }
+    }, [token])
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["verify-challenge", token],
@@ -74,6 +173,10 @@ export function VerifyChallenge({ token }: { token: string }) {
         await navigator.clipboard.writeText(data.bashScript.trim())
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
+    }
+
+    if (verifiedQuestId !== false) {
+        return <VerifiedScreen questId={verifiedQuestId} />
     }
 
     if (isLoading) {

@@ -1112,7 +1112,22 @@ export async function questsRoutes(server: FastifyInstance) {
             if (result.valid) {
                 verifiedIndices.add(taskIndex)
                 newTasksCompleted = verifiedIndices.size
-                const allDone = newTasksCompleted === tasks.length
+                // Check if all human tasks done AND all required skills verified
+                const requiredSkills = (quest.requiredSkills as string[]) ?? []
+                const allHumanTasksDone = newTasksCompleted === tasks.length
+                let allSkillsDone = requiredSkills.length === 0
+                if (allHumanTasksDone && requiredSkills.length > 0) {
+                    const verifiedChallenges = await server.prisma.skillChallenge.findMany({
+                        where: { questId: questId, userId: userId, passed: true },
+                        select: { skillSlug: true },
+                    })
+                    const verifiedSkillSlugs = new Set(verifiedChallenges.map(c => c.skillSlug))
+                    allSkillsDone = requiredSkills.every(sk => {
+                        const slug = sk.includes('/') ? sk.slice(sk.indexOf('/') + 1) : sk
+                        return verifiedSkillSlugs.has(sk) || verifiedSkillSlugs.has(slug)
+                    })
+                }
+                const allDone = allHumanTasksDone && allSkillsDone
 
                 await server.prisma.questParticipation.update({
                     where: { id: participation.id },
@@ -2026,6 +2041,24 @@ export async function questsRoutes(server: FastifyInstance) {
                 return reply.status(400).send({
                     message: 'No completed participation found for this quest',
                 } as any);
+            }
+
+            // Validate all required agent skills are verified before claiming
+            if (quest.requiredSkills && quest.requiredSkills.length > 0) {
+                const verifiedChallenges = await server.prisma.skillChallenge.findMany({
+                    where: { questId: id, userId, passed: true },
+                    select: { skillSlug: true },
+                });
+                const verifiedSlugs = new Set(verifiedChallenges.map(c => c.skillSlug));
+                const allVerified = (quest.requiredSkills as string[]).every((sk: string) => {
+                    const slug = sk.includes('/') ? sk.slice(sk.indexOf('/') + 1) : sk;
+                    return verifiedSlugs.has(sk) || verifiedSlugs.has(slug);
+                });
+                if (!allVerified) {
+                    return reply.status(400).send({
+                        message: 'All agent tasks must be completed before claiming reward',
+                    } as any);
+                }
             }
 
             if (participation.payoutWallet) {

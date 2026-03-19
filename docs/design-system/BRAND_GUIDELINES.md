@@ -91,10 +91,10 @@ Light mode and dark mode values differ per token. Base values are light mode unl
 | **ClawQuest Coral** | `#ff574b` | `#ff6b61` | `--accent` / `--primary` | Brand accent, CTAs, links |
 | **Coral Hover** | `#e64a3f` | `#ff574b` | `--accent-hover` | Hover states |
 | **Coral Light** | `#fff0ef` | `#3d1512` | `--accent-light` | Tinted backgrounds |
-| **Dark Text** | `#171717` | `#f5f5f5` | `--fg-1` | Primary text |
+| **Dark Text** | `#171717` | `#e5e5e5` | `--fg-1` | Primary text |
 | **Secondary Text** | `#404040` | `#d4d4d4` | `--fg-2` | Secondary text |
-| **Muted Text** | `#737373` | `#737373` | `--fg-3` | Placeholder, disabled |
-| **Page Background** | `#fafafa` | `#020202` | `--bg-base` | Body/page background |
+| **Muted Text** | `#737373` | `#a3a3a3` | `--fg-3` | Placeholder, disabled |
+| **Page Background** | `#fafafa` | `#040404` | `--bg-base` | Body/page background |
 | **Card White** | `#ffffff` | `#0a0a0a` | `--bg-1` | Cards, popovers, inputs |
 
 ### Actor Colors — Monochrome

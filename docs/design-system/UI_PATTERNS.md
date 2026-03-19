@@ -63,7 +63,8 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 - Hover: `hover:bg-bg-2` (subtle bg shift, no shadow)
 - Click: entire card is clickable (`cursor-pointer`)
 - Badge colors: status-based (see DESIGN_SYSTEM.md)
-- Border: `border border-border-1` (1px, lightest border token, square corners)
+- Border: `border border-border-1` (1px, lightest border token)
+- Radius: `rounded` (2px Terminal theme)
 
 #### Responsive Behavior
 
@@ -85,9 +86,9 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 ```
 
 - Center-aligned, `py-12`
-- Icon: MingCute (48px), `text-muted-foreground`
-- Title: `text-sm font-semibold text-foreground`
-- Description: `text-xs text-fg-secondary`, max `45ch`
+- Icon: MingCute (48px), `text-fg-3`
+- Title: `text-sm font-semibold text-fg-1`
+- Description: `text-xs text-fg-3`, max `45ch`
 - CTA: `<Button variant="outline">` below
 
 ### Loading State
@@ -109,8 +110,8 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 ```
 
 - Icon: MingCute `AlertLine` (48px), `text-error`
-- Title: `text-sm font-semibold text-foreground`
-- Message: `text-xs text-fg-secondary`
+- Title: `text-sm font-semibold text-fg-1`
+- Message: `text-xs text-fg-3`
 - Action: `<Button variant="outline">Retry</Button>` with query invalidation
 - Inline errors: `border-error` + `text-error` message below input
 - Toast errors: brief, auto-dismiss 5s, `text-error` accent

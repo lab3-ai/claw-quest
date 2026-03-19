@@ -103,8 +103,8 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
               <span className="text-fg-3">
                 <strong className="text-fg-1 font-semibold">
                   {quest.filledSlots.toLocaleString()}
-                </strong>{" "}
-                / {quest.totalSlots.toLocaleString()} slots
+                </strong>
+                /{quest.totalSlots.toLocaleString()} slots
               </span>
               <span className="text-fg-2 font-medium">
                 {quest.totalSlots > 0

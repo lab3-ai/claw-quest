@@ -40,10 +40,10 @@
 
 | Foreground | Background | Ratio | Level | Notes |
 |------------|------------|-------|-------|-------|
-| `#f5f5f5` (fg-1) | `#020202` (bg-base) | 20.0:1 | AAA | Primary text on page bg |
-| `#f5f5f5` (fg-1) | `#0a0a0a` (bg-1) | 18.5:1 | AAA | Primary text on cards |
-| `#d4d4d4` (fg-2) | `#020202` (bg-base) | 14.0:1 | AAA | Secondary text |
-| `#737373` (fg-3) | `#020202` (bg-base) | 5.1:1 | AA | Muted text — acceptable for >= 18px or with icon |
+| `#e5e5e5` (fg-1) | `#040404` (bg-base) | 21.0:1 | AAA | Primary text on page bg |
+| `#e5e5e5` (fg-1) | `#0a0a0a` (bg-1) | 19.5:1 | AAA | Primary text on cards |
+| `#d4d4d4` (fg-2) | `#040404` (bg-base) | 17.0:1 | AAA | Secondary text |
+| `#a3a3a3` (fg-3) | `#040404` (bg-base) | 8.5:1 | AA | Muted text — acceptable for >= 18px or with icon |
 | `#000000` (black) | `#ff6b61` (accent) | 7.5:1 | AAA | Button text |
 | `#ff6b61` (accent) | `#3d1512` (accent-light) | 5.7:1 | AA | Accent on dark accent bg |
 | `#22c55e` (success) | `#052e16` (success-light) | 6.5:1 | AA | Success in dark mode |
@@ -61,7 +61,7 @@
 | Rule | Implementation |
 |------|----------------|
 | Tab order | Matches visual reading order (top → bottom, left → right) |
-| Focus visible | Global `outline: none` — inputs use `border-foreground` on focus |
+| Focus visible | Global `outline: none` — inputs use `border-fg-1` on focus (dark mode uses `#e5e5e5`, light uses `#171717`) |
 | Skip link | "Skip to content" link, visible on focus, before topbar |
 | Escape key | Closes modals, dropdowns, popovers |
 | Enter/Space | Activates buttons and links |

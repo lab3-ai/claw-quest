@@ -124,20 +124,20 @@ Direction flips between modes so that **the same class works in both**: `bg-bg-b
 
 | Token | Tailwind | Hex (Light) | Hex (Dark) | Use |
 |-------|----------|------|-------|-----|
-| `--bg-base` | `bg-bg-base` | `#fafafa` | `#020202` | **Body/page background**, navbar |
+| `--bg-base` | `bg-bg-base` | `#fafafa` | `#040404` | **Body/page background**, navbar |
 | `--bg-1` | `bg-bg-1` | `#ffffff` | `#0a0a0a` | Card bg, popovers, inputs |
-| `--bg-2` | `bg-bg-2` | `#fafafa` | `#171717` | Secondary surfaces, hover states |
-| `--bg-3` | `bg-bg-3` | `#f5f5f5` | `#262626` | Sidebar, section bg, skeleton |
-| `--bg-4` | `bg-bg-4` | `#e5e5e5` | `#404040` | Disabled bg, muted backgrounds |
+| `--bg-2` | `bg-bg-2` | `#f5f5f5` | `#171717` | Secondary surfaces, hover states |
+| `--bg-3` | `bg-bg-3` | `#e5e5e5` | `#262626` | Sidebar, section bg, skeleton |
+| `--bg-4` | `bg-bg-4` | `#d4d4d4` | `#404040` | Disabled bg, muted backgrounds |
 
 #### Foreground
 
 | Token | Tailwind | Hex (Light) | Hex (Dark) | Use |
 |-------|----------|------|-------|-----|
-| `--fg-1` | `text-fg-1` | `#171717` | `#f5f5f5` | Primary text |
+| `--fg-1` | `text-fg-1` | `#171717` | `#e5e5e5` | Primary text |
 | `--fg-2` | `text-fg-2` | `#404040` | `#d4d4d4` | Secondary text, badge labels |
-| `--fg-3` | `text-fg-3` | `#737373` | `#737373` | Muted text, placeholders |
-| `--fg-4` | `text-fg-4` | `#d4d4d4` | `#404040` | Disabled text |
+| `--fg-3` | `text-fg-3` | `#737373` | `#a3a3a3` | Muted text, placeholders |
+| `--fg-4` | `text-fg-4` | `#d4d4d4` | `#737373` | Disabled text |
 
 #### Border
 
@@ -147,6 +147,8 @@ Direction flips between modes so that **the same class works in both**: `bg-bg-b
 | `--border-2` | `border-border-2` | `#e5e5e5` | `#262626` | Default borders, dividers (shadcn `border`) |
 | `--border-3` | `border-border-3` | `#d4d4d4` | `#404040` | Active borders, emphasis |
 | `--border-4` | `border-border-4` | `#a3a3a3` | `#525252` | Strong contrast borders |
+
+**Note:** Numbered scale tokens (bg-1/fg-1/etc) have migrated throughout codebase. Legacy shadcn aliases (`text-foreground`, `text-muted-foreground`, `bg-background`, `bg-card`, `border-input`) still work but point to numbered tokens.
 
 ### Dark Surfaces
 
@@ -276,17 +278,17 @@ Based on 4px grid. Use consistently across all components.
 
 ## Border Radius
 
-Terminal theme: all `0px` (square corners). Other themes override these tokens.
+Terminal theme: all `2px` (subtly rounded). Other themes override these tokens.
 
 | Token | Terminal | Use |
 |-------|---------|-----|
-| `--radius-base` | `0px` | Default radius |
-| `--radius-sm` | `0px` | Badges, tags, small elements |
-| `--radius-md` | `0px` | Buttons, inputs, small cards |
-| `--radius-lg` | `0px` | Cards, modals, dropdowns |
-| `--radius-xl` | `0px` | Large cards, featured items |
+| `--radius-base` | `2px` | Default radius |
+| `--radius-sm` | `2px` | Badges, tags, small elements |
+| `--radius-md` | `2px` | Buttons, inputs, small cards |
+| `--radius-lg` | `2px` | Cards, modals, dropdowns |
+| `--radius-xl` | `2px` | Large cards, featured items |
 | `--radius-full` | `9999px` | Avatars, pills, toggles |
-| `--radius-button` | `0px` | Button corners |
+| `--radius-button` | `2px` | Button corners |
 
 ---
 
@@ -375,18 +377,18 @@ Flat design — no decorative shadows.
 
 ### Buttons
 
-Each color has 3 styles: **fill** (solid bg), **tonal** (20% opacity bg), **outline** (border + transparent bg).
+Each color has 3 styles: **fill** (solid bg), **tonal** (12% opacity bg), **outline** (border + /10 opacity hover).
 
 | Color | Fill | Tonal | Outline |
 |-------|------|-------|---------|
-| **default** | `bg-foreground text-background` | `bg-secondary text-secondary-foreground` | `border-input bg-background` |
-| **primary** | `bg-primary text-primary-foreground` | `bg-primary/20 text-primary` | `border-primary/30 text-primary` |
-| **danger** | `bg-destructive text-destructive-foreground` | `bg-destructive/20 text-destructive` | `border-destructive/30 text-destructive` |
-| **success** | `bg-emerald-600 text-white` | `bg-emerald-600/20 text-emerald-600` | `border-emerald-600/30 text-emerald-600` |
-| **warning** | `bg-amber-500 text-white` | `bg-amber-500/20 text-amber-500` | `border-amber-500/30 text-amber-500` |
-| **info** | `bg-sky-500 text-white` | `bg-sky-500/20 text-sky-500` | `border-sky-500/30 text-sky-500` |
+| **default** | `bg-foreground text-background hover:bg-fg-2` | `bg-bg-2 text-foreground hover:bg-bg-3` | `border border-border-2 bg-transparent hover:bg-bg-2` |
+| **primary** | `bg-primary text-primary-foreground` | `bg-primary/12 text-primary hover:bg-primary/20` | `border border-primary/40 text-primary hover:bg-primary/10` |
+| **danger** | `bg-destructive text-destructive-foreground` | `bg-destructive/12 text-destructive hover:bg-destructive/20` | `border border-destructive/40 text-destructive hover:bg-destructive/10` |
+| **success** | `bg-emerald-600 text-white` | `bg-emerald-600/12 text-emerald-600` | `border border-emerald-600/40 text-emerald-600 hover:bg-emerald-600/10` |
+| **warning** | `bg-amber-500 text-white` | `bg-amber-500/12 text-amber-500` | `border border-amber-500/40 text-amber-500 hover:bg-amber-500/10` |
+| **info** | `bg-sky-500 text-white` | `bg-sky-500/12 text-sky-500` | `border border-sky-500/40 text-sky-500 hover:bg-sky-500/10` |
 
-Utility variants: **ghost** (no bg, hover only), **link** (underline), **outline** (neutral border, alias for `default-outline`).
+Utility variants: **ghost** (`hover:bg-bg-4`), **link** (`text-foreground underline-offset-4 hover:underline`), **outline** (neutral border, alias for `default-outline`).
 
 Naming: `variant="primary"`, `variant="primary-tonal"`, `variant="primary-outline"`.
 
@@ -397,31 +399,29 @@ Naming: `variant="primary"`, `variant="primary-tonal"`, `variant="primary-outlin
 | `lg` | 44px | px-6 | text-sm |
 | `xl` | 52px | px-8 | text-base |
 
-**Icon button**: `iconOnly` prop — square (w=h), follows size. Use with any variant.
-
-All buttons: `font-semibold`, `rounded-button`, `btn-pop` (scale bounce on click), **min `gap-2`** for icon+text spacing. No focus ring — `focus-visible:outline-hidden`. Demo: `/concepts/demo/buttons`.
+**Icon button**: `iconOnly` prop — square (w=h), follows size. Use with any variant. All buttons: `font-semibold`, `rounded-button` (2px), `btn-pop` (scale bounce on click), **min `gap-2`** for icon+text spacing. No focus ring — `focus-visible:outline-hidden`.
 
 ### Cards
 
 - Border: `border border-border-1` (1px, `--border-1`)
-- Background: `bg-card` (`--bg-1`)
+- Background: `bg-bg-1`
 - Hover: `hover:bg-bg-2` (subtle bg shift, no border change)
-- Radius: `rounded` (uses `--radius-base`, 0px Terminal)
+- Radius: `rounded` (uses `--radius-base`, 2px Terminal)
 - Padding: `--space-4` to `--space-5`
 - No box-shadow at rest
 
 ### Badges / Tags
 
-- Radius: `--radius-full` (9999px)
-- Padding: `4px 8px`
-- Font: `text-xs font-semibold`
+- Radius: `--radius-md` (2px) for all badges except count badges
+- Padding: `px-2 py-0.5`
+- Font: `text-xs font-semibold`, inline-flex with `gap-1`
 - Variant groups:
-  - **Semantic** (text only): `default`, `success`, `error`, `warning`, `info`, `muted`
-  - **Pill** (border + rounded): `pill` — for tags, skills, categories
-  - **Filled** (solid bg): `filled-success`, `filled-error`, `filled-warning`, `filled-muted`
-  - **Outline** (border + light bg): `outline`, `outline-success`, `outline-error`, `outline-warning`, `outline-muted`
-  - **Count** (small pill for numbers): `count` (`bg-fg-1 text-bg-1`), `count-muted`, `count-outline`, `count-primary`, `count-primary-inverted`, `count-success`, `count-error`, `count-warning`, `count-info`
-- Count badges: `min-w-4 h-4 px-1 text-2xs font-semibold rounded-full`
+  - **Semantic** (text only): `default` (fg-1), `success`, `error`, `warning`, `info`, `muted` (fg-3)
+  - **Pill** (border + rounded): `pill` — border-border-2, text-fg-2, px-2 py-0.5, rounded-md
+  - **Filled** (solid bg): `filled-success`, `filled-error`, `filled-warning`, `filled-muted` (bg-bg-3 text-fg-3)
+  - **Outline** (border + light bg): `outline` (border-border-2 bg-bg-2 text-fg-1), `outline-success`, `outline-error`, `outline-warning`, `outline-primary` (new variant)
+  - **Count** (small filled pill for numbers): `count` (bg-fg-1 text-bg-1), `count-muted` (bg-bg-3 text-fg-2), `count-outline`, `count-primary`, `count-primary-inverted`, `count-success`, `count-error`, `count-warning`, `count-info`
+- Count badges only: `min-w-5 h-5 px-1.5 text-2xs font-semibold rounded-full` (fully rounded)
 
 ### Form Inputs
 
@@ -634,6 +634,7 @@ Only use these sizes. No arbitrary values (13px, 15px, 17px, etc.).
 ### Avatar Sizing Standard
 
 Always request **2x display size** from DiceBear for crisp rendering on retina.
+Use `bottts-neutral` style with transparent background.
 
 | Display | Tailwind | DiceBear request | Context |
 |---------|----------|-----------------|---------|
@@ -643,6 +644,7 @@ Always request **2x display size** from DiceBear for crisp rendering on retina.
 | **64px** | `w-16 h-16` | `getDiceBearUrl(seed, 128)` | Profile header, agent detail |
 
 **Avatar stack overlap:** `-ml-2 first:ml-0` for 24px avatars.
+**DiceBear style:** `bottts-neutral` (robot style, deterministic per seed, transparent bg)
 
 ### Variant Rules
 

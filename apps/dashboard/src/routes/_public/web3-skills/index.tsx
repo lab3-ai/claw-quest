@@ -87,7 +87,7 @@ export function Web3SkillsPage() {
           {/* Pagination */}
           {data.totalPages > 1 && (
             <div className="flex items-center justify-between pt-4">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-fg-3">
                 Showing {(data.page - 1) * data.limit + 1}–{Math.min(data.page * data.limit, data.total)} of {data.total}
               </p>
               <div className="flex gap-2">
@@ -102,7 +102,7 @@ export function Web3SkillsPage() {
           )}
         </>
       ) : (
-        <div className="py-12 text-center text-muted-foreground">
+        <div className="py-12 text-center text-fg-3">
           No Web3 skills found. Try adjusting your filters.
         </div>
       )}

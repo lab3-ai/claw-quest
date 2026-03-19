@@ -1,3 +1,5 @@
+import { DemoLayout } from "@/components/demo-layout"
+
 const FONT_SIZES = [
     { class: "text-2xs", size: "10px", leading: "14px", token: "--text-2xs" },
     { class: "text-xs", size: "12px", leading: "16px", token: "--text-xs" },
@@ -30,7 +32,7 @@ const SAMPLE = "The quick brown fox jumps over the lazy dog. 0123456789"
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <section className="flex flex-col gap-4">
-            <h2 className="text-lg font-semibold text-foreground border-b border-border pb-2">{title}</h2>
+            <h2 className="text-lg font-semibold text-fg-1 border-b border-border-2 pb-2">{title}</h2>
             {children}
         </section>
     )
@@ -38,21 +40,17 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export function TypographyDemo() {
     return (
-        <div className="min-h-screen bg-background text-foreground p-6 sm:p-10 max-w-4xl mx-auto flex flex-col gap-10">
-            <div>
-                <h1 className="text-3xl font-semibold mb-1">Typography</h1>
-                <p className="text-sm text-muted-foreground">ClawQuest design system — font sizes, weights, and line heights.</p>
-            </div>
+        <DemoLayout title="Typography" description="Font sizes, weights, and line heights.">
 
             {/* Font families */}
             <Section title="Font Families">
                 <div className="grid gap-3">
-                    <div className="flex flex-col gap-1 p-4 rounded-lg border border-border bg-card">
-                        <code className="text-2xs text-muted-foreground">font-sans / font-mono</code>
+                    <div className="flex flex-col gap-1 p-4 rounded-lg border border-border-2 bg-bg-1">
+                        <code className="text-2xs text-fg-3">font-sans / font-mono</code>
                         <p className="font-mono text-base">Geist Mono — primary monospace body font</p>
                     </div>
-                    <div className="flex flex-col gap-1 p-4 rounded-lg border border-border bg-card">
-                        <code className="text-2xs text-muted-foreground">font-heading</code>
+                    <div className="flex flex-col gap-1 p-4 rounded-lg border border-border-2 bg-bg-1">
+                        <code className="text-2xs text-fg-3">font-heading</code>
                         <p className="font-heading text-base font-semibold">D-DIN Exp — heading font</p>
                     </div>
                 </div>
@@ -60,9 +58,9 @@ export function TypographyDemo() {
 
             {/* Font size scale */}
             <Section title="Font Size Scale">
-                <div className="border border-border rounded-lg overflow-hidden">
+                <div className="border border-border-2 rounded-lg overflow-hidden">
                     {/* Header */}
-                    <div className="grid grid-cols-[100px_70px_70px_1fr] gap-4 px-4 py-2 bg-muted text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <div className="grid grid-cols-[100px_70px_70px_1fr] gap-4 px-4 py-2 bg-bg-3text-2xs font-semibold text-fg-3 uppercase tracking-wider">
                         <span>Class</span>
                         <span>Size</span>
                         <span>Leading</span>
@@ -71,11 +69,11 @@ export function TypographyDemo() {
                     {FONT_SIZES.map((f, i) => (
                         <div
                             key={f.class}
-                            className={`grid grid-cols-[100px_70px_70px_1fr] gap-4 px-4 py-3 items-baseline ${i > 0 ? "border-t border-border" : ""}`}
+                            className={`grid grid-cols-[100px_70px_70px_1fr] gap-4 px-4 py-3 items-baseline ${i > 0 ? "border-t border-border-2" : ""}`}
                         >
                             <code className="text-xs text-accent font-semibold">{f.class}</code>
-                            <span className="text-xs text-muted-foreground">{f.size}</span>
-                            <span className="text-xs text-muted-foreground">{f.leading}</span>
+                            <span className="text-xs text-fg-3">{f.size}</span>
+                            <span className="text-xs text-fg-3">{f.leading}</span>
                             <p className={`${f.class} font-mono truncate`}>{SAMPLE}</p>
                         </div>
                     ))}
@@ -84,8 +82,8 @@ export function TypographyDemo() {
 
             {/* Font weights */}
             <Section title="Font Weights">
-                <div className="border border-border rounded-lg overflow-hidden">
-                    <div className="grid grid-cols-[120px_60px_1fr] gap-4 px-4 py-2 bg-muted text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <div className="border border-border-2 rounded-lg overflow-hidden">
+                    <div className="grid grid-cols-[120px_60px_1fr] gap-4 px-4 py-2 bg-bg-3text-2xs font-semibold text-fg-3 uppercase tracking-wider">
                         <span>Class</span>
                         <span>Weight</span>
                         <span>Preview</span>
@@ -93,10 +91,10 @@ export function TypographyDemo() {
                     {FONT_WEIGHTS.map((w, i) => (
                         <div
                             key={w.class}
-                            className={`grid grid-cols-[120px_60px_1fr] gap-4 px-4 py-3 items-baseline ${i > 0 ? "border-t border-border" : ""}`}
+                            className={`grid grid-cols-[120px_60px_1fr] gap-4 px-4 py-3 items-baseline ${i > 0 ? "border-t border-border-2" : ""}`}
                         >
                             <code className="text-xs text-accent font-semibold">{w.class}</code>
-                            <span className="text-xs text-muted-foreground">{w.weight}</span>
+                            <span className="text-xs text-fg-3">{w.weight}</span>
                             <p className={`${w.class} text-base font-mono`}>{SAMPLE}</p>
                         </div>
                     ))}
@@ -105,8 +103,8 @@ export function TypographyDemo() {
 
             {/* Line heights */}
             <Section title="Line Heights">
-                <div className="border border-border rounded-lg overflow-hidden">
-                    <div className="grid grid-cols-[140px_60px_1fr] gap-4 px-4 py-2 bg-muted text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <div className="border border-border-2 rounded-lg overflow-hidden">
+                    <div className="grid grid-cols-[140px_60px_1fr] gap-4 px-4 py-2 bg-bg-3text-2xs font-semibold text-fg-3 uppercase tracking-wider">
                         <span>Class</span>
                         <span>Value</span>
                         <span>Preview</span>
@@ -114,10 +112,10 @@ export function TypographyDemo() {
                     {LEADING.map((l, i) => (
                         <div
                             key={l.class}
-                            className={`grid grid-cols-[140px_60px_1fr] gap-4 px-4 py-3 items-start ${i > 0 ? "border-t border-border" : ""}`}
+                            className={`grid grid-cols-[140px_60px_1fr] gap-4 px-4 py-3 items-start ${i > 0 ? "border-t border-border-2" : ""}`}
                         >
                             <code className="text-xs text-accent font-semibold">{l.class}</code>
-                            <span className="text-xs text-muted-foreground">{l.value}</span>
+                            <span className="text-xs text-fg-3">{l.value}</span>
                             <p className={`${l.class} text-sm font-mono max-w-md`}>
                                 Line height comparison. This paragraph wraps to show how {l.class} ({l.value}) affects vertical rhythm and readability across multiple lines of text.
                             </p>
@@ -134,13 +132,13 @@ export function TypographyDemo() {
                         { label: "Section heading", classes: "text-xl font-semibold font-heading", text: "Active Quests" },
                         { label: "Card title", classes: "text-base font-semibold font-heading", text: "Build a DEX Aggregator" },
                         { label: "Body text", classes: "text-sm font-normal", text: "Complete the quest tasks to earn USDC rewards. Your agent handles the heavy lifting." },
-                        { label: "Caption / label", classes: "text-xs font-medium text-muted-foreground", text: "3 spots remaining · Ends in 2d 14h" },
-                        { label: "Micro label", classes: "text-2xs font-semibold text-muted-foreground uppercase tracking-widest", text: "Early Access" },
+                        { label: "Caption / label", classes: "text-xs font-medium text-fg-3", text: "3 spots remaining · Ends in 2d 14h" },
+                        { label: "Micro label", classes: "text-2xs font-semibold text-fg-3 uppercase tracking-widest", text: "Early Access" },
                     ].map((ex) => (
-                        <div key={ex.label} className="flex flex-col gap-1.5 p-4 rounded-lg border border-border bg-card">
+                        <div key={ex.label} className="flex flex-col gap-1.5 p-4 rounded-lg border border-border-2 bg-bg-1">
                             <div className="flex items-center gap-2">
                                 <span className="text-2xs font-semibold text-accent uppercase tracking-wider">{ex.label}</span>
-                                <code className="text-2xs text-muted-foreground">{ex.classes}</code>
+                                <code className="text-2xs text-fg-3">{ex.classes}</code>
                             </div>
                             <p className={ex.classes}>{ex.text}</p>
                         </div>
@@ -150,8 +148,8 @@ export function TypographyDemo() {
 
             {/* CSS tokens reference */}
             <Section title="CSS Tokens">
-                <div className="p-4 rounded-lg border border-border bg-card">
-                    <pre className="text-xs font-mono text-muted-foreground leading-relaxed overflow-auto">{`/* Font stacks */
+                <div className="p-4 rounded-lg border border-border-2 bg-bg-1">
+                    <pre className="text-xs font-mono text-fg-3 leading-relaxed overflow-auto">{`/* Font stacks */
 --font:         "Geist Mono", ui-monospace, ...
 --font-heading: "D-DIN Exp", "Geist Mono", ui-monospace, ...
 --font-mono:    "Geist Mono", ui-monospace, ...
@@ -169,9 +167,6 @@ export function TypographyDemo() {
                 </div>
             </Section>
 
-            <footer className="text-2xs text-muted-foreground border-t border-border pt-4 pb-8">
-                ClawQuest Design System v3 — Typography reference
-            </footer>
-        </div>
+        </DemoLayout>
     )
 }

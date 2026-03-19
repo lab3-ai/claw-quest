@@ -81,7 +81,7 @@ export function AuthCallback() {
 
     return (
         <div className="flex items-center justify-center min-h-screen">
-            <div className="text-muted-foreground text-base">Signing you in...</div>
+            <div className="text-fg-3 text-base">Signing you in...</div>
         </div>
     )
 }

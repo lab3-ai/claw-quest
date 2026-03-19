@@ -107,20 +107,20 @@ function VerifiedScreen({ questId }: { questId: string | null }) {
 
             {/* Text */}
             <div className="cq-fadein text-center space-y-1">
-                <h1 className="text-2xl font-bold text-foreground">Skill Verified!</h1>
-                <p className="text-muted-foreground text-sm">Your skill has been successfully confirmed.</p>
+                <h1 className="text-2xl font-bold text-fg-1">Skill Verified!</h1>
+                <p className="text-fg-3 text-sm">Your skill has been successfully confirmed.</p>
             </div>
 
             {/* Progress bar */}
             {questId && (
                 <div className="cq-fadein2 w-full space-y-1.5">
-                    <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                    <div className="h-1 w-full bg-bg-3 rounded-full overflow-hidden">
                         <div
                             className="h-full bg-success rounded-full transition-none"
                             style={{ width: `${progress}%` }}
                         />
                     </div>
-                    <p className="text-xs text-muted-foreground text-center">Redirecting to your quest…</p>
+                    <p className="text-xs text-fg-3 text-center">Redirecting to your quest…</p>
                 </div>
             )}
         </div>
@@ -196,7 +196,7 @@ export function VerifyChallenge({ token }: { token: string }) {
                 <h1 className="text-2xl font-bold">
                     {notFound ? "Challenge Not Found" : "Error Loading Challenge"}
                 </h1>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-fg-3 text-sm">
                     {notFound
                         ? "This challenge does not exist or has expired."
                         : "Something went wrong. Please try again."}
@@ -215,23 +215,23 @@ export function VerifyChallenge({ token }: { token: string }) {
                         {expired ? "Expired" : timeLeft}
                     </Badge>
                 </div>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-fg-3 text-sm">
                     Prove you have the <strong>{data.skillDisplay}</strong> skill
                 </p>
             </div>
 
             {/* Task */}
-            <div className="rounded-lg border border-border bg-card p-4 space-y-2">
-                <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+            <div className="rounded-lg border border-border-2 bg-bg-1 p-4 space-y-2">
+                <h2 className="text-sm font-medium text-fg-3 uppercase tracking-wide">
                     Challenge Task
                 </h2>
-                <p className="text-foreground">{data.taskDescription}</p>
+                <p className="text-fg-1">{data.taskDescription}</p>
             </div>
 
             {/* Script */}
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                    <h2 className="text-sm font-medium text-fg-3 uppercase tracking-wide">
                         Verification Script
                     </h2>
                     <Button
@@ -247,7 +247,7 @@ export function VerifyChallenge({ token }: { token: string }) {
 
                 <pre
                     className={cn(
-                        "rounded-lg border border-border bg-muted/50 p-4 text-xs overflow-x-auto font-mono whitespace-pre-wrap",
+                        "rounded-lg border border-border-2 bg-bg-3/50 p-4 text-xs overflow-x-auto font-mono whitespace-pre-wrap",
                         expired && "opacity-50"
                     )}
                 >
@@ -256,11 +256,11 @@ export function VerifyChallenge({ token }: { token: string }) {
             </div>
 
             {/* Instructions */}
-            <div className="rounded-lg border border-border bg-card p-4 space-y-2">
-                <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+            <div className="rounded-lg border border-border-2 bg-bg-1 p-4 space-y-2">
+                <h2 className="text-sm font-medium text-fg-3 uppercase tracking-wide">
                     How It Works
                 </h2>
-                <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                <ol className="text-sm text-fg-3 space-y-1 list-decimal list-inside">
                     <li>Install the skill on your agent using the command above</li>
                     <li>Copy the verification script and send it to your AI agent to run</li>
                     <li>The agent executes the script — it calls the skill API and submits the result to ClawQuest automatically</li>

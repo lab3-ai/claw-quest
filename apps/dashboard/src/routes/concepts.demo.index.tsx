@@ -43,10 +43,10 @@ export function DemoIndex() {
                         to={path}
                         className="group flex flex-col gap-3 border border-border-2 p-5 hover:bg-bg-1 transition-colors"
                     >
-                        <Icon className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                        <Icon className="h-5 w-5 text-fg-3 group-hover:text-fg-1 transition-colors" />
                         <div>
-                            <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-                            <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+                            <h2 className="text-lg font-semibold text-fg-1">{title}</h2>
+                            <p className="mt-1 text-sm text-fg-3">{description}</p>
                         </div>
                     </Link>
                 ))}

@@ -70,11 +70,11 @@ const devLab3Route = createRoute({
         }, [])
 
         return (
-            <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+            <div className="min-h-screen flex items-center justify-center bg-bg-base text-fg-1">
                 <div className="max-w-md space-y-6 text-center">
                     <div className="space-y-2">
                         <h1 className="text-2xl font-semibold tracking-tight">Dev Lab 3 unlocked</h1>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-fg-3">
                             Local bypass token has been stored in your browser. You can now navigate to any dashboard
                             route without being redirected back to the waitlist.
                         </p>
@@ -83,19 +83,19 @@ const devLab3Route = createRoute({
                     <div className="flex flex-wrap items-center justify-center gap-3">
                         <a
                             href="/login"
-                            className="inline-flex items-center justify-center rounded-md border border-border bg-primary px-4 py-2 text-xs font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+                            className="inline-flex items-center justify-center rounded-md border border-border-2 bg-primary px-4 py-2 text-xs font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
                         >
                             Go to Login
                         </a>
                         <a
                             href="/dashboard"
-                            className="inline-flex items-center justify-center rounded-md border border-border bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground shadow-sm hover:bg-secondary/80"
+                            className="inline-flex items-center justify-center rounded-md border border-border-2 bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground shadow-sm hover:bg-secondary/80"
                         >
                             Go to Dashboard
                         </a>
                         <a
                             href="/quests"
-                            className="inline-flex items-center justify-center rounded-md border border-border bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground shadow-sm hover:bg-secondary/80"
+                            className="inline-flex items-center justify-center rounded-md border border-border-2 bg-secondary px-4 py-2 text-xs font-medium text-secondary-foreground shadow-sm hover:bg-secondary/80"
                         >
                             View Quests
                         </a>

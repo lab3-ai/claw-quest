@@ -183,20 +183,20 @@ export function LeaderboardSection() {
     <section>
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="flex items-center gap-1.5 text-lg font-semibold text-foreground md:gap-2 md:text-xl">
+        <h2 className="flex items-center gap-1.5 text-lg font-semibold text-fg-1 md:gap-2 md:text-xl">
           <TrophyLine size={20} className="text-accent md:size-6" />
           Leaderboard
         </h2>
       </div>
 
       {/* Card container */}
-      <div className="border border-border bg-bg-1 px-4 py-4">
+      <div className="border border-border-2 bg-bg-1 px-4 py-4">
         {/* Tabs */}
         <Tabs
           value={activeTab}
           onValueChange={(v) => setActiveTab(v as TabType)}
         >
-          <TabsList className="bg-transparent border-b border-border rounded-none w-full justify-start gap-4 h-auto p-0 mb-0">
+          <TabsList className="bg-transparent border-b border-border-2 rounded-none w-full justify-start gap-4 h-auto p-0 mb-0">
             <TabsTrigger
               value="agents"
               className="text-sm font-medium text-fg-3 pb-2 px-0 rounded-none border-b-2 border-transparent data-[state=active]:text-fg-1 data-[state=active]:border-accent data-[state=active]:shadow-none hover:text-fg-2 bg-transparent"

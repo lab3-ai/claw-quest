@@ -163,7 +163,7 @@ export function WaitlistSuccessModal({
                 {/* Close button */}
                 <button
                     onClick={onClose}
-                    className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-neutral-800 hover:text-white"
+                    className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-md text-fg-3 transition-colors hover:bg-neutral-800 hover:text-white"
                 >
                     <CloseLine size={16} />
                 </button>
@@ -177,7 +177,7 @@ export function WaitlistSuccessModal({
                         <p className="font-mono text-2xl font-semibold text-white">
                             {greeting}
                         </p>
-                        <p className="mt-1 font-mono text-base text-muted-foreground">
+                        <p className="mt-1 font-mono text-base text-fg-3">
                             You're{" "}
                             <span className="font-semibold text-[var(--wl-accent)]">
                                 #{position}
@@ -189,7 +189,7 @@ export function WaitlistSuccessModal({
                     {/* Role selection */}
                     {!role ? (
                         <div className="w-full">
-                            <p className="mb-3 text-center font-mono text-sm text-muted-foreground">
+                            <p className="mb-3 text-center font-mono text-sm text-fg-3">
                                 One quick question — what brings you here?
                             </p>
                             <div className="flex gap-3">
@@ -224,7 +224,7 @@ export function WaitlistSuccessModal({
                     {/* Referral section — always visible once role is set or already set */}
                     {role && (
                         <div className="w-full flex flex-col gap-3">
-                            <p className="text-center font-mono text-xs text-muted-foreground">
+                            <p className="text-center font-mono text-xs text-fg-3">
                                 Share your link — every friend who joins moves you{" "}
                                 <span className="text-white font-semibold">10 spots</span> closer.
                             </p>
@@ -238,7 +238,7 @@ export function WaitlistSuccessModal({
                                         onClick={() => setVariant(v)}
                                         className={`h-8 rounded-md border px-3 font-mono text-xs transition-colors ${variant === v
                                             ? "border-[var(--wl-accent)]/40 bg-[var(--wl-accent)]/10 text-white"
-                                            : "border-neutral-800 bg-neutral-900 text-muted-foreground hover:text-white"
+                                            : "border-neutral-800 bg-neutral-900 text-fg-3 hover:text-white"
                                             }`}
                                     >
                                         {v}
@@ -250,7 +250,7 @@ export function WaitlistSuccessModal({
                             <div className="w-full rounded-lg border border-neutral-800 bg-neutral-900/40 p-3">
                                 <div className="flex items-center justify-between gap-2">
                                     <div className="flex items-center gap-2">
-                                        <span className="font-mono text-xs text-muted-foreground">
+                                        <span className="font-mono text-xs text-fg-3">
                                             Variant {variant}
                                         </span>
                                     </div>
@@ -258,7 +258,7 @@ export function WaitlistSuccessModal({
                                     <button
                                         type="button"
                                         onClick={() => copyShareText()}
-                                        className="inline-flex items-center gap-1 rounded-md border border-neutral-800 bg-neutral-950 px-2 py-1 font-mono text-xs text-muted-foreground transition-colors hover:text-white"
+                                        className="inline-flex items-center gap-1 rounded-md border border-neutral-800 bg-neutral-950 px-2 py-1 font-mono text-xs text-fg-3 transition-colors hover:text-white"
                                     >
                                         {copiedText ? <CheckLine size={12} /> : <CopyLine size={12} />}
                                         Copy
@@ -280,7 +280,7 @@ export function WaitlistSuccessModal({
                                 <button
                                     onClick={copyLink}
                                     title={copied ? "Copied!" : "Copy link"}
-                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-900 border border-neutral-800 text-muted-foreground transition-colors hover:bg-neutral-800 hover:text-white active:scale-95"
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-900 border border-neutral-800 text-fg-3 transition-colors hover:bg-neutral-800 hover:text-white active:scale-95"
                                 >
                                     {copied ? <CheckLine size={14} /> : <CopyLine size={14} />}
                                 </button>

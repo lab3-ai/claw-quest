@@ -15,9 +15,9 @@ export function getInitials(name: string): string {
     return name.slice(0, 2).toUpperCase()
 }
 
-/** DiceBear bottts avatar URL — deterministic per seed, robot/bot style, transparent bg */
+/** DiceBear bottts-neutral avatar URL — deterministic per seed, clean robot style */
 export function getDiceBearUrl(seed: string, size = 40): string {
-    return `https://api.dicebear.com/9.x/bottts/svg?seed=${encodeURIComponent(seed)}&size=${size}&backgroundColor=transparent`
+    return `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${encodeURIComponent(seed)}&size=${size}`
 }
 
 /** Get user avatar: OAuth provider avatar → DiceBear fallback */

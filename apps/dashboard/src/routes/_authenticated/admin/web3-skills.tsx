@@ -32,7 +32,7 @@ export function AdminWeb3Skills() {
           <PendingReviewTab />
         </TabsContent>
         <TabsContent value="all" className="mt-4">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-fg-3">
             Use the public Web3 Skills page to browse all classified skills.
             Override classification from the pending review tab.
           </div>
@@ -51,12 +51,12 @@ function PendingReviewTab() {
   const submissions = data?.submissions ?? []
 
   if (submissions.length === 0) {
-    return <p className="py-8 text-center text-muted-foreground">No items pending review.</p>
+    return <p className="py-8 text-center text-fg-3">No items pending review.</p>
   }
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">{submissions.length} item(s) pending review</p>
+      <p className="text-sm text-fg-3">{submissions.length} item(s) pending review</p>
 
       {submissions.map((item) => (
         <PendingCard key={item.id} item={item} onReview={async (id, action, category, reviewNote) => {
@@ -91,21 +91,21 @@ function PendingCard({ item, onReview }: {
   const [note, setNote] = useState("")
 
   return (
-    <div className="rounded-lg border border-border p-4 space-y-3">
+    <div className="rounded-lg border border-border-2 p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">Community</Badge>
             <h3 className="text-sm font-semibold">{item.name}</h3>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-xs text-fg-3">
             by {item.submitter?.displayName ?? item.submitter?.email ?? "Unknown"} — {new Date(item.created_at).toLocaleDateString()}
           </p>
         </div>
         <Badge variant="pill">{item.category}</Badge>
       </div>
 
-      <p className="text-sm text-muted-foreground">{item.summary}</p>
+      <p className="text-sm text-fg-3">{item.summary}</p>
 
       <div className="flex items-end gap-3 max-sm:flex-col">
         <div className="flex-1 max-sm:w-full">

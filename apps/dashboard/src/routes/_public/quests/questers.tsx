@@ -67,12 +67,12 @@ export function QuestersPage() {
             ]} />
 
             {/* Page Header */}
-            <div className="flex justify-between items-end py-3 border-b border-border mb-0">
+            <div className="flex justify-between items-end py-3 border-b border-border-2 mb-0">
                 <div>
-                    <h1 className="text-3xl font-semibold text-foreground">Questers</h1>
+                    <h1 className="text-3xl font-semibold text-fg-1">Questers</h1>
                     {data && (
-                        <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground flex-wrap">
-                            <strong className="text-foreground">{data.totalQuesters}</strong> questers
+                        <div className="flex items-center gap-2 mt-2 text-xs text-fg-3 flex-wrap">
+                            <strong className="text-fg-1">{data.totalQuesters}</strong> questers
                             <span>·</span>
                             <QuestTypeBadge type={data.questType} />
                             <span>·</span>
@@ -86,12 +86,12 @@ export function QuestersPage() {
 
             {/* Filter bar */}
             {data && (
-                <div className="flex items-center justify-between py-2.5 border-b border-border">
-                    <div className="flex items-center text-xs text-muted-foreground px-1">
+                <div className="flex items-center justify-between py-2.5 border-b border-border-2">
+                    <div className="flex items-center text-xs text-fg-3 px-1">
                         <button
                             className={cn(
-                                "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-muted-foreground whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-foreground",
-                                filter === "all" && "text-foreground font-semibold"
+                                "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-fg-3 whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-fg-1",
+                                filter === "all" && "text-fg-1 font-semibold"
                             )}
                             onClick={() => handleFilter("all")}
                         >
@@ -100,8 +100,8 @@ export function QuestersPage() {
                         <span className="px-1 text-border select-none text-xs self-center">·</span>
                         <button
                             className={cn(
-                                "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-muted-foreground whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-foreground",
-                                filter === "done" && "text-foreground font-semibold"
+                                "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-fg-3 whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-fg-1",
+                                filter === "done" && "text-fg-1 font-semibold"
                             )}
                             onClick={() => handleFilter("done")}
                         >
@@ -110,21 +110,21 @@ export function QuestersPage() {
                         <span className="px-1 text-border select-none text-xs self-center">·</span>
                         <button
                             className={cn(
-                                "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-muted-foreground whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-foreground",
-                                filter === "in_progress" && "text-foreground font-semibold"
+                                "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-fg-3 whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-fg-1",
+                                filter === "in_progress" && "text-fg-1 font-semibold"
                             )}
                             onClick={() => handleFilter("in_progress")}
                         >
                             {data.inProgressQuesters} in progress
                         </button>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">sorted by start time</div>
+                    <div className="flex items-center gap-2 text-xs text-fg-3">sorted by start time</div>
                 </div>
             )}
 
             {/* Loading / error */}
             {isLoading && (
-                <div className="p-10 text-center text-xs text-muted-foreground">Loading…</div>
+                <div className="p-10 text-center text-xs text-fg-3">Loading…</div>
             )}
             {error && (
                 <div className="p-10 text-center text-xs text-destructive">Failed to load questers.</div>
@@ -137,12 +137,12 @@ export function QuestersPage() {
                     <table className="w-full border-collapse">
                         <thead>
                             <tr>
-                                <th className="w-9 text-center font-semibold text-muted-foreground text-left px-3 py-2.5 text-xs uppercase tracking-wide border-b-2 border-border bg-transparent cursor-default select-none whitespace-nowrap">#</th>
-                                <th className="min-w-[140px] text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent cursor-default select-none whitespace-nowrap">Human</th>
-                                <th className="min-w-[140px] text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent cursor-default select-none whitespace-nowrap">Agent</th>
-                                <th className="whitespace-nowrap text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent cursor-default select-none">Started</th>
-                                <th className="whitespace-nowrap text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent cursor-default select-none">Progress</th>
-                                <th className="whitespace-nowrap text-right px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent cursor-default select-none">Payout</th>
+                                <th className="w-9 text-center font-semibold text-fg-3 text-left px-3 py-2.5 text-xs uppercase tracking-wide border-b-2 border-border-2 bg-transparent cursor-default select-none whitespace-nowrap">#</th>
+                                <th className="min-w-[140px] text-left px-3 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2 bg-transparent cursor-default select-none whitespace-nowrap">Human</th>
+                                <th className="min-w-[140px] text-left px-3 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2 bg-transparent cursor-default select-none whitespace-nowrap">Agent</th>
+                                <th className="whitespace-nowrap text-left px-3 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2 bg-transparent cursor-default select-none">Started</th>
+                                <th className="whitespace-nowrap text-left px-3 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2 bg-transparent cursor-default select-none">Progress</th>
+                                <th className="whitespace-nowrap text-right px-3 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2 bg-transparent cursor-default select-none">Payout</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -150,25 +150,25 @@ export function QuestersPage() {
                                 const done = p.status === "completed" || p.status === "submitted"
                                 return (
                                     <tr key={p.id} className="hover:bg-bg-2">
-                                        <td className={cn("w-9 text-center font-semibold text-muted-foreground px-3 py-2.5 text-xs border-b border-border align-middle", rankClass(p.rank))}>{p.rank}</td>
-                                        <td className="min-w-[140px] px-3 py-2.5 text-xs border-b border-border align-middle">
+                                        <td className={cn("w-9 text-center font-semibold text-fg-3 px-3 py-2.5 text-xs border-b border-border-2 align-middle", rankClass(p.rank))}>{p.rank}</td>
+                                        <td className="min-w-[140px] px-3 py-2.5 text-xs border-b border-border-2 align-middle">
                                             <img
                                                 src={getDiceBearUrl(p.agentName || p.humanHandle, 48)}
                                                 alt={p.humanHandle}
                                                 className="w-6 h-6 rounded-full inline-block align-middle mr-2"
                                             />
-                                            <span className="text-foreground font-medium">@{p.humanHandle}</span>
+                                            <span className="text-fg-1 font-medium">@{p.humanHandle}</span>
                                         </td>
-                                        <td className="min-w-[140px] px-3 py-2.5 text-xs border-b border-border align-middle">
+                                        <td className="min-w-[140px] px-3 py-2.5 text-xs border-b border-border-2 align-middle">
                                             <span className="font-mono text-xs font-semibold text-info">{p.agentName}</span>
                                         </td>
-                                        <td className="whitespace-nowrap px-3 py-2.5 text-xs border-b border-border align-middle">{relativeTime(p.joinedAt)}</td>
-                                        <td className="whitespace-nowrap px-3 py-2.5 text-xs border-b border-border align-middle">
-                                            <span className={cn("font-mono text-xs font-semibold", done ? "text-accent" : "text-foreground")}>
+                                        <td className="whitespace-nowrap px-3 py-2.5 text-xs border-b border-border-2 align-middle">{relativeTime(p.joinedAt)}</td>
+                                        <td className="whitespace-nowrap px-3 py-2.5 text-xs border-b border-border-2 align-middle">
+                                            <span className={cn("font-mono text-xs font-semibold", done ? "text-accent" : "text-fg-1")}>
                                                 {p.tasksCompleted}/{p.tasksTotal}{done ? " ✓" : ""}
                                             </span>
                                         </td>
-                                        <td className="whitespace-nowrap text-right px-3 py-2.5 text-xs border-b border-border align-middle">
+                                        <td className="whitespace-nowrap text-right px-3 py-2.5 text-xs border-b border-border-2 align-middle">
                                             {p.payoutStatus === "paid" && (
                                                 <span className="font-semibold text-accent text-xs">
                                                     {p.payoutAmount?.toFixed(2)} {data.questRewardType}
@@ -178,7 +178,7 @@ export function QuestersPage() {
                                                 <span className="font-semibold text-warning text-xs">Pending</span>
                                             )}
                                             {p.payoutStatus === "na" && (
-                                                <span className="text-muted-foreground text-xs">—</span>
+                                                <span className="text-fg-3 text-xs">—</span>
                                             )}
                                         </td>
                                     </tr>
@@ -186,7 +186,7 @@ export function QuestersPage() {
                             })}
                             {data.participations.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="text-center px-3 py-8 text-xs text-muted-foreground border-b border-border">
+                                    <td colSpan={6} className="text-center px-3 py-8 text-xs text-fg-3 border-b border-border-2">
                                         No questers found.
                                     </td>
                                 </tr>
@@ -196,7 +196,7 @@ export function QuestersPage() {
                     </div>
 
                     {/* Pager */}
-                    <div className="flex items-center justify-between py-3.5 text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between py-3.5 text-xs text-fg-3">
                         <span>
                             Showing {((page - 1) * PAGE_SIZE) + 1}–{Math.min(page * PAGE_SIZE, data.totalQuesters)} of {data.totalQuesters}
                         </span>

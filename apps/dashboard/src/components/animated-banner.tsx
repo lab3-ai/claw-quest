@@ -81,7 +81,7 @@ export function AnimatedBanner() {
     return (
         <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
             <div className="w-full text-center lg:w-1/2 lg:text-left">
-                <h2 className="text-xl font-semibold leading-tight tracking-tight text-foreground md:text-2xl lg:text-3xl">
+                <h2 className="text-xl font-semibold leading-tight tracking-tight text-fg-1 md:text-2xl lg:text-3xl">
                     Paid Distribution for AI Skills
                 </h2>
                 <p className="mt-2 text-xs leading-relaxed text-fg-3 mb-3 md:mt-2 md:text-sm md:mb-4">
@@ -162,7 +162,7 @@ export function HomeBanner() {
                 <div className="h-4 mb-2">
                     <TypingTagline />
                 </div>
-                <h2 className="text-3xl font-semibold leading-tight tracking-wide text-foreground md:text-3xl lg:text-4xl">
+                <h2 className="text-3xl font-semibold leading-tight tracking-wide text-fg-1 md:text-3xl lg:text-4xl">
                     Paid Distribution for AI Skills
                 </h2>
                 <p className="mt-2 text-sm leading-relaxed text-fg-1 mb-4 md:text-sm">
@@ -183,7 +183,7 @@ export function HomeBanner() {
                     </Button>
                 </div>
                 {/* Stats */}
-                <div className="flex flex-wrap items-center justify-center gap-2 mt-3 text-xs text-muted-foreground md:justify-start">
+                <div className="flex flex-wrap items-center justify-center gap-2 mt-3 text-xs text-fg-3 md:justify-start">
                     <span><strong className="text-accent font-semibold">3</strong> quest types</span>
                     <span className="w-1 h-1 rounded-full bg-border" />
                     <span><strong className="text-accent font-semibold">USDC</strong> + crypto rewards</span>

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { StarLine, DeleteLine, Settings1Line, AddLine } from "@mingcute/react"
+import { DemoLayout } from "@/components/demo-layout"
 
 const VARIANTS = [
     "default",
@@ -29,8 +30,7 @@ const SIZES = ["sm", "default", "lg", "xl"] as const
 
 export function ConceptsDemoButtons() {
     return (
-        <div className="mx-auto max-w-4xl space-y-12 p-8">
-            <h1 className="text-2xl font-semibold">Button Components</h1>
+        <DemoLayout title="Buttons" description="Fill, tonal, outline variants across 6 colors and 4 sizes.">
 
             {/* All variants × default size */}
             <section className="space-y-4">
@@ -63,9 +63,9 @@ export function ConceptsDemoButtons() {
                     <table className="border-collapse">
                         <thead>
                             <tr>
-                                <th className="p-2 text-left text-xs text-muted-foreground">Variant</th>
+                                <th className="p-2 text-left text-xs text-fg-3">Variant</th>
                                 {SIZES.map((s) => (
-                                    <th key={s} className="p-2 text-center text-xs text-muted-foreground">{s}</th>
+                                    <th key={s} className="p-2 text-center text-xs text-fg-3">{s}</th>
                                 ))}
                             </tr>
                         </thead>
@@ -93,7 +93,7 @@ export function ConceptsDemoButtons() {
                 <div className="space-y-3">
                     {(["default", "primary", "danger", "success", "warning", "info", "default-tonal", "primary-tonal", "danger-tonal", "outline", "ghost"] as const).map((v) => (
                         <div key={v} className="flex items-center gap-3">
-                            <span className="w-36 font-mono text-xs text-muted-foreground">{v}</span>
+                            <span className="w-36 font-mono text-xs text-fg-3">{v}</span>
                             {SIZES.map((s) => (
                                 <Button key={s} variant={v} size={s} iconOnly>
                                     <StarLine size={s === "sm" ? 14 : s === "xl" ? 22 : 16} />
@@ -137,6 +137,6 @@ export function ConceptsDemoButtons() {
                     ))}
                 </div>
             </section>
-        </div>
+        </DemoLayout>
     )
 }

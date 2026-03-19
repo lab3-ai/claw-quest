@@ -319,17 +319,17 @@ function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, 
                         return (
                             <span key={i} className={cn(
                                 "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs border leading-tight",
-                                status === "pending" ? "bg-muted border-border"
+                                status === "pending" ? "bg-bg-3 border-border-2"
                                     : status === "invalid" ? "bg-error-light border-warning"
-                                        : "bg-accent-light border-accent-border text-foreground"
+                                        : "bg-accent-light border-accent-border text-fg-1"
                             )}>
                                 {status === "pending"
-                                    ? <span className="inline-block size-2.5 border-[1.5px] border-border border-t-muted-foreground rounded-full animate-spin" />
+                                    ? <span className="inline-block size-2.5 border-[1.5px] border-border-2 border-t-fg-3 rounded-full animate-spin" />
                                     : status === "invalid"
                                         ? <span className="text-warning text-xs font-semibold">⚠</span>
                                         : <span className="text-success text-xs font-semibold">✓</span>}
                                 <span className="font-mono text-xs">{formatChip ? formatChip(chip) : chip}</span>
-                                <button className="bg-transparent border-none text-muted-foreground text-base cursor-pointer px-px leading-none ml-0.5 hover:text-destructive" onClick={() => onRemove(i)}>×</button>
+                                <button className="bg-transparent border-none text-fg-3 text-base cursor-pointer px-px leading-none ml-0.5 hover:text-destructive" onClick={() => onRemove(i)}>×</button>
                             </span>
                         )
                     })}
@@ -337,7 +337,7 @@ function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, 
             )}
             {!atMax && (
                 <input
-                    className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 chip-input", displayError && "border-destructive focus-visible:ring-destructive")}
+                    className={cn("flex h-9 w-full rounded border border-border-2 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-fg-3 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 chip-input", displayError && "border-destructive focus-visible:ring-destructive")}
                     type="text"
                     placeholder={chips.length > 0 ? "Add another… ↵" : placeholder}
                     value={input}
@@ -346,7 +346,7 @@ function ChipInput({ chips, onAdd, onRemove, placeholder, validate, formatChip, 
                 />
             )}
             {!atMax && !displayError && input.length === 0 && chips.length === 0 && (
-                <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginTop: 2 }}>Press ↵ Enter to confirm</div>
+                <div className="text-xs text-fg-3 mb-1 leading-snug" style={{ marginTop: 2 }}>Press ↵ Enter to confirm</div>
             )}
             {displayError && <div className="text-xs text-destructive mt-0.5 leading-snug">{displayError}</div>}
         </div>
@@ -450,7 +450,7 @@ function DiscordRoleFields({ task, idx, setTaskParam, addChip, removeChip, chipE
 
     return (
         <>
-            <div className="flex items-center gap-2 px-2.5 py-2 bg-indigo-50 border border-indigo-300 rounded text-xs text-foreground mb-2">
+            <div className="flex items-center gap-2 px-2.5 py-2 bg-indigo-50 border border-indigo-300 rounded text-xs text-fg-1 mb-2">
                 <span>🤖</span>
                 <span style={{ flex: 1 }}>
                     {botPresent === true && guildName
@@ -466,7 +466,7 @@ function DiscordRoleFields({ task, idx, setTaskParam, addChip, removeChip, chipE
             </div>
             <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 8 }}>
                 <Label>Discord Server URL</Label>
-                <div className="text-xs text-muted-foreground mb-1 leading-snug">Invite link. Press ↵ to confirm.</div>
+                <div className="text-xs text-fg-3 mb-1 leading-snug">Invite link. Press ↵ to confirm.</div>
                 <ChipInput
                     chips={task.chips}
                     onAdd={val => addChip(idx, val)}
@@ -477,16 +477,16 @@ function DiscordRoleFields({ task, idx, setTaskParam, addChip, removeChip, chipE
                     error={chipError}
                     chipStatus={chipStatus}
                 />
-                {loading && <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ color: "var(--accent)" }}>Checking server...</div>}
+                {loading && <div className="text-xs text-fg-3 mb-1 leading-snug" style={{ color: "var(--accent)" }}>Checking server...</div>}
                 {error && <div className="text-xs text-destructive mt-0.5 leading-snug">{error}</div>}
             </div>
             <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 0 }}>
                 <Label>Required Role</Label>
-                <div className="text-xs text-muted-foreground mb-1 leading-snug">
+                <div className="text-xs text-fg-3 mb-1 leading-snug">
                     {botPresent === true ? "Select a role from the server." : "Invite the bot first to load roles."}
                 </div>
                 <select
-                    className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring", fieldError("role") && "border-destructive focus-visible:ring-destructive")}
+                    className={cn("flex h-9 w-full rounded border border-border-2 bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring", fieldError("role") && "border-destructive focus-visible:ring-destructive")}
                     value={task.params.roleId ?? ""}
                     onChange={handleRoleSelect}
                     disabled={roles.length === 0}
@@ -526,7 +526,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
             {(fields === "follow") && (
                 <div className="space-y-1.5 mb-0">
                     <Label>X Usernames</Label>
-                    <div className="text-xs text-muted-foreground mb-1 leading-snug">Add accounts the human must follow. Press ↵ to confirm each.</div>
+                    <div className="text-xs text-fg-3 mb-1 leading-snug">Add accounts the human must follow. Press ↵ to confirm each.</div>
                     <ChipInput
                         chips={task.chips}
                         onAdd={val => addChip(idx, val.replace(/^@/, ""))}
@@ -542,7 +542,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
             {(fields === "post_url") && (
                 <div className="space-y-1.5 mb-0">
                     <Label>Post URLs</Label>
-                    <div className="text-xs text-muted-foreground mb-1 leading-snug">Add X post URLs. Press ↵ to confirm each.</div>
+                    <div className="text-xs text-fg-3 mb-1 leading-snug">Add X post URLs. Press ↵ to confirm each.</div>
                     <ChipInput
                         chips={task.chips}
                         onAdd={val => addChip(idx, val)}
@@ -558,7 +558,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                 <>
                     <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 8 }}>
                         <Label>Post Template</Label>
-                        <div className="text-xs text-muted-foreground mb-1 leading-snug">Provide a template or required content. User can customize around it.</div>
+                        <div className="text-xs text-fg-3 mb-1 leading-snug">Provide a template or required content. User can customize around it.</div>
                         <div className="relative">
                             <Textarea
                                 className={cn(fieldError("content") && "border-destructive focus-visible:ring-destructive")}
@@ -568,11 +568,11 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                                 onChange={e => setTaskParam(idx, "content", e.target.value)}
                                 maxLength={280}
                             />
-                            <span className="absolute bottom-1.5 right-2 text-xs text-muted-foreground font-mono pointer-events-none">{(task.params["content"] ?? "").length}/280</span>
+                            <span className="absolute bottom-1.5 right-2 text-xs text-fg-3 font-mono pointer-events-none">{(task.params["content"] ?? "").length}/280</span>
                         </div>
                         {fieldError("content") && <div className="text-xs text-destructive mt-0.5 leading-snug">{fieldError("content")}</div>}
                     </div>
-                    <div className="flex items-center justify-between py-1.5 text-xs text-foreground">
+                    <div className="flex items-center justify-between py-1.5 text-xs text-fg-1">
                         <span>Require tagging 3 friends</span>
                         <Switch
                             checked={task.requireTagFriends ?? false}
@@ -585,7 +585,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                 <>
                     <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 8 }}>
                         <Label>Post URL</Label>
-                        <div className="text-xs text-muted-foreground mb-1 leading-snug">Link to the X post to quote. Press ↵ to confirm.</div>
+                        <div className="text-xs text-fg-3 mb-1 leading-snug">Link to the X post to quote. Press ↵ to confirm.</div>
                         <ChipInput
                             chips={task.chips}
                             onAdd={val => addChip(idx, val)}
@@ -599,7 +599,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                     </div>
                     <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 8 }}>
                         <Label>Quote Template</Label>
-                        <div className="text-xs text-muted-foreground mb-1 leading-snug">Provide required content for the quote (hashtags, links, etc.).</div>
+                        <div className="text-xs text-fg-3 mb-1 leading-snug">Provide required content for the quote (hashtags, links, etc.).</div>
                         <div className="relative">
                             <Textarea
                                 rows={2}
@@ -608,10 +608,10 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                                 onChange={e => setTaskParam(idx, "content", e.target.value)}
                                 maxLength={280}
                             />
-                            <span className="absolute bottom-1.5 right-2 text-xs text-muted-foreground font-mono pointer-events-none">{(task.params["content"] ?? "").length}/280</span>
+                            <span className="absolute bottom-1.5 right-2 text-xs text-fg-3 font-mono pointer-events-none">{(task.params["content"] ?? "").length}/280</span>
                         </div>
                     </div>
-                    <div className="flex items-center justify-between py-1.5 text-xs text-foreground">
+                    <div className="flex items-center justify-between py-1.5 text-xs text-fg-1">
                         <span>Require tagging 3 friends</span>
                         <Switch
                             checked={task.requireTagFriends ?? false}
@@ -622,7 +622,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
             )}
             {(fields === "discord_join") && (
                 <>
-                    <div className="flex items-center gap-2 px-2.5 py-2 bg-indigo-50 border border-indigo-300 rounded text-xs text-foreground mb-2">
+                    <div className="flex items-center gap-2 px-2.5 py-2 bg-indigo-50 border border-indigo-300 rounded text-xs text-fg-1 mb-2">
                         <span>🤖</span>
                         <span style={{ flex: 1 }}>
                             Add the <strong>ClawQuest bot</strong> to your server to enable join verification.
@@ -638,7 +638,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                     </div>
                     <div className="space-y-1.5 mb-0">
                         <Label>Discord Server URL</Label>
-                        <div className="text-xs text-muted-foreground mb-1 leading-snug">Invite link to the Discord server. Press ↵ to confirm.</div>
+                        <div className="text-xs text-fg-3 mb-1 leading-snug">Invite link to the Discord server. Press ↵ to confirm.</div>
                         <ChipInput
                             chips={task.chips}
                             onAdd={val => addChip(idx, val)}
@@ -664,7 +664,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
             {(fields === "telegram_join") && (
                 <div className="space-y-1.5 mb-0">
                     <Label>Telegram Group / Channel</Label>
-                    <div className="text-xs text-muted-foreground mb-1 leading-snug">Username or invite link. Press ↵ to confirm.</div>
+                    <div className="text-xs text-fg-3 mb-1 leading-snug">Username or invite link. Press ↵ to confirm.</div>
                     <ChipInput
                         chips={task.chips}
                         onAdd={val => addChip(idx, val)}
@@ -675,7 +675,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                         error={chipError}
                         chipStatus={chipStatus}
                     />
-                    <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginTop: 6 }}>
+                    <div className="text-xs text-fg-3 mb-1 leading-snug" style={{ marginTop: 6 }}>
                         ⚠ Add <strong>@{TELEGRAM_BOT_USERNAME}</strong> as admin to your group/channel for auto-verification to work.
                     </div>
                 </div>
@@ -1174,7 +1174,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                 <div className="w-full">
                     {/* {restoredBanner && (
                         <div className="w-full bg-info-light border border-info rounded px-4 py-2 flex justify-between 
-                        items-center mb-4 text-base text-foreground">
+                        items-center mb-4 text-base text-fg-1">
                             <span>Draft restored from local backup</span>
                             <Button size="sm" onClick={() => setRestoredBanner(false)}>Dismiss</Button>
                         </div>

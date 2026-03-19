@@ -258,7 +258,7 @@ export function QuestList() {
                     )} />
                 </div>
                 <TooltipProvider delayDuration={300}>
-                    <div className="relative inline-flex border border-border p-0.5 gap-0.5 rounded-button overflow-hidden ml-auto shrink-0 max-lg:hidden">
+                    <div className="relative inline-flex border border-border-2 p-0.5 gap-0.5 rounded-button overflow-hidden ml-auto shrink-0 max-lg:hidden">
                         {/* Sliding highlight */}
                         <span
                             className="absolute top-0.5 bottom-0.5 rounded-button bg-bg-4 transition-all duration-200 ease-out z-0"
@@ -330,24 +330,24 @@ export function QuestList() {
             {activeIsLoading && view === "grid" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-4">
                     {[1, 2, 3, 4, 5, 6].map(i => (
-                        <div key={i} className="flex flex-col border border-border rounded p-4 pointer-events-none">
+                        <div key={i} className="flex flex-col border border-border-2 rounded p-4 pointer-events-none">
                             <div className="flex justify-between items-center mb-3">
-                                <div className="animate-pulse bg-muted rounded w-[70px] h-5" />
-                                <div className="animate-pulse bg-muted rounded w-[50px] h-4" />
+                                <div className="animate-pulse bg-bg-3 rounded w-[70px] h-5" />
+                                <div className="animate-pulse bg-bg-3 rounded w-[50px] h-4" />
                             </div>
-                            <div className="animate-pulse bg-muted rounded w-4/5 h-4 mb-2" />
-                            <div className="animate-pulse bg-muted rounded w-full h-3 mb-1.5" />
-                            <div className="animate-pulse bg-muted rounded w-3/5 h-3 mb-3" />
+                            <div className="animate-pulse bg-bg-3 rounded w-4/5 h-4 mb-2" />
+                            <div className="animate-pulse bg-bg-3 rounded w-full h-3 mb-1.5" />
+                            <div className="animate-pulse bg-bg-3 rounded w-3/5 h-3 mb-3" />
                             <div className="flex gap-1 mb-3">
-                                <div className="animate-pulse bg-muted rounded w-[50px] h-5" />
-                                <div className="animate-pulse bg-muted rounded w-[40px] h-5" />
+                                <div className="animate-pulse bg-bg-3 rounded w-[50px] h-5" />
+                                <div className="animate-pulse bg-bg-3 rounded w-[40px] h-5" />
                             </div>
-                            <div className="mt-auto pt-3 border-t border-border flex justify-between items-end">
+                            <div className="mt-auto pt-3 border-t border-border-2 flex justify-between items-end">
                                 <div>
-                                    <div className="animate-pulse bg-muted rounded w-[80px] h-4 mb-1" />
-                                    <div className="animate-pulse bg-muted rounded w-[60px] h-3" />
+                                    <div className="animate-pulse bg-bg-3 rounded w-[80px] h-4 mb-1" />
+                                    <div className="animate-pulse bg-bg-3 rounded w-[60px] h-3" />
                                 </div>
-                                <div className="animate-pulse bg-muted rounded w-[50px] h-4" />
+                                <div className="animate-pulse bg-bg-3 rounded w-[50px] h-4" />
                             </div>
                         </div>
                     ))}
@@ -356,18 +356,18 @@ export function QuestList() {
             {activeIsLoading && view !== "grid" && (
                 <div className="block">
                     {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="flex gap-4 py-3.5 border-b border-border items-start pointer-events-none">
+                        <div key={i} className="flex gap-4 py-3.5 border-b border-border-2 items-start pointer-events-none">
                             <div className="hidden sm:flex flex-col items-end gap-1.5 min-w-[110px] pt-0.5">
-                                <div className="animate-pulse bg-muted rounded w-[50px] h-5 mb-1" />
-                                <div className="animate-pulse bg-muted rounded w-[70px] h-3" />
+                                <div className="animate-pulse bg-bg-3 rounded w-[50px] h-5 mb-1" />
+                                <div className="animate-pulse bg-bg-3 rounded w-[70px] h-3" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="animate-pulse bg-muted rounded w-3/5 h-4 mb-2" />
-                                <div className="animate-pulse bg-muted rounded w-[90%] h-3 mb-2.5" />
-                                <div className="animate-pulse bg-muted rounded w-2/5 h-3" />
+                                <div className="animate-pulse bg-bg-3 rounded w-3/5 h-4 mb-2" />
+                                <div className="animate-pulse bg-bg-3 rounded w-[90%] h-3 mb-2.5" />
+                                <div className="animate-pulse bg-bg-3 rounded w-2/5 h-3" />
                             </div>
                             <div className="hidden sm:flex flex-col items-end min-w-[100px] pt-0.5 shrink-0">
-                                <div className="animate-pulse bg-muted rounded w-[70px] h-[18px]" />
+                                <div className="animate-pulse bg-bg-3 rounded w-[70px] h-[18px]" />
                             </div>
                         </div>
                     ))}
@@ -386,7 +386,7 @@ export function QuestList() {
                 {/* Grid view */}
                 {!activeIsLoading && view === "grid" && (
                     sorted.length === 0 ? (
-                        <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>
+                        <div className="py-12 text-center text-fg-3">{emptyMessage}</div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-sm:gap-3 py-4">
                             {sorted.map(quest => (
@@ -400,7 +400,7 @@ export function QuestList() {
                 {!activeIsLoading && view === "list" && (
                     <div className="block">
                         {sorted.length === 0 ? (
-                            <div className="py-12 text-center text-muted-foreground">{emptyMessage}</div>
+                            <div className="py-12 text-center text-fg-3">{emptyMessage}</div>
                         ) : (
                             <ul className="list-none flex flex-col gap-3">
                                 {sorted.map(quest => (
@@ -414,39 +414,39 @@ export function QuestList() {
                 {/* Compact list (table) view */}
                 {!activeIsLoading && view === "compact" && (
                     <div className="block overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 max-sm:pb-2">
-                        <div className="sm:hidden text-xs text-muted-foreground mb-2 text-center flex items-center justify-center gap-1 animate-pulse">
+                        <div className="sm:hidden text-xs text-fg-3 mb-2 text-center flex items-center justify-center gap-1 animate-pulse">
                             <span>←</span> Swipe to view all columns <span>→</span>
                         </div>
-                        <table className="w-full min-w-[640px] border border-border rounded bg-bg-1 overflow-hidden border-separate border-spacing-0">
+                        <table className="w-full min-w-[640px] border border-border-2 rounded bg-bg-1 overflow-hidden border-separate border-spacing-0">
                             <thead>
                                 <tr>
-                                    <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[140px]">Reward</th>
-                                    <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[240px]">Name</th>
-                                    <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
-                                    <th className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none">Questers</th>
-                                    <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none">Slots</th>
-                                    <th className="text-right px-4 py-2.5 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b border-border bg-transparent whitespace-nowrap cursor-default select-none">Time Left</th>
+                                    <th className="text-left px-4 py-2.5 text-xs font-medium text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none min-w-[140px]">Reward</th>
+                                    <th className="text-left px-4 py-2.5 text-xs font-medium text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none min-w-[240px]">Name</th>
+                                    <th className="text-left px-4 py-2.5 text-xs font-medium text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
+                                    <th className="text-left px-4 py-2.5 text-xs font-medium text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none">Questers</th>
+                                    <th className="text-right px-4 py-2.5 text-xs font-medium text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none">Slots</th>
+                                    <th className="text-right px-4 py-2.5 text-xs font-medium text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none">Time Left</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {sorted.length === 0 ? (
-                                    <tr><td colSpan={6} className="px-4 py-4 text-xs border-b border-border align-top text-center py-8 text-muted-foreground">{emptyMessage}</td></tr>
+                                    <tr><td colSpan={6} className="px-4 py-4 text-xs border-b border-border-2 align-top text-center py-8 text-fg-3">{emptyMessage}</td></tr>
                                 ) : sorted.map(quest => {
                                     const time = formatTimeShort(quest.expiresAt)
                                     return (
                                         <tr key={quest.id} className="hover:bg-bg-2 cursor-pointer transition-colors" onClick={() => navigate({ to: "/quests/$questId", params: { questId: quest.id } })}>
-                                            <td className="px-4 py-4 text-xs border-b border-border align-top whitespace-nowrap">
+                                            <td className="px-4 py-4 text-xs border-b border-border-2 align-top whitespace-nowrap">
                                                 <span className="inline-flex items-center gap-2 text-sm font-semibold text-success whitespace-nowrap">
                                                     <TokenIcon token={quest.rewardType} size={16} />
                                                     {quest.rewardAmount.toLocaleString()} {quest.rewardType}
                                                 </span>
                                             </td>
-                                            <td className="px-4 pt-4 pb-4 text-xs border-b border-border align-top min-w-[240px]">
+                                            <td className="px-4 pt-4 pb-4 text-xs border-b border-border-2 align-top min-w-[240px]">
                                                 <div className="text-base font-semibold leading-snug mb-0.5 mt-[-2px] font-heading">{quest.title}</div>
-                                                <div className="text-xs text-muted-foreground leading-snug line-clamp-3 my-0.5 hidden">{quest.description}</div>
-                                                <div className="text-xs text-muted-foreground inline-flex items-center gap-1 mt-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
+                                                <div className="text-xs text-fg-3 leading-snug line-clamp-3 my-0.5 hidden">{quest.description}</div>
+                                                <div className="text-xs text-fg-3 inline-flex items-center gap-1 mt-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-fg-1 font-semibold">{quest.sponsor}</strong></div>
                                             </td>
-                                            <td className="px-4 py-4 text-xs border-b border-border align-top">
+                                            <td className="px-4 py-4 text-xs border-b border-border-2 align-top">
                                                 <span className={cn("inline-flex items-center gap-1 text-xs font-semibold uppercase", typeColorClass(quest.type))}>
                                                     {quest.type === "FCFS" && <RunLine size={14} />}
                                                     {quest.type === "LEADERBOARD" && <TrophyLine size={14} />}
@@ -454,7 +454,7 @@ export function QuestList() {
                                                     {quest.type}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-4 text-xs border-b border-border align-top whitespace-nowrap">
+                                            <td className="px-4 py-4 text-xs border-b border-border-2 align-top whitespace-nowrap">
                                                 {quest.questers > 0 ? (
                                                     <QuestersAvatarStack
                                                         details={(quest.questerDetails ?? []) as QuesterDetail[]}
@@ -462,17 +462,17 @@ export function QuestList() {
                                                         onClick={(e) => { e.stopPropagation(); setPopupQuest({ id: quest.id, title: quest.title }) }}
                                                     />
                                                 ) : (
-                                                    <span className="text-xs text-muted-foreground">—</span>
+                                                    <span className="text-xs text-fg-3">—</span>
                                                 )}
                                             </td>
-                                            <td className="px-4 py-4 text-xs border-b border-border align-top text-right">{quest.totalSlots - quest.filledSlots}</td>
-                                            <td className="px-4 py-4 text-xs border-b border-border align-top text-right">
+                                            <td className="px-4 py-4 text-xs border-b border-border-2 align-top text-right">{quest.totalSlots - quest.filledSlots}</td>
+                                            <td className="px-4 py-4 text-xs border-b border-border-2 align-top text-right">
                                                 <div className={cn(
                                                     "font-mono text-xs font-semibold whitespace-nowrap",
                                                     time.cls === "warning" && "text-warning",
                                                     time.cls === "urgent" && "text-error",
-                                                    time.cls === "normal" && "text-foreground",
-                                                    time.cls === "muted" && "text-muted-foreground font-normal"
+                                                    time.cls === "normal" && "text-fg-1",
+                                                    time.cls === "muted" && "text-fg-3 font-normal"
                                                 )}>{time.label}</div>
                                             </td>
                                         </tr>

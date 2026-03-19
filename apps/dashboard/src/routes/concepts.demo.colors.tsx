@@ -1,4 +1,4 @@
-import { PageTitle } from "@/components/page-title"
+import { DemoLayout } from "@/components/demo-layout"
 
 /* ── Color token groups ── */
 
@@ -109,12 +109,12 @@ function Swatch({ token, tw, label }: { token: string; tw?: string; label: strin
     return (
         <div className="flex items-center gap-3">
             <div
-                className="h-10 w-10 shrink-0 border border-border"
+                className="h-10 w-10 shrink-0 border border-border-2"
                 style={{ backgroundColor: `var(${token})` }}
             />
             <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">{label}</p>
-                <p className="text-2xs text-muted-foreground font-mono truncate">
+                <p className="text-sm font-semibold text-fg-1 truncate">{label}</p>
+                <p className="text-2xs text-fg-3 font-mono truncate">
                     {tw ?? token}
                 </p>
             </div>
@@ -127,7 +127,7 @@ function Swatch({ token, tw, label }: { token: string; tw?: string; label: strin
 function Section({ title, items }: { title: string; items: { token: string; tw?: string; label: string }[] }) {
     return (
         <div>
-            <h2 className="text-lg font-semibold text-foreground mb-4">{title}</h2>
+            <h2 className="text-lg font-semibold text-fg-1 mb-4">{title}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {items.map((item) => (
                     <Swatch key={item.label} {...item} />
@@ -141,27 +141,21 @@ function Section({ title, items }: { title: string; items: { token: string; tw?:
 
 export function ColorsDemo() {
     return (
-        <div className="mx-auto max-w-5xl px-6 py-8">
-            <PageTitle
-                title="Colors"
-                description="Design tokens resolved from current theme"
-            />
-            <div className="mt-6 flex flex-col gap-10">
-                <Section title="Background" items={BACKGROUNDS} />
-                <Section title="Foreground" items={FOREGROUNDS} />
-                <Section title="Border" items={BORDERS} />
-                <Section title="Accent" items={ACCENT} />
-                <Section title="Primary" items={PRIMARY} />
-                <Section title="Success" items={SUCCESS} />
-                <Section title="Error" items={ERROR} />
-                <Section title="Warning" items={WARNING} />
-                <Section title="Info" items={INFO} />
-                <Section title="Actors" items={ACTORS} />
-                <Section title="Surface Dark" items={SURFACE_DARK} />
-                <Section title="Links" items={LINKS} />
-                <Section title="Platform" items={PLATFORM} />
-                <Section title="shadcn/ui Aliases" items={SHADCN_ALIASES} />
-            </div>
-        </div>
+        <DemoLayout title="Colors" description="Design tokens resolved from current theme.">
+            <Section title="Background" items={BACKGROUNDS} />
+            <Section title="Foreground" items={FOREGROUNDS} />
+            <Section title="Border" items={BORDERS} />
+            <Section title="Accent" items={ACCENT} />
+            <Section title="Primary" items={PRIMARY} />
+            <Section title="Success" items={SUCCESS} />
+            <Section title="Error" items={ERROR} />
+            <Section title="Warning" items={WARNING} />
+            <Section title="Info" items={INFO} />
+            <Section title="Actors" items={ACTORS} />
+            <Section title="Surface Dark" items={SURFACE_DARK} />
+            <Section title="Links" items={LINKS} />
+            <Section title="Platform" items={PLATFORM} />
+            <Section title="shadcn/ui Aliases" items={SHADCN_ALIASES} />
+        </DemoLayout>
     )
 }

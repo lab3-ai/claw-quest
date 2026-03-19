@@ -42,7 +42,7 @@ function NavTabs() {
 /** Mobile bottom navigation bar — glass effect on scroll */
 function BottomNav() {
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border backdrop-blur-md bg-bg-base/80 lg:hidden">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border-2 backdrop-blur-md bg-bg-base/80 lg:hidden">
             {/* 49px height (Apple HIG tab bar), 44px min touch target */}
             <div className="flex h-13 items-stretch justify-around">
                 {NAV_ITEMS.map(({ to, label, icon: Icon, iconActive: IconActive }) => (
@@ -96,7 +96,7 @@ function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email, a
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <DropdownMenuTrigger asChild>
-                                    <button className="h-9 w-9 rounded overflow-hidden cursor-pointer p-0.5 border border-border bg-bg-1 hover:opacity-70 transition-opacity">
+                                    <button className="h-9 w-9 rounded overflow-hidden cursor-pointer p-0.5 border border-border-2 bg-bg-1 hover:opacity-70 transition-opacity">
                                         <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
                                     </button>
                                 </DropdownMenuTrigger>
@@ -108,8 +108,8 @@ function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email, a
                             <div className="flex items-center gap-2.5 px-2 py-2">
                                 <img src={avatarUrl} alt="" className="h-9 w-9 rounded shrink-0 object-cover" />
                                 <div className="min-w-0">
-                                    <div className="text-sm font-semibold text-foreground truncate">{handleLabel}</div>
-                                    <div className="text-xs text-muted-foreground truncate">{email ?? handle}</div>
+                                    <div className="text-sm font-semibold text-fg-1 truncate">{handleLabel}</div>
+                                    <div className="text-xs text-fg-3 truncate">{email ?? handle}</div>
                                 </div>
                             </div>
                             <DropdownMenuSeparator />
@@ -194,7 +194,7 @@ export function Navbar() {
     return (
         <>
             {/* Top header */}
-            <header className={`sticky top-0 z-50 bg-bg-base transition-[border-color,backdrop-filter,box-shadow] duration-200 border-b ${scrolled ? "border-border backdrop-blur-md bg-bg-base/80" : "border-border"}`}>
+            <header className={`sticky top-0 z-50 bg-bg-base transition-[border-color,backdrop-filter,box-shadow] duration-200 border-b ${scrolled ? "border-border-2 backdrop-blur-md bg-bg-base/80" : "border-border-2"}`}>
                 <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4 md:px-6">
                     {/* Full logo on desktop, icon-only on mobile */}
                     <Link
@@ -222,7 +222,7 @@ export function Navbar() {
                                 </Button>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <button className="h-9 w-9 rounded overflow-hidden cursor-pointer p-0.5 border border-border bg-bg-1 hover:opacity-70 transition-opacity">
+                                        <button className="h-9 w-9 rounded overflow-hidden cursor-pointer p-0.5 border border-border-2 bg-bg-1 hover:opacity-70 transition-opacity">
                                             <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
                                         </button>
                                     </DropdownMenuTrigger>
@@ -230,8 +230,8 @@ export function Navbar() {
                                         <div className="flex items-center gap-2.5 px-2 py-2">
                                             <img src={avatarUrl} alt="" className="h-9 w-9 rounded shrink-0 object-cover" />
                                             <div className="min-w-0">
-                                                <div className="text-sm font-semibold text-foreground truncate">{handleLabel}</div>
-                                                <div className="text-2xs text-muted-foreground truncate">{user?.email ?? handle}</div>
+                                                <div className="text-sm font-semibold text-fg-1 truncate">{handleLabel}</div>
+                                                <div className="text-2xs text-fg-3 truncate">{user?.email ?? handle}</div>
                                             </div>
                                         </div>
                                         <DropdownMenuSeparator />

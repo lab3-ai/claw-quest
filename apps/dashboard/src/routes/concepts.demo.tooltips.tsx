@@ -1,19 +1,20 @@
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import { AddLine, Dashboard4Line, StarLine, FlashLine, Settings1Line, Delete2Line } from "@mingcute/react"
+import { DemoLayout } from "@/components/demo-layout"
 
 export function TooltipsDemo() {
     return (
+        <DemoLayout title="Tooltips" description="Tooltip patterns and placement options.">
         <TooltipProvider delayDuration={200}>
-            <div className="max-w-3xl mx-auto py-8 px-4 space-y-10">
-                <div>
-                    <h1 className="text-2xl font-semibold mb-1">Tooltips</h1>
-                    <p className="text-sm text-muted-foreground">Hover/focus to reveal contextual hints.</p>
+            <div className="space-y-10">
+                <div className="hidden">
+                    <p className="text-sm text-fg-3">Hover/focus to reveal contextual hints.</p>
                 </div>
 
                 {/* Basic */}
                 <section className="space-y-3">
-                    <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Basic</h2>
+                    <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider">Basic</h2>
                     <div className="flex flex-wrap gap-3">
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -40,7 +41,7 @@ export function TooltipsDemo() {
 
                 {/* Icon buttons */}
                 <section className="space-y-3">
-                    <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Icon Buttons (essential for icon-only)</h2>
+                    <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider">Icon Buttons (essential for icon-only)</h2>
                     <div className="flex flex-wrap gap-3">
                         {[
                             { icon: AddLine, label: "Create Quest" },
@@ -64,7 +65,7 @@ export function TooltipsDemo() {
 
                 {/* Positions */}
                 <section className="space-y-3">
-                    <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Positions</h2>
+                    <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider">Positions</h2>
                     <div className="flex flex-wrap gap-3">
                         {(["top", "bottom", "left", "right"] as const).map(side => (
                             <Tooltip key={side}>
@@ -79,7 +80,7 @@ export function TooltipsDemo() {
 
                 {/* Sizes */}
                 <section className="space-y-3">
-                    <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Button Sizes with Tooltips</h2>
+                    <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider">Button Sizes with Tooltips</h2>
                     <div className="flex flex-wrap items-center gap-3">
                         {(["sm", "default", "lg"] as const).map(size => (
                             <Tooltip key={size}>
@@ -96,7 +97,7 @@ export function TooltipsDemo() {
 
                 {/* Custom content */}
                 <section className="space-y-3">
-                    <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Rich Content</h2>
+                    <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider">Rich Content</h2>
                     <div className="flex flex-wrap gap-3">
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -105,14 +106,14 @@ export function TooltipsDemo() {
                             <TooltipContent>
                                 <div className="flex items-center gap-2">
                                     <span>New Quest</span>
-                                    <kbd className="px-1.5 py-0.5 rounded border border-border bg-bg-2 text-2xs font-mono">⌘N</kbd>
+                                    <kbd className="px-1.5 py-0.5 rounded border border-border-2 bg-bg-2 text-2xs font-mono">⌘N</kbd>
                                 </div>
                             </TooltipContent>
                         </Tooltip>
 
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <span className="text-sm text-muted-foreground underline decoration-dashed cursor-help">What is FCFS?</span>
+                                <span className="text-sm text-fg-3 underline decoration-dashed cursor-help">What is FCFS?</span>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-[200px]">
                                 First Come, First Served — the first N agents to complete the quest win rewards.
@@ -123,19 +124,19 @@ export function TooltipsDemo() {
 
                 {/* Inline text */}
                 <section className="space-y-3">
-                    <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Inline Text</h2>
-                    <p className="text-sm text-muted-foreground">
+                    <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider">Inline Text</h2>
+                    <p className="text-sm text-fg-3">
                         Rewards are paid in{" "}
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <span className="text-foreground font-semibold cursor-help border-b border-dashed border-border">USDC</span>
+                                <span className="text-fg-1 font-semibold cursor-help border-b border-dashed border-border-2">USDC</span>
                             </TooltipTrigger>
                             <TooltipContent>USD Coin — a stablecoin pegged 1:1 to USD</TooltipContent>
                         </Tooltip>
                         {" "}and verified{" "}
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <span className="text-foreground font-semibold cursor-help border-b border-dashed border-border">on-chain</span>
+                                <span className="text-fg-1 font-semibold cursor-help border-b border-dashed border-border-2">on-chain</span>
                             </TooltipTrigger>
                             <TooltipContent>Transactions recorded on a public blockchain for transparency</TooltipContent>
                         </Tooltip>.
@@ -143,5 +144,6 @@ export function TooltipsDemo() {
                 </section>
             </div>
         </TooltipProvider>
+        </DemoLayout>
     )
 }

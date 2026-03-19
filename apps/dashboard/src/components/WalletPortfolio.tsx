@@ -53,11 +53,11 @@ export function WalletPortfolio({ walletAddress }: WalletPortfolioProps) {
     // No wallet address
     if (!walletAddress) {
         return (
-            <div className="p-5 border border-border-1 bg-card">
-                <h3 className="text-sm font-semibold text-foreground mb-2">
+            <div className="p-5 border border-border-1 bg-bg-1">
+                <h3 className="text-sm font-semibold text-fg-1 mb-2">
                     Cross-Chain Portfolio
                 </h3>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-fg-3">
                     Enter a wallet address to view portfolio
                 </p>
             </div>
@@ -67,8 +67,8 @@ export function WalletPortfolio({ walletAddress }: WalletPortfolioProps) {
     // Loading
     if (isLoading) {
         return (
-            <div className="p-5 border border-border-1 bg-card">
-                <h3 className="text-sm font-semibold text-foreground mb-3">
+            <div className="p-5 border border-border-1 bg-bg-1">
+                <h3 className="text-sm font-semibold text-fg-1 mb-3">
                     Cross-Chain Portfolio
                 </h3>
                 <Skeleton className="h-8 w-24 mb-3" />
@@ -83,18 +83,18 @@ export function WalletPortfolio({ walletAddress }: WalletPortfolioProps) {
     if (!portfolio) return null
 
     return (
-        <div className="p-5 border border-border-1 bg-card hover:bg-bg-2 transition-colors">
+        <div className="p-5 border border-border-1 bg-bg-1 hover:bg-bg-2 transition-colors">
             <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-foreground">
+                <h3 className="text-sm font-semibold text-fg-1">
                     Cross-Chain Portfolio
                 </h3>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-fg-3">
                     via OKX OnchainOS
                 </span>
             </div>
 
             {/* Total value */}
-            <p className="text-2xl font-bold text-foreground mb-4">
+            <p className="text-2xl font-bold text-fg-1 mb-4">
                 ${parseFloat(portfolio.totalValueUsd).toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
@@ -117,23 +117,23 @@ export function WalletPortfolio({ walletAddress }: WalletPortfolioProps) {
                                         className="w-5 h-5 rounded-full shrink-0"
                                     />
                                 ) : (
-                                    <div className="w-5 h-5 rounded-full bg-muted shrink-0" />
+                                    <div className="w-5 h-5 rounded-full bg-bg-3 shrink-0" />
                                 )}
-                                <span className="text-sm text-foreground font-medium truncate">
+                                <span className="text-sm text-fg-1 font-medium truncate">
                                     {token.symbol}
                                 </span>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs text-fg-3">
                                     {token.chainName}
                                 </span>
                             </div>
                             <div className="text-right shrink-0 ml-2">
-                                <p className="text-sm font-medium text-foreground">
+                                <p className="text-sm font-medium text-fg-1">
                                     ${parseFloat(token.valueUsd).toLocaleString(undefined, {
                                         minimumFractionDigits: 2,
                                         maximumFractionDigits: 2,
                                     })}
                                 </p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-fg-3">
                                     {parseFloat(token.balance).toLocaleString(undefined, {
                                         maximumFractionDigits: 6,
                                     })}

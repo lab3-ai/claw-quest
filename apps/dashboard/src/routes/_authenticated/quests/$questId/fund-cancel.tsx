@@ -33,11 +33,11 @@ export function FundCancel() {
                 ]} />
             </div>
 
-            <div className="bg-background border border-border rounded-lg p-8 text-center">
+            <div className="bg-bg-base border border-border-2 rounded-lg p-8 text-center">
                 <div className="w-16 h-16 rounded-full bg-warning text-white inline-flex items-center justify-center text-3xl font-semibold mb-4">
                     ⚠
                 </div>
-                <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Payment Cancelled</h2>
+                <h2 className="text-xl font-semibold text-fg-1 m-0 mb-2">Payment Cancelled</h2>
                 <p className="text-sm text-fg-3 m-0 mb-6">
                     You cancelled the payment process. No charges were made to your card.
                 </p>

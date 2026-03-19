@@ -22,7 +22,7 @@ export function Web3SkillDetail({ skillSlug }: { skillSlug: string }) {
           { label: "Web3 Skills", to: "/web3-skills" },
           { label: "Loading..." },
         ]} />
-        <div className="py-4 border-b border-border">
+        <div className="py-4 border-b border-border-2">
           <Skeleton className="h-6 w-48 mb-2" />
           <Skeleton className="h-3 w-32" />
         </div>
@@ -43,7 +43,7 @@ export function Web3SkillDetail({ skillSlug }: { skillSlug: string }) {
           { label: "Web3 Skills", to: "/web3-skills" },
           { label: "Not found" },
         ]} />
-        <div className="py-12 text-center text-muted-foreground">Skill not found.</div>
+        <div className="py-12 text-center text-fg-3">Skill not found.</div>
       </div>
     )
   }
@@ -57,12 +57,12 @@ export function Web3SkillDetail({ skillSlug }: { skillSlug: string }) {
         ]} />
 
         {/* Header */}
-        <div className="py-4 border-b border-border">
+        <div className="py-4 border-b border-border-2">
         <div className="flex items-start justify-between gap-4 max-sm:flex-col">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground">{skill.name}</h1>
-            <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <span>by <strong className="text-foreground font-semibold">@{skill.ownerHandle || skill.ownerDisplayName || "unknown"}</strong></span>
+            <h1 className="text-2xl font-semibold text-fg-1">{skill.name}</h1>
+            <div className="mt-1 flex items-center gap-1.5 text-xs text-fg-3">
+              <span>by <strong className="text-fg-1 font-semibold">@{skill.ownerHandle || skill.ownerDisplayName || "unknown"}</strong></span>
               {skill.version && (
                 <>
                   <span className="w-1 h-1 rounded-full bg-border" />
@@ -80,7 +80,7 @@ export function Web3SkillDetail({ skillSlug }: { skillSlug: string }) {
         </div>
       </div>
 
-      {skill.summary && <p className="text-sm text-muted-foreground leading-relaxed">{skill.summary}</p>}
+      {skill.summary && <p className="text-sm text-fg-3 leading-relaxed">{skill.summary}</p>}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
@@ -89,18 +89,18 @@ export function Web3SkillDetail({ skillSlug }: { skillSlug: string }) {
           { icon: StarLine, label: "Stars", value: formatCount(skill.stars) },
           { icon: FlashLine, label: "Agents", value: formatCount(skill.installs) },
         ].map(({ icon: Icon, label, value }) => (
-          <div key={label} className="flex flex-col items-center border border-border rounded p-3">
-            <Icon size={16} className="text-muted-foreground" />
+          <div key={label} className="flex flex-col items-center border border-border-2 rounded p-3">
+            <Icon size={16} className="text-fg-3" />
             <span className="mt-1 text-base font-semibold">{value}</span>
-            <span className="text-2xs text-muted-foreground uppercase tracking-wider">{label}</span>
+            <span className="text-2xs text-fg-3 uppercase tracking-wider">{label}</span>
           </div>
         ))}
       </div>
 
       {skill.description && (
         <div>
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Description</h2>
-          <div className="whitespace-pre-wrap text-sm text-muted-foreground leading-relaxed">{skill.description}</div>
+          <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider mb-3">Description</h2>
+          <div className="whitespace-pre-wrap text-sm text-fg-3 leading-relaxed">{skill.description}</div>
         </div>
       )}
 
@@ -125,7 +125,7 @@ export function Web3SkillDetail({ skillSlug }: { skillSlug: string }) {
 
       {skill.tags && skill.tags.length > 0 && (
         <div>
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Tags</h2>
+          <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider mb-3">Tags</h2>
           <div className="flex flex-wrap gap-1.5">
             {skill.tags.map((tag) => (
               <Badge key={tag} variant="pill">{tag}</Badge>

@@ -78,7 +78,7 @@ export function TelegramJoinButton({
                     )}
                 </a>
             </Button>
-            <p className="text-center font-mono text-xs text-muted-foreground">
+            <p className="text-center font-mono text-xs text-fg-3">
                 Opens Telegram — bot replies instantly with your spot
             </p>
         </div>

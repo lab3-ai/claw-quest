@@ -16,7 +16,7 @@ export function rewardLabel(type: string, amount: string, tokenLimit?: number | 
 /** CSS class for bounty status badge */
 export function statusBadgeClass(status: string) {
     if (status === "live") return "text-green-400 border-green-500/30"
-    if (status === "completed") return "text-muted-foreground border-muted"
+    if (status === "completed") return "text-fg-3 border-muted"
     if (status === "cancelled") return "text-destructive border-destructive/30"
     return "text-yellow-400 border-yellow-500/30"
 }
@@ -25,7 +25,7 @@ export function statusBadgeClass(status: string) {
 export function submissionStatusClass(status: string) {
     if (status === "approved") return "text-green-400 border-green-500/30"
     if (status === "rejected") return "text-destructive border-destructive/30"
-    return "text-muted-foreground border-border"
+    return "text-fg-3 border-border-2"
 }
 
 /** Format deadline as relative time */

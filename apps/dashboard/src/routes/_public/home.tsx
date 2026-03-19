@@ -176,14 +176,14 @@ function LatestBounties() {
               key={bounty.id}
               to="/github-bounties/$bountyId"
               params={{ bountyId: bounty.id }}
-              className="flex items-center gap-3 rounded border border-border bg-bg-1 px-4 py-3 no-underline hover:border-foreground transition-colors"
+              className="flex items-center gap-3 rounded border border-border-2 bg-bg-1 px-4 py-3 no-underline hover:border-foreground transition-colors"
             >
               <GitHubIcon size={16} />
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-foreground truncate">
+                <div className="text-sm font-semibold text-fg-1 truncate">
                   {bounty.title}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-fg-3">
                   {bounty.repoOwner}/{bounty.repoName}
                   {bounty._count.submissions > 0 && (
                     <> · {bounty._count.submissions} submissions</>
@@ -231,7 +231,7 @@ const STEPS = [
 function HowItWorks() {
   return (
     <section>
-      <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3 bg-bg-2 border-b border-border">
+      <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider px-4 py-3 bg-bg-2 border-b border-border-2">
         How it works
       </h2>
       <div className="flex flex-col divide-y divide-border">
@@ -250,8 +250,8 @@ function HowItWorks() {
               <span className="text-2xs text-accent font-semibold tracking-widest uppercase">
                 Step {idx + 1}
               </span>
-              <p className="text-sm font-semibold text-foreground">{title}</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-sm font-semibold text-fg-1">{title}</p>
+              <p className="text-xs text-fg-3 leading-relaxed">
                 {desc}
               </p>
             </div>
@@ -302,7 +302,7 @@ function FAQSection() {
 
   return (
     <section>
-      <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3 bg-bg-2 border-b border-border">
+      <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider px-4 py-3 bg-bg-2 border-b border-border-2">
         Frequently Asked Questions
       </h2>
       <div className="flex flex-col divide-y divide-border">
@@ -315,18 +315,18 @@ function FAQSection() {
                 className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left bg-transparent border-none cursor-pointer group"
                 onClick={() => setOpenIdx(isOpen ? null : idx)}
               >
-                <span className="text-sm font-semibold text-foreground group-hover:text-accent transition-colors">
+                <span className="text-sm font-semibold text-fg-1 group-hover:text-accent transition-colors">
                   {faq.q}
                 </span>
                 {isOpen ? (
                   <CloseLine
                     size={16}
-                    className="shrink-0 text-muted-foreground"
+                    className="shrink-0 text-fg-3"
                   />
                 ) : (
                   <AddLine
                     size={16}
-                    className="shrink-0 text-muted-foreground"
+                    className="shrink-0 text-fg-3"
                   />
                 )}
               </button>
@@ -365,13 +365,13 @@ function SectionHeader({
 }) {
   return (
     <div className="mb-4 flex items-center justify-between">
-      <h2 className="flex items-center gap-1.5 text-lg font-semibold text-foreground md:gap-2 md:text-xl">
+      <h2 className="flex items-center gap-1.5 text-lg font-semibold text-fg-1 md:gap-2 md:text-xl">
         <Icon size={20} className="text-accent md:size-6" />
         {title}
       </h2>
       <Link
         to={linkTo}
-        className="flex items-center gap-1 text-xs text-muted-foreground no-underline hover:text-accent transition-colors"
+        className="flex items-center gap-1 text-xs text-fg-3 no-underline hover:text-accent transition-colors"
       >
         <span className="md:hidden">More</span>
         <span className="hidden md:inline">{linkLabel}</span>
@@ -384,7 +384,7 @@ function SectionHeader({
 /** Skeleton matching QuestGridCard layout: top row + title + desc + tags + bottom stats */
 function QuestCardSkeleton() {
   return (
-    <div className="flex flex-col rounded border border-border bg-bg-1 p-4 max-sm:p-3 animate-pulse">
+    <div className="flex flex-col rounded border border-border-2 bg-bg-1 p-4 max-sm:p-3 animate-pulse">
       <div className="flex justify-between items-center mb-3">
         <div className="h-3 w-16 rounded bg-bg-2" />
         <div className="h-3 w-12 rounded bg-bg-2" />
@@ -394,7 +394,7 @@ function QuestCardSkeleton() {
         <div className="h-3 w-full rounded bg-bg-2" />
         <div className="h-3 w-2/3 rounded bg-bg-2" />
       </div>
-      <div className="mt-auto pt-3 border-t border-border flex justify-between">
+      <div className="mt-auto pt-3 border-t border-border-2 flex justify-between">
         <div className="space-y-1.5">
           <div className="h-3.5 w-24 rounded bg-bg-2" />
           <div className="h-3 w-20 rounded bg-bg-2" />
@@ -408,7 +408,7 @@ function QuestCardSkeleton() {
 /** Skeleton matching SkillCard layout: top row + title + summary + bottom author/stats */
 function SkillCardSkeleton() {
   return (
-    <div className="flex flex-col rounded border border-border bg-bg-1 p-4 max-sm:p-3 animate-pulse">
+    <div className="flex flex-col rounded border border-border-2 bg-bg-1 p-4 max-sm:p-3 animate-pulse">
       <div className="flex justify-between items-center mb-3">
         <div className="h-3 w-20 rounded bg-bg-2" />
         <div className="h-3 w-10 rounded bg-bg-2" />
@@ -419,7 +419,7 @@ function SkillCardSkeleton() {
         <div className="h-3 w-5/6 rounded bg-bg-2" />
         <div className="h-3 w-1/2 rounded bg-bg-2" />
       </div>
-      <div className="mt-auto pt-3 border-t border-border flex items-center gap-2">
+      <div className="mt-auto pt-3 border-t border-border-2 flex items-center gap-2">
         <div className="h-3 w-24 rounded bg-bg-2" />
         <div className="h-3 w-10 rounded bg-bg-2" />
         <div className="h-3 w-10 rounded bg-bg-2" />
@@ -431,7 +431,7 @@ function SkillCardSkeleton() {
 /** Skeleton matching bounty row: icon + title/subtitle + badge */
 function BountyRowSkeleton() {
   return (
-    <div className="flex items-center gap-3 rounded border border-border bg-bg-1 px-4 py-3 animate-pulse">
+    <div className="flex items-center gap-3 rounded border border-border-2 bg-bg-1 px-4 py-3 animate-pulse">
       <div className="h-4 w-4 rounded bg-bg-2 shrink-0" />
       <div className="flex-1 min-w-0 space-y-1.5">
         <div className="h-3.5 w-3/4 rounded bg-bg-2" />
@@ -461,7 +461,7 @@ function CardGridSkeleton({
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="rounded border border-border px-4 py-8 text-center text-xs text-muted-foreground">
+    <div className="rounded border border-border-2 px-4 py-8 text-center text-xs text-fg-3">
       {message}
     </div>
   );
@@ -501,14 +501,14 @@ export function HomePage() {
         {/* 3. Popular Web3 Skills */}
         <PopularSkills />
 
-        {/* 4. Leaderboard */}
-        <LeaderboardSection />
+        {/* 4. Leaderboard — temporarily disabled, pending API data */}
+        {/* <LeaderboardSection /> */}
 
         {/* 5. Latest Bounties */}
         <LatestBounties />
 
         {/* 6. How It Works + FAQs — side by side on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 border border-border rounded divide-y lg:divide-y-0 lg:divide-x divide-border">
+        <div className="grid grid-cols-1 lg:grid-cols-2 border border-border-2 rounded divide-y lg:divide-y-0 lg:divide-x divide-border">
           <HowItWorks />
           <FAQSection />
         </div>

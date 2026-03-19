@@ -58,7 +58,7 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
                 <div className="w-12 h-12 rounded-full bg-success text-white inline-flex items-center justify-center text-2xl font-semibold mb-4">
                     ✓
                 </div>
-                <h3 className="text-base font-semibold text-foreground m-0 mb-2">Quest Funded</h3>
+                <h3 className="text-base font-semibold text-fg-1 m-0 mb-2">Quest Funded</h3>
                 <p className="text-sm text-fg-3 m-0 mb-4">
                     This quest has been funded via Stripe and is now {quest.status}.
                 </p>
@@ -74,10 +74,10 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
         return (
             <div className="text-center py-8">
                 <div
-                    className="w-8 h-8 rounded-full border-[3px] border-border border-t-[#635bff] animate-spin mx-auto mb-4"
+                    className="w-8 h-8 rounded-full border-[3px] border-border-2 border-t-[#635bff] animate-spin mx-auto mb-4"
                     style={{ borderTopColor: '#635bff' }}
                 />
-                <h3 className="text-base font-semibold text-foreground m-0 mb-2">Payment Processing</h3>
+                <h3 className="text-base font-semibold text-fg-1 m-0 mb-2">Payment Processing</h3>
                 <p className="text-sm text-fg-3 m-0 mb-4">
                     Your payment is being confirmed. This page will update automatically.
                 </p>
@@ -99,18 +99,18 @@ function StripeFundFlow({ questId, quest }: { questId: string; quest: any }) {
                 </p>
             </div>
 
-            <div className="bg-bg-3 border border-border rounded-md px-5 py-4 mb-5">
+            <div className="bg-bg-3 border border-border-2 rounded-md px-5 py-4 mb-5">
                 <div className="flex justify-between items-center py-2 text-xs text-fg-3">
                     <span>Amount</span>
-                    <span className="font-semibold text-sm text-foreground">
+                    <span className="font-semibold text-sm text-fg-1">
                         ${Math.max(0, (quest?.rewardAmount ?? 0) - (quest?.totalFunded ?? 0)).toLocaleString()} USD
                     </span>
                 </div>
-                <div className="flex justify-between items-center py-2 text-xs text-fg-3 border-t border-border">
+                <div className="flex justify-between items-center py-2 text-xs text-fg-3 border-t border-border-2">
                     <span>Quest</span>
                     <span>{quest?.title}</span>
                 </div>
-                <div className="flex justify-between items-center py-2 text-xs text-fg-3 border-t border-border">
+                <div className="flex justify-between items-center py-2 text-xs text-fg-3 border-t border-border-2">
                     <span>Distribution</span>
                     <span>{quest?.type} · {quest?.totalSlots} winners</span>
                 </div>
@@ -269,7 +269,7 @@ export function FundQuest() {
                     <Skeleton className="h-4 w-12" />
                 </nav>
 
-                <div className="bg-background border border-border rounded-lg p-8">
+                <div className="bg-bg-base border border-border-2 rounded-lg p-8">
                     <Skeleton className="h-7 w-32 mb-1" />
                     <Skeleton className="h-4 w-48 mb-6" />
 
@@ -304,8 +304,8 @@ export function FundQuest() {
                 ]} />
             </div>
 
-            <div className="bg-background border border-border rounded-lg p-8">
-                <h2 className="text-xl font-semibold text-foreground m-0 mb-1">Fund Quest</h2>
+            <div className="bg-bg-base border border-border-2 rounded-lg p-8">
+                <h2 className="text-xl font-semibold text-fg-1 m-0 mb-1">Fund Quest</h2>
                 {quest && <p className="text-fg-3 text-xs m-0 mb-6">{quest.title}</p>}
 
                 {/* Funding progress — shared across both methods */}
@@ -347,7 +347,7 @@ export function FundQuest() {
                                 <select
                                     value={selectedToken}
                                     onChange={e => setSelectedToken(e.target.value)}
-                                    className="text-sm border border-border rounded-md px-3 py-2 bg-background w-full"
+                                    className="text-sm border border-border-2 rounded-md px-3 py-2 bg-bg-base w-full"
                                 >
                                     <option value="USDC">USDC</option>
                                     <option value="USDT">USDT</option>
@@ -405,7 +405,7 @@ export function FundQuest() {
                                 </div>
 
                                 {isConnected && step !== 'connect' && (
-                                    <div className="mt-6 pt-4 border-t border-border flex justify-center">
+                                    <div className="mt-6 pt-4 border-t border-border-2 flex justify-center">
                                         <ConnectButton accountStatus="address" chainStatus="icon" showBalance={false} />
                                     </div>
                                 )}
@@ -480,7 +480,7 @@ function FundingProgress({ quest, session, questId }: { quest: any; session: any
                     <span>Funding progress</span>
                     <span>{totalFunded} / {rewardAmount} {quest.rewardType}</span>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-2 bg-bg-3 rounded-full overflow-hidden">
                     <div
                         className="h-full bg-primary transition-all"
                         style={{ width: `${fundingPct}%` }}
@@ -521,7 +521,7 @@ function FundingProgress({ quest, session, questId }: { quest: any; session: any
                         <input
                             readOnly
                             value={inviteUrl}
-                            className="flex-1 text-sm bg-muted rounded px-3 py-2 border-none outline-none"
+                            className="flex-1 text-sm bg-bg-3 rounded px-3 py-2 border-none outline-none"
                         />
                         <Button size="sm" onClick={handleCopy}>
                             Copy

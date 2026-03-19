@@ -127,24 +127,25 @@ export function Login() {
     }
 
     return (
-        <div className="flex min-h-screen flex-col bg-background">
+        <div className="flex min-h-screen flex-col bg-bg-base">
             <SeoHead title="Log In" noindex />
 
             {/* Centered login card */}
             <div className="flex flex-1 items-start justify-center px-4 pt-8 md:items-center md:py-10">
-                <div className="w-full max-w-md px-0 py-0 md:rounded-base md:border md:border-border md:bg-bg-1 md:px-4 md:py-7 text-center page-fade-in">
+                <div className="w-full max-w-md px-0 py-0 md:rounded-base md:border md:border-border-2md:bg-bg-1 md:px-4 md:py-7 text-center page-fade-in">
                     <div className="flex justify-center">
                         <button
                             type="button"
                             onClick={() => navigate({ to: "/" })}
                             className="cursor-pointer"
+                            aria-label="Go to homepage"
                         >
                             <BrandLogo size="sm" />
                         </button>
                     </div>
                     <div className="mt-4 mb-6 flex flex-col gap-1">
                         <h3 className="text-2xl font-semibold">Sign in to your account</h3>
-                        <p className="text-sm text-muted-foreground">Complete quests, earn rewards.</p>
+                        <p className="text-sm text-fg-3">Complete quests, earn rewards.</p>
                     </div>
                     {/* Google OAuth */}
                     <Button
@@ -245,9 +246,9 @@ export function Login() {
                     </Button>
 
                     <div className="flex items-center gap-3 my-2">
-                        <hr className="flex-1 border-border" />
-                        <span className="text-xs text-muted-foreground">or sign in with email</span>
-                        <hr className="flex-1 border-border" />
+                        <hr className="flex-1 border-border-2" />
+                        <span className="text-xs text-fg-3">or sign in with email</span>
+                        <hr className="flex-1 border-border-2" />
                     </div>
 
                     {error && (
@@ -277,7 +278,8 @@ export function Login() {
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                        className="absolute right-0 top-0 h-full px-3 text-fg-3 hover:text-fg-1 transition-colors cursor-pointer"
+                                        aria-label={showPassword ? "Hide password" : "Show password"}
                                     >
                                         {showPassword ? <EyeCloseLine size={16} /> : <EyeLine size={16} />}
                                     </button>
@@ -292,26 +294,26 @@ export function Login() {
 
                     <div className="my-5 h-px bg-border" />
 
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-fg-3">
                         Don't have an account?{" "}
                         <Link to="/register" className="text-primary hover:underline">Register</Link>
                     </p>
                 </div>
             </div>
 
-            <footer className="flex flex-col items-center gap-3 py-6 text-xs text-muted-foreground">
+            <footer className="flex flex-col items-center gap-3 py-6 text-xs text-fg-3">
                 <nav className="flex items-center gap-2">
-                    <a href="/quests" className="hover:text-foreground transition-colors">Quests</a>
+                    <a href="/quests" className="hover:text-fg-1 transition-colors">Quests</a>
                     <span className="h-1 w-1 rounded-full bg-border-2" />
-                    <a href="/web3-skills" className="hover:text-foreground transition-colors">Skills</a>
+                    <a href="/web3-skills" className="hover:text-fg-1 transition-colors">Skills</a>
                     <span className="h-1 w-1 rounded-full bg-border-2" />
-                    <a href="/github-bounties" className="hover:text-foreground transition-colors">Bounties</a>
+                    <a href="/github-bounties" className="hover:text-fg-1 transition-colors">Bounties</a>
                     <span className="h-1 w-1 rounded-full bg-border-2" />
-                    <a href="https://api.clawquest.ai/docs" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Docs</a>
+                    <a href="https://api.clawquest.ai/docs" target="_blank" rel="noopener noreferrer" className="hover:text-fg-1 transition-colors">Docs</a>
                     <span className="h-1 w-1 rounded-full bg-border-2" />
-                    <a href="https://t.me/clawquest_bot" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Telegram</a>
+                    <a href="https://t.me/clawquest_bot" target="_blank" rel="noopener noreferrer" className="hover:text-fg-1 transition-colors">Telegram</a>
                     <span className="h-1 w-1 rounded-full bg-border-2" />
-                    <a href="https://x.com/clawquest" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">X</a>
+                    <a href="https://x.com/clawquest" target="_blank" rel="noopener noreferrer" className="hover:text-fg-1 transition-colors">X</a>
                 </nav>
             </footer>
         </div>

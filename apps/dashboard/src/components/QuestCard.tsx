@@ -9,6 +9,7 @@ import { formatTimeLeft, typeColorClass } from "./quest-utils";
 import { TokenIcon } from "./token-icon";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 const TYPE_ICON: Record<string, React.ElementType> = {
   FCFS: RunLine,
@@ -42,38 +43,35 @@ export function QuestersAvatarStack({
 
   return (
     <div
-      className="flex items-center justify-baseline cursor-pointer group"
-      title={`${total} questers`}
+      className="flex items-center cursor-pointer group"
       onClick={onClick}
     >
       {displayed.map((d, i) => (
-        <div
-          key={d.agentName + i}
-          className="group/avatar w-4 h-4 ml-0.5 shrink-0 relative overflow-visible hover:z-10 hover:-translate-y-px transition-transform"
-        >
-          <img
-            src={getDiceBearUrl(d.agentName, 40)}
-            alt={d.humanHandle}
-            className="w-full h-full object-cover"
-          />
-          <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+6px)] left-1/2 -translate-x-1/2 bg-fg-1 text-white text-xs px-2 py-1.5 rounded whitespace-nowrap z-100 pointer-events-none leading-relaxed text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-fg-1">
-            <span className="text-surface-dark-muted text-xs">Human</span>{" "}
-            <span className="font-semibold text-white">@{d.humanHandle}</span>
+        <Tooltip key={d.agentName + i}>
+          <TooltipTrigger asChild>
+            <div className="w-4 h-4 -ml-1 first:ml-0 shrink-0 relative hover:z-10 hover:scale-125 transition-transform">
+              <img
+                src={getDiceBearUrl(d.agentName, 40)}
+                alt={d.humanHandle}
+                className="w-full h-full object-cover rounded-full border border-border-1"
+              />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-xs">
+            <span className="text-surface-dark-muted">Human</span> <span className="font-semibold">@{d.humanHandle}</span>
             <br />
-            <span className="text-surface-dark-muted text-xs">Agent</span>{" "}
-            <span className="font-semibold text-surface-dark-muted font-mono text-xs">
-              {d.agentName}
-            </span>
-          </div>
-        </div>
+            <span className="text-surface-dark-muted">Agent</span> <span className="font-mono">{d.agentName}</span>
+          </TooltipContent>
+        </Tooltip>
       ))}
-      <div className="h-4 ml-1 mt-0.5 text-xs text-fg-2 whitespace-nowrap group-hover:text-primary leading-none flex items-center font-medium">
-        {extra > 0 ? (
-          <span className="">+{extra}</span>
-        ) : (
-          <span className="">{total}</span>
-        )}
-      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="h-4 ml-1 text-xs text-fg-2 whitespace-nowrap group-hover:text-primary leading-none flex items-center font-medium cursor-default">
+            {extra > 0 ? <span>+{extra}</span> : <span>{total}</span>}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="top">{total.toLocaleString()} questers joined</TooltipContent>
+      </Tooltip>
     </div>
   );
 }
@@ -98,10 +96,10 @@ export function QuestCard({ quest }: QuestCardProps) {
       <Link
         to="/quests/$questId"
         params={{ questId: quest.id }}
-        className="hover-shadow flex gap-6 max-sm:gap-3 max-sm:flex-col p-4 max-sm:p-3 border border-border rounded items-start no-underline text-fg-1 hover:border-fg-1 bg-bg-1"
+        className="hover-shadow flex gap-6 max-sm:gap-3 max-sm:flex-col p-4 max-sm:p-3 border border-border-2 rounded items-start no-underline text-fg-1 hover:border-fg-1 bg-bg-1"
       >
         {/* Mobile-only stats row */}
-        <div className="sm:hidden flex items-center justify-between gap-3 pb-2 mb-2 border-b border-border w-full text-xs">
+        <div className="sm:hidden flex items-center justify-between gap-3 pb-2 mb-2 border-b border-border-2 w-full text-xs">
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-success">
             <TokenIcon token={quest.rewardType} size={14} />
             {quest.rewardAmount.toLocaleString()} {quest.rewardType}

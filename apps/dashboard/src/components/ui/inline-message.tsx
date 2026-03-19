@@ -20,9 +20,9 @@ const config: Record<
 > = {
     info: {
         icon: InformationLine,
-        border: "border-border",
-        bg: "bg-muted/60",
-        text: "text-muted-foreground",
+        border: "border-border-2",
+        bg: "bg-bg-3/60",
+        text: "text-fg-3",
     },
     warning: {
         icon: AlertLine,

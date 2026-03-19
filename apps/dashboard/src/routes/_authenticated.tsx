@@ -57,7 +57,7 @@ export function AuthenticatedLayout() {
     return (
         <div className="flex min-h-screen flex-col">
             {/* Topbar */}
-            <header className={`sticky top-0 z-50 bg-bg-base transition-[border-color,backdrop-filter,box-shadow] duration-200 border-b ${scrolled ? "border-border backdrop-blur-md bg-bg-base/80" : "border-transparent"}`}>
+            <header className={`sticky top-0 z-50 bg-bg-base transition-[border-color,backdrop-filter,box-shadow] duration-200 border-b ${scrolled ? "border-border-2 backdrop-blur-md bg-bg-base/80" : "border-transparent"}`}>
                 <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-6 max-lg:px-3 max-lg:gap-1">
                     <Link
                         to="/quests"
@@ -70,7 +70,7 @@ export function AuthenticatedLayout() {
                     <nav className="hidden items-center gap-1 lg:flex">
                         <Link
                             to="/quests"
-                            className="px-3 py-2 text-sm text-muted-foreground no-underline hover:text-foreground [&.active]:font-semibold [&.active]:text-foreground [&.active]:border-b-2 [&.active]:border-foreground"
+                            className="px-3 py-2 text-sm text-fg-3 no-underline hover:text-fg-1 [&.active]:font-semibold [&.active]:text-fg-1 [&.active]:border-b-2 [&.active]:border-fg-1"
                         >
                             Quests
                         </Link>
@@ -104,28 +104,28 @@ export function AuthenticatedLayout() {
                                 <Link
                                     to="/quests"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-2"
+                                    className="rounded px-3 py-2.5 text-sm text-fg-1 no-underline hover:bg-bg-2"
                                 >
                                     Quests
                                 </Link>
                                 <Link
                                     to="/dashboard"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-2"
+                                    className="rounded px-3 py-2.5 text-sm text-fg-1 no-underline hover:bg-bg-2"
                                 >
                                     Dashboard
                                 </Link>
                                 <Link
                                     to="/account"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-2"
+                                    className="rounded px-3 py-2.5 text-sm text-fg-1 no-underline hover:bg-bg-2"
                                 >
                                     Account
                                 </Link>
                                 <Link
                                     to="/stripe-connect"
                                     onClick={() => setMobileOpen(false)}
-                                    className="rounded px-3 py-2.5 text-sm text-foreground no-underline hover:bg-bg-2 flex items-center gap-2"
+                                    className="rounded px-3 py-2.5 text-sm text-fg-1 no-underline hover:bg-bg-2 flex items-center gap-2"
                                 >
                                     <BankCardLine className="h-4 w-4" />
                                     Stripe Payout
@@ -198,13 +198,13 @@ export function AuthenticatedLayout() {
             </div>
 
             {/* Footer */}
-            <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-4 px-6 py-6 text-xs text-muted-foreground max-sm:flex-col max-sm:gap-2 max-sm:py-4">
+            <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-4 px-6 py-6 text-xs text-fg-3 max-sm:flex-col max-sm:gap-2 max-sm:py-4">
                 <span>ClawQuest v0.1 beta</span>
                 <a
                     href="https://api.clawquest.ai/docs"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-muted-foreground no-underline hover:text-foreground"
+                    className="text-fg-3 no-underline hover:text-fg-1"
                 >
                     API Docs
                 </a>
@@ -212,7 +212,7 @@ export function AuthenticatedLayout() {
                     href={`https://t.me/${TELEGRAM_BOT_USERNAME}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-muted-foreground no-underline hover:text-foreground"
+                    className="text-fg-3 no-underline hover:text-fg-1"
                 >
                     Telegram Bot
                 </a>
@@ -220,7 +220,7 @@ export function AuthenticatedLayout() {
                     href="https://openclaw.ai"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-muted-foreground no-underline hover:text-foreground"
+                    className="text-fg-3 no-underline hover:text-fg-1"
                 >
                     OpenClaw
                 </a>

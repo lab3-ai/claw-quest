@@ -53,8 +53,8 @@ export function StripeConnect() {
     if (isLoading) {
         return (
             <div className="max-w-xl mx-auto py-8 px-4">
-                <div className="bg-background border border-border rounded-lg p-8">
-                    <div className="text-center text-muted-foreground py-12">Loading...</div>
+                <div className="bg-bg-base border border-border-2 rounded-lg p-8">
+                    <div className="text-center text-fg-3 py-12">Loading...</div>
                 </div>
             </div>
         )
@@ -62,24 +62,24 @@ export function StripeConnect() {
 
     return (
         <div className="max-w-xl mx-auto py-8 px-4">
-            <div className="bg-background border border-border rounded-lg p-8">
+            <div className="bg-bg-base border border-border-2 rounded-lg p-8">
                 {/* Coming Soon banner */}
-                <div className="mb-6 rounded-md border border-warning/30 bg-warning/10 px-4 py-3 text-sm font-medium text-foreground">
+                <div className="mb-6 rounded-md border border-warning/30 bg-warning/10 px-4 py-3 text-sm font-medium text-fg-1">
                     Stripe Connect — Coming Soon
                 </div>
                 {/* Header */}
                 <div className="flex gap-4 items-start mb-6">
                     <div className="w-10 h-10 rounded-lg bg-(--stripe-fg) text-white flex items-center justify-center font-semibold text-lg shrink-0">S</div>
                     <div>
-                        <h2 className="text-xl font-semibold text-foreground">Stripe Payout Account</h2>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <h2 className="text-xl font-semibold text-fg-1">Stripe Payout Account</h2>
+                        <p className="text-sm text-fg-3 mt-1">
                             Connect your Stripe account to receive fiat rewards from quests.
                         </p>
                     </div>
                 </div>
 
                 {/* Status indicator */}
-                <div className="flex items-center gap-2 px-4 py-3 rounded-md bg-bg-3 border border-border text-sm text-foreground mb-6">
+                <div className="flex items-center gap-2 px-4 py-3 rounded-md bg-bg-3 border border-border-2 text-sm text-fg-1 mb-6">
                     <div className={cn(
                         "w-2 h-2 rounded-full shrink-0",
                         status?.isOnboarded ? "bg-success"
@@ -133,14 +133,14 @@ export function StripeConnect() {
                 </div>
 
                 {/* Info */}
-                <div className="pt-5 border-t border-border">
-                    <h4 className="text-sm font-semibold text-foreground mb-2">How it works</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                <div className="pt-5 border-t border-border-2">
+                    <h4 className="text-sm font-semibold text-fg-1 mb-2">How it works</h4>
+                    <p className="text-xs text-fg-3 leading-relaxed mb-2">
                         When you win a fiat-funded quest, the reward is automatically transferred
                         to your Stripe account. From there, Stripe pays out to your bank account
                         on a rolling basis (typically 2-7 business days).
                     </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
+                    <p className="text-xs text-fg-3 leading-relaxed">
                         Stripe handles identity verification and tax compliance. Your information
                         is securely managed by Stripe — ClawQuest never sees your bank details.
                     </p>

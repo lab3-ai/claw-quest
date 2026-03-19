@@ -81,15 +81,15 @@ export function CliAuth() {
 
     if (!state || !callbackUrl || !isValidCallback) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-muted px-4">
-                <div className="bg-background border border-border rounded p-8 max-w-sm w-full text-center">
+            <div className="min-h-screen flex items-center justify-center bg-bg-3 px-4">
+                <div className="bg-bg-base border border-border-2 rounded p-8 max-w-sm w-full text-center">
                     <div className="text-xl font-semibold mb-2">
                         Claw<span className="text-accent">Quest</span>
                     </div>
                     <p className="text-sm text-destructive mt-4">
-                        Invalid CLI auth request. Please run <code className="bg-muted px-1 rounded">cq auth login</code> again.
+                        Invalid CLI auth request. Please run <code className="bg-bg-3 px-1 rounded">cq auth login</code> again.
                     </p>
-                    <Link to="/quests" className="text-xs text-muted-foreground mt-4 block hover:underline">
+                    <Link to="/quests" className="text-xs text-fg-3 mt-4 block hover:underline">
                         Go to ClawQuest
                     </Link>
                 </div>
@@ -100,9 +100,9 @@ export function CliAuth() {
     // ── Success screen ───────────────────────────────────────────────────
     if (step === "done") {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-muted px-4">
+            <div className="min-h-screen flex items-center justify-center bg-bg-3 px-4">
                 <SeoHead title="CLI Login" noindex />
-                <div className="bg-background border border-border rounded p-8 max-w-sm w-full text-center">
+                <div className="bg-bg-base border border-border-2 rounded p-8 max-w-sm w-full text-center">
                     <div className="text-xl font-semibold mb-4">
                         Claw<span className="text-accent">Quest</span>
                     </div>
@@ -111,8 +111,8 @@ export function CliAuth() {
                             <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-success" />
                         </svg>
                     </div>
-                    <h2 className="text-base font-semibold text-foreground mb-2">Login successful!</h2>
-                    <p className="text-sm text-muted-foreground">
+                    <h2 className="text-base font-semibold text-fg-1 mb-2">Login successful!</h2>
+                    <p className="text-sm text-fg-3">
                         You're now authenticated in the ClawQuest CLI.
                         <br />
                         You can close this tab and return to your terminal.
@@ -125,17 +125,17 @@ export function CliAuth() {
     // ── Error screen ─────────────────────────────────────────────────────
     if (step === "error") {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-muted px-4">
+            <div className="min-h-screen flex items-center justify-center bg-bg-3 px-4">
                 <SeoHead title="CLI Login" noindex />
-                <div className="bg-background border border-border rounded p-8 max-w-sm w-full text-center">
+                <div className="bg-bg-base border border-border-2 rounded p-8 max-w-sm w-full text-center">
                     <div className="text-xl font-semibold mb-4">
                         Claw<span className="text-accent">Quest</span>
                     </div>
                     <p className="text-sm text-destructive mb-4">
                         Could not send credentials to CLI: {errorMsg}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                        Please close this tab and run <code className="bg-muted px-1 rounded">cq auth login</code> again.
+                    <p className="text-xs text-fg-3">
+                        Please close this tab and run <code className="bg-bg-3 px-1 rounded">cq auth login</code> again.
                     </p>
                 </div>
             </div>
@@ -145,13 +145,13 @@ export function CliAuth() {
     // ── Sending screen ───────────────────────────────────────────────────
     if (step === "sending") {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-muted px-4">
+            <div className="min-h-screen flex items-center justify-center bg-bg-3 px-4">
                 <SeoHead title="CLI Login" noindex />
-                <div className="bg-background border border-border rounded p-8 max-w-sm w-full text-center">
+                <div className="bg-bg-base border border-border-2 rounded p-8 max-w-sm w-full text-center">
                     <div className="text-xl font-semibold mb-4">
                         Claw<span className="text-accent">Quest</span>
                     </div>
-                    <p className="text-sm text-muted-foreground">Sending credentials to CLI...</p>
+                    <p className="text-sm text-fg-3">Sending credentials to CLI...</p>
                 </div>
             </div>
         )
@@ -219,13 +219,13 @@ export function CliAuth() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-muted">
+        <div className="min-h-screen flex flex-col bg-bg-3">
             <SeoHead title="CLI Login" noindex />
 
-            <header className="sticky top-0 z-50 bg-background border-b border-border">
+            <header className="sticky top-0 z-50 bg-bg-base border-b border-border-2">
                 <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-6">
                     <Link to="/quests" className="mr-5 flex items-center gap-1.5 no-underline">
-                        <span className="text-base font-semibold text-foreground uppercase">
+                        <span className="text-base font-semibold text-fg-1 uppercase">
                             Claw<span className="text-accent uppercase">Quest</span>
                         </span>
                     </Link>
@@ -233,7 +233,7 @@ export function CliAuth() {
             </header>
 
             <div className="flex-1 flex items-center justify-center px-4 py-10">
-                <div className="bg-background rounded border border-border w-full max-w-[380px] p-7 text-center relative">
+                <div className="bg-bg-base rounded border border-border-2 w-full max-w-[380px] p-7 text-center relative">
                     {/* CLI badge */}
                     <div className="inline-flex items-center gap-1.5 bg-accent/10 text-accent text-xs font-medium px-2.5 py-1 rounded-full mb-4">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -243,10 +243,10 @@ export function CliAuth() {
                         CLI Login
                     </div>
 
-                    <div className="text-xl font-semibold tracking-tight mb-1 text-foreground">
+                    <div className="text-xl font-semibold tracking-tight mb-1 text-fg-1">
                         Claw<span className="text-accent">Quest</span>
                     </div>
-                    <div className="text-xs text-muted-foreground mb-6">
+                    <div className="text-xs text-fg-3 mb-6">
                         Sign in to authenticate the ClawQuest CLI
                     </div>
 
@@ -344,16 +344,16 @@ export function CliAuth() {
                     </Button>
 
                     <div className="flex items-center gap-3 my-5">
-                        <hr className="flex-1 border-border" />
-                        <span className="text-xs text-muted-foreground">or sign in with email</span>
-                        <hr className="flex-1 border-border" />
+                        <hr className="flex-1 border-border-2" />
+                        <span className="text-xs text-fg-3">or sign in with email</span>
+                        <hr className="flex-1 border-border-2" />
                     </div>
 
                     <form onSubmit={handleEmailLogin}>
                         <div className="space-y-1.5 mb-3.5 text-left">
-                            <label className="block text-xs font-semibold text-foreground mb-1">Email</label>
+                            <label className="block text-xs font-semibold text-fg-1 mb-1">Email</label>
                             <input
-                                className="w-full px-2.5 py-2 text-sm border border-input rounded bg-background text-foreground focus:border-accent focus:ring-2 focus:ring-accent/10 outline-hidden box-border"
+                                className="w-full px-2.5 py-2 text-sm border border-border-2-2 rounded bg-bg-base text-fg-1 focus:border-accent focus:ring-2 focus:ring-accent/10 outline-hidden box-border"
                                 type="email"
                                 placeholder="you@example.com"
                                 required
@@ -362,9 +362,9 @@ export function CliAuth() {
                             />
                         </div>
                         <div className="space-y-1.5 mb-3.5 text-left">
-                            <label className="block text-xs font-semibold text-foreground mb-1">Password</label>
+                            <label className="block text-xs font-semibold text-fg-1 mb-1">Password</label>
                             <input
-                                className="w-full px-2.5 py-2 text-sm border border-input rounded bg-background text-foreground focus:border-accent focus:ring-2 focus:ring-accent/10 outline-hidden box-border"
+                                className="w-full px-2.5 py-2 text-sm border border-border-2-2 rounded bg-bg-base text-fg-1 focus:border-accent focus:ring-2 focus:ring-accent/10 outline-hidden box-border"
                                 type="password"
                                 required
                                 value={password}
@@ -380,7 +380,7 @@ export function CliAuth() {
                         </Button>
                     </form>
 
-                    <p className="text-xs text-muted-foreground mt-5 leading-relaxed">
+                    <p className="text-xs text-fg-3 mt-5 leading-relaxed">
                         By signing in, you authorize the ClawQuest CLI to act on your behalf.
                     </p>
                 </div>

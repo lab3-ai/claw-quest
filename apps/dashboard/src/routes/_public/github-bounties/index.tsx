@@ -93,7 +93,7 @@ export function GitHubBountiesExplore() {
             />
 
             {/* Status tabs */}
-            <div className="flex gap-0 border-b border-border mb-4">
+            <div className="flex gap-0 border-b border-border-2 mb-4">
                 {STATUS_TABS.map(tab => (
                     <button
                         key={tab.key}
@@ -101,8 +101,8 @@ export function GitHubBountiesExplore() {
                         className={cn(
                             "px-4 py-2 text-sm font-semibold transition-colors border-b-2 -mb-px bg-transparent border-none cursor-pointer",
                             statusTab === tab.key
-                                ? "border-b-2 border-b-foreground text-foreground"
-                                : "border-b-2 border-b-transparent text-muted-foreground hover:text-foreground"
+                                ? "border-b-2 border-b-foreground text-fg-1"
+                                : "border-b-2 border-b-transparent text-fg-3 hover:text-fg-1"
                         )}
                     >
                         {tab.label}
@@ -125,7 +125,7 @@ export function GitHubBountiesExplore() {
                             "px-3 py-1 rounded-full text-xs font-medium border transition-colors bg-transparent cursor-pointer",
                             rewardFilter === f.value
                                 ? "bg-foreground text-background border-foreground"
-                                : "border-border text-muted-foreground hover:border-foreground/50"
+                                : "border-border text-fg-3 hover:border-foreground/50"
                         )}
                     >
                         {f.label}
@@ -137,7 +137,7 @@ export function GitHubBountiesExplore() {
             {isLoading ? (
                 <div className="space-y-2">
                     {Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} className="flex items-start gap-4 rounded border border-border bg-bg-1 p-4 animate-pulse">
+                        <div key={i} className="flex items-start gap-4 rounded border border-border-2 bg-bg-1 p-4 animate-pulse">
                             <div className="flex-1 space-y-2">
                                 <div className="h-3 w-32 rounded bg-bg-2" />
                                 <div className="h-4 w-3/4 rounded bg-bg-2" />
@@ -152,11 +152,11 @@ export function GitHubBountiesExplore() {
                 </div>
             ) : !filtered.length ? (
                 <div className="text-center py-12 space-y-3">
-                    <CodeLine size={48} className="mx-auto text-muted-foreground" />
-                    <p className="text-sm font-semibold text-foreground">
+                    <CodeLine size={48} className="mx-auto text-fg-3" />
+                    <p className="text-sm font-semibold text-fg-1">
                         {statusTab === "all" ? "No bounties yet" : `No ${statusTab.replace("_", " ")} bounties`}
                     </p>
-                    <p className="text-xs text-muted-foreground max-w-[45ch] mx-auto">
+                    <p className="text-xs text-fg-3 max-w-[45ch] mx-auto">
                         {statusTab === "all"
                             ? "Be the first to post a GitHub bounty and attract contributors."
                             : "Try a different filter."}
@@ -176,17 +176,17 @@ export function GitHubBountiesExplore() {
                                 key={bounty.id}
                                 to="/github-bounties/$bountyId"
                                 params={{ bountyId: bounty.id }}
-                                className="flex items-start justify-between gap-4 rounded border border-border bg-bg-1 hover:border-fg-1 transition-colors p-4 no-underline"
+                                className="flex items-start justify-between gap-4 rounded border border-border-2 bg-bg-1 hover:border-fg-1 transition-colors p-4 no-underline"
                             >
                                 <div className="min-w-0 flex-1 space-y-1.5">
-                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                    <div className="flex items-center gap-1.5 text-xs text-fg-3">
                                         <GitHubIcon size={12} />
                                         <span>{bounty.repoOwner}/{bounty.repoName}</span>
                                         {bounty.issueNumber && (
                                             <span className="opacity-60">#{bounty.issueNumber}</span>
                                         )}
                                     </div>
-                                    <p className="text-sm font-semibold text-foreground leading-snug">{bounty.title}</p>
+                                    <p className="text-sm font-semibold text-fg-1 leading-snug">{bounty.title}</p>
                                     <div className="flex items-center gap-2 flex-wrap">
                                         <Badge variant="outline" className={cn("text-xs", rewardBadgeClass(bounty.rewardType))}>
                                             {rewardLabel(bounty.rewardType, bounty.rewardAmount)}
@@ -196,19 +196,19 @@ export function GitHubBountiesExplore() {
                                                 {difficulty.label}
                                             </Badge>
                                         )}
-                                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                        <span className="text-xs text-fg-3 flex items-center gap-1">
                                             <GitBranchLine size={12} />
                                             {bounty._count.submissions} PR{bounty._count.submissions !== 1 ? "s" : ""}
                                         </span>
                                         {bounty.deadline && (
-                                            <span className="text-xs text-muted-foreground">
+                                            <span className="text-xs text-fg-3">
                                                 {formatDeadline(bounty.deadline)}
                                             </span>
                                         )}
                                     </div>
                                 </div>
                                 <div className="shrink-0 text-right">
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-xs text-fg-3">
                                         {bounty.maxWinners} winner{bounty.maxWinners !== 1 ? "s" : ""}
                                     </span>
                                 </div>

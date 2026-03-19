@@ -169,7 +169,7 @@ function StepRepo({
                     placeholder="https://github.com/owner/repo  or  github.com/org"
                     value={url}
                     onChange={e => { setUrl(e.target.value); setError(null); setRepos(null) }}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-border-2 bg-bg-base focus:outline-none focus:ring-1 focus:ring-ring"
                 />
                 {error && <p className="text-xs text-destructive mt-1">{error}</p>}
             </div>
@@ -181,7 +181,7 @@ function StepRepo({
                     <select
                         value={selectedRepo}
                         onChange={e => setSelectedRepo(e.target.value)}
-                        className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                        className="w-full px-3 py-2 text-sm rounded-lg border border-border-2 bg-bg-base focus:outline-none focus:ring-1 focus:ring-ring"
                     >
                         {repos.map(r => (
                             <option key={r.full_name} value={r.full_name}>
@@ -190,14 +190,14 @@ function StepRepo({
                         ))}
                     </select>
                     {selectedRepo && repos.find(r => r.full_name === selectedRepo)?.description && (
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-fg-3 mt-1">
                             {repos.find(r => r.full_name === selectedRepo)?.description}
                         </p>
                     )}
                 </div>
             )}
 
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-fg-3">
                 AI analyzes open issues, README, and repo activity to suggest bounties.
             </p>
 
@@ -246,7 +246,7 @@ function StepReview({
 
     return (
         <div className="space-y-4">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-fg-3">
                 Select and edit bounties. Uncheck to skip.
             </p>
 
@@ -256,7 +256,7 @@ function StepReview({
                         key={i}
                         className={cn(
                             "rounded-lg border p-3 transition-colors cursor-pointer",
-                            s.selected ? "border-border bg-card" : "border-border/40 bg-muted/20 opacity-50"
+                            s.selected ? "border-border bg-bg-1" : "border-border/40 bg-bg-3/20 opacity-50"
                         )}
                         onClick={() => toggle(i)}
                     >
@@ -273,14 +273,14 @@ function StepReview({
                                     value={s.title}
                                     onChange={e => update(i, "title", e.target.value)}
                                     disabled={!s.selected}
-                                    className="w-full text-sm font-medium bg-transparent border-b border-border focus:outline-none focus:border-ring py-0.5"
+                                    className="w-full text-sm font-medium bg-transparent border-b border-border-2 focus:outline-none focus:border-ring py-0.5"
                                 />
                                 <textarea
                                     value={s.description}
                                     onChange={e => update(i, "description", e.target.value)}
                                     disabled={!s.selected}
                                     rows={2}
-                                    className="w-full text-xs text-muted-foreground bg-transparent border border-border rounded px-2 py-1 focus:outline-none focus:border-ring resize-none"
+                                    className="w-full text-xs text-fg-3 bg-transparent border border-border-2 rounded px-2 py-1 focus:outline-none focus:border-ring resize-none"
                                 />
                                 <div className="flex items-center gap-3 flex-wrap">
                                     <Badge variant="outline" className={cn("text-xs", difficultyColor(s.difficulty))}>
@@ -290,18 +290,18 @@ function StepReview({
                                         {s.rewardType}
                                     </Badge>
                                     <div className="flex items-center gap-1">
-                                        <span className="text-xs text-muted-foreground">$</span>
+                                        <span className="text-xs text-fg-3">$</span>
                                         <input
                                             type="number"
                                             value={s.rewardAmount ?? s.suggestedReward}
                                             onChange={e => update(i, "rewardAmount", Number(e.target.value))}
                                             disabled={!s.selected || s.rewardType === "LLM_KEY"}
                                             min={1}
-                                            className="w-20 text-xs bg-transparent border border-border rounded px-1 py-0.5 focus:outline-none focus:border-ring"
+                                            className="w-20 text-xs bg-transparent border border-border-2 rounded px-1 py-0.5 focus:outline-none focus:border-ring"
                                         />
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <span className="text-xs text-muted-foreground">Winners:</span>
+                                        <span className="text-xs text-fg-3">Winners:</span>
                                         <input
                                             type="number"
                                             value={s.maxWinners ?? 1}
@@ -309,7 +309,7 @@ function StepReview({
                                             disabled={!s.selected}
                                             min={1}
                                             max={50}
-                                            className="w-14 text-xs bg-transparent border border-border rounded px-1 py-0.5 focus:outline-none focus:border-ring"
+                                            className="w-14 text-xs bg-transparent border border-border-2 rounded px-1 py-0.5 focus:outline-none focus:border-ring"
                                         />
                                     </div>
                                 </div>
@@ -382,9 +382,9 @@ function StepPublish({
         <div className="space-y-4">
             <p className="text-sm font-medium">Review & Publish</p>
 
-            <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-1.5">
-                <p className="text-xs text-muted-foreground">
-                    <span className="text-foreground font-medium">{selected.length}</span> bounty{selected.length !== 1 ? "ies" : ""} will be created
+            <div className="rounded-lg border border-border-2 bg-bg-3/30 p-3 space-y-1.5">
+                <p className="text-xs text-fg-3">
+                    <span className="text-fg-1 font-medium">{selected.length}</span> bounty{selected.length !== 1 ? "ies" : ""} will be created
                 </p>
                 {llmKeyCount > 0 && (
                     <p className="text-xs text-purple-400">
@@ -392,7 +392,7 @@ function StepPublish({
                     </p>
                 )}
                 {paidCount > 0 && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-fg-3">
                         ○ {paidCount} paid bounty{paidCount !== 1 ? "ies" : ""} → draft until funded
                     </p>
                 )}
@@ -400,8 +400,8 @@ function StepPublish({
 
             <div className="space-y-1 max-h-48 overflow-y-auto">
                 {selected.map((s, i) => (
-                    <div key={i} className="flex items-center justify-between text-xs py-1 border-b border-border/40 last:border-0">
-                        <span className="truncate text-foreground flex-1 mr-2">{s.title}</span>
+                    <div key={i} className="flex items-center justify-between text-xs py-1 border-b border-border-2/40 last:border-0">
+                        <span className="truncate text-fg-1 flex-1 mr-2">{s.title}</span>
                         <Badge variant="outline" className={cn("shrink-0", rewardColor(s.rewardType))}>
                             {s.rewardType === "LLM_KEY" ? "LLM Key" : `$${s.rewardAmount ?? s.suggestedReward} ${s.rewardType}`}
                         </Badge>
@@ -435,7 +435,7 @@ function StepSuccess({ count, hasLlmKey, hasPaid }: { count: number; hasLlmKey: 
                 <p className="text-sm font-semibold mb-1">
                     {count} bounty{count !== 1 ? "ies" : ""} published!
                 </p>
-                <p className="text-xs text-muted-foreground max-w-[36ch] mx-auto">
+                <p className="text-xs text-fg-3 max-w-[36ch] mx-auto">
                     {hasLlmKey && hasPaid
                         ? "LLM Key bounties are live. Paid bounties need funding from My Bounties."
                         : hasLlmKey
@@ -467,14 +467,14 @@ function WizardStepper({ step }: { step: number }) {
                     <div className={cn(
                         "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium border",
                         i === step ? "bg-foreground text-background border-foreground" :
-                            i < step ? "bg-foreground/20 text-foreground border-foreground/20" :
-                                "border-border text-muted-foreground"
+                            i < step ? "bg-foreground/20 text-fg-1 border-foreground/20" :
+                                "border-border text-fg-3"
                     )}>
                         {i < step ? <CheckLine size={12} /> : i + 1}
                     </div>
                     <span className={cn(
                         "text-xs",
-                        i === step ? "text-foreground font-medium" : "text-muted-foreground"
+                        i === step ? "text-fg-1 font-medium" : "text-fg-3"
                     )}>
                         {label}
                     </span>
@@ -520,10 +520,10 @@ export function CreateGitHubBounty() {
         <div className="max-w-xl mx-auto px-6 py-6">
             <div className="mb-6">
                 <h1 className="text-2xl font-semibold mb-1">Post a Bounty</h1>
-                <p className="text-sm text-muted-foreground">AI analyzes your repo and suggests bounties</p>
+                <p className="text-sm text-fg-3">AI analyzes your repo and suggests bounties</p>
             </div>
 
-            <div className="rounded-lg border border-border bg-card p-6">
+            <div className="rounded-lg border border-border-2 bg-bg-1 p-6">
                 {showStepper && <WizardStepper step={stepIndex[wizardState]} />}
 
                 {wizardState === "repo" && (

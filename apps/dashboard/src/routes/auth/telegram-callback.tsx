@@ -131,7 +131,7 @@ export function TelegramCallback() {
 
     return (
         <div className="flex items-center justify-center min-h-screen">
-            <div className="text-muted-foreground text-base">{status}</div>
+            <div className="text-fg-3 text-base">{status}</div>
         </div>
     )
 }

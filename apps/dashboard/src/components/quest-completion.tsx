@@ -153,24 +153,24 @@ export function QuestCompletion({
           <QuestTypeBadge type={quest.type} />
         </div>
         <h1 className="text-2xl md:text-3xl font-semibold mb-2">{quest.title}</h1>
-        <p className="text-muted-foreground">{quest.description}</p>
+        <p className="text-fg-3">{quest.description}</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-4">
-          <div className="text-xs uppercase tracking-wider mb-1 text-muted-foreground">Reward</div>
+          <div className="text-xs uppercase tracking-wider mb-1 text-fg-3">Reward</div>
           <div className="text-xl font-semibold">
             {quest.rewardAmount} {quest.rewardType}
           </div>
         </Card>
 
         <Card className="p-4">
-          <div className="text-xs uppercase tracking-wider mb-1 text-muted-foreground">Deadline</div>
+          <div className="text-xs uppercase tracking-wider mb-1 text-fg-3">Deadline</div>
           <div className="text-xl font-semibold">
             {quest.expiresAt ? new Date(quest.expiresAt).toLocaleDateString() : "No deadline"}
           </div>
-          <div className="text-xs mt-1 text-muted-foreground">
+          <div className="text-xs mt-1 text-fg-3">
             {quest.expiresAt
               ? `${Math.ceil((new Date(quest.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days remaining`
               : "Ongoing"}
@@ -178,11 +178,11 @@ export function QuestCompletion({
         </Card>
 
         <Card className="p-4">
-          <div className="text-xs uppercase tracking-wider mb-1 text-muted-foreground">Available Slots</div>
+          <div className="text-xs uppercase tracking-wider mb-1 text-fg-3">Available Slots</div>
           <div className="text-xl font-semibold">
             {quest.totalSlots - quest.filledSlots} / {quest.totalSlots}
           </div>
-          <div className="text-xs mt-1 text-muted-foreground">
+          <div className="text-xs mt-1 text-fg-3">
             {quest.filledSlots} already claimed
           </div>
         </Card>
@@ -191,7 +191,7 @@ export function QuestCompletion({
       {/* Requirements Section */}
       {quest.tasks && quest.tasks.length > 0 && (
         <Card className="p-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 text-muted-foreground">
+          <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 text-fg-3">
             Requirements
           </h2>
           <div>
@@ -214,7 +214,7 @@ export function QuestCompletion({
                 <div className="flex-1">
                   <div className="text-sm font-medium">{task.description}</div>
                   {task.params && (
-                    <div className="text-xs mt-0.5 text-muted-foreground">
+                    <div className="text-xs mt-0.5 text-fg-3">
                       {JSON.stringify(task.params)}
                     </div>
                   )}
@@ -227,7 +227,7 @@ export function QuestCompletion({
 
       {/* Proof Submission Form */}
       <Card className="p-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 text-muted-foreground">
+        <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 text-fg-3">
           Submit Proof
         </h2>
 
@@ -248,7 +248,7 @@ export function QuestCompletion({
             {errors.proofUrl && (
               <p className="text-xs mt-1 text-destructive">{errors.proofUrl}</p>
             )}
-            <p className="text-xs mt-1 text-muted-foreground">
+            <p className="text-xs mt-1 text-fg-3">
               Paste the full URL of your proof (tweet, post, etc.)
             </p>
           </div>
@@ -257,7 +257,7 @@ export function QuestCompletion({
           <div>
             <label className="block text-sm font-medium mb-1.5">
               Additional Notes{" "}
-              <span className="text-xs font-normal text-muted-foreground">(Optional)</span>
+              <span className="text-xs font-normal text-fg-3">(Optional)</span>
             </label>
             <Textarea
               value={formData.notes}
@@ -271,12 +271,12 @@ export function QuestCompletion({
           <div>
             <label className="block text-sm font-medium mb-1.5">
               Upload Screenshot{" "}
-              <span className="text-xs font-normal text-muted-foreground">(Optional)</span>
+              <span className="text-xs font-normal text-fg-3">(Optional)</span>
             </label>
             <div
               className={cn(
                 "border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer hover:border-primary",
-                "bg-muted/50 hover:bg-bg-2",
+                "bg-bg-3/50 hover:bg-bg-2",
                 errors.screenshot && "border-destructive"
               )}
               onClick={() => document.getElementById("screenshot-input")?.click()}
@@ -289,7 +289,7 @@ export function QuestCompletion({
                 className="hidden"
               />
               <svg
-                className="w-10 h-10 mx-auto mb-3 text-muted-foreground"
+                className="w-10 h-10 mx-auto mb-3 text-fg-3"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -304,14 +304,14 @@ export function QuestCompletion({
               {formData.screenshot ? (
                 <div>
                   <p className="text-sm font-medium">{formData.screenshot.name}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-fg-3 mt-1">
                     {(formData.screenshot.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                 </div>
               ) : (
                 <>
                   <p className="text-sm mb-1">Drag & drop or click to upload</p>
-                  <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
+                  <p className="text-xs text-fg-3">PNG, JPG up to 5MB</p>
                 </>
               )}
             </div>
@@ -371,7 +371,7 @@ function SubmissionReviewState({ quest, proof }: { quest: Quest; proof?: any }) 
             <p className="text-sm text-warning/70 mb-3">
               Your submission is being reviewed by our team. You'll be notified once the review is complete.
             </p>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-fg-3">
               Submitted {new Date().toLocaleDateString()}<br />
               Expected review time: 1-2 business days
             </div>
@@ -381,13 +381,13 @@ function SubmissionReviewState({ quest, proof }: { quest: Quest; proof?: any }) 
 
       {/* Submission Details */}
       <Card className="p-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 text-muted-foreground">
+        <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 text-fg-3">
           Your Submission
         </h2>
         <div className="space-y-3 text-sm">
           {proof && proof[0]?.proofUrl && (
             <div>
-              <div className="text-xs mb-1 text-muted-foreground">Proof URL</div>
+              <div className="text-xs mb-1 text-fg-3">Proof URL</div>
               <a
                 href={proof[0].proofUrl}
                 target="_blank"
@@ -400,8 +400,8 @@ function SubmissionReviewState({ quest, proof }: { quest: Quest; proof?: any }) 
           )}
           {proof && proof[0]?.meta?.notes && (
             <div>
-              <div className="text-xs mb-1 text-muted-foreground">Additional Notes</div>
-              <p className="text-muted-foreground">{proof[0].meta.notes}</p>
+              <div className="text-xs mb-1 text-fg-3">Additional Notes</div>
+              <p className="text-fg-3">{proof[0].meta.notes}</p>
             </div>
           )}
         </div>
@@ -443,7 +443,7 @@ function SubmissionApprovedState({ quest }: { quest: Quest; proof?: any }) {
 
       {/* Reward Info */}
       <Card className="p-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 text-muted-foreground">
+        <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 text-fg-3">
           Your Reward
         </h2>
         <div className="flex items-center justify-between">
@@ -487,7 +487,7 @@ function SubmissionRejectedState({ quest, proof }: { quest: Quest; proof?: any }
               Unfortunately, your submission did not meet the quest requirements.
             </p>
             {proof && proof[0]?.meta?.rejectionReason && (
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-fg-3">
                 <strong>Reason:</strong> {proof[0].meta.rejectionReason}
               </div>
             )}
@@ -497,10 +497,10 @@ function SubmissionRejectedState({ quest, proof }: { quest: Quest; proof?: any }
 
       {/* Resubmit */}
       <Card className="p-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 text-muted-foreground">
+        <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 text-fg-3">
           Next Steps
         </h2>
-        <p className="text-sm text-muted-foreground mb-4">
+        <p className="text-sm text-fg-3 mb-4">
           Please review the requirements and submit a new proof that meets all criteria.
         </p>
         <Button className="w-full">Submit New Proof</Button>

@@ -178,24 +178,24 @@ export function StepTasks({
                 )}>{isDone ? "\u2713" : "2"}</span>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm text-foreground group-hover:text-primary">Tasks</span>
+                        <span className="font-semibold text-sm text-fg-1 group-hover:text-primary">Tasks</span>
                         {isDone && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-accent-light text-accent">Completed</span>}
                         {isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-50 text-warning">In Progress</span>}
-                        {!isDone && !isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-muted text-muted-foreground">Not Started</span>}
+                        {!isDone && !isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-bg-3 text-fg-3">Not Started</span>}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-0.5 leading-snug truncate">
+                    <div className="text-xs text-fg-3 mt-0.5 leading-snug truncate">
                         {!isActive && stepSummary && stepSummary !== "No tasks" ? stepSummary : "Human social actions and agent skill requirements"}
                     </div>
                 </div>
                 <div className="flex flex-col items-end gap-0.5 shrink-0 pt-0.5">
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">Step 2 of 4</span>
-                    <span className={cn("text-xs whitespace-nowrap", isFuture ? "text-muted-foreground" : "text-primary")}>{isDone ? "Modify if required" : isActive ? "" : "Add tasks"}</span>
+                    <span className="text-xs text-fg-3 whitespace-nowrap">Step 2 of 4</span>
+                    <span className={cn("text-xs whitespace-nowrap", isFuture ? "text-fg-3" : "text-primary")}>{isDone ? "Modify if required" : isActive ? "" : "Add tasks"}</span>
                 </div>
             </div>
             {isActive && (
-                <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
+                <div className="pl-10 pb-4"><div className="p-4 border border-border-2 rounded bg-transparent">
                     <div className="space-y-4 mb-6">
-                        <div className="text-xs text-muted-foreground mb-1 leading-snug" style={{ marginBottom: 14 }}>
+                        <div className="text-xs text-fg-3 mb-1 leading-snug" style={{ marginBottom: 14 }}>
                             Define what needs to be done. Human tasks are social actions.
                             Agent tasks require specific skills from{" "}
                             <a href="https://clawhub.ai/skills" target="_blank" rel="noreferrer" style={{ color: "var(--link)" }}>
@@ -203,7 +203,7 @@ export function StepTasks({
                             </a>.
                         </div>
                         {tasksNextAttempted && humanTasks.length === 0 && requiredSkills.length === 0 && (
-                            <div className="px-3 py-2.5 bg-warning-light border border-warning rounded text-xs text-foreground mb-4">
+                            <div className="px-3 py-2.5 bg-warning-light border border-warning rounded text-xs text-fg-1 mb-4">
                                 <strong>At least one task is required:</strong> add a human (social) task or an agent skill from ClawHub.
                             </div>
                         )}
@@ -213,7 +213,7 @@ export function StepTasks({
                             <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                 <span>👤</span> Human Tasks
                                 <span className="text-xs font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--human-bg) text-(--human-fg)">Social</span>
-                                <span className="font-normal text-xs text-muted-foreground ml-auto">Actions performed by the operator</span>
+                                <span className="font-normal text-xs text-fg-3 ml-auto">Actions performed by the operator</span>
                             </div>
 
                             <div className="mb-2.5" style={{ marginBottom: 12 }}>
@@ -224,7 +224,7 @@ export function StepTasks({
                                     {Object.keys(PLATFORM_ACTIONS).map(p => (
                                         <button
                                             key={p}
-                                            className={cn("flex items-center gap-1.5 px-3 py-1.5 border border-input rounded bg-background text-foreground text-xs font-medium cursor-pointer transition-colors hover:border-muted-foreground hover:bg-bg-2", activePlatform === p && "border-accent text-accent bg-accent-light font-semibold")}
+                                            className={cn("flex items-center gap-1.5 px-3 py-1.5 border border-border-2-2 rounded bg-bg-base text-fg-1 text-xs font-medium cursor-pointer transition-colors hover:border-muted-foreground hover:bg-bg-2", activePlatform === p && "border-accent text-accent bg-accent-light font-semibold")}
                                             onClick={() => onSetActivePlatform(activePlatform === p ? null : p)}
                                         >
                                             <span className="icon"><PlatformBtnIcon platform={p} /></span> {p}
@@ -233,14 +233,14 @@ export function StepTasks({
                                 </div>
                                 {activePlatform && (
                                     <div className="block">
-                                        <div className="border border-border rounded overflow-hidden mb-2.5">
+                                        <div className="border border-border-2 rounded overflow-hidden mb-2.5">
                                             {PLATFORM_ACTIONS[activePlatform].filter(a => !HIDDEN_ACTION_TYPES?.has(a.type)).map(action => (
                                                 <div
                                                     key={action.type}
-                                                    className="flex items-center justify-between px-3 py-2 border-b border-border/30 text-xs cursor-pointer transition-colors hover:bg-(--human-bg) last:border-b-0"
+                                                    className="flex items-center justify-between px-3 py-2 border-b border-border-2/30 text-xs cursor-pointer transition-colors hover:bg-(--human-bg) last:border-b-0"
                                                     onClick={() => onAddHumanTask(activePlatform, action)}
                                                 >
-                                                    <span className="font-medium text-foreground">{action.label}</span>
+                                                    <span className="font-medium text-fg-1">{action.label}</span>
                                                     <button className="bg-transparent border border-(--human-border) text-(--human-fg) text-xs font-semibold py-0.5 px-2.5 rounded cursor-pointer hover:bg-(--human-bg)">+ Add</button>
                                                 </div>
                                             ))}
@@ -259,24 +259,24 @@ export function StepTasks({
                                         Added Tasks
                                     </div>
                                     {humanTasks.map((task, i) => (
-                                        <div key={i} className="border border-border rounded mb-2 last:mb-0" data-platform={task.platform.toLowerCase()}>
+                                        <div key={i} className="border border-border-2 rounded mb-2 last:mb-0" data-platform={task.platform.toLowerCase()}>
                                             <div
-                                                className="flex items-center gap-2 px-3 py-2 bg-muted/50 border-b border-border text-xs cursor-pointer select-none"
+                                                className="flex items-center gap-2 px-3 py-2 bg-bg-3/50 border-b border-border-2 text-xs cursor-pointer select-none"
                                                 onClick={() => onSetExpandedTask(expandedTask === i ? null : i)}
                                             >
                                                 <span className="text-sm"><PlatformBtnIcon platform={task.platform} /></span>
-                                                <span className="font-semibold text-foreground flex-1">{task.action}</span>
+                                                <span className="font-semibold text-fg-1 flex-1">{task.action}</span>
                                                 {task.chips.length > 0 && (
                                                     <span className="inline-flex items-center justify-center min-w-4 h-4 rounded-full text-xs font-semibold bg-accent-light0 text-white px-1">{task.chips.length}</span>
                                                 )}
                                                 <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-(--social-bg) text-(--social-fg) uppercase">{task.platform}</span>
                                                 <button
-                                                    className="bg-transparent border-none text-muted-foreground text-xs cursor-pointer px-1.5 py-0.5 rounded hover:text-destructive hover:bg-destructive/10"
+                                                    className="bg-transparent border-none text-fg-3 text-xs cursor-pointer px-1.5 py-0.5 rounded hover:text-destructive hover:bg-destructive/10"
                                                     onClick={e => { e.stopPropagation(); onRemoveHumanTask(i) }}
                                                 >✕</button>
                                             </div>
                                             {expandedTask !== i && task.chips.length > 0 && (
-                                                <div className="flex flex-wrap gap-1 px-3 py-1.5 pb-2 text-xs border-t border-dashed border-border">
+                                                <div className="flex flex-wrap gap-1 px-3 py-1.5 pb-2 text-xs border-t border-dashed border-border-2">
                                                     {task.chips.slice(0, 4).map((c, ci) => {
                                                         const st = onChipStatus(task.platform.toLowerCase(), task.actionType, c)
                                                         const icon = st === "pending" ? "⋯" : st === "invalid" ? "⚠" : "✓"
@@ -284,14 +284,14 @@ export function StepTasks({
                                                             <span key={ci} className={cn(
                                                                 "font-mono text-xs px-1.5 py-px rounded whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]",
                                                                 st === "invalid" ? "text-warning bg-error-light"
-                                                                    : st === "pending" ? "text-muted-foreground bg-muted"
+                                                                    : st === "pending" ? "text-fg-3 bg-bg-3"
                                                                         : "text-success bg-accent-light"
                                                             )}>
                                                                 {icon} {task.actionType === "follow_account" ? `@${c.replace(/^@/, "")}` : c.length > 35 ? c.slice(0, 35) + "…" : c}
                                                             </span>
                                                         )
                                                     })}
-                                                    {task.chips.length > 4 && <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-px rounded">+{task.chips.length - 4} more</span>}
+                                                    {task.chips.length > 4 && <span className="font-mono text-xs text-fg-3 bg-bg-3 px-1.5 py-px rounded">+{task.chips.length - 4} more</span>}
                                                 </div>
                                             )}
                                             {expandedTask === i && (
@@ -317,10 +317,10 @@ export function StepTasks({
                             <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                 <span>🤖</span> Agent Tasks
                                 <span className="text-xs font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--agent-bg) text-(--agent-fg)">Skill</span>
-                                <span className="font-normal text-xs text-muted-foreground ml-auto">Required skills from ClawHub</span>
+                                <span className="font-normal text-xs text-fg-3 ml-auto">Required skills from ClawHub</span>
                             </div>
 
-                            <div className="bg-muted/50 border border-border rounded px-3 py-2 text-xs text-muted-foreground leading-relaxed mb-2.5">
+                            <div className="bg-bg-3/50 border border-border-2 rounded px-3 py-2 text-xs text-fg-3 leading-relaxed mb-2.5">
                                 Agents must have{" "}
                                 <code style={{ fontFamily: "var(--font-mono)", fontSize: 11, background: "var(--code-bg)", padding: "0 3px", borderRadius: 0 }}>
                                     clawquest
@@ -340,13 +340,13 @@ export function StepTasks({
                                     {requiredSkills.map(skill => {
                                         const isCustom = skill.id.startsWith("http")
                                         return (
-                                            <div key={skill.id} className="flex items-center gap-2.5 px-2.5 py-2 border border-(--skill-border) rounded mb-1.5 bg-background overflow-hidden" data-agents={skill.agents}>
+                                            <div key={skill.id} className="flex items-center gap-2.5 px-2.5 py-2 border border-(--skill-border) rounded mb-1.5 bg-bg-base overflow-hidden" data-agents={skill.agents}>
                                                 <div className="size-7 rounded bg-(--skill-bg) flex items-center justify-center text-sm shrink-0">{isCustom ? "🔗" : "🧩"}</div>
                                                 <div className="flex-1 min-w-0 overflow-hidden">
-                                                    <div className="text-xs font-semibold text-foreground font-mono truncate">
+                                                    <div className="text-xs font-semibold text-fg-1 font-mono truncate">
                                                         {isCustom ? skill.name : `${skill.id}@${skill.version ?? "latest"}`}
                                                     </div>
-                                                    <div className="text-xs text-muted-foreground leading-tight truncate">{skill.desc}</div>
+                                                    <div className="text-xs text-fg-3 leading-tight truncate">{skill.desc}</div>
                                                     {isCustom && (
                                                         <div className="text-xs text-primary mt-0.5 truncate font-mono opacity-70" title={skill.id}>
                                                             {skill.id}
@@ -354,10 +354,10 @@ export function StepTasks({
                                                     )}
                                                 </div>
                                                 {isCustom
-                                                    ? <span className="text-xs font-semibold text-muted-foreground bg-muted border border-border px-1.5 py-0.5 rounded whitespace-nowrap self-center">custom</span>
+                                                    ? <span className="text-xs font-semibold text-fg-3 bg-bg-3 border border-border-2 px-1.5 py-0.5 rounded whitespace-nowrap self-center">custom</span>
                                                     : <span className="text-xs font-semibold text-accent bg-accent-light px-1.5 py-0.5 rounded whitespace-nowrap self-center">{skill.agents} agents</span>
                                                 }
-                                                <button className="bg-transparent border-none text-muted-foreground text-sm cursor-pointer p-0.5 rounded leading-none hover:text-destructive hover:bg-destructive/10" onClick={() => onRemoveSkill(skill.id)}>✕</button>
+                                                <button className="bg-transparent border-none text-fg-3 text-sm cursor-pointer p-0.5 rounded leading-none hover:text-destructive hover:bg-destructive/10" onClick={() => onRemoveSkill(skill.id)}>✕</button>
                                             </div>
                                         )
                                     })}
@@ -373,15 +373,15 @@ export function StepTasks({
                                         onChange={e => onSetRequireVerified(e.target.checked)}
                                         className="accent-accent size-3.5"
                                     />
-                                    <span className="text-xs text-foreground font-medium">Require verified skills</span>
-                                    <span className="text-xs text-muted-foreground">— only agents who ran Skill Scan can join</span>
+                                    <span className="text-xs text-fg-1 font-medium">Require verified skills</span>
+                                    <span className="text-xs text-fg-3">— only agents who ran Skill Scan can join</span>
                                 </label>
                             )}
 
                             <div className="relative mb-2.5">
-                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-base pointer-events-none">🔍</span>
+                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-fg-3 text-base pointer-events-none">🔍</span>
                                 <input
-                                    className="w-full py-2 px-2.5 pl-[30px] text-base border border-(--agent-border) rounded bg-(--agent-bg) text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:border-primary focus:bg-background focus:ring-[3px] focus:ring-primary/15"
+                                    className="w-full py-2 px-2.5 pl-[30px] text-base border border-(--agent-border) rounded bg-(--agent-bg) text-fg-1 placeholder:text-fg-3 focus:outline-hidden focus:border-primary focus:bg-bg-base focus:ring-[3px] focus:ring-primary/15"
                                     type="text"
                                     placeholder="Search on ClawHub or paste skill URL…"
                                     value={skillSearch}
@@ -407,8 +407,8 @@ export function StepTasks({
 
                                 {/* URL-based skill preview */}
                                 {showSkillResults && isSkillUrl(skillSearch.trim()) && (urlFetching || urlPreview || urlFetchError) && (
-                                    <div className="border border-border rounded bg-background overflow-hidden overflow-y-auto mb-2.5 max-h-[360px]">
-                                        <div className="px-2.5 py-1.5 text-xs text-muted-foreground bg-muted/50 border-b border-border flex justify-between">
+                                    <div className="border border-border-2 rounded bg-bg-base overflow-hidden overflow-y-auto mb-2.5 max-h-[360px]">
+                                        <div className="px-2.5 py-1.5 text-xs text-fg-3 bg-bg-3/50 border-b border-border-2 flex justify-between">
                                             <span>{urlFetching ? "Fetching skill.md…" : urlPreview ? "Skill found" : "Error"}</span>
                                             <span style={{ cursor: "pointer" }} onClick={() => onSetShowSkillResults(false)}>✕ close</span>
                                         </div>
@@ -425,16 +425,16 @@ export function StepTasks({
                                         {urlPreview && !urlFetching && (() => {
                                             const isAdded = addedSkillIds.has(urlPreview.id)
                                             return (
-                                                <div className={cn("flex items-start gap-2.5 px-2.5 py-2 border-b border-border/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-bg-2/50", isAdded && "opacity-50 cursor-default bg-muted/50")} onClick={() => !isAdded && onAddSkill(urlPreview)}>
+                                                <div className={cn("flex items-start gap-2.5 px-2.5 py-2 border-b border-border-2/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-bg-2/50", isAdded && "opacity-50 cursor-default bg-bg-3/50")} onClick={() => !isAdded && onAddSkill(urlPreview)}>
                                                     <div className="flex-1 min-w-0 overflow-hidden">
                                                         <div className="text-xs font-semibold text-primary flex items-center gap-1.5 truncate">
                                                             <span className="inline-flex items-center justify-center text-xs font-semibold uppercase px-1.5 py-px rounded bg-blue-100 text-info mr-1 tracking-wide shrink-0">URL</span>
                                                             <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{urlPreview.name}</span>
                                                         </div>
-                                                        <div className="text-xs text-muted-foreground leading-snug mt-0.5 wrap-break-word">{onTruncateDesc(urlPreview.desc, urlPreview.id)}</div>
-                                                        <div className="flex gap-2.5 text-xs text-muted-foreground mt-0.5">
+                                                        <div className="text-xs text-fg-3 leading-snug mt-0.5 wrap-break-word">{onTruncateDesc(urlPreview.desc, urlPreview.id)}</div>
+                                                        <div className="flex gap-2.5 text-xs text-fg-3 mt-0.5">
                                                             <span>v{urlPreview.version}</span>
-                                                            {urlPreview.ownerHandle && <span className="font-mono text-xs text-muted-foreground" title={urlPreview.id}>{urlPreview.ownerHandle}</span>}
+                                                            {urlPreview.ownerHandle && <span className="font-mono text-xs text-fg-3" title={urlPreview.id}>{urlPreview.ownerHandle}</span>}
                                                         </div>
                                                     </div>
                                                     {isAdded
@@ -449,8 +449,8 @@ export function StepTasks({
 
                                 {/* ClawHub search results */}
                                 {showSkillResults && !isSkillUrl(skillSearch.trim()) && skillSearch.length >= 2 && (skillSearchResults.length > 0 || skillSearchLoading) && (
-                                    <div className="border border-border rounded bg-background overflow-hidden overflow-y-auto mb-2.5 max-h-[360px]">
-                                        <div className="px-2.5 py-1.5 text-xs text-muted-foreground bg-muted/50 border-b border-border flex justify-between">
+                                    <div className="border border-border-2 rounded bg-bg-base overflow-hidden overflow-y-auto mb-2.5 max-h-[360px]">
+                                        <div className="px-2.5 py-1.5 text-xs text-fg-3 bg-bg-3/50 border-b border-border-2 flex justify-between">
                                             <span>{skillSearchLoading ? `Searching "${skillSearch}"…` : `${skillSearchResults.length} results for "${skillSearch}"`}</span>
                                             <span style={{ cursor: "pointer" }} onClick={() => onSetShowSkillResults(false)}>✕ close</span>
                                         </div>
@@ -462,21 +462,21 @@ export function StepTasks({
                                         {skillSearchResults.map(s => {
                                             const isAdded = addedSkillIds.has(s.id)
                                             return (
-                                                <div key={s.id} className={cn("flex items-start gap-2.5 px-2.5 py-2 border-b border-border/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-bg-2/50", isAdded && "opacity-50 cursor-default bg-muted/50")} onClick={() => !isAdded && onAddSkill(s)}>
+                                                <div key={s.id} className={cn("flex items-start gap-2.5 px-2.5 py-2 border-b border-border-2/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-bg-2/50", isAdded && "opacity-50 cursor-default bg-bg-3/50")} onClick={() => !isAdded && onAddSkill(s)}>
                                                     <div className="flex-1 min-w-0 overflow-hidden">
                                                         <div className="text-xs font-semibold text-primary flex items-center gap-1.5 truncate">
                                                             {s.ownerImage ? (
                                                                 <img src={s.ownerImage} alt={s.ownerDisplayName ?? s.ownerHandle} className="w-4 h-4 rounded-full shrink-0 object-cover" />
                                                             ) : (
-                                                                <span className="w-4 h-4 rounded-full shrink-0 bg-muted flex items-center justify-center text-[9px] font-semibold text-muted-foreground uppercase">
+                                                                <span className="w-4 h-4 rounded-full shrink-0 bg-bg-3 flex items-center justify-center text-[9px] font-semibold text-fg-3 uppercase">
                                                                     {(s.ownerDisplayName ?? s.ownerHandle).charAt(0)}
                                                                 </span>
                                                             )}
-                                                            <span className="text-muted-foreground font-normal shrink-0">{s.ownerDisplayName ?? s.id.split("/")[0]} /</span>
+                                                            <span className="text-fg-3 font-normal shrink-0">{s.ownerDisplayName ?? s.id.split("/")[0]} /</span>
                                                             <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}</span>
                                                         </div>
-                                                        <div className="text-xs text-muted-foreground leading-snug mt-0.5 wrap-break-word">{onTruncateDesc(s.desc, s.id)}</div>
-                                                        <div className="flex gap-2.5 text-xs text-muted-foreground mt-0.5">
+                                                        <div className="text-xs text-fg-3 leading-snug mt-0.5 wrap-break-word">{onTruncateDesc(s.desc, s.id)}</div>
+                                                        <div className="flex gap-2.5 text-xs text-fg-3 mt-0.5">
                                                             <span>↓ {s.downloads}</span>
                                                             <span>★ {s.stars}</span>
                                                             <span>v{s.version}</span>
@@ -495,7 +495,7 @@ export function StepTasks({
                         </div>
                     </div>
 
-                    <div className="flex justify-between mt-5 pt-4 border-t border-border">
+                    <div className="flex justify-between mt-5 pt-4 border-t border-border-2">
                         <Button variant="secondary" onClick={onPrevious}>← Details</Button>
                         <Button type="button" onClick={onTasksNext}>
                             Next: Reward →

@@ -83,14 +83,14 @@ export function FundSuccess() {
                 ]} />
             </div>
 
-            <div className="bg-background border border-border rounded-lg p-8 text-center">
+            <div className="bg-bg-base border border-border-2 rounded-lg p-8 text-center">
                 {status === 'verifying' && (
                     <>
                         <div
-                            className="w-12 h-12 rounded-full border-[3px] border-border border-t-[#635bff] animate-spin mx-auto mb-4"
+                            className="w-12 h-12 rounded-full border-[3px] border-border-2 border-t-[#635bff] animate-spin mx-auto mb-4"
                             style={{ borderTopColor: '#635bff' }}
                         />
-                        <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Verifying Payment</h2>
+                        <h2 className="text-xl font-semibold text-fg-1 m-0 mb-2">Verifying Payment</h2>
                         <p className="text-sm text-fg-3 m-0">
                             Please wait while we confirm your payment...
                         </p>
@@ -100,10 +100,10 @@ export function FundSuccess() {
                 {status === 'pending' && (
                     <>
                         <div
-                            className="w-12 h-12 rounded-full border-[3px] border-border border-t-[#635bff] animate-spin mx-auto mb-4"
+                            className="w-12 h-12 rounded-full border-[3px] border-border-2 border-t-[#635bff] animate-spin mx-auto mb-4"
                             style={{ borderTopColor: '#635bff' }}
                         />
-                        <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Waiting for Payment Confirmation</h2>
+                        <h2 className="text-xl font-semibold text-fg-1 m-0 mb-2">Waiting for Payment Confirmation</h2>
                         <p className="text-sm text-fg-3 m-0 mb-4">
                             Your payment has been received and is being processed by our payment provider.
                         </p>
@@ -123,7 +123,7 @@ export function FundSuccess() {
                         <div className="w-16 h-16 rounded-full bg-success text-white inline-flex items-center justify-center text-3xl font-semibold mb-4">
                             ✓
                         </div>
-                        <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Payment Successful!</h2>
+                        <h2 className="text-xl font-semibold text-fg-1 m-0 mb-2">Payment Successful!</h2>
                         <p className="text-sm text-fg-3 m-0 mb-6">
                             Your quest has been funded successfully and is now {quest?.status === 'scheduled' ? 'scheduled' : 'live'}.
                         </p>
@@ -140,10 +140,10 @@ export function FundSuccess() {
 
                 {status === 'coming_soon' && (
                     <>
-                        <div className="w-16 h-16 rounded-full bg-muted inline-flex items-center justify-center text-3xl font-semibold mb-4 text-muted-foreground">
+                        <div className="w-16 h-16 rounded-full bg-bg-3 inline-flex items-center justify-center text-3xl font-semibold mb-4 text-fg-3">
                             🚧
                         </div>
-                        <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Stripe Payments Coming Soon</h2>
+                        <h2 className="text-xl font-semibold text-fg-1 m-0 mb-2">Stripe Payments Coming Soon</h2>
                         <p className="text-sm text-fg-3 m-0 mb-6">
                             Stripe payments are temporarily unavailable. Please check back later.
                         </p>
@@ -163,7 +163,7 @@ export function FundSuccess() {
                         <div className="w-16 h-16 rounded-full bg-error text-white inline-flex items-center justify-center text-3xl font-semibold mb-4">
                             ✕
                         </div>
-                        <h2 className="text-xl font-semibold text-foreground m-0 mb-2">Payment Not Confirmed</h2>
+                        <h2 className="text-xl font-semibold text-fg-1 m-0 mb-2">Payment Not Confirmed</h2>
                         <p className="text-sm text-fg-3 m-0 mb-6">
                             We couldn't confirm your payment. This might be because:
                         </p>

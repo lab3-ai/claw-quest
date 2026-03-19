@@ -18,7 +18,7 @@ const FILE_BRANDS: PlatformName[] = ["x", "discord", "telegram", "google"]
 export function PlatformIcon({ name, size = 16, className, colored, style }: Props) {
     const s = size
 
-    // File-based brands
+    // File-based brands — X icon needs invert in dark mode
     if (FILE_BRANDS.includes(name)) {
         return (
             <img
@@ -26,7 +26,7 @@ export function PlatformIcon({ name, size = 16, className, colored, style }: Pro
                 alt={name}
                 width={s}
                 height={s}
-                className={className}
+                className={`${name === "x" ? "dark:invert" : ""} ${className ?? ""}`}
                 style={style}
                 loading="lazy"
             />

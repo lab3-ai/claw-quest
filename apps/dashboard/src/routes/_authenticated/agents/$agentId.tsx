@@ -97,21 +97,21 @@ function StatusBadge({ status }: { status: Agent["status"] }) {
 function AgentHeader({ agent }: { agent: Agent }) {
     const avatarUrl = getDiceBearUrl(agent.agentname, 128)
     return (
-        <div className="flex items-start gap-4 p-5 border border-border-1 bg-card hover:bg-bg-2 transition-colors">
+        <div className="flex items-start gap-4 p-5 border border-border-1 bg-bg-1 hover:bg-bg-2 transition-colors">
             <img
                 src={avatarUrl}
                 alt={agent.agentname}
-                className="w-16 h-16 rounded-full border-2 border-border shrink-0"
+                className="w-16 h-16 rounded-full border-2 border-border-2 shrink-0"
                 loading="lazy"
             />
             <div className="flex-1 min-w-0">
-                <h2 className="text-xl font-semibold text-foreground truncate">{agent.agentname}</h2>
+                <h2 className="text-xl font-semibold text-fg-1 truncate">{agent.agentname}</h2>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                     <StatusBadge status={agent.status} />
                     {agent.platform && (
                         <Badge variant="pill">{agent.platform}</Badge>
                     )}
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-fg-3">
                         Joined {formatJoinDate(agent.createdAt)}
                     </span>
                 </div>
@@ -127,7 +127,7 @@ function ActiveQuestCard({ participation }: { participation: Participation }) {
 
     return (
         <div className="p-5 border border-accent-border bg-accent-light">
-            <h3 className="text-sm font-semibold text-foreground mb-3">Active Quest</h3>
+            <h3 className="text-sm font-semibold text-fg-1 mb-3">Active Quest</h3>
             <Link
                 to="/quests/$questId"
                 params={{ questId: participation.quest.id }}
@@ -139,13 +139,13 @@ function ActiveQuestCard({ participation }: { participation: Participation }) {
                 Reward: {participation.quest.rewardAmount} {participation.quest.rewardType}
             </p>
             <div className="mt-3">
-                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="w-full h-1.5 bg-bg-3 rounded-full overflow-hidden">
                     <div
                         className="h-full bg-accent rounded-full transition-all duration-300"
                         style={{ width: `${progress}%` }}
                     />
                 </div>
-                <p className="text-xs text-muted-foreground mt-1.5">
+                <p className="text-xs text-fg-3 mt-1.5">
                     {participation.tasksCompleted} / {participation.tasksTotal} tasks
                 </p>
             </div>
@@ -155,9 +155,9 @@ function ActiveQuestCard({ participation }: { participation: Participation }) {
 
 function StatItem({ label, value }: { label: string; value: string | number }) {
     return (
-        <div className="flex justify-between items-center py-2.5 border-b border-border last:border-b-0">
+        <div className="flex justify-between items-center py-2.5 border-b border-border-2 last:border-b-0">
             <span className="text-xs text-fg-2">{label}</span>
-            <span className="text-sm font-semibold text-foreground">{value}</span>
+            <span className="text-sm font-semibold text-fg-1">{value}</span>
         </div>
     )
 }
@@ -169,8 +169,8 @@ function AgentStatsPanel({ agent }: { agent: Agent }) {
     const totalEarned = completed.reduce((sum, p) => sum + (p.payoutAmount || 0), 0)
 
     return (
-        <div className="p-5 border border-border-1 bg-card hover:bg-bg-2 transition-colors sticky top-6">
-            <h3 className="text-sm font-semibold text-foreground mb-3">Stats</h3>
+        <div className="p-5 border border-border-1 bg-bg-1 hover:bg-bg-2 transition-colors sticky top-6">
+            <h3 className="text-sm font-semibold text-fg-1 mb-3">Stats</h3>
             <StatItem label="Quests Completed" value={completed.length} />
             <StatItem label="Total Earned" value={`$${totalEarned.toFixed(2)}`} />
             <StatItem label="Active Quests" value={active.length} />
@@ -180,18 +180,18 @@ function AgentStatsPanel({ agent }: { agent: Agent }) {
 
 function ActivityLog({ logs }: { logs: AgentLog[] }) {
     return (
-        <div className="p-5 border border-border-1 bg-card hover:bg-bg-2 transition-colors">
-            <h3 className="text-sm font-semibold text-foreground mb-3">Activity Log</h3>
+        <div className="p-5 border border-border-1 bg-bg-1 hover:bg-bg-2 transition-colors">
+            <h3 className="text-sm font-semibold text-fg-1 mb-3">Activity Log</h3>
             {logs.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">No activity yet</p>
+                <p className="text-sm text-fg-3 text-center py-8">No activity yet</p>
             ) : (
                 <div className="flex flex-col gap-3">
                     {logs.map((log) => (
                         <div key={log.id} className="flex gap-2.5 items-start">
                             <div className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 shrink-0" aria-hidden="true" />
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm text-foreground leading-relaxed">{log.message}</p>
-                                <span className="text-xs text-muted-foreground">
+                                <p className="text-sm text-fg-1 leading-relaxed">{log.message}</p>
+                                <span className="text-xs text-fg-3">
                                     {new Date(log.createdAt).toLocaleString()}
                                 </span>
                             </div>
@@ -208,19 +208,19 @@ function QuestHistory({ participations }: { participations: Participation[] }) {
     if (completed.length === 0) return null
 
     return (
-        <div className="p-5 border border-border-1 bg-card hover:bg-bg-2 transition-colors">
-            <h3 className="text-sm font-semibold text-foreground mb-3">Quest History</h3>
+        <div className="p-5 border border-border-1 bg-bg-1 hover:bg-bg-2 transition-colors">
+            <h3 className="text-sm font-semibold text-fg-1 mb-3">Quest History</h3>
             <div className="flex flex-col gap-2">
                 {completed.map((p) => (
                     <Link
                         key={p.id}
                         to="/quests/$questId"
                         params={{ questId: p.quest.id }}
-                        className="flex items-center justify-between py-2.5 px-3 border border-border hover:bg-bg-2/50 transition-colors"
+                        className="flex items-center justify-between py-2.5 px-3 border border-border-2 hover:bg-bg-2/50 transition-colors"
                     >
                         <div className="flex items-center gap-2 min-w-0">
                             <CheckCircleLine size={16} className="text-success shrink-0" />
-                            <span className="text-sm text-foreground truncate">{p.quest.title}</span>
+                            <span className="text-sm text-fg-1 truncate">{p.quest.title}</span>
                         </div>
                         <span className="text-xs font-medium text-success shrink-0 ml-2">
                             +{p.payoutAmount ?? 0} {p.quest.rewardType}
@@ -234,9 +234,9 @@ function QuestHistory({ participations }: { participations: Participation[] }) {
 
 function EmptyQuestsState() {
     return (
-        <div className="p-5 border border-border-1 bg-card text-center py-12">
-            <Search2Line size={48} className="mx-auto text-muted-foreground mb-3" />
-            <p className="text-sm font-semibold text-foreground">No quests yet</p>
+        <div className="p-5 border border-border-1 bg-bg-1 text-center py-12">
+            <Search2Line size={48} className="mx-auto text-fg-3 mb-3" />
+            <p className="text-sm font-semibold text-fg-1">No quests yet</p>
             <p className="text-xs text-fg-2 mt-1 max-w-[45ch] mx-auto">
                 This agent hasn't participated in any quests. Browse available quests to get started.
             </p>
@@ -272,7 +272,7 @@ function AgentErrorState({ onRetry }: { onRetry: () => void }) {
             <PageTitle title="Agent Details" />
             <div className="text-center py-12">
                 <AlertLine size={48} className="mx-auto text-error mb-3" />
-                <p className="text-sm font-semibold text-foreground">Something went wrong</p>
+                <p className="text-sm font-semibold text-fg-1">Something went wrong</p>
                 <p className="text-xs text-fg-2 mt-1">Failed to load agent details</p>
                 <Button variant="outline" className="mt-4" onClick={onRetry}>Retry</Button>
             </div>

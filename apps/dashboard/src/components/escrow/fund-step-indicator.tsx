@@ -13,7 +13,7 @@ export function FundStepIndicator({ step, isNative }: FundStepIndicatorProps) {
     return (
         <div className="flex justify-center gap-4 mb-8 max-sm:gap-2 max-sm:flex-wrap">
             <div className={cn(
-                'flex items-center gap-1.5 text-xs text-muted-foreground opacity-50 transition-all',
+                'flex items-center gap-1.5 text-xs text-fg-3 opacity-50 transition-all',
                 step !== 'connect' && 'opacity-100! text-accent!'
             )}>
                 <span className={cn(
@@ -24,7 +24,7 @@ export function FundStepIndicator({ step, isNative }: FundStepIndicatorProps) {
             </div>
             {!isNative && (
                 <div className={cn(
-                    'flex items-center gap-1.5 text-xs text-muted-foreground opacity-50 transition-all',
+                    'flex items-center gap-1.5 text-xs text-fg-3 opacity-50 transition-all',
                     step === 'approve' && 'opacity-100! text-accent! font-semibold!',
                     afterApprove.includes(step) && 'opacity-100! text-accent!'
                 )}>
@@ -37,7 +37,7 @@ export function FundStepIndicator({ step, isNative }: FundStepIndicatorProps) {
                 </div>
             )}
             <div className={cn(
-                'flex items-center gap-1.5 text-xs text-muted-foreground opacity-50 transition-all',
+                'flex items-center gap-1.5 text-xs text-fg-3 opacity-50 transition-all',
                 step === 'deposit' && 'opacity-100! text-accent! font-semibold!',
                 afterDeposit.includes(step) && 'opacity-100! text-accent!'
             )}>
@@ -49,7 +49,7 @@ export function FundStepIndicator({ step, isNative }: FundStepIndicatorProps) {
                 <span>Deposit</span>
             </div>
             <div className={cn(
-                'flex items-center gap-1.5 text-xs text-muted-foreground opacity-50 transition-all',
+                'flex items-center gap-1.5 text-xs text-fg-3 opacity-50 transition-all',
                 step === 'confirming' && 'opacity-100! text-accent! font-semibold!',
                 step === 'success' && 'opacity-100! text-accent!'
             )}>

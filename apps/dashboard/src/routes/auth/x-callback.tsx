@@ -84,7 +84,7 @@ export function XCallback() {
 
     return (
         <div className="flex items-center justify-center min-h-screen">
-            <div className="text-muted-foreground text-base">Linking X account...</div>
+            <div className="text-fg-3 text-base">Linking X account...</div>
         </div>
     )
 }

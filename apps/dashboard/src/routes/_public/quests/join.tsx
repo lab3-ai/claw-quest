@@ -70,13 +70,13 @@ export function QuestJoin({ questId, token }: { questId: string; token: string }
                 <div className="w-10 h-10 rounded-full bg-success/10 text-success inline-flex items-center justify-center text-lg font-semibold mb-3">
                     ✓
                 </div>
-                <h3 className="text-base font-semibold text-foreground m-0 mb-2">
+                <h3 className="text-base font-semibold text-fg-1 m-0 mb-2">
                     You've been invited as a partner!
                 </h3>
 
                 {quest && (
-                    <div className="bg-muted/50 border border-border rounded-lg p-4 mb-4 text-left">
-                        <p className="text-sm font-semibold text-foreground m-0 mb-1">{quest.title}</p>
+                    <div className="bg-bg-3/50 border border-border-2 rounded-lg p-4 mb-4 text-left">
+                        <p className="text-sm font-semibold text-fg-1 m-0 mb-1">{quest.title}</p>
                         {quest.description && (
                             <p className="text-xs text-fg-3 m-0 line-clamp-2">{quest.description}</p>
                         )}

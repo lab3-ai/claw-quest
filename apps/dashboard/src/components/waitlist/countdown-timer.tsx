@@ -137,7 +137,7 @@ export function CountdownTimer() {
 
     const isExpired = time.days + time.hours + time.minutes + time.seconds === 0
     if (isExpired) {
-        return <p className="font-mono text-sm text-muted-foreground">Launching Soon</p>
+        return <p className="font-mono text-sm text-fg-3">Launching Soon</p>
     }
 
     return (

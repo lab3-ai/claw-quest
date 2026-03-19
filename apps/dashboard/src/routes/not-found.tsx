@@ -11,13 +11,13 @@ export function NotFoundPage() {
 
             <BrandLogo variant="icon" size="lg" animated className="mb-6" />
 
-            <p className="mb-2 font-mono text-6xl font-semibold text-foreground">404</p>
+            <p className="mb-2 font-mono text-6xl font-semibold text-fg-1">404</p>
 
-            <h1 className="mb-2 text-xl font-semibold text-foreground">
+            <h1 className="mb-2 text-xl font-semibold text-fg-1">
                 Page not found
             </h1>
 
-            <p className="mb-8 max-w-sm text-sm text-muted-foreground">
+            <p className="mb-8 max-w-sm text-sm text-fg-3">
                 Beep boop... my circuits can't find this page. Maybe it got abducted by rogue AI agents?
             </p>
 

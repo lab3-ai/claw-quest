@@ -168,7 +168,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
 
     if (!bounty) {
         return (
-            <div className="flex items-center justify-center min-h-[60vh] text-muted-foreground text-sm">
+            <div className="flex items-center justify-center min-h-[60vh] text-fg-3 text-sm">
                 Bounty not found.{" "}
                 <Link to="/github-bounties" className="underline ml-1">Browse all bounties</Link>
             </div>
@@ -181,7 +181,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
     return (
         <div className="mx-auto px-6 py-6">
             {/* Breadcrumb */}
-            <Link to="/github-bounties" className="text-xs text-muted-foreground hover:text-foreground mb-5 inline-flex items-center gap-1 no-underline">
+            <Link to="/github-bounties" className="text-xs text-fg-3 hover:text-fg-1 mb-5 inline-flex items-center gap-1 no-underline">
                 ← All bounties
             </Link>
 
@@ -195,23 +195,23 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                     <div>
                         <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <a href={repoUrl} target="_blank" rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-foreground no-underline">
+                                className="flex items-center gap-1 text-xs font-mono text-fg-3 hover:text-fg-1 no-underline">
                                 <GitHubIcon size={12} />
                                 {bounty.repoOwner}/{bounty.repoName}
                             </a>
                             {bounty.issueNumber && bounty.issueUrl && (
                                 <a href={bounty.issueUrl} target="_blank" rel="noopener noreferrer"
-                                    className="text-xs text-muted-foreground hover:underline no-underline">
+                                    className="text-xs text-fg-3 hover:underline no-underline">
                                     #{bounty.issueNumber}
                                 </a>
                             )}
                         </div>
                         <h1 className="text-xl font-semibold mb-3 leading-snug">{bounty.title}</h1>
-                        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{bounty.description}</p>
+                        <p className="text-sm text-fg-3 leading-relaxed whitespace-pre-wrap">{bounty.description}</p>
                     </div>
 
                     {/* Meta row */}
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground border-t border-border pt-4 flex-wrap">
+                    <div className="flex items-center gap-4 text-xs text-fg-3 border-t border-border-2 pt-4 flex-wrap">
                         <span>{bounty.maxWinners} winner{bounty.maxWinners !== 1 ? "s" : ""}</span>
                         <span>{bounty.questType === "fcfs" ? "First-come first-served" : "Leaderboard"}</span>
                         {bounty.deadline && (
@@ -224,16 +224,16 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
 
                     {/* Submit PR section — non-creator only */}
                     {!isCreator && (
-                        <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                        <div className="rounded-lg border border-border-2 bg-bg-1 p-4 space-y-3">
                             <h2 className="text-sm font-semibold">Submit a Pull Request</h2>
 
                             {isCompleted && (
-                                <p className="text-xs text-muted-foreground">This bounty has been completed.</p>
+                                <p className="text-xs text-fg-3">This bounty has been completed.</p>
                             )}
 
                             {!isCompleted && !isAuthenticated && (
                                 <div className="space-y-2">
-                                    <p className="text-xs text-muted-foreground">Log in to submit your PR.</p>
+                                    <p className="text-xs text-fg-3">Log in to submit your PR.</p>
                                     <Button size="sm" variant="outline" asChild>
                                         <Link to="/login">Log in</Link>
                                     </Button>
@@ -242,9 +242,9 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
 
                             {/* GitHub Connect banner — only shown when GitHub not yet linked */}
                             {!isCompleted && isAuthenticated && isLive && !profile?.hasGithubToken && (
-                                <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3 text-center space-y-2">
+                                <div className="rounded-lg border border-dashed border-border-2 bg-bg-3/30 p-3 text-center space-y-2">
                                     <p className="text-xs font-medium">Connect GitHub to verify PR authorship</p>
-                                    <p className="text-xs text-muted-foreground">We verify you're the PR author before submission</p>
+                                    <p className="text-xs text-fg-3">We verify you're the PR author before submission</p>
                                     <Button size="sm" variant="outline" onClick={() => triggerGitHubOAuth("read:user")}
                                         className="gap-1.5">
                                         <GitHubIcon size={13} /> Connect GitHub
@@ -259,7 +259,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                                         placeholder="https://github.com/owner/repo/pull/123"
                                         value={prUrl}
                                         onChange={e => { setPrUrl(e.target.value); setSubmitError(null) }}
-                                        className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                                        className="w-full px-3 py-2 text-sm rounded-lg border border-border-2 bg-bg-base focus:outline-none focus:ring-1 focus:ring-ring"
                                         required
                                     />
                                     {submitError && <p className="text-xs text-destructive">{submitError}</p>}
@@ -275,7 +275,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
                             <h2 className="text-sm font-semibold">Submissions</h2>
-                            <span className="text-xs text-muted-foreground">({submissions.length})</span>
+                            <span className="text-xs text-fg-3">({submissions.length})</span>
                             {isCreator && pendingCount > 0 && (
                                 <Badge variant="outline" className="text-xs text-yellow-400 border-yellow-500/30">
                                     {pendingCount} pending review
@@ -284,7 +284,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                         </div>
 
                         {submissions.length === 0 ? (
-                            <p className="text-xs text-muted-foreground py-3">No submissions yet. Be the first!</p>
+                            <p className="text-xs text-fg-3 py-3">No submissions yet. Be the first!</p>
                         ) : (
                             <div className="space-y-2">
                                 {submissions.map(sub => {
@@ -293,12 +293,12 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                                         : sub.user?.displayName ?? sub.agent?.agentname ?? "Unknown"
                                     return (
                                         <div key={sub.id}
-                                            className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2.5 text-sm">
+                                            className="flex items-center justify-between gap-3 rounded-lg border border-border-2 bg-bg-1 px-3 py-2.5 text-sm">
                                             <div className="flex items-center gap-2 min-w-0">
-                                                <User1Line size={13} className="text-muted-foreground shrink-0" />
-                                                <span className="text-xs text-muted-foreground font-mono truncate">{submitterName}</span>
+                                                <User1Line size={13} className="text-fg-3 shrink-0" />
+                                                <span className="text-xs text-fg-3 font-mono truncate">{submitterName}</span>
                                                 <a href={sub.prUrl} target="_blank" rel="noopener noreferrer"
-                                                    className="text-xs text-muted-foreground hover:text-foreground font-mono shrink-0">
+                                                    className="text-xs text-fg-3 hover:text-fg-1 font-mono shrink-0">
                                                     PR #{sub.prNumber}
                                                 </a>
                                             </div>
@@ -339,9 +339,9 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                 {/* ── Right: sticky sidebar ── */}
                 <div className="md:sticky md:top-24 h-fit space-y-3">
                     {/* Reward card */}
-                    <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                    <div className="rounded-lg border border-border-2 bg-bg-1 p-4 space-y-3">
                         <div>
-                            <p className="text-3xl font-semibold text-foreground">
+                            <p className="text-3xl font-semibold text-fg-1">
                                 {bounty.rewardType === "LLM_KEY"
                                     ? "LLM Key"
                                     : `$${Number(bounty.rewardAmount).toLocaleString()}`}
@@ -351,7 +351,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                             </Badge>
                         </div>
 
-                        <div className="border-t border-border pt-3 space-y-1.5 text-xs text-muted-foreground">
+                        <div className="border-t border-border-2 pt-3 space-y-1.5 text-xs text-fg-3">
                             <div className="flex justify-between">
                                 <span>Status</span>
                                 <Badge variant="outline" className={cn("text-xs capitalize", statusBadgeClass(bounty.status))}>
@@ -361,23 +361,23 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                             {bounty.deadline && (
                                 <div className="flex justify-between">
                                     <span>Deadline</span>
-                                    <span className="text-foreground">{formatDeadline(bounty.deadline)}</span>
+                                    <span className="text-fg-1">{formatDeadline(bounty.deadline)}</span>
                                 </div>
                             )}
                             <div className="flex justify-between">
                                 <span>Winners</span>
-                                <span className="text-foreground">{bounty.maxWinners}</span>
+                                <span className="text-fg-1">{bounty.maxWinners}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span>Submissions</span>
-                                <span className="text-foreground">{submissions.length}</span>
+                                <span className="text-fg-1">{submissions.length}</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Repo link card */}
                     <a href={repoUrl} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-2 rounded-lg border border-border bg-card p-3 text-xs text-muted-foreground hover:text-foreground transition-colors no-underline">
+                        className="flex items-center gap-2 rounded-lg border border-border-2 bg-bg-1 p-3 text-xs text-fg-3 hover:text-fg-1 transition-colors no-underline">
                         <GitHubIcon size={14} />
                         <span className="font-mono truncate">{bounty.repoOwner}/{bounty.repoName}</span>
                     </a>

@@ -28,18 +28,19 @@ const buttonVariants = cva(
         "warning-tonal": "bg-amber-500/12 text-amber-500 hover:bg-amber-500/20",
         "info-tonal": "bg-sky-500/12 text-sky-500 hover:bg-sky-500/20",
         /* Outline: border + bg shift on hover */
-        outline: "border border-input bg-background hover:bg-bg-3",
-        "default-outline": "border border-input bg-background hover:bg-bg-3",
+        outline: "border border-border-2 bg-transparent hover:bg-bg-2",
+        "default-outline":
+          "border border-border-2 bg-transparent hover:bg-bg-2",
         "primary-outline":
-          "border border-primary/30 bg-transparent text-primary hover:bg-primary/12",
+          "border border-primary/40 bg-transparent text-primary hover:bg-primary/10",
         "danger-outline":
-          "border border-destructive/30 bg-transparent text-destructive hover:bg-destructive/12",
+          "border border-destructive/40 bg-transparent text-destructive hover:bg-destructive/10",
         "success-outline":
-          "border border-emerald-600/30 bg-transparent text-emerald-600 hover:bg-emerald-600/12",
+          "border border-emerald-600/40 bg-transparent text-emerald-600 hover:bg-emerald-600/10",
         "warning-outline":
-          "border border-amber-500/30 bg-transparent text-amber-500 hover:bg-amber-500/12",
+          "border border-amber-500/40 bg-transparent text-amber-500 hover:bg-amber-500/10",
         "info-outline":
-          "border border-sky-500/30 bg-transparent text-sky-500 hover:bg-sky-500/12",
+          "border border-sky-500/40 bg-transparent text-sky-500 hover:bg-sky-500/10",
         /* Utility */
         secondary:
           "bg-foreground text-background hover:bg-fg-2" /* @deprecated use "default" */,

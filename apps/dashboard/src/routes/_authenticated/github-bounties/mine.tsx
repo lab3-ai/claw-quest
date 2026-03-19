@@ -92,9 +92,9 @@ function CreatedTab() {
 
     if (!bounties?.length) {
         return (
-            <div className="text-center py-12 rounded-lg border border-dashed border-border">
+            <div className="text-center py-12 rounded-lg border border-dashed border-border-2">
                 <p className="text-sm font-semibold mb-1">No bounties created yet</p>
-                <p className="text-xs text-muted-foreground mb-3">Post bounties to attract contributors to your repos</p>
+                <p className="text-xs text-fg-3 mb-3">Post bounties to attract contributors to your repos</p>
                 <Button asChild size="sm" variant="outline">
                     <Link to="/github-bounties/new">Post first bounty</Link>
                 </Button>
@@ -105,10 +105,10 @@ function CreatedTab() {
     return (
         <div className="space-y-2">
             {bounties.map(bounty => (
-                <div key={bounty.id} className="rounded-lg border border-border bg-card p-4">
+                <div key={bounty.id} className="rounded-lg border border-border-2 bg-bg-1 p-4">
                     <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0 flex-1">
-                            <p className="text-xs text-muted-foreground font-mono mb-1">
+                            <p className="text-xs text-fg-3 font-mono mb-1">
                                 {bounty.repoOwner}/{bounty.repoName}
                             </p>
                             <Link
@@ -122,14 +122,14 @@ function CreatedTab() {
                                 <Badge variant="outline" className={cn("text-xs", statusBadgeClass(bounty.status))}>
                                     {bounty.status}
                                 </Badge>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs text-fg-3">
                                     {rewardLabel(bounty.rewardType, bounty.rewardAmount)}
                                 </span>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs text-fg-3">
                                     {bounty._count.submissions} PR{bounty._count.submissions !== 1 ? "s" : ""}
                                 </span>
                                 {bounty.deadline && (
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-xs text-fg-3">
                                         Due {new Date(bounty.deadline).toLocaleDateString()}
                                     </span>
                                 )}
@@ -196,9 +196,9 @@ function SubmittedTab() {
 
     if (!submissions?.length) {
         return (
-            <div className="text-center py-12 rounded-lg border border-dashed border-border">
+            <div className="text-center py-12 rounded-lg border border-dashed border-border-2">
                 <p className="text-sm font-semibold mb-1">No PR submissions yet</p>
-                <p className="text-xs text-muted-foreground mb-3">Browse open bounties and submit your PRs</p>
+                <p className="text-xs text-fg-3 mb-3">Browse open bounties and submit your PRs</p>
                 <Button asChild size="sm" variant="outline">
                     <Link to="/github-bounties">Browse bounties</Link>
                 </Button>
@@ -209,10 +209,10 @@ function SubmittedTab() {
     return (
         <div className="space-y-2">
             {submissions.map(sub => (
-                <div key={sub.id} className="rounded-lg border border-border bg-card p-4">
+                <div key={sub.id} className="rounded-lg border border-border-2 bg-bg-1 p-4">
                     <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0 flex-1">
-                            <p className="text-xs text-muted-foreground font-mono mb-1">
+                            <p className="text-xs text-fg-3 font-mono mb-1">
                                 {sub.bounty.repoOwner}/{sub.bounty.repoName}
                             </p>
                             <Link
@@ -224,10 +224,10 @@ function SubmittedTab() {
                             </Link>
                             <div className="flex items-center gap-2 flex-wrap">
                                 <a href={sub.prUrl} target="_blank" rel="noopener noreferrer"
-                                    className="text-xs text-muted-foreground font-mono hover:underline">
+                                    className="text-xs text-fg-3 font-mono hover:underline">
                                     PR #{sub.prNumber}
                                 </a>
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs text-fg-3">
                                     {rewardLabel(sub.bounty.rewardType, sub.bounty.rewardAmount)}
                                 </span>
                             </div>
@@ -254,7 +254,7 @@ export function MyGitHubBounties() {
             <div className="flex items-start justify-between mb-6">
                 <div>
                     <h1 className="text-2xl font-semibold">My Bounties</h1>
-                    <p className="text-sm text-muted-foreground mt-1">Bounties you created and PRs you submitted</p>
+                    <p className="text-sm text-fg-3 mt-1">Bounties you created and PRs you submitted</p>
                 </div>
                 <Button asChild size="sm" className="gap-1.5">
                     <Link to="/github-bounties/new"><AddLine size={14} /> Post Bounty</Link>
@@ -262,7 +262,7 @@ export function MyGitHubBounties() {
             </div>
 
             {/* Tab switcher */}
-            <div className="flex gap-0 border-b border-border mb-5">
+            <div className="flex gap-0 border-b border-border-2 mb-5">
                 {(["created", "submitted"] as Tab[]).map(t => (
                     <button
                         key={t}
@@ -270,8 +270,8 @@ export function MyGitHubBounties() {
                         className={cn(
                             "px-4 py-2 text-sm capitalize transition-colors border-b-2 -mb-px",
                             tab === t
-                                ? "border-foreground text-foreground font-medium"
-                                : "border-transparent text-muted-foreground hover:text-foreground"
+                                ? "border-foreground text-fg-1 font-medium"
+                                : "border-transparent text-fg-3 hover:text-fg-1"
                         )}
                     >
                         {t}

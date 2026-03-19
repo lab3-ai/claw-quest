@@ -7,7 +7,7 @@ function PartialFundingBanner({ tokenSymbol, walletBalance }: { tokenSymbol: str
     const isEmpty = balanceNum === 0
 
     return (
-        <div className="text-xs text-fg-3 bg-muted/50 border border-border rounded p-2 px-3 mb-3">
+        <div className="text-xs text-fg-3 bg-bg-3/50 border border-border-2 rounded p-2 px-3 mb-3">
             {isEmpty
                 ? `Your wallet has 0 ${tokenSymbol}. Deposit more funds or invite a partner.`
                 : `You have ${walletBalance} ${tokenSymbol}. You can deposit a partial amount — invite partners for the rest.`
@@ -39,7 +39,7 @@ export function FundApprove({
     return (
         <div>
             {walletBalance !== undefined && (
-                <p className="text-xs text-muted-foreground mb-2">
+                <p className="text-xs text-fg-3 mb-2">
                     Balance: {walletBalance} {params.tokenSymbol}
                 </p>
             )}
@@ -55,7 +55,7 @@ export function FundApprove({
                 {approveLoading ? 'Approving...' : `Approve ${params.amount} ${params.tokenSymbol}`}
             </Button>
             {approveTxHash && !approveConfirmed && (
-                <p className="text-xs text-muted-foreground mt-3">Waiting for confirmation...</p>
+                <p className="text-xs text-fg-3 mt-3">Waiting for confirmation...</p>
             )}
         </div>
     )
@@ -84,7 +84,7 @@ export function FundDeposit({
     return (
         <div>
             {walletBalance !== undefined && (
-                <p className="text-xs text-muted-foreground mb-2">
+                <p className="text-xs text-fg-3 mb-2">
                     Balance: {walletBalance} {params.tokenSymbol}
                 </p>
             )}
@@ -100,7 +100,7 @@ export function FundDeposit({
                 {depositLoading ? 'Depositing...' : `Deposit ${params.amount} ${params.tokenSymbol}`}
             </Button>
             {depositTxHash && !depositConfirmed && (
-                <p className="text-xs text-muted-foreground mt-3">Waiting for confirmation...</p>
+                <p className="text-xs text-fg-3 mt-3">Waiting for confirmation...</p>
             )}
         </div>
     )
@@ -114,7 +114,7 @@ interface FundConfirmingProps {
 export function FundConfirming({ chainId, depositTxHash }: FundConfirmingProps) {
     return (
         <div className="flex flex-col items-center gap-3">
-            <div className="size-8 border-[3px] border-border border-t-accent rounded-full animate-spin" />
+            <div className="size-8 border-[3px] border-border-2 border-t-accent rounded-full animate-spin" />
             <p>Deposit confirmed on-chain! Waiting for backend to detect...</p>
             {depositTxHash && <TxLink chainId={chainId} txHash={depositTxHash} />}
         </div>

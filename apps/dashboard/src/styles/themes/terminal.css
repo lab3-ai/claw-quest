@@ -9,12 +9,12 @@
   --font-mono:
     "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas",
     monospace;
-  --radius-base: 0px;
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-button: 0px;
+  --radius-base: 2px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-button: 2px;
   --shadow-xs: none;
   --shadow-sm: none;
   --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.06);
@@ -29,15 +29,15 @@
   --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.4);
   --shadow-accent: 0 0 8px rgba(255, 87, 75, 0.25);
 
-  --bg-base: #020202;
+  --bg-base: #040404;
   --bg-1: #0a0a0a;
   --bg-2: #171717;
   --bg-3: #262626;
   --bg-4: #404040;
-  --fg-1: #f5f5f5;
+  --fg-1: #e5e5e5;
   --fg-2: #d4d4d4;
-  --fg-3: #737373;
-  --fg-4: #404040;
+  --fg-3: #a3a3a3;
+  --fg-4: #737373;
   --border-1: #171717;
   --border-2: #262626;
   --border-3: #404040;

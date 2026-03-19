@@ -34,7 +34,7 @@ export function WalletPortfolioPage({ address: initialAddress }: WalletPortfolio
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder="Enter wallet address (0x...)"
-                    className="flex-1 px-3 py-2 text-sm border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+                    className="flex-1 px-3 py-2 text-sm border border-border-2 bg-bg-base text-fg-1 placeholder:text-fg-3 focus:outline-none focus:ring-1 focus:ring-accent"
                 />
                 <Button type="submit" disabled={!inputValue.trim()}>
                     <Search2Line size={16} className="mr-1.5" />
@@ -48,7 +48,7 @@ export function WalletPortfolioPage({ address: initialAddress }: WalletPortfolio
                     <WalletPortfolio walletAddress={activeAddress} />
                 </div>
             ) : (
-                <div className="text-center py-16 text-muted-foreground">
+                <div className="text-center py-16 text-fg-3">
                     <p className="text-sm">Enter a wallet address to view its cross-chain portfolio</p>
                 </div>
             )}

@@ -17,16 +17,21 @@ interface TokenIconProps {
     className?: string
 }
 
-export function TokenIcon({ token, size = 16, className }: TokenIconProps) {
+export function TokenIcon({ token, size = 16, className, tint }: TokenIconProps & { tint?: "primary" | "neutral" }) {
     const slug = TOKEN_SLUG_MAP[token.toUpperCase()]
     if (!slug) return null
+    const tintClass = tint === "primary"
+        ? "brightness-0 [filter:brightness(0)_invert(1)] opacity-40"
+        : tint === "neutral"
+            ? "grayscale opacity-60"
+            : ""
     return (
         <img
             src={`/tokens/${slug}.svg`}
             alt={token}
             width={size}
             height={size}
-            className={className}
+            className={`${tintClass} ${className ?? ""}`}
             loading="lazy"
         />
     )

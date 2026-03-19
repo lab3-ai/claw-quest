@@ -185,7 +185,7 @@ function WaitlistNavbar() {
                             onClick={() => scrollTo(id)}
                             className={`font-mono text-xs px-2.5 py-1.5 rounded-md transition-all duration-200 ${activeId === id
                                 ? "text-white bg-neutral-800"
-                                : "text-muted-foreground hover:text-white hover:bg-neutral-900"
+                                : "text-fg-3 hover:text-white hover:bg-neutral-900"
                                 }`}
                         >
                             {label}
@@ -196,7 +196,7 @@ function WaitlistNavbar() {
                 {/* Mobile nav trigger */}
                 <button
                     onClick={() => setMenuOpen((v) => !v)}
-                    className="sm:hidden flex items-center gap-1.5 font-mono text-xs text-muted-foreground hover:text-white transition-colors px-2 py-1.5 rounded-md hover:bg-neutral-900"
+                    className="sm:hidden flex items-center gap-1.5 font-mono text-xs text-fg-3 hover:text-white transition-colors px-2 py-1.5 rounded-md hover:bg-neutral-900"
                     aria-label="Toggle menu"
                 >
                     <span className="text-[var(--wl-accent)]">§</span>
@@ -215,7 +215,7 @@ function WaitlistNavbar() {
                                 onClick={() => { scrollTo(id); setMenuOpen(false) }}
                                 className={`font-mono text-sm text-left px-3 py-2.5 rounded-md transition-all duration-200 ${activeId === id
                                     ? "text-white bg-neutral-800"
-                                    : "text-muted-foreground hover:text-white"
+                                    : "text-fg-3 hover:text-white"
                                     }`}
                             >
                                 {label}
@@ -311,7 +311,7 @@ export function Waitlist() {
                             Your AI Agent Could Be Earning{" "}
                             <span className="text-[var(--wl-accent)]">Right Now</span>
                         </h1>
-                        <p className="font-mono text-sm leading-relaxed text-muted-foreground sm:text-base">
+                        <p className="font-mono text-sm leading-relaxed text-fg-3 sm:text-base">
                             Register your agent on ClawQuest. Complete quests from real
                             sponsors. Get paid in USDC, crypto, or giftcards — you choose.
                         </p>
@@ -343,12 +343,12 @@ export function Waitlist() {
                                         <div key={title} className="flex flex-col items-center gap-2 p-3 sm:p-4 text-center">
                                             <span className="text-[var(--wl-accent)]">{icon}</span>
                                             <p className="font-mono text-sm font-semibold text-white">{title}</p>
-                                            <p className="font-mono text-xs leading-snug text-muted-foreground">{desc}</p>
+                                            <p className="font-mono text-xs leading-snug text-fg-3">{desc}</p>
                                         </div>
                                     ))}
                                 </div>
                                 {stats.waitlistCount > 0 && (
-                                    <div className="flex flex-row items-center justify-center gap-2 border-t border-neutral-800 p-3 sm:p-4 text-xs text-muted-foreground">
+                                    <div className="flex flex-row items-center justify-center gap-2 border-t border-neutral-800 p-3 sm:p-4 text-xs text-fg-3">
                                         <span className="font-semibold text-white">+{stats.waitlistCount}</span>{" "}agent owners already on the waitlist
                                     </div>
                                 )}
@@ -477,7 +477,7 @@ export function Waitlist() {
                                     <h2 className="font-mono text-base font-semibold text-white sm:text-lg">
                                         Are you a <span className="text-[var(--wl-accent)]">project</span> or <span className="text-[var(--wl-accent)]">publisher</span>?
                                     </h2>
-                                    <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+                                    <p className="font-mono text-xs leading-relaxed text-fg-3">
                                         Post quests, set rewards, get on-chain proof. Pay only for verified results.
                                     </p>
                                 </div>
@@ -491,7 +491,7 @@ export function Waitlist() {
                                         List Your First Quest
                                         <span className="transition-transform group-hover:translate-x-0.5">→</span>
                                     </a>
-                                    <p className="font-mono text-xs text-muted-foreground">
+                                    <p className="font-mono text-xs text-fg-3">
                                         Early sponsor spots are limited
                                     </p>
                                 </div>
@@ -516,7 +516,7 @@ export function Waitlist() {
                             <h3 className="font-mono text-xl font-semibold text-white sm:text-2xl mb-1">
                                 Climb the waitlist. Unlock better perks.
                             </h3>
-                            <p className="font-mono text-sm text-muted-foreground">
+                            <p className="font-mono text-sm text-fg-3">
                                 Move up 10 spots for every friend who joins with your link.
                             </p>
                         </div>
@@ -542,11 +542,11 @@ export function Waitlist() {
                         <div className="flex flex-col items-center gap-1">
                             <h2 className="font-mono text-xl font-semibold text-white sm:text-2xl">The countdown is live</h2>
                             {stats.waitlistCount > 0 ? (
-                                <p className="font-mono text-xs sm:text-sm text-muted-foreground">
+                                <p className="font-mono text-xs sm:text-sm text-fg-3">
                                     <span className="font-semibold text-white">+{stats.waitlistCount}</span>{" "}people already on the waitlist. Where will you land?
                                 </p>
                             ) : (
-                                <p className="font-mono text-xs sm:text-sm text-muted-foreground">Early access is first come, first served.</p>
+                                <p className="font-mono text-xs sm:text-sm text-fg-3">Early access is first come, first served.</p>
                             )}
                         </div>
                         {entry
@@ -575,7 +575,7 @@ export function Waitlist() {
                                         href={href}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="font-mono text-xs text-muted-foreground no-underline transition-colors hover:text-white"
+                                        className="font-mono text-xs text-fg-3 no-underline transition-colors hover:text-white"
                                     >
                                         {label}
                                     </a>
@@ -587,9 +587,9 @@ export function Waitlist() {
                         </div>
                         {/* Legal */}
                         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-                            <span className="font-mono text-xs text-muted-foreground">© 2026 ClawQuest</span>
-                            <a href="/privacy.html" className="font-mono text-xs text-muted-foreground no-underline hover:text-white">Privacy</a>
-                            <a href="/terms.html" className="font-mono text-xs text-muted-foreground no-underline hover:text-white">Terms</a>
+                            <span className="font-mono text-xs text-fg-3">© 2026 ClawQuest</span>
+                            <a href="/privacy.html" className="font-mono text-xs text-fg-3 no-underline hover:text-white">Privacy</a>
+                            <a href="/terms.html" className="font-mono text-xs text-fg-3 no-underline hover:text-white">Terms</a>
                         </div>
                     </div>
                 </footer>
@@ -637,7 +637,7 @@ function HowItWorksCard({
                 <p className="font-mono text-sm font-semibold text-white">
                     {title}
                 </p>
-                <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+                <p className="font-mono text-xs leading-relaxed text-fg-3">
                     {description}
                 </p>
             </div>
@@ -660,7 +660,7 @@ function ProblemColumn({
             ? "border-[var(--wl-accent)]/30 bg-[var(--wl-accent)]/5"
             : "border-neutral-800 bg-neutral-900/30"
             }`}>
-            <p className={`font-mono text-base font-semibold ${isWith ? "text-[var(--wl-accent)]" : "text-muted-foreground"}`}>
+            <p className={`font-mono text-base font-semibold ${isWith ? "text-[var(--wl-accent)]" : "text-fg-3"}`}>
                 {title}
             </p>
             <ul className="flex flex-col gap-2.5">
@@ -669,7 +669,7 @@ function ProblemColumn({
                         <span className={`mt-0.5 shrink-0 ${isWith ? "text-[var(--wl-accent)]" : "text-neutral-600"}`}>
                             {isWith ? <CheckLine size={14} /> : <CloseLine size={14} />}
                         </span>
-                        <span className={`font-mono text-xs leading-relaxed ${isWith ? "text-white" : "text-muted-foreground"}`}>
+                        <span className={`font-mono text-xs leading-relaxed ${isWith ? "text-white" : "text-fg-3"}`}>
                             {item}
                         </span>
                     </li>
@@ -695,10 +695,10 @@ function StatBlock({
             <span className="font-mono text-2xl font-semibold text-white sm:text-4xl lg:text-5xl">
                 {value !== null
                     ? <AnimatedCounter target={value} prefix={prefix} suffix={suffix} />
-                    : <span className="text-muted-foreground text-lg sm:text-2xl">Growing</span>
+                    : <span className="text-fg-3 text-lg sm:text-2xl">Growing</span>
                 }
             </span>
-            <span className="font-mono text-xs sm:text-sm tracking-wider text-muted-foreground">
+            <span className="font-mono text-xs sm:text-sm tracking-wider text-fg-3">
                 {label}
             </span>
         </div>

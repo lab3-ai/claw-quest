@@ -46,10 +46,10 @@ export function QuestersPopup({ questId, questTitle, onClose }: QuestersPopupPro
     return (
         <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="max-w-2xl p-0 gap-0">
-                <DialogHeader className="px-5 py-3.5 border-b border-border">
+                <DialogHeader className="px-5 py-3.5 border-b border-border-2">
                     <DialogTitle className="text-sm font-semibold">{questTitle}</DialogTitle>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                        {data && <><strong className="text-foreground">{data.totalQuesters}</strong> Questers</>}
+                    <div className="flex items-center gap-2 mt-1 text-xs text-fg-3">
+                        {data && <><strong className="text-fg-1">{data.totalQuesters}</strong> Questers</>}
                         {data && <> · <QuestTypeBadge type={data.questType} /></>}
                         {data && <> · sorted by start time</>}
                     </div>
@@ -57,18 +57,18 @@ export function QuestersPopup({ questId, questTitle, onClose }: QuestersPopupPro
 
                 <div className="overflow-y-auto max-h-[400px]">
                     {isLoading && (
-                        <div className="py-8 text-center text-muted-foreground text-sm">Loading…</div>
+                        <div className="py-8 text-center text-fg-3 text-sm">Loading…</div>
                     )}
                     {data && (
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr>
-                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-1 whitespace-nowrap w-9 text-center">#</th>
-                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-1 whitespace-nowrap min-w-[120px]">Human</th>
-                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-1 whitespace-nowrap min-w-[120px]">Agent</th>
-                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-1 whitespace-nowrap">Started</th>
-                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-1 whitespace-nowrap">Progress</th>
-                                    <th className="text-left px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-muted sticky top-0 z-1 whitespace-nowrap text-right">Payout</th>
+                                    <th className="text-left px-3 py-2 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2 bg-bg-3 sticky top-0 z-1 whitespace-nowrap w-9 text-center">#</th>
+                                    <th className="text-left px-3 py-2 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2 bg-bg-3 sticky top-0 z-1 whitespace-nowrap min-w-[120px]">Human</th>
+                                    <th className="text-left px-3 py-2 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2 bg-bg-3 sticky top-0 z-1 whitespace-nowrap min-w-[120px]">Agent</th>
+                                    <th className="text-left px-3 py-2 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2 bg-bg-3 sticky top-0 z-1 whitespace-nowrap">Started</th>
+                                    <th className="text-left px-3 py-2 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2 bg-bg-3 sticky top-0 z-1 whitespace-nowrap">Progress</th>
+                                    <th className="text-left px-3 py-2 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2 bg-bg-3 sticky top-0 z-1 whitespace-nowrap text-right">Payout</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -76,29 +76,29 @@ export function QuestersPopup({ questId, questTitle, onClose }: QuestersPopupPro
                                     const done = p.status === "completed" || p.status === "submitted"
                                     return (
                                         <tr key={p.id} className="hover:bg-bg-2">
-                                            <td className={cn("px-3 py-2 text-xs border-b border-border align-middle w-9 text-center font-semibold text-muted-foreground", rankColorClass(p.rank))}>
+                                            <td className={cn("px-3 py-2 text-xs border-b border-border-2 align-middle w-9 text-center font-semibold text-fg-3", rankColorClass(p.rank))}>
                                                 {p.rank}
                                             </td>
-                                            <td className="px-3 py-2 text-xs border-b border-border align-middle min-w-[120px]">
+                                            <td className="px-3 py-2 text-xs border-b border-border-2 align-middle min-w-[120px]">
                                                 <img
                                                     src={getDiceBearUrl(p.agentName || p.humanHandle, 64)}
                                                     alt={p.humanHandle}
                                                     className="w-8 h-8 rounded-full inline-block align-middle mr-1.5"
                                                 />
-                                                <span className="text-foreground font-medium">@{p.humanHandle}</span>
+                                                <span className="text-fg-1 font-medium">@{p.humanHandle}</span>
                                             </td>
-                                            <td className="px-3 py-2 text-xs border-b border-border align-middle min-w-[120px]">
+                                            <td className="px-3 py-2 text-xs border-b border-border-2 align-middle min-w-[120px]">
                                                 <span className="font-mono text-xs font-semibold text-info">{p.agentName}</span>
                                             </td>
-                                            <td className="px-3 py-2 text-xs border-b border-border align-middle whitespace-nowrap">
+                                            <td className="px-3 py-2 text-xs border-b border-border-2 align-middle whitespace-nowrap">
                                                 {relativeTime(p.joinedAt)}
                                             </td>
-                                            <td className="px-3 py-2 text-xs border-b border-border align-middle whitespace-nowrap">
-                                                <span className={cn("font-mono text-xs font-semibold", done ? "text-accent" : "text-foreground")}>
+                                            <td className="px-3 py-2 text-xs border-b border-border-2 align-middle whitespace-nowrap">
+                                                <span className={cn("font-mono text-xs font-semibold", done ? "text-accent" : "text-fg-1")}>
                                                     {p.tasksCompleted}/{p.tasksTotal}{done ? " ✓" : ""}
                                                 </span>
                                             </td>
-                                            <td className="px-3 py-2 text-xs border-b border-border align-middle whitespace-nowrap text-right">
+                                            <td className="px-3 py-2 text-xs border-b border-border-2 align-middle whitespace-nowrap text-right">
                                                 {p.payoutStatus === "paid" && (
                                                     <span className="font-semibold text-accent text-xs">{p.payoutAmount?.toFixed(2)} {data.questRewardType}</span>
                                                 )}
@@ -106,7 +106,7 @@ export function QuestersPopup({ questId, questTitle, onClose }: QuestersPopupPro
                                                     <span className="font-semibold text-warning text-xs">Pending</span>
                                                 )}
                                                 {p.payoutStatus === "na" && (
-                                                    <span className="text-muted-foreground text-xs">—</span>
+                                                    <span className="text-fg-3 text-xs">—</span>
                                                 )}
                                             </td>
                                         </tr>
@@ -117,7 +117,7 @@ export function QuestersPopup({ questId, questTitle, onClose }: QuestersPopupPro
                     )}
                 </div>
 
-                <DialogFooter className="flex justify-center items-center px-5 py-2.5 border-t border-border">
+                <DialogFooter className="flex justify-center items-center px-5 py-2.5 border-t border-border-2">
                     <Link
                         to="/quests/$questId/questers"
                         params={{ questId }}

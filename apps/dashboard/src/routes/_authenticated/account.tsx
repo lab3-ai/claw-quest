@@ -416,14 +416,14 @@ export function Account() {
             <PageTitle title="Account" className="mb-4" />
 
             {/* Profile */}
-            <div className="border border-border rounded mb-5 bg-background overflow-hidden">
-                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-2 text-foreground">Profile</div>
+            <div className="border border-border-2 rounded mb-5 bg-bg-base overflow-hidden">
+                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border-2 bg-bg-2 text-fg-1">Profile</div>
                 <div className="p-4">
                     {profileLoading ? (
                         <>
                             <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5"><span className="skeleton" style={{ width: "60%", height: 16 }} /></div>
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border-2 pt-2 mt-0.5"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border-2 pt-2 mt-0.5"><span className="skeleton" style={{ width: "60%", height: 16 }} /></div>
                         </>
                     ) : profileError ? (
                         <div className="text-xs text-destructive py-3 flex items-center gap-2">
@@ -433,8 +433,8 @@ export function Account() {
                     ) : (
                         <>
                             <div className="flex items-baseline py-1.5 text-sm justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                                <span className="sm:w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Display Name</span>
-                                <span className="text-foreground w-full sm:w-auto">
+                                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-xs">Display Name</span>
+                                <span className="text-fg-1 w-full sm:w-auto">
                                     {editingField === "displayName" ? (
                                         <span className="flex gap-1.5 items-center flex-wrap">
                                             <input
@@ -443,7 +443,7 @@ export function Account() {
                                                 onChange={e => setEditValue(e.target.value)}
                                                 maxLength={50}
                                                 placeholder="Your display name"
-                                                className="text-base px-2 py-0.5 w-full sm:w-[180px] border border-input rounded bg-background text-foreground outline-hidden focus:border-accent"
+                                                className="text-base px-2 py-0.5 w-full sm:w-[180px] border border-border-2 rounded bg-bg-base text-fg-1 outline-hidden focus:border-accent"
                                                 autoFocus
                                                 onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); if (e.key === "Escape") setEditingField(null) }}
                                             />
@@ -454,15 +454,15 @@ export function Account() {
                                         </span>
                                     ) : (
                                         <span className="flex gap-2 items-center">
-                                            {profile?.displayName || <span className="text-muted-foreground italic">Not set</span>}
+                                            {profile?.displayName || <span className="text-fg-3 italic">Not set</span>}
                                             <Button variant="outline" size="sm" className="text-xs px-2 py-0.5" onClick={() => startEdit("displayName")}>Edit</Button>
                                         </span>
                                     )}
                                 </span>
                             </div>
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                                <span className="sm:w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Username</span>
-                                <span className="text-foreground w-full sm:w-auto">
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border-2 pt-2 mt-0.5 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
+                                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-xs">Username</span>
+                                <span className="text-fg-1 w-full sm:w-auto">
                                     {editingField === "username" ? (
                                         <span className="flex gap-1.5 items-center flex-wrap max-sm:justify-start sm:justify-end">
                                             <input
@@ -471,7 +471,7 @@ export function Account() {
                                                 onChange={e => setEditValue(e.target.value.toLowerCase())}
                                                 maxLength={20}
                                                 placeholder="username"
-                                                className="text-base px-2 py-0.5 w-full sm:w-[180px] border border-input rounded bg-background text-foreground outline-hidden focus:border-accent"
+                                                className="text-base px-2 py-0.5 w-full sm:w-[180px] border border-border-2 rounded bg-bg-base text-fg-1 outline-hidden focus:border-accent"
                                                 autoFocus
                                                 onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); if (e.key === "Escape") setEditingField(null) }}
                                             />
@@ -479,28 +479,28 @@ export function Account() {
                                                 {updateProfile.isPending ? "…" : "Save"}
                                             </Button>
                                             <Button variant="secondary" size="sm" onClick={() => setEditingField(null)}>Cancel</Button>
-                                            <span className="text-xs text-muted-foreground w-full text-right">3-20 chars, lowercase letters, numbers, hyphens</span>
+                                            <span className="text-xs text-fg-3 w-full text-right">3-20 chars, lowercase letters, numbers, hyphens</span>
                                         </span>
                                     ) : (
                                         <span className="flex gap-2 items-center">
-                                            {profile?.username ? `@${profile.username}` : <span className="text-muted-foreground italic">Not set</span>}
+                                            {profile?.username ? `@${profile.username}` : <span className="text-fg-3 italic">Not set</span>}
                                             <Button variant="outline" size="sm" className="text-xs px-2 py-0.5" onClick={() => startEdit("username")}>Edit</Button>
                                         </span>
                                     )}
                                 </span>
                             </div>
                             {editError && <div className="text-xs text-destructive py-3 flex items-center gap-2 mt-1">{editError}</div>}
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                                <span className="sm:w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Email</span>
-                                <span className="text-foreground">
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border-2 pt-2 mt-0.5 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
+                                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-xs">Email</span>
+                                <span className="text-fg-1">
                                     {profile?.email?.match(/^tg_\d+@tg\.clawquest\.ai$/)
-                                        ? <span className="text-muted-foreground italic">No email linked</span>
+                                        ? <span className="text-fg-3 italic">No email linked</span>
                                         : (profile?.email ?? supabaseUser?.email ?? "—")}
                                 </span>
                             </div>
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border pt-2 mt-0.5 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                                <span className="sm:w-[120px] shrink-0 font-semibold text-muted-foreground text-xs">Member since</span>
-                                <span className="text-foreground">
+                            <div className="flex items-baseline py-1.5 text-sm border-t border-border-2 pt-2 mt-0.5 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
+                                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-xs">Member since</span>
+                                <span className="text-fg-1">
                                     {profile?.createdAt ? formatDate(profile.createdAt) : "—"}
                                 </span>
                             </div>
@@ -510,8 +510,8 @@ export function Account() {
             </div>
 
             {/* Connected Accounts */}
-            <div className="border border-border rounded mb-5 bg-background overflow-hidden">
-                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-2 text-foreground">Connected Accounts</div>
+            <div className="border border-border-2 rounded mb-5 bg-bg-base overflow-hidden">
+                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border-2 bg-bg-2 text-fg-1">Connected Accounts</div>
                 <div className="p-4">
                     {LINK_PROVIDERS.map((p, idx) => {
                         const identity = identities.find(i => i.provider === p.key)
@@ -527,7 +527,7 @@ export function Account() {
                         else if (identity?.identity_data?.user_name) detail = identity.identity_data.user_name as string
 
                         return (
-                            <div key={p.key} className={`flex items-center gap-2.5 py-2 text-sm min-w-0${idx > 0 ? " border-t border-border" : ""}`}>
+                            <div key={p.key} className={`flex items-center gap-2.5 py-2 text-sm min-w-0${idx > 0 ? " border-t border-border-2" : ""}`}>
                                 <span className="w-5 flex items-center justify-center shrink-0">
                                     <PlatformIcon name={p.key as "google" | "telegram" | "x" | "discord"} size={16} />
                                 </span>
@@ -538,7 +538,7 @@ export function Account() {
                                         <>
                                             <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
                                                 <span className="text-success text-xs font-semibold">Connected</span>
-                                                <span className="text-muted-foreground text-xs">
+                                                <span className="text-fg-3 text-xs">
                                                     {profile?.telegramUsername ? `@${profile.telegramUsername}` : ""}
                                                 </span>
                                             </div>
@@ -569,7 +569,7 @@ export function Account() {
                                     <>
                                         <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
                                             <span className="text-success text-xs font-semibold">Connected</span>
-                                            {detail && <span className="text-muted-foreground text-xs">{detail}</span>}
+                                            {detail && <span className="text-fg-3 text-xs">{detail}</span>}
                                             {/* X read access button: show when X linked but no read token yet */}
                                             {p.key === "x" && profile?.xId && !profile?.hasXToken && (
                                                 <Button
@@ -616,12 +616,12 @@ export function Account() {
                         const info = PROVIDER_LABELS[identity.provider] ?? { label: identity.provider, icon: "?" }
                         const detail = (identity.identity_data?.email as string) || (identity.identity_data?.user_name as string) || ""
                         return (
-                            <div key={identity.id} className="flex items-center gap-2.5 py-2 text-sm min-w-0 opacity-70 border-t border-border">
+                            <div key={identity.id} className="flex items-center gap-2.5 py-2 text-sm min-w-0 opacity-70 border-t border-border-2">
                                 <span className="w-5 text-center text-sm shrink-0">{info.icon}</span>
                                 <span className="font-semibold min-w-[90px]">{info.label}</span>
                                 <div className="flex items-center gap-2.5 flex-1 min-w-0">
                                     <span className="text-success text-xs font-semibold">Connected</span>
-                                    {detail && <span className="text-muted-foreground text-xs">{detail}</span>}
+                                    {detail && <span className="text-fg-3 text-xs">{detail}</span>}
                                 </div>
                                 <Button
                                     variant="outline"
@@ -643,8 +643,8 @@ export function Account() {
             </div>
 
             {/* GitHub for Bounties */}
-            <div className="border border-border rounded mb-5 bg-background">
-                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-muted text-foreground">GitHub for Bounties</div>
+            <div className="border border-border-2 rounded mb-5 bg-bg-base">
+                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border-2 bg-bg-3 text-fg-1">GitHub for Bounties</div>
                 <div className="p-4">
                     <div className="flex items-center gap-2.5 text-sm">
                         <span className="w-5 text-center text-sm shrink-0 font-mono">GH</span>
@@ -653,7 +653,7 @@ export function Account() {
                             <>
                                 <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
                                     <span className="text-success text-xs font-semibold">Connected</span>
-                                    <span className="text-muted-foreground text-xs font-mono">@{profile.githubHandle}</span>
+                                    <span className="text-fg-3 text-xs font-mono">@{profile.githubHandle}</span>
                                 </div>
                             </>
                         ) : (
@@ -675,15 +675,15 @@ export function Account() {
                             </>
                         )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className="text-xs text-fg-3 mt-2">
                         Required to submit PRs for GitHub bounties.
                     </p>
                 </div>
             </div>
 
             {/* Wallets */}
-            <div className="border border-border rounded mb-5 bg-background overflow-hidden">
-                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-2 text-foreground">Wallets</div>
+            <div className="border border-border-2 rounded mb-5 bg-bg-base overflow-hidden">
+                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border-2 bg-bg-2 text-fg-1">Wallets</div>
                 <div className="p-4">
                     {walletsLoading ? (
                         <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
@@ -693,13 +693,13 @@ export function Account() {
                             <Button variant="secondary" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ["wallets"] })}>Retry</Button>
                         </div>
                     ) : wallets.length === 0 ? (
-                        <div className="text-xs text-muted-foreground py-2">No wallets linked yet.</div>
+                        <div className="text-xs text-fg-3 py-2">No wallets linked yet.</div>
                     ) : (
                         wallets.map((w, idx) => (
-                            <div key={w.id} className={`flex items-center gap-2.5 py-2 text-sm${idx > 0 ? " border-t border-border" : ""}`}>
-                                <span className="font-mono text-xs text-foreground">{shortenAddress(w.address)}</span>
+                            <div key={w.id} className={`flex items-center gap-2.5 py-2 text-sm${idx > 0 ? " border-t border-border-2" : ""}`}>
+                                <span className="font-mono text-xs text-fg-1">{shortenAddress(w.address)}</span>
                                 {w.chainId && (
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-xs text-fg-3">
                                         {CHAIN_NAMES[w.chainId] ?? `Chain ${w.chainId}`}
                                     </span>
                                 )}
@@ -727,7 +727,7 @@ export function Account() {
                             </div>
                         ))
                     )}
-                    <form className="flex gap-2 items-center mt-3 pt-3 border-t border-border" onSubmit={handleLinkWallet}>
+                    <form className="flex gap-2 items-center mt-3 pt-3 border-t border-border-2" onSubmit={handleLinkWallet}>
                         <label htmlFor="wallet-address" className="sr-only">Wallet address</label>
                         <Input
                             id="wallet-address"
@@ -797,8 +797,8 @@ function FiatPayoutSection({ token }: { token: string | undefined }) {
     })
 
     return (
-        <div className="border border-border rounded mb-5 bg-background overflow-hidden">
-            <div className="text-sm font-semibold px-4 py-2.5 border-b border-border bg-bg-2 text-foreground">Fiat Payout</div>
+        <div className="border border-border-2 rounded mb-5 bg-bg-base overflow-hidden">
+            <div className="text-sm font-semibold px-4 py-2.5 border-b border-border-2 bg-bg-2 text-fg-1">Fiat Payout</div>
             <div className="p-4">
                 {isLoading ? (
                     <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
@@ -811,7 +811,7 @@ function FiatPayoutSection({ token }: { token: string | undefined }) {
                                     : status?.hasAccount ? "bg-warning"
                                         : "bg-border-heavy"
                             )} />
-                            <span className="text-foreground text-xs">
+                            <span className="text-fg-1 text-xs">
                                 {status?.isOnboarded
                                     ? "Ready to receive payouts"
                                     : status?.hasAccount

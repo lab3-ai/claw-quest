@@ -199,12 +199,12 @@ export function Dashboard() {
                 />
 
                 {/* Main tabs */}
-                <div className="flex items-center border-b border-border overflow-x-auto scrollbar-hide">
+                <div className="flex items-center border-b border-border-2overflow-x-auto scrollbar-hide">
                     <div className="flex">
                         <button
                             className={cn(
-                                "px-3.5 max-sm:px-3 py-2.5 max-sm:py-3 text-sm max-sm:text-xs font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground whitespace-nowrap max-sm:min-h-[44px]",
-                                mainTab === "my-quest" && "text-foreground font-semibold border-b-(--tone-quest)"
+                                "px-3.5 max-sm:px-3 py-2.5 max-sm:py-3 text-sm max-sm:text-xs font-medium text-fg-3 cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-fg-1 whitespace-nowrap max-sm:min-h-[44px]",
+                                mainTab === "my-quest" && "text-fg-1 font-semibold border-b-(--tone-quest)"
                             )}
                             onClick={() => setMainTab("my-quest")}
                         >
@@ -212,8 +212,8 @@ export function Dashboard() {
                         </button>
                         <button
                             className={cn(
-                                "px-3.5 max-sm:px-3 py-2.5 max-sm:py-3 text-sm max-sm:text-xs font-medium text-muted-foreground cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-foreground whitespace-nowrap max-sm:min-h-[44px]",
-                                mainTab === "accepted" && "text-foreground font-semibold border-b-(--tone-quest)"
+                                "px-3.5 max-sm:px-3 py-2.5 max-sm:py-3 text-sm max-sm:text-xs font-medium text-fg-3 cursor-pointer border-b-2 border-transparent -mb-px bg-transparent flex items-center gap-1.5 hover:text-fg-1 whitespace-nowrap max-sm:min-h-[44px]",
+                                mainTab === "accepted" && "text-fg-1 font-semibold border-b-(--tone-quest)"
                             )}
                             onClick={() => setMainTab("accepted")}
                         >
@@ -226,15 +226,15 @@ export function Dashboard() {
                 {mainTab === "my-quest" && (
                     <div>
                         {/* Filter + view toggle */}
-                        <div className="flex items-center justify-between py-2.5 border-b border-border max-sm:flex-col max-sm:items-stretch">
-                            <div className="flex items-center text-xs text-muted-foreground px-1 max-sm:flex-wrap">
+                        <div className="flex items-center justify-between py-2.5 border-b border-border-2max-sm:flex-col max-sm:items-stretch">
+                            <div className="flex items-center text-xs text-fg-3 px-1 max-sm:flex-wrap">
                                 {(["all", "draft", "live", "scheduled", "completed"] as QuestFilter[]).map((f, i, arr) => (
                                     <Fragment key={f}>
                                         {questCounts[f] > 0 && (
                                             <button
                                                 className={cn(
-                                                    "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-muted-foreground whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-foreground",
-                                                    questFilter === f && "text-foreground font-semibold"
+                                                    "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-fg-3 whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-fg-1",
+                                                    questFilter === f && "text-fg-1 font-semibold"
                                                 )}
                                                 onClick={() => setQuestFilter(f)}
                                             >
@@ -245,10 +245,10 @@ export function Dashboard() {
                                     </Fragment>
                                 ))}
                             </div>
-                            <div className="inline-flex border border-input rounded overflow-hidden ml-3 shrink-0">
+                            <div className="inline-flex border border-border-2 rounded overflow-hidden ml-3 shrink-0">
                                 <button
                                     className={cn(
-                                        "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none border-r border-border bg-background text-muted-foreground hover:bg-bg-2 hover:text-foreground",
+                                        "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none border-r border-border-2bg-bg-base text-fg-3 hover:bg-bg-2 hover:text-fg-1",
                                         questView === "card" && "bg-accent-light text-accent-foreground"
                                     )}
                                     onClick={() => setQuestView("card")}
@@ -263,7 +263,7 @@ export function Dashboard() {
                                 </button>
                                 <button
                                     className={cn(
-                                        "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none bg-background text-muted-foreground hover:bg-bg-2 hover:text-foreground",
+                                        "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none bg-bg-base text-fg-3 hover:bg-bg-2 hover:text-fg-1",
                                         questView === "list" && "bg-accent-light text-accent-foreground"
                                     )}
                                     onClick={() => setQuestView("list")}
@@ -281,7 +281,7 @@ export function Dashboard() {
                         {questsLoading && (
                             <div>
                                 {[1, 2, 3].map(i => (
-                                    <div key={i} className="flex gap-4 py-3.5 border-b border-border items-start md:flex-row flex-col md:gap-4 gap-2">
+                                    <div key={i} className="flex gap-4 py-3.5 border-b border-border-2items-start md:flex-row flex-col md:gap-4 gap-2">
                                         <div className="flex flex-col items-end gap-2 min-w-[120px] text-right pt-0.5 shrink-0">
                                             <div className="skeleton" style={{ width: 60, height: 32 }} />
                                             <div className="skeleton" style={{ width: 50, height: 14 }} />
@@ -300,7 +300,7 @@ export function Dashboard() {
                         )}
 
                         {!questsLoading && filteredQuests.length === 0 && (
-                            <div className="p-10 text-center text-muted-foreground">
+                            <div className="p-10 text-center text-fg-3">
                                 No quests found.{" "}
                                 <Link to="/quests/new">Create your first quest →</Link>
                             </div>
@@ -320,7 +320,7 @@ export function Dashboard() {
                                         <li
                                             key={quest.id}
                                             className={cn(
-                                                "flex gap-4 py-3.5 border-b border-border last:border-b-0 items-start transition-colors hover:bg-(--sidebar-bg) md:flex-row flex-col md:gap-4 gap-2",
+                                                "flex gap-4 py-3.5 border-b border-border-2last:border-b-0 items-start transition-colors hover:bg-(--sidebar-bg) md:flex-row flex-col md:gap-4 gap-2",
                                                 isDraft && "border-dashed opacity-85 hover:opacity-100"
                                             )}
                                             data-status={quest.status}
@@ -330,7 +330,7 @@ export function Dashboard() {
                                                     <span className="text-md font-semibold text-(--green) leading-tight font-mono">
                                                         {quest.rewardAmount.toLocaleString()} {formatRewardLabel(quest.rewardType)}
                                                     </span>
-                                                    <span className="text-xs text-muted-foreground">total reward</span>
+                                                    <span className="text-xs text-fg-3">total reward</span>
                                                 </div>
                                                 {quest.questers > 0 && quest.questerDetails && (
                                                     <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
@@ -351,20 +351,20 @@ export function Dashboard() {
                                                                     </div>
                                                                 </div>
                                                             ))}
-                                                            <span className="ml-1 text-xs text-muted-foreground whitespace-nowrap group-hover:text-primary">
+                                                            <span className="ml-1 text-xs text-fg-3 whitespace-nowrap group-hover:text-primary">
                                                                 {quest.questers > 5
-                                                                    ? <><strong className="text-foreground font-semibold group-hover:text-primary">+{quest.questers - 5}</strong> more</>
-                                                                    : <strong className="text-foreground font-semibold group-hover:text-primary">{quest.questers} questers</strong>
+                                                                    ? <><strong className="text-fg-1 font-semibold group-hover:text-primary">+{quest.questers - 5}</strong> more</>
+                                                                    : <strong className="text-fg-1 font-semibold group-hover:text-primary">{quest.questers} questers</strong>
                                                                 }
                                                             </span>
                                                         </div>
                                                     </div>
                                                 )}
                                                 <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
-                                                    <span className={cn("text-md font-semibold leading-tight font-mono", slotsLeft < 5 ? "text-error" : "text-foreground")}>
+                                                    <span className={cn("text-md font-semibold leading-tight font-mono", slotsLeft < 5 ? "text-error" : "text-fg-1")}>
                                                         {slotsLeft}
                                                     </span>
-                                                    <span className="text-xs text-muted-foreground">slots left</span>
+                                                    <span className="text-xs text-fg-3">slots left</span>
                                                 </div>
                                             </div>
 
@@ -374,14 +374,14 @@ export function Dashboard() {
                                                         {quest.title}
                                                     </Link>
                                                 </div>
-                                                <div className="text-xs text-muted-foreground leading-relaxed mb-2">{quest.description}</div>
+                                                <div className="text-xs text-fg-3 leading-relaxed mb-2">{quest.description}</div>
                                                 <div className="flex items-center gap-1.5 flex-wrap">
                                                     <QuestTypeBadge type={quest.type} />
                                                     <QuestStatusBadge status={quest.status} />
                                                     {quest.tags?.slice(0, 2).map(tag => (
                                                         <Badge key={tag} variant="pill">{tag}</Badge>
                                                     ))}
-                                                    <span className="text-xs text-muted-foreground">by <strong>{quest.sponsor}</strong></span>
+                                                    <span className="text-xs text-fg-3">by <strong>{quest.sponsor}</strong></span>
                                                 </div>
                                             </div>
 
@@ -392,7 +392,7 @@ export function Dashboard() {
                                                     const canPublish = Object.keys(errors).length === 0
                                                     return (
                                                         <div className="flex flex-col gap-1.5 items-end">
-                                                            <span className="text-[0.8rem] text-muted-foreground">{comp.done}/{comp.total} complete</span>
+                                                            <span className="text-[0.8rem] text-fg-3">{comp.done}/{comp.total} complete</span>
                                                             <Button asChild size="sm">
                                                                 <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>Continue Editing</Link>
                                                             </Button>
@@ -410,9 +410,9 @@ export function Dashboard() {
                                                             "text-base font-semibold",
                                                             time.cls === "warning" && "text-(--yellow)",
                                                             time.cls === "urgent" && "text-(--red)",
-                                                            time.cls === "muted" && "text-muted-foreground font-normal"
+                                                            time.cls === "muted" && "text-fg-3 font-normal"
                                                         )}>{time.val}</span>
-                                                        {time.label && <span className="text-xs text-muted-foreground">{time.label}</span>}
+                                                        {time.label && <span className="text-xs text-fg-3">{time.label}</span>}
                                                         <Button asChild size="sm">
                                                             <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>Edit</Link>
                                                         </Button>
@@ -426,9 +426,9 @@ export function Dashboard() {
                                                             "text-base font-semibold",
                                                             time.cls === "warning" && "text-(--yellow)",
                                                             time.cls === "urgent" && "text-(--red)",
-                                                            time.cls === "muted" && "text-muted-foreground font-normal"
+                                                            time.cls === "muted" && "text-fg-3 font-normal"
                                                         )}>{time.val}</span>
-                                                        {time.label && <span className="text-xs text-muted-foreground">{time.label}</span>}
+                                                        {time.label && <span className="text-xs text-fg-3">{time.label}</span>}
                                                         <Button asChild variant="secondary" size="sm" className="mt-1 inline-block">
                                                             <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
                                                         </Button>
@@ -447,12 +447,12 @@ export function Dashboard() {
                                 <table className="w-full border-collapse">
                                     <thead>
                                         <tr>
-                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Reward</th>
-                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[220px]">Name</th>
-                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
-                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Questers</th>
-                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Time</th>
-                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none w-[100px]">Status</th>
+                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2bg-transparent whitespace-nowrap cursor-default select-none">Reward</th>
+                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2bg-transparent whitespace-nowrap cursor-default select-none min-w-[220px]">Name</th>
+                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
+                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2bg-transparent whitespace-nowrap cursor-default select-none">Questers</th>
+                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2bg-transparent whitespace-nowrap cursor-default select-none">Time</th>
+                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2bg-transparent whitespace-nowrap cursor-default select-none w-[100px]">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -465,23 +465,23 @@ export function Dashboard() {
                                                 : { to: "/quests/$questId" as const, params: { questId: quest.id } }
                                             return (
                                                 <tr key={quest.id} className="hover:bg-bg-2" data-status={quest.status}>
-                                                    <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    <td className="px-2 py-2.5 text-xs border-b border-border-2align-top whitespace-nowrap">
                                                         <span className="text-md font-semibold text-success whitespace-nowrap leading-tight">{quest.rewardAmount.toLocaleString()} {formatRewardLabel(quest.rewardType)}</span>
                                                     </td>
-                                                    <td className="px-2 py-2.5 text-xs border-b border-border align-top min-w-[220px]">
+                                                    <td className="px-2 py-2.5 text-xs border-b border-border-2align-top min-w-[220px]">
                                                         <div>
                                                             <Link {...titleLinkProps} className="text-primary no-underline font-normal text-base leading-snug visited:text-primary/80 hover:text-primary/80">
                                                                 {quest.title}
                                                             </Link>
                                                         </div>
-                                                        <div className="text-xs text-muted-foreground leading-snug line-clamp-1 my-0.5">{quest.description?.slice(0, 60)}{(quest.description?.length ?? 0) > 60 ? "…" : ""}</div>
-                                                        <div className="text-xs text-muted-foreground">by <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
+                                                        <div className="text-xs text-fg-3 leading-snug line-clamp-1 my-0.5">{quest.description?.slice(0, 60)}{(quest.description?.length ?? 0) > 60 ? "…" : ""}</div>
+                                                        <div className="text-xs text-fg-3">by <strong className="text-fg-1 font-semibold">{quest.sponsor}</strong></div>
                                                     </td>
-                                                    <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    <td className="px-2 py-2.5 text-xs border-b border-border-2align-top whitespace-nowrap">
                                                         <QuestTypeBadge type={quest.type} />
-                                                        <div className="text-xs text-muted-foreground mt-0.5">{slotsLeft} slots left</div>
+                                                        <div className="text-xs text-fg-3 mt-0.5">{slotsLeft} slots left</div>
                                                     </td>
-                                                    <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    <td className="px-2 py-2.5 text-xs border-b border-border-2align-top whitespace-nowrap">
                                                         {quest.questers > 0 && quest.questerDetails ? (
                                                             <div
                                                                 className="flex items-center gap-0 cursor-pointer group"
@@ -495,15 +495,15 @@ export function Dashboard() {
                                                                         className="w-6 h-6 -ml-2 first:ml-0 rounded-full border-[1.5px] border-background shrink-0"
                                                                     />
                                                                 ))}
-                                                                <span className="ml-1 text-xs text-muted-foreground whitespace-nowrap group-hover:text-primary">
-                                                                    <strong className="text-foreground font-semibold group-hover:text-primary">{quest.questers}</strong>
+                                                                <span className="ml-1 text-xs text-fg-3 whitespace-nowrap group-hover:text-primary">
+                                                                    <strong className="text-fg-1 font-semibold group-hover:text-primary">{quest.questers}</strong>
                                                                 </span>
                                                             </div>
                                                         ) : (
-                                                            <span className="text-muted-foreground text-xs">—</span>
+                                                            <span className="text-fg-3 text-xs">—</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap text-right">
+                                                    <td className="px-2 py-2.5 text-xs border-b border-border-2align-top whitespace-nowrap text-right">
                                                         {isDraft ? (() => {
                                                             const errors = getPublishErrors(quest)
                                                             const canPublish = Object.keys(errors).length === 0
@@ -535,17 +535,17 @@ export function Dashboard() {
                                                                     "font-mono text-xs font-semibold whitespace-nowrap",
                                                                     time.cls === "urgent" && "text-error",
                                                                     time.cls === "warning" && "text-warning",
-                                                                    time.cls === "normal" && "text-foreground",
-                                                                    time.cls === "muted" && "text-muted-foreground font-normal"
+                                                                    time.cls === "normal" && "text-fg-1",
+                                                                    time.cls === "muted" && "text-fg-3 font-normal"
                                                                 )}>{time.val}</div>
-                                                                {time.label && <div className="font-sans text-xs font-normal text-muted-foreground">{time.label}</div>}
+                                                                {time.label && <div className="font-sans text-xs font-normal text-fg-3">{time.label}</div>}
                                                                 <Button asChild variant="secondary" size="sm">
                                                                     <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
                                                                 </Button>
                                                             </div>
                                                         )}
                                                     </td>
-                                                    <td className="px-2 py-2.5 text-xs border-b border-border align-top w-[100px]">
+                                                    <td className="px-2 py-2.5 text-xs border-b border-border-2align-top w-[100px]">
                                                         <QuestStatusBadge status={quest.status} />
                                                     </td>
                                                 </tr>
@@ -562,15 +562,15 @@ export function Dashboard() {
                 {mainTab === "accepted" && (
                     <div>
                         {/* Filter + view toggle */}
-                        <div className="flex items-center justify-between py-2.5 border-b border-border max-sm:flex-col max-sm:items-stretch">
-                            <div className="flex items-center text-xs text-muted-foreground px-1 max-sm:flex-wrap">
+                        <div className="flex items-center justify-between py-2.5 border-b border-border-2max-sm:flex-col max-sm:items-stretch">
+                            <div className="flex items-center text-xs text-fg-3 px-1 max-sm:flex-wrap">
                                 {(["all", "active", "ended"] as AcceptedFilter[]).map((f, i, arr) => (
                                     <Fragment key={f}>
                                         {acceptedCounts[f] > 0 && (
                                             <button
                                                 className={cn(
-                                                    "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-muted-foreground whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-foreground",
-                                                    acceptedFilter === f && "text-foreground font-semibold"
+                                                    "cursor-pointer py-2.5 px-1 bg-transparent text-xs text-fg-3 whitespace-nowrap border-b-2 border-transparent -mb-px hover:text-fg-1",
+                                                    acceptedFilter === f && "text-fg-1 font-semibold"
                                                 )}
                                                 onClick={() => setAcceptedFilter(f)}
                                             >
@@ -581,10 +581,10 @@ export function Dashboard() {
                                     </Fragment>
                                 ))}
                             </div>
-                            <div className="inline-flex border border-input rounded overflow-hidden ml-3 shrink-0">
+                            <div className="inline-flex border border-border-2 rounded overflow-hidden ml-3 shrink-0">
                                 <button
                                     className={cn(
-                                        "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none border-r border-border bg-background text-muted-foreground hover:bg-bg-2 hover:text-foreground",
+                                        "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none border-r border-border-2bg-bg-base text-fg-3 hover:bg-bg-2 hover:text-fg-1",
                                         questView === "card" && "bg-accent-light text-accent-foreground"
                                     )}
                                     onClick={() => setQuestView("card")}
@@ -599,7 +599,7 @@ export function Dashboard() {
                                 </button>
                                 <button
                                     className={cn(
-                                        "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none bg-background text-muted-foreground hover:bg-bg-2 hover:text-foreground",
+                                        "flex items-center justify-center w-[30px] h-[26px] cursor-pointer border-none bg-bg-base text-fg-3 hover:bg-bg-2 hover:text-fg-1",
                                         questView === "list" && "bg-accent-light text-accent-foreground"
                                     )}
                                     onClick={() => setQuestView("list")}
@@ -617,7 +617,7 @@ export function Dashboard() {
                         {acceptedQuests.isLoading && (
                             <div>
                                 {[1, 2, 3].map(i => (
-                                    <div key={i} className="flex gap-4 py-3.5 border-b border-border items-start md:flex-row flex-col md:gap-4 gap-2">
+                                    <div key={i} className="flex gap-4 py-3.5 border-b border-border-2items-start md:flex-row flex-col md:gap-4 gap-2">
                                         <div className="flex flex-col items-end gap-2 min-w-[120px] text-right pt-0.5 shrink-0">
                                             <div className="skeleton" style={{ width: 60, height: 32 }} />
                                             <div className="skeleton" style={{ width: 50, height: 14 }} />
@@ -636,7 +636,7 @@ export function Dashboard() {
                         )}
 
                         {!acceptedQuests.isLoading && filteredAcceptedQuests.length === 0 && (
-                            <div className="p-10 text-center text-muted-foreground">
+                            <div className="p-10 text-center text-fg-3">
                                 {allAccepted.length === 0
                                     ? <><span>No accepted quests yet. </span><Link to="/quests">Browse available quests →</Link></>
                                     : <span>No {acceptedFilter === "active" ? "active" : acceptedFilter === "ended" ? "ended" : ""} quests in this filter.</span>
@@ -654,7 +654,7 @@ export function Dashboard() {
                                     return (
                                         <li
                                             key={quest.id}
-                                            className="flex gap-4 py-3.5 border-b border-border last:border-b-0 items-start transition-colors hover:bg-(--sidebar-bg) md:flex-row flex-col md:gap-4 gap-2"
+                                            className="flex gap-4 py-3.5 border-b border-border-2last:border-b-0 items-start transition-colors hover:bg-(--sidebar-bg) md:flex-row flex-col md:gap-4 gap-2"
                                             data-status={quest.status}
                                         >
                                             <div className="flex flex-col items-end gap-2 min-w-[120px] text-right pt-0.5 shrink-0 md:flex-col flex-row md:gap-2 gap-3 md:min-w-[120px] min-w-0 md:items-end items-center">
@@ -662,7 +662,7 @@ export function Dashboard() {
                                                     <span className="text-md font-semibold text-(--green) leading-tight font-mono">
                                                         {quest.rewardAmount.toLocaleString()} {formatRewardLabel(quest.rewardType)}
                                                     </span>
-                                                    <span className="text-xs text-muted-foreground">total reward</span>
+                                                    <span className="text-xs text-fg-3">total reward</span>
                                                 </div>
                                                 {quest.questers > 0 && quest.questerDetails && (
                                                     <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
@@ -683,20 +683,20 @@ export function Dashboard() {
                                                                     </div>
                                                                 </div>
                                                             ))}
-                                                            <span className="ml-1 text-xs text-muted-foreground whitespace-nowrap group-hover:text-primary">
+                                                            <span className="ml-1 text-xs text-fg-3 whitespace-nowrap group-hover:text-primary">
                                                                 {quest.questers > 5
-                                                                    ? <><strong className="text-foreground font-semibold group-hover:text-primary">+{quest.questers - 5}</strong> more</>
-                                                                    : <strong className="text-foreground font-semibold group-hover:text-primary">{quest.questers} questers</strong>
+                                                                    ? <><strong className="text-fg-1 font-semibold group-hover:text-primary">+{quest.questers - 5}</strong> more</>
+                                                                    : <strong className="text-fg-1 font-semibold group-hover:text-primary">{quest.questers} questers</strong>
                                                                 }
                                                             </span>
                                                         </div>
                                                     </div>
                                                 )}
                                                 <div className="flex flex-col items-end gap-px md:flex-col flex-row md:gap-px gap-1 md:items-end items-baseline">
-                                                    <span className={cn("text-md font-semibold leading-tight font-mono", slotsLeft < 5 ? "text-error" : "text-foreground")}>
+                                                    <span className={cn("text-md font-semibold leading-tight font-mono", slotsLeft < 5 ? "text-error" : "text-fg-1")}>
                                                         {slotsLeft}
                                                     </span>
-                                                    <span className="text-xs text-muted-foreground">slots left</span>
+                                                    <span className="text-xs text-fg-3">slots left</span>
                                                 </div>
                                             </div>
 
@@ -706,14 +706,14 @@ export function Dashboard() {
                                                         {quest.title}
                                                     </Link>
                                                 </div>
-                                                <div className="text-xs text-muted-foreground leading-relaxed mb-2">{quest.description}</div>
+                                                <div className="text-xs text-fg-3 leading-relaxed mb-2">{quest.description}</div>
                                                 <div className="flex items-center gap-1.5 flex-wrap">
                                                     <QuestTypeBadge type={quest.type} />
                                                     <QuestStatusBadge status={quest.status} />
                                                     {quest.tags?.slice(0, 2).map(tag => (
                                                         <Badge key={tag} variant="pill">{tag}</Badge>
                                                     ))}
-                                                    <span className="text-xs text-muted-foreground">by <strong>{quest.sponsor}</strong></span>
+                                                    <span className="text-xs text-fg-3">by <strong>{quest.sponsor}</strong></span>
                                                 </div>
                                             </div>
 
@@ -723,9 +723,9 @@ export function Dashboard() {
                                                         "text-base font-semibold",
                                                         time.cls === "warning" && "text-(--yellow)",
                                                         time.cls === "urgent" && "text-(--red)",
-                                                        time.cls === "muted" && "text-muted-foreground font-normal"
+                                                        time.cls === "muted" && "text-fg-3 font-normal"
                                                     )}>{time.val}</span>
-                                                    {time.label && <span className="text-xs text-muted-foreground">{time.label}</span>}
+                                                    {time.label && <span className="text-xs text-fg-3">{time.label}</span>}
                                                     <Button asChild variant="secondary" size="sm" className="mt-1 inline-block">
                                                         <Link to="/quests/$questId" params={{ questId: quest.id }}>View Quest</Link>
                                                     </Button>
@@ -743,12 +743,12 @@ export function Dashboard() {
                                 <table className="w-full border-collapse">
                                     <thead>
                                         <tr>
-                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Reward</th>
-                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none min-w-[220px]">Name</th>
-                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Progress</th>
-                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
-                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none">Time</th>
-                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border bg-transparent whitespace-nowrap cursor-default select-none w-[100px]">Status</th>
+                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2bg-transparent whitespace-nowrap cursor-default select-none">Reward</th>
+                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2bg-transparent whitespace-nowrap cursor-default select-none min-w-[220px]">Name</th>
+                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2bg-transparent whitespace-nowrap cursor-default select-none">Progress</th>
+                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2bg-transparent whitespace-nowrap cursor-default select-none">Type</th>
+                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2bg-transparent whitespace-nowrap cursor-default select-none">Time</th>
+                                            <th className="text-left px-2 py-2.5 text-xs font-semibold text-fg-3 uppercase tracking-wide border-b-2 border-border-2bg-transparent whitespace-nowrap cursor-default select-none w-[100px]">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -758,39 +758,39 @@ export function Dashboard() {
 
                                             return (
                                                 <tr key={quest.id} className="hover:bg-bg-2" data-status={quest.status}>
-                                                    <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    <td className="px-2 py-2.5 text-xs border-b border-border-2align-top whitespace-nowrap">
                                                         <span className="text-md font-semibold text-success whitespace-nowrap leading-tight">{quest.rewardAmount.toLocaleString()} {formatRewardLabel(quest.rewardType)}</span>
                                                     </td>
-                                                    <td className="px-2 py-2.5 text-xs border-b border-border align-top min-w-[220px]">
+                                                    <td className="px-2 py-2.5 text-xs border-b border-border-2align-top min-w-[220px]">
                                                         <div>
                                                             <Link to="/quests/$questId" params={{ questId: quest.id }} className="text-primary no-underline font-normal text-base leading-snug visited:text-primary/80 hover:text-primary/80">
                                                                 {quest.title}
                                                             </Link>
                                                         </div>
-                                                        <div className="text-xs text-muted-foreground leading-snug line-clamp-1 my-0.5">{quest.description?.slice(0, 60)}{(quest.description?.length ?? 0) > 60 ? "…" : ""}</div>
-                                                        <div className="text-xs text-muted-foreground">by <strong className="text-foreground font-semibold">{quest.sponsor}</strong></div>
+                                                        <div className="text-xs text-fg-3 leading-snug line-clamp-1 my-0.5">{quest.description?.slice(0, 60)}{(quest.description?.length ?? 0) > 60 ? "…" : ""}</div>
+                                                        <div className="text-xs text-fg-3">by <strong className="text-fg-1 font-semibold">{quest.sponsor}</strong></div>
                                                     </td>
-                                                    <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
-                                                        <span className="text-muted-foreground text-xs">—</span>
+                                                    <td className="px-2 py-2.5 text-xs border-b border-border-2align-top whitespace-nowrap">
+                                                        <span className="text-fg-3 text-xs">—</span>
                                                     </td>
-                                                    <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    <td className="px-2 py-2.5 text-xs border-b border-border-2align-top whitespace-nowrap">
                                                         <QuestTypeBadge type={quest.type} />
-                                                        <div className="text-xs text-muted-foreground mt-0.5">{slotsLeft} slots left</div>
+                                                        <div className="text-xs text-fg-3 mt-0.5">{slotsLeft} slots left</div>
                                                     </td>
-                                                    <td className="px-2 py-2.5 text-xs border-b border-border align-top whitespace-nowrap">
+                                                    <td className="px-2 py-2.5 text-xs border-b border-border-2align-top whitespace-nowrap">
                                                         <div className={cn(
                                                             "font-mono text-xs font-semibold whitespace-nowrap",
                                                             time.cls === "urgent" && "text-error",
                                                             time.cls === "warning" && "text-warning",
-                                                            time.cls === "normal" && "text-foreground",
-                                                            time.cls === "muted" && "text-muted-foreground font-normal"
+                                                            time.cls === "normal" && "text-fg-1",
+                                                            time.cls === "muted" && "text-fg-3 font-normal"
                                                         )}>{time.val}</div>
-                                                        {time.label && <div className="font-sans text-xs font-normal text-muted-foreground">{time.label}</div>}
+                                                        {time.label && <div className="font-sans text-xs font-normal text-fg-3">{time.label}</div>}
                                                         <Button asChild variant="secondary" size="sm" className="mt-1 inline-block">
                                                             <Link to="/quests/$questId" params={{ questId: quest.id }}>View</Link>
                                                         </Button>
                                                     </td>
-                                                    <td className="px-2 py-2.5 text-xs border-b border-border align-top w-[100px]">
+                                                    <td className="px-2 py-2.5 text-xs border-b border-border-2align-top w-[100px]">
                                                         <QuestStatusBadge status={quest.status} />
                                                     </td>
                                                 </tr>

@@ -11,10 +11,10 @@ const LINKS: { href: string; label: string; external?: boolean }[] = [
 
 export function Footer() {
     return (
-        <footer className="mx-auto flex max-w-6xl w-full items-center justify-between px-4 md:px-6 py-4 text-xs text-muted-foreground max-md:flex-col max-md:gap-3 max-md:py-6">
+        <footer className="mx-auto flex max-w-6xl w-full items-center justify-between px-4 md:px-6 py-4 text-xs text-fg-3 max-md:flex-col max-md:gap-3 max-md:py-6">
             <div className="flex items-center gap-2">
                 <img src="/appicon.svg" alt="ClawQuest" className="h-5 w-5" />
-                <span className="text-muted-foreground">&copy; {new Date().getFullYear()} ClawQuest</span>
+                <span className="text-fg-3">&copy; {new Date().getFullYear()} ClawQuest</span>
             </div>
             <nav className="flex flex-wrap items-center justify-end gap-2 flex-1">
                 {LINKS.map(({ href, label, external }, i) => (
@@ -23,7 +23,7 @@ export function Footer() {
                         <a
                             href={href}
                             {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                            className="text-muted-foreground no-underline hover:text-foreground transition-colors"
+                            className="text-fg-3 no-underline hover:text-fg-1 transition-colors"
                         >
                             {label}
                         </a>

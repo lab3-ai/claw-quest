@@ -60,7 +60,7 @@ function platformLabel(platform: string) {
 function TaskCheck({ status }: { status: string }) {
     if (status === "done") return <span className="w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center text-xs bg-success border-success text-primary-foreground">✓</span>
     if (status === "verifying") return <span className="w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center text-xs bg-warning-light border-warning">↻</span>
-    return <span className="w-5 h-5 rounded-full border-2 border-input shrink-0 flex items-center justify-center text-xs"></span>
+    return <span className="w-5 h-5 rounded-full border-2 border-border-2-2 shrink-0 flex items-center justify-center text-xs"></span>
 }
 
 /** Check if user has the required linked account for a task platform */
@@ -456,12 +456,12 @@ export function QuestDetail() {
                 {/* Breadcrumb skeleton */}
                 <div className="flex items-center gap-1.5 py-3">
                     <div className="skeleton h-3 w-12" />
-                    <span className="text-muted-foreground">›</span>
+                    <span className="text-fg-3">›</span>
                     <div className="skeleton h-3 w-32" />
                 </div>
 
                 {/* Header skeleton */}
-                <div className="py-3 border-b border-border mb-5">
+                <div className="py-3 border-b border-border-2 mb-5">
                     <div className="skeleton h-7 w-3/4 mb-2" />
                     <div className="flex items-center gap-2 mt-1">
                         <div className="skeleton h-5 w-14 rounded-full" />
@@ -475,7 +475,7 @@ export function QuestDetail() {
                     {/* Left: main content */}
                     <div className="flex-1 min-w-0">
                         {/* Description */}
-                        <div className="py-3.5 border-b border-border mb-5">
+                        <div className="py-3.5 border-b border-border-2 mb-5">
                             <div className="skeleton h-4 w-32 mb-3.5" />
                             <div className="space-y-2">
                                 <div className="skeleton h-3 w-full" />
@@ -488,7 +488,7 @@ export function QuestDetail() {
                         {/* Reward grid */}
                         <div className="grid grid-cols-2 gap-2.5 mb-2.5">
                             {[...Array(4)].map((_, i) => (
-                                <div key={i} className="px-3 py-2.5 border border-border rounded bg-muted">
+                                <div key={i} className="px-3 py-2.5 border border-border-2 rounded bg-bg-3">
                                     <div className="skeleton h-3 w-16 mb-1" />
                                     <div className="skeleton h-4 w-20" />
                                 </div>
@@ -496,11 +496,11 @@ export function QuestDetail() {
                         </div>
 
                         {/* Tasks section */}
-                        <div className="mt-5 border-t border-border pt-3.5">
+                        <div className="mt-5 border-t border-border-2 pt-3.5">
                             <div className="skeleton h-4 w-24 mb-3" />
                             <div className="space-y-2">
                                 {[...Array(3)].map((_, i) => (
-                                    <div key={i} className="flex items-center gap-2 px-3 py-2 border border-border rounded">
+                                    <div key={i} className="flex items-center gap-2 px-3 py-2 border border-border-2 rounded">
                                         <div className="skeleton h-4 w-4 shrink-0" />
                                         <div className="skeleton h-3 w-full" />
                                     </div>
@@ -509,7 +509,7 @@ export function QuestDetail() {
                         </div>
 
                         {/* Tags */}
-                        <div className="mt-5 border-t border-border pt-3.5">
+                        <div className="mt-5 border-t border-border-2 pt-3.5">
                             <div className="skeleton h-4 w-20 mb-2" />
                             <div className="flex gap-1.5 flex-wrap">
                                 {[...Array(4)].map((_, i) => (
@@ -521,9 +521,9 @@ export function QuestDetail() {
 
                     {/* Right: sidebar */}
                     <div className="w-full md:min-w-2xs md:max-w-xs shrink-0">
-                        <div className="border border-border rounded">
+                        <div className="border border-border-2 rounded">
                             {/* Reward hero */}
-                            <div className="px-3 py-4 text-center border-b border-border">
+                            <div className="px-3 py-4 text-center border-b border-border-2">
                                 <div className="skeleton h-8 w-28 mx-auto mb-2" />
                                 <div className="flex justify-center gap-2 mt-2">
                                     <div className="skeleton h-5 w-14 rounded-full" />
@@ -533,7 +533,7 @@ export function QuestDetail() {
                             </div>
 
                             {/* Countdown */}
-                            <div className="px-3 py-2.5 border-b border-border text-center">
+                            <div className="px-3 py-2.5 border-b border-border-2 text-center">
                                 <div className="skeleton h-3 w-24 mx-auto mb-2" />
                                 <div className="flex justify-center gap-3">
                                     {[...Array(4)].map((_, i) => (
@@ -546,12 +546,12 @@ export function QuestDetail() {
                             </div>
 
                             {/* Spots bar */}
-                            <div className="px-3 py-2.5 border-b border-border">
+                            <div className="px-3 py-2.5 border-b border-border-2">
                                 <div className="flex justify-between mb-1">
                                     <div className="skeleton h-3 w-28" />
                                     <div className="skeleton h-3 w-12" />
                                 </div>
-                                <div className="h-1.5 bg-muted rounded overflow-hidden">
+                                <div className="h-1.5 bg-bg-3 rounded overflow-hidden">
                                     <div className="skeleton h-full w-1/3 rounded" />
                                 </div>
                             </div>
@@ -636,8 +636,8 @@ export function QuestDetail() {
             {claim && claimStatus === "idle" && (
                 <div className="flex items-center justify-between gap-3 px-4 py-3 rounded mb-4 border border-accent bg-accent-light max-sm:flex-col max-sm:items-stretch max-sm:text-center">
                     <div className="flex flex-col gap-0.5 text-sm">
-                        <strong className="text-foreground">🤖 This quest was created by an AI agent.</strong>
-                        <span className="text-xs text-muted-foreground">Claim it to manage, edit, and fund it.</span>
+                        <strong className="text-fg-1">🤖 This quest was created by an AI agent.</strong>
+                        <span className="text-xs text-fg-3">Claim it to manage, edit, and fund it.</span>
                     </div>
                     <Button size="sm" onClick={handleClaimClick}>
                         {isAuthenticated ? "Claim Quest" : "Log in to Claim"}
@@ -645,7 +645,7 @@ export function QuestDetail() {
                 </div>
             )}
             {claim && claimStatus === "claiming" && (
-                <div className="flex justify-center text-muted-foreground text-sm px-4 py-3 rounded mb-4 border border-border bg-muted">
+                <div className="flex justify-center text-fg-3 text-sm px-4 py-3 rounded mb-4 border border-border-2 bg-bg-3">
                     <span>Claiming quest…</span>
                 </div>
             )}
@@ -653,7 +653,7 @@ export function QuestDetail() {
                 <div className="flex items-center justify-between gap-3 px-4 py-3 rounded mb-4 border border-green-600 bg-accent-light max-sm:flex-col max-sm:items-stretch max-sm:text-center">
                     <div className="flex flex-col gap-0.5 text-sm">
                         <strong className="text-accent">✓ Quest claimed!</strong>
-                        <span className="text-xs text-muted-foreground">You can now edit and fund this quest.</span>
+                        <span className="text-xs text-fg-3">You can now edit and fund this quest.</span>
                     </div>
                     <Button asChild size="sm">
                         <Link to="/dashboard">Go to Dashboard →</Link>
@@ -667,12 +667,12 @@ export function QuestDetail() {
             )}
 
             {/* Page header */}
-            <div className="py-4 border-b border-border mb-6">
-                <h1 className="text-2xl font-semibold text-foreground leading-tight">{quest.title}</h1>
-                <div className="flex items-center gap-2 mt-2.5 text-xs text-muted-foreground flex-wrap">
+            <div className="py-4 border-b border-border-2 mb-6">
+                <h1 className="text-2xl font-semibold text-fg-1 leading-tight">{quest.title}</h1>
+                <div className="flex items-center gap-2 mt-2.5 text-xs text-fg-3 flex-wrap">
                     <QuestStatusBadge status={quest.status} />
                     <span className="w-1 h-1 rounded-full bg-border inline-block" />
-                    <span className="inline-flex items-center gap-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-foreground">{quest.sponsor}</strong></span>
+                    <span className="inline-flex items-center gap-1">by <SponsorLogo sponsor={quest.sponsor} size={14} /> <strong className="text-fg-1">{quest.sponsor}</strong></span>
                     <span className="w-1 h-1 rounded-full bg-border inline-block" />
                     <span>{new Date(quest.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                     {quest.sponsorNames && quest.sponsorNames.length > 0 && (
@@ -690,14 +690,14 @@ export function QuestDetail() {
                 <div className="flex-1 min-w-0">
                     {/* Description */}
                     <div className="mb-6">
-                        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">About this Quest</h2>
-                        <p className="text-sm leading-relaxed text-foreground">{quest.description}</p>
+                        <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider mb-3">About this Quest</h2>
+                        <p className="text-sm leading-relaxed text-fg-1">{quest.description}</p>
                     </div>
 
                     {/* Reward grid */}
                     <div className="grid grid-cols-2 gap-3 mb-4">
-                        <div className="px-3.5 py-3 border border-border rounded">
-                            <div className="text-2xs text-muted-foreground uppercase tracking-wider mb-1">total reward</div>
+                        <div className="px-3.5 py-3 border border-border-2 rounded">
+                            <div className="text-2xs text-fg-3 uppercase tracking-wider mb-1">total reward</div>
                             <div className="text-sm font-semibold text-accent font-mono">
                                 {quest.rewardType === REWARD_TYPE.LLM_KEY
                                     ? `${(quest.llmKeyTokenLimit ?? 0).toLocaleString()} tokens/winner`
@@ -710,19 +710,19 @@ export function QuestDetail() {
                                             : `${quest.rewardAmount.toLocaleString()} ${quest.rewardType}`}
                             </div>
                         </div>
-                        <div className="px-3.5 py-3 border border-border rounded">
-                            <div className="text-2xs text-muted-foreground uppercase tracking-wider mb-1">total slots</div>
-                            <div className="text-sm font-semibold text-foreground">{quest.totalSlots}</div>
+                        <div className="px-3.5 py-3 border border-border-2 rounded">
+                            <div className="text-2xs text-fg-3 uppercase tracking-wider mb-1">total slots</div>
+                            <div className="text-sm font-semibold text-fg-1">{quest.totalSlots}</div>
                         </div>
-                        <div className="px-3.5 py-3 border border-border rounded">
-                            <div className="text-2xs text-muted-foreground uppercase tracking-wider mb-1">slots left</div>
-                            <div className={cn("text-sm font-semibold", slotsLeft < 5 ? "text-error" : "text-foreground")}>
+                        <div className="px-3.5 py-3 border border-border-2 rounded">
+                            <div className="text-2xs text-fg-3 uppercase tracking-wider mb-1">slots left</div>
+                            <div className={cn("text-sm font-semibold", slotsLeft < 5 ? "text-error" : "text-fg-1")}>
                                 {slotsLeft}
                             </div>
                         </div>
-                        <div className="px-3.5 py-3 border border-border rounded">
-                            <div className="text-2xs text-muted-foreground uppercase tracking-wider mb-1">questers</div>
-                            <div className="text-sm font-semibold text-foreground">
+                        <div className="px-3.5 py-3 border border-border-2 rounded">
+                            <div className="text-2xs text-fg-3 uppercase tracking-wider mb-1">questers</div>
+                            <div className="text-sm font-semibold text-fg-1">
                                 <Link to="/quests/$questId/questers" params={{ questId: quest.id }} className="hover:text-accent transition-colors">
                                     {quest.questers} →
                                 </Link>
@@ -745,7 +745,7 @@ export function QuestDetail() {
                             <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
                                 Human Tasks
                                 <span className="text-xs font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--human-bg) text-(--human-fg)">HUMAN</span>
-                                <span className="font-normal text-xs text-muted-foreground ml-auto">Complete these yourself</span>
+                                <span className="font-normal text-xs text-fg-3 ml-auto">Complete these yourself</span>
                             </div>
                             {quest.tasks.map((task: any, idx: number) => {
                                 const hasAccepted = !!quest.myParticipation
@@ -758,7 +758,7 @@ export function QuestDetail() {
                                 const actionUrl = getTaskActionUrl(task)
 
                                 return (
-                                    <div key={idx} className="border border-border rounded mb-2.5 overflow-hidden last:mb-0">
+                                    <div key={idx} className="border border-border-2 rounded mb-2.5 overflow-hidden last:mb-0">
                                         <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
                                             <TaskCheck status={taskStatus} />
                                             <span className="flex-1 font-medium">{task.label}</span>
@@ -797,7 +797,7 @@ export function QuestDetail() {
                                             <div className="pt-1 pl-6">
                                                 <input
                                                     type="url"
-                                                    className="w-full px-2 py-1.5 text-xs border border-border rounded bg-background text-foreground focus:border-accent focus:outline-hidden"
+                                                    className="w-full px-2 py-1.5 text-xs border border-border-2 rounded bg-bg-base text-fg-1 focus:border-accent focus:outline-hidden"
                                                     placeholder="Paste your tweet URL here..."
                                                     value={proofUrls[idx] || ""}
                                                     onChange={(e) => setProofUrls(prev => ({ ...prev, [idx]: e.target.value }))}
@@ -810,7 +810,7 @@ export function QuestDetail() {
                                             if (!warning) return null
                                             const needsXGrant = task.platform === "x" && meProfile?.xId && !meProfile?.hasXToken
                                             return (
-                                                <div className="text-xs text-muted-foreground mt-1 pl-6">
+                                                <div className="text-xs text-fg-3 mt-1 pl-6">
                                                     ⚠ {warning}
                                                     {needsXGrant ? (
                                                         <> — <button className="bg-transparent border-none text-primary cursor-pointer p-0 text-xs underline"
@@ -862,7 +862,7 @@ export function QuestDetail() {
                                     {quest.requireVerified && (
                                         <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-warning/15 text-warning">Verified Only</span>
                                     )}
-                                    <span className="font-normal text-xs text-muted-foreground ml-auto">Your AI agent handles these</span>
+                                    <span className="font-normal text-xs text-fg-3 ml-auto">Your AI agent handles these</span>
                                 </div>
                                 {quest.requiredSkills.map((skill: string, idx: number) => {
                                     // Match by full name or slug part
@@ -874,11 +874,11 @@ export function QuestDetail() {
                                     const isLoading = challengeLoading === skill
 
                                     return (
-                                        <div key={idx} className="border border-border rounded mb-2.5 overflow-hidden last:mb-0">
+                                        <div key={idx} className="border border-border-2 rounded mb-2.5 overflow-hidden last:mb-0">
                                             <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
                                                 <TaskCheck status={status} />
                                                 <span className="flex-1 font-medium">
-                                                    Requires skill: <code className="font-mono text-xs bg-muted px-1 py-px rounded">{skill}</code>
+                                                    Requires skill: <code className="font-mono text-xs bg-bg-3 px-1 py-px rounded">{skill}</code>
                                                 </span>
                                                 {quest.myParticipation && (
                                                     <span className={cn("text-xs font-semibold px-1.5 py-0.5 rounded",
@@ -908,22 +908,22 @@ export function QuestDetail() {
                                     return (
                                         <div className="mt-2 rounded border border-warning/30 bg-warning/10 px-3 py-2.5 text-xs">
                                             <div className="font-semibold mb-1">Verify your skills to join this quest</div>
-                                            <div className="text-muted-foreground leading-relaxed mb-1.5">
+                                            <div className="text-fg-3 leading-relaxed mb-1.5">
                                                 Run this in your terminal:
                                             </div>
                                             <div className="flex items-center gap-1.5">
-                                                <code className="flex-1 bg-muted px-2 py-1.5 rounded font-mono text-xs select-all overflow-x-auto">
+                                                <code className="flex-1 bg-bg-3 px-2 py-1.5 rounded font-mono text-xs select-all overflow-x-auto">
                                                     {scanCmd}
                                                 </code>
                                                 <button
                                                     type="button"
-                                                    className="shrink-0 px-2 py-1.5 rounded bg-muted hover:bg-muted/80 text-xs font-medium transition-colors"
+                                                    className="shrink-0 px-2 py-1.5 rounded bg-bg-3 hover:bg-bg-3/80 text-xs font-medium transition-colors"
                                                     onClick={() => { navigator.clipboard.writeText(scanCmd) }}
                                                 >
                                                     Copy
                                                 </button>
                                             </div>
-                                            <div className="text-muted-foreground mt-1.5">After scan, refresh this page.</div>
+                                            <div className="text-fg-3 mt-1.5">After scan, refresh this page.</div>
                                         </div>
                                     )
                                 })()}
@@ -933,16 +933,16 @@ export function QuestDetail() {
 
                     {/* No tasks fallback */}
                     {(!quest.tasks || quest.tasks.length === 0) && (!quest.requiredSkills || quest.requiredSkills.length === 0) && (
-                        <div className="py-4 text-muted-foreground text-xs">
+                        <div className="py-4 text-fg-3 text-xs">
                             No specific tasks defined for this quest yet.
                         </div>
                     )}
 
                     {/* Questers avatar crowd */}
                     {quest.questers > 0 && quest.questerDetails && (
-                        <div className="mt-6 border border-border rounded px-3.5 py-3">
-                            <div className="flex justify-between items-center text-xs text-muted-foreground mb-2.5">
-                                <span><strong className="text-foreground">{quest.questers}</strong> questers joined</span>
+                        <div className="mt-6 border border-border-2 rounded px-3.5 py-3">
+                            <div className="flex justify-between items-center text-xs text-fg-3 mb-2.5">
+                                <span><strong className="text-fg-1">{quest.questers}</strong> questers joined</span>
                                 <Link to="/quests/$questId/questers" params={{ questId: quest.id }} className="hover:text-accent transition-colors">
                                     view all →
                                 </Link>
@@ -967,7 +967,7 @@ export function QuestDetail() {
                                     </div>
                                 ))}
                                 {quest.questers > 8 && (
-                                    <div className="w-8 h-8 -ml-2 rounded-full border-2 border-background bg-muted flex items-center justify-center text-xs font-semibold text-muted-foreground cursor-pointer shrink-0 hover:bg-accent/10 hover:text-accent-foreground">
+                                    <div className="w-8 h-8 -ml-2 rounded-full border-2 border-background bg-bg-3 flex items-center justify-center text-xs font-semibold text-fg-3 cursor-pointer shrink-0 hover:bg-accent/10 hover:text-accent-foreground">
                                         +{quest.questers - 8}
                                     </div>
                                 )}
@@ -977,9 +977,9 @@ export function QuestDetail() {
 
                     {/* Completed: results table */}
                     {isCompleted && (
-                        <div className="mt-6 pt-5 border-t border-border">
-                            <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Results</h2>
-                            <p className="text-muted-foreground text-sm">
+                        <div className="mt-6 pt-5 border-t border-border-2">
+                            <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider mb-3">Results</h2>
+                            <p className="text-fg-3 text-sm">
                                 This quest has ended.{" "}
                                 <Link to="/quests/$questId/questers" params={{ questId: quest.id }} className="text-accent hover:underline">
                                     View all questers and payouts →
@@ -991,9 +991,9 @@ export function QuestDetail() {
 
                 {/* ── Right: sidebar ── */}
                 <div className="w-full md:min-w-2xs md:max-w-xs shrink-0">
-                    <div className="border border-border rounded mb-3.5 sticky top-[55px]">
+                    <div className="border border-border-2 rounded mb-3.5 sticky top-[55px]">
                         {/* Reward hero */}
-                        <div className="px-3 py-4 text-center border-b border-border">
+                        <div className="px-3 py-4 text-center border-b border-border-2">
                             <div className="text-[28px] font-semibold font-mono text-accent leading-tight">
                                 {quest.rewardType === REWARD_TYPE.LLM_KEY
                                     ? (quest.llmKeyTokenLimit ?? 0).toLocaleString()
@@ -1005,7 +1005,7 @@ export function QuestDetail() {
                                 <RewardBadge type={quest.fundingMethod === FUNDING_METHOD.STRIPE ? REWARD_TYPE.USD : quest.rewardType} />
                                 <QuestTypeBadge type={quest.type} />
                             </div>
-                            <div className="text-xs text-muted-foreground mt-0.5">
+                            <div className="text-xs text-fg-3 mt-0.5">
                                 {quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER && llmTokenBudget
                                     ? 'total LLM tokens'
                                     : 'total reward pool'}
@@ -1014,56 +1014,56 @@ export function QuestDetail() {
 
                         {/* Countdown */}
                         {isLive && quest.expiresAt && (
-                            <div className="px-3 py-2.5 border-b border-border text-center">
-                                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Time remaining</div>
+                            <div className="px-3 py-2.5 border-b border-border-2 text-center">
+                                <div className="text-xs font-semibold uppercase tracking-wider text-fg-3 mb-1">Time remaining</div>
                                 <div className="flex justify-center gap-1 font-mono">
                                     <div className="flex flex-col items-center min-w-[40px]">
-                                        <span className={cn("text-xl font-semibold leading-tight", liveCountdown.d === 0 && liveCountdown.h < 6 ? "text-error" : "text-foreground")}>{String(liveCountdown.d).padStart(2, "0")}</span>
-                                        <span className="text-xs text-muted-foreground uppercase tracking-wide">d</span>
+                                        <span className={cn("text-xl font-semibold leading-tight", liveCountdown.d === 0 && liveCountdown.h < 6 ? "text-error" : "text-fg-1")}>{String(liveCountdown.d).padStart(2, "0")}</span>
+                                        <span className="text-xs text-fg-3 uppercase tracking-wide">d</span>
                                     </div>
                                     <span className="text-lg text-input pt-0.5">:</span>
                                     <div className="flex flex-col items-center min-w-[40px]">
-                                        <span className={cn("text-xl font-semibold leading-tight", liveCountdown.d === 0 && liveCountdown.h < 6 ? "text-error" : "text-foreground")}>{String(liveCountdown.h).padStart(2, "0")}</span>
-                                        <span className="text-xs text-muted-foreground uppercase tracking-wide">h</span>
+                                        <span className={cn("text-xl font-semibold leading-tight", liveCountdown.d === 0 && liveCountdown.h < 6 ? "text-error" : "text-fg-1")}>{String(liveCountdown.h).padStart(2, "0")}</span>
+                                        <span className="text-xs text-fg-3 uppercase tracking-wide">h</span>
                                     </div>
                                     <span className="text-lg text-input pt-0.5">:</span>
                                     <div className="flex flex-col items-center min-w-[40px]">
-                                        <span className="text-xl font-semibold text-foreground leading-tight">{String(liveCountdown.m).padStart(2, "0")}</span>
-                                        <span className="text-xs text-muted-foreground uppercase tracking-wide">m</span>
+                                        <span className="text-xl font-semibold text-fg-1 leading-tight">{String(liveCountdown.m).padStart(2, "0")}</span>
+                                        <span className="text-xs text-fg-3 uppercase tracking-wide">m</span>
                                     </div>
                                     <span className="text-lg text-input pt-0.5">:</span>
                                     <div className="flex flex-col items-center min-w-[40px]">
-                                        <span className="text-xl font-semibold text-foreground leading-tight">{String(liveCountdown.s).padStart(2, "0")}</span>
-                                        <span className="text-xs text-muted-foreground uppercase tracking-wide">s</span>
+                                        <span className="text-xl font-semibold text-fg-1 leading-tight">{String(liveCountdown.s).padStart(2, "0")}</span>
+                                        <span className="text-xs text-fg-3 uppercase tracking-wide">s</span>
                                     </div>
                                 </div>
                             </div>
                         )}
                         {isCompleted && (
-                            <div className="px-3 py-2.5 border-b border-border text-center">
+                            <div className="px-3 py-2.5 border-b border-border-2 text-center">
                                 <QuestStatusBadge status="completed" />
                             </div>
                         )}
 
                         {/* Spots bar */}
-                        <div className="px-3 py-2.5 border-b border-border">
+                        <div className="px-3 py-2.5 border-b border-border-2">
                             <div className="flex justify-between text-xs mb-1">
                                 {isLuckyDraw ? (
                                     <>
-                                        <span className="text-muted-foreground font-semibold">{quest.filledSlots} entered</span>
+                                        <span className="text-fg-3 font-semibold">{quest.filledSlots} entered</span>
                                         <span className="font-mono font-semibold">{quest.totalSlots} winners drawn</span>
                                     </>
                                 ) : (
                                     <>
-                                        <span className="text-muted-foreground font-semibold">{quest.filledSlots} / {quest.totalSlots} spots filled</span>
-                                        <span className={cn("font-mono font-semibold", slotsLeft < 5 ? "text-error" : "text-foreground")}>
+                                        <span className="text-fg-3 font-semibold">{quest.filledSlots} / {quest.totalSlots} spots filled</span>
+                                        <span className={cn("font-mono font-semibold", slotsLeft < 5 ? "text-error" : "text-fg-1")}>
                                             {slotsLeft} left
                                         </span>
                                     </>
                                 )}
                             </div>
                             {!isLuckyDraw && (
-                                <div className="h-1.5 bg-muted rounded overflow-hidden">
+                                <div className="h-1.5 bg-bg-3 rounded overflow-hidden">
                                     <div
                                         className={cn("h-full rounded transition-[width] duration-300", slotsLeft < 5 ? "bg-red-600" : "bg-accent")}
                                         style={{ width: `${spotsPercent}%` }}
@@ -1087,7 +1087,7 @@ export function QuestDetail() {
                             )}
 
                         {/* CTA */}
-                        <div className="p-3 border-b border-border">
+                        <div className="p-3 border-b border-border-2">
                             {(() => {
                                 const isCreator = isAuthenticated && !!quest.isCreator
                                 const isSponsor = isAuthenticated && !!quest.isSponsor
@@ -1190,7 +1190,7 @@ export function QuestDetail() {
                                                 <div className="text-sm font-semibold text-accent mb-1">
                                                     Quest Accepted
                                                 </div>
-                                                <div className="text-xs text-muted-foreground">
+                                                <div className="text-xs text-fg-3">
                                                     Status: {quest.myParticipation?.status || "in_progress"}
                                                 </div>
                                             </div>
@@ -1244,23 +1244,23 @@ export function QuestDetail() {
                         {isAuthenticated && quest.fundingMethod === FUNDING_METHOD.STRIPE && quest.myParticipation &&
                             (quest.myParticipation.status === "completed" || quest.myParticipation.status === "submitted") &&
                             allTasksDone && (
-                                <div className="mt-4 px-3 pt-4 border-t border-border">
+                                <div className="mt-4 px-3 pt-4 border-t border-border-2">
                                     <div className="text-center">
                                         {quest.myParticipation.payoutStatus === "paid" ? (
                                             <>
                                                 <div className="text-sm font-semibold text-accent mb-1">
                                                     Reward Paid
                                                 </div>
-                                                <div className="text-xs text-muted-foreground">
+                                                <div className="text-xs text-fg-3">
                                                     ${quest.myParticipation.payoutAmount?.toFixed(2)} USD paid via Stripe
                                                 </div>
                                             </>
                                         ) : (
                                             <>
-                                                <div className="text-sm font-semibold text-foreground mb-1">
+                                                <div className="text-sm font-semibold text-fg-1 mb-1">
                                                     Payout Pending
                                                 </div>
-                                                <div className="text-xs text-muted-foreground mb-2">
+                                                <div className="text-xs text-fg-3 mb-2">
                                                     ${quest.rewardAmount} USD will be sent via Stripe when distributed
                                                 </div>
                                                 {!stripeStatus?.isOnboarded && (
@@ -1278,7 +1278,7 @@ export function QuestDetail() {
                         {isAuthenticated && quest.fundingMethod === "crypto" && quest.myParticipation &&
                             (quest.myParticipation.status === "completed" || quest.myParticipation.status === "submitted") &&
                             allTasksDone && (
-                                <div className="mt-4 px-3 pt-4 border-t border-border">
+                                <div className="mt-4 px-3 pt-4 border-t border-border-2">
                                     {quest.myParticipation.payoutWallet ? (
                                         // Already claimed
                                         <div className="text-center">
@@ -1287,9 +1287,9 @@ export function QuestDetail() {
                                                     <div className="text-sm font-semibold text-accent mb-1">
                                                         Reward Paid
                                                     </div>
-                                                    <div className="text-xs text-muted-foreground break-all">
+                                                    <div className="text-xs text-fg-3 break-all">
                                                         {quest.myParticipation.payoutAmount} {quest.rewardType} sent to{" "}
-                                                        <code className="font-mono text-xs bg-muted px-1 py-px rounded">
+                                                        <code className="font-mono text-xs bg-bg-3 px-1 py-px rounded">
                                                             {quest.myParticipation.payoutWallet.slice(0, 6)}...{quest.myParticipation.payoutWallet.slice(-4)}
                                                         </code>
                                                     </div>
@@ -1306,12 +1306,12 @@ export function QuestDetail() {
                                                 </>
                                             ) : (
                                                 <>
-                                                    <div className="text-sm font-semibold text-foreground mb-1">
+                                                    <div className="text-sm font-semibold text-fg-1 mb-1">
                                                         Wallet Submitted
                                                     </div>
-                                                    <div className="text-xs text-muted-foreground">
+                                                    <div className="text-xs text-fg-3">
                                                         Payout incoming to{" "}
-                                                        <code className="font-mono text-xs bg-muted px-1 py-px rounded">
+                                                        <code className="font-mono text-xs bg-bg-3 px-1 py-px rounded">
                                                             {quest.myParticipation.payoutWallet.slice(0, 6)}...{quest.myParticipation.payoutWallet.slice(-4)}
                                                         </code>
                                                     </div>
@@ -1324,7 +1324,7 @@ export function QuestDetail() {
                                             <div className="text-sm font-semibold text-center mb-2">
                                                 Claim Your Reward
                                             </div>
-                                            <div className="text-xs text-muted-foreground text-center mb-3">
+                                            <div className="text-xs text-fg-3 text-center mb-3">
                                                 Connect your wallet to receive {quest.rewardType} reward
                                             </div>
                                             <div className="flex justify-center mb-2.5">
@@ -1369,8 +1369,8 @@ export function QuestDetail() {
 
             {/* ── Related Quests ── */}
             {relatedQuests && relatedQuests.length > 0 && (
-                <div className="mt-10 pt-6 border-t border-border">
-                    <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Related Quests</h2>
+                <div className="mt-10 pt-6 border-t border-border-2">
+                    <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider mb-4">Related Quests</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {relatedQuests.map(q => (
                             <QuestGridCard key={q.id} quest={q} />
@@ -1402,14 +1402,14 @@ const response = await client.chat.completions.create({
     }
 
     return (
-        <div className="mt-4 px-3 pt-4 border-t border-border">
-            <div className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
+        <div className="mt-4 px-3 pt-4 border-t border-border-2">
+            <div className="text-sm font-semibold text-fg-1 mb-3 flex items-center gap-1.5">
                 <span>🎁</span> LLM API Key Reward
             </div>
             <div className="space-y-2 text-xs">
-                <div className="flex items-center gap-2 p-2 px-3 border border-border rounded bg-muted">
-                    <span className="text-muted-foreground shrink-0 w-16">API Key</span>
-                    <code className="flex-1 font-mono truncate text-foreground">{apiKey}</code>
+                <div className="flex items-center gap-2 p-2 px-3 border border-border-2 rounded bg-bg-3">
+                    <span className="text-fg-3 shrink-0 w-16">API Key</span>
+                    <code className="flex-1 font-mono truncate text-fg-1">{apiKey}</code>
                     <button
                         type="button"
                         onClick={() => copyText(apiKey)}
@@ -1418,9 +1418,9 @@ const response = await client.chat.completions.create({
                         Copy
                     </button>
                 </div>
-                <div className="flex items-center gap-2 p-2 px-3 border border-border rounded bg-muted">
-                    <span className="text-muted-foreground shrink-0 w-16">Base URL</span>
-                    <code className="flex-1 font-mono truncate text-foreground">{baseUrl}</code>
+                <div className="flex items-center gap-2 p-2 px-3 border border-border-2 rounded bg-bg-3">
+                    <span className="text-fg-3 shrink-0 w-16">Base URL</span>
+                    <code className="flex-1 font-mono truncate text-fg-1">{baseUrl}</code>
                     <button
                         type="button"
                         onClick={() => copyText(baseUrl)}
@@ -1430,7 +1430,7 @@ const response = await client.chat.completions.create({
                     </button>
                 </div>
                 <div className="relative">
-                    <pre className="p-3 border border-border rounded bg-muted font-mono text-xs text-foreground overflow-x-auto whitespace-pre leading-relaxed">{snippet}</pre>
+                    <pre className="p-3 border border-border-2 rounded bg-bg-3 font-mono text-xs text-fg-1 overflow-x-auto whitespace-pre leading-relaxed">{snippet}</pre>
                     <button
                         type="button"
                         onClick={() => copyText(snippet)}

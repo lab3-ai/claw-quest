@@ -8,52 +8,53 @@ const badgeVariants = cva(
     variants: {
       variant: {
         /* Semantic — colored text, no bg/border */
-        default: "text-foreground",
+        default: "text-fg-1",
         success: "text-success",
         error: "text-error",
         warning: "text-warning",
         info: "text-info",
-        muted: "text-muted-foreground",
-        /* Pill — rounded, border, light bg (for tags, skills, categories) */
-        pill: "border border-border rounded-full px-2 py-0.5 text-fg-2",
+        muted: "text-fg-3",
+        /* Pill — rounded, border (for tags, skills, categories) */
+        pill: "border border-border-2 rounded-md px-2 py-0.5 text-fg-2",
         /* Filled — solid bg (for status indicators) */
         "filled-success":
-          "rounded-full bg-success-light text-success px-2 py-0.5",
-        "filled-error": "rounded-full bg-error-light text-error px-2 py-0.5",
+          "rounded-md bg-success-light text-success px-2 py-0.5",
+        "filled-error": "rounded-md bg-error-light text-error px-2 py-0.5",
         "filled-warning":
-          "rounded-full bg-warning-light text-warning px-2 py-0.5",
-        "filled-muted":
-          "rounded-full bg-muted text-muted-foreground px-2 py-0.5",
-        /* Outline — border + light bg (for subtle labels) */
+          "rounded-md bg-warning-light text-warning px-2 py-0.5",
+        "filled-muted": "rounded-md bg-bg-3 text-fg-3 px-2 py-0.5",
+        /* Outline — border + subtle bg (for labels, quest type badges) */
         outline:
-          "border border-border rounded-full px-2 py-0.5 bg-muted/50 text-foreground",
+          "border border-border-2 rounded-md px-2 py-0.5 bg-bg-2 text-fg-1",
         "outline-success":
-          "border border-success/40 rounded-full px-2 py-0.5 bg-success-light text-success",
+          "border border-success/40 rounded-md px-2 py-0.5 bg-success/10 text-success",
         "outline-error":
-          "border border-error/40 rounded-full px-2 py-0.5 bg-error-light text-error",
+          "border border-error/40 rounded-md px-2 py-0.5 bg-error/10 text-error",
         "outline-warning":
-          "border border-warning/40 rounded-full px-2 py-0.5 bg-warning-light text-warning",
+          "border border-warning/40 rounded-md px-2 py-0.5 bg-warning/10 text-warning",
+        "outline-primary":
+          "border border-primary/40 rounded-md px-2 py-0.5 bg-primary/10 text-fg-1",
         "outline-muted":
-          "border border-border rounded-full px-2 py-0.5 bg-muted/50 text-muted-foreground",
+          "border border-border rounded-md px-2 py-0.5 bg-bg-2 text-fg-3",
         /* Count — small filled pill for numbers in tabs/nav */
         count:
-          "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full bg-fg-1 text-bg-1",
+          "inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-2xs font-semibold rounded-full bg-fg-1 text-bg-1",
         "count-muted":
-          "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full bg-bg-3 text-fg-2",
+          "inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-2xs font-semibold rounded-full bg-bg-3 text-fg-2",
         "count-outline":
-          "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full border border-border text-fg-3",
+          "inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-2xs font-semibold rounded-full border border-border text-fg-3",
         "count-primary":
-          "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full bg-primary text-primary-foreground",
+          "inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-2xs font-semibold rounded-full bg-primary text-primary-foreground",
         "count-primary-inverted":
-          "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full bg-primary-foreground text-primary",
+          "inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-2xs font-semibold rounded-full bg-primary-foreground text-primary",
         "count-success":
-          "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full bg-success text-bg-1",
+          "inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-2xs font-semibold rounded-full bg-success text-bg-1",
         "count-error":
-          "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full bg-error text-bg-1",
+          "inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-2xs font-semibold rounded-full bg-error text-bg-1",
         "count-warning":
-          "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full bg-warning text-bg-1",
+          "inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-2xs font-semibold rounded-full bg-warning text-bg-1",
         "count-info":
-          "inline-flex items-center justify-center min-w-4 h-4 px-1 text-2xs font-semibold rounded-full bg-info text-bg-1",
+          "inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-2xs font-semibold rounded-full bg-info text-bg-1",
       },
     },
     defaultVariants: {

@@ -69,14 +69,14 @@ export function GitHubCallback() {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen gap-4">
                 <div className="text-destructive text-base">GitHub Authorization failed: {error}</div>
-                <a href="/github-bounties/new" className="text-sm text-muted-foreground hover:underline">Back to Bounties</a>
+                <a href="/github-bounties/new" className="text-sm text-fg-3 hover:underline">Back to Bounties</a>
             </div>
         )
     }
 
     return (
         <div className="flex items-center justify-center min-h-screen">
-            <div className="text-muted-foreground text-base">Linking GitHub account...</div>
+            <div className="text-fg-3 text-base">Linking GitHub account...</div>
         </div>
     )
 }

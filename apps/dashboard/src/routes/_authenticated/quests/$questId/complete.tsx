@@ -37,12 +37,12 @@ export function QuestCompletePage() {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-muted rounded w-3/4"></div>
-          <div className="h-4 bg-muted rounded w-1/2"></div>
+          <div className="h-6 bg-bg-3 rounded w-3/4"></div>
+          <div className="h-4 bg-bg-3 rounded w-1/2"></div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div className="h-24 bg-muted rounded"></div>
-            <div className="h-24 bg-muted rounded"></div>
-            <div className="h-24 bg-muted rounded"></div>
+            <div className="h-24 bg-bg-3 rounded"></div>
+            <div className="h-24 bg-bg-3 rounded"></div>
+            <div className="h-24 bg-bg-3 rounded"></div>
           </div>
         </div>
       </div>
@@ -83,9 +83,9 @@ export function QuestCompletePage() {
   if (!isAuthenticated || !quest.myParticipation) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="bg-muted border rounded-lg p-6 text-center">
+        <div className="bg-bg-3 border rounded-lg p-6 text-center">
           <h3 className="text-lg font-medium mb-2">Quest Not Accepted</h3>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-sm text-fg-3 mb-4">
             You need to accept this quest before submitting proof of completion.
           </p>
           <a

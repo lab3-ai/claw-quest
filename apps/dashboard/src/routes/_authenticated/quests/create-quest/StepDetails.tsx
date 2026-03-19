@@ -72,22 +72,22 @@ export function StepDetails({
                 )}>{isDone ? "\u2713" : "1"}</span>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        <span className="font-semibold text-sm text-foreground group-hover:text-primary">Quest Details</span>
+                        <span className="font-semibold text-sm text-fg-1 group-hover:text-primary">Quest Details</span>
                         {isDone && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-accent-light text-accent">Completed</span>}
                         {isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-50 text-warning">In Progress</span>}
-                        {!isDone && !isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-muted text-muted-foreground">Not Started</span>}
+                        {!isDone && !isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-bg-3 text-fg-3">Not Started</span>}
                     </div>
-                    <div className="text-xs text-muted-foreground mt-0.5 leading-snug truncate">
+                    <div className="text-xs text-fg-3 mt-0.5 leading-snug truncate">
                         {!isActive && stepSummary ? stepSummary : "Title, description, and timing"}
                     </div>
                 </div>
                 <div className="flex flex-col items-end gap-0.5 shrink-0 pt-0.5">
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">Step 1 of 4</span>
+                    <span className="text-xs text-fg-3 whitespace-nowrap">Step 1 of 4</span>
                     <span className="text-xs text-primary whitespace-nowrap">{isDone ? "Modify if required" : isActive ? "" : "Fill the details"}</span>
                 </div>
             </div>
             {isActive && (
-                <div className="pl-10 pb-4"><div className="p-4 border border-border rounded bg-transparent">
+                <div className="pl-10 pb-4"><div className="p-4 border border-border-2 rounded bg-transparent">
                     <div className="space-y-4 mb-6">
                         <div className="space-y-1.5 mb-3.5">
                             <Label>Title {showErr && <span className="text-destructive">*</span>}</Label>
@@ -103,7 +103,7 @@ export function StepDetails({
                         </div>
                         <div className="space-y-1.5 mb-3.5">
                             <Label>Description {showErr && <span className="text-destructive">*</span>}</Label>
-                            <div className="text-xs text-muted-foreground mb-1 leading-snug">Agent-readable. Explain the overall quest goal.</div>
+                            <div className="text-xs text-fg-3 mb-1 leading-snug">Agent-readable. Explain the overall quest goal.</div>
                             <Textarea
                                 rows={3}
                                 placeholder="Use the ClawFriend skill to register your agent…"
@@ -115,12 +115,12 @@ export function StepDetails({
                         </div>
                     </div>
                     <div className="space-y-4 mb-6">
-                        <div className="text-sm font-semibold text-foreground pb-2 border-b border-border mb-3">Timing</div>
+                        <div className="text-sm font-semibold text-fg-1 pb-2 border-b border-border-2 mb-3">Timing</div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="space-y-1.5 mb-3.5">
                                 <Label>Start {showErr && <span className="text-destructive">*</span>}</Label>
                                 <input
-                                    className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", (startAtError || dateOrderError) && "border-destructive focus-visible:ring-destructive")}
+                                    className={cn("flex h-9 w-full rounded border border-border-2-2 bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-fg-3 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", (startAtError || dateOrderError) && "border-destructive focus-visible:ring-destructive")}
                                     type="datetime-local"
                                     value={form.startAt}
                                     onChange={e => onFieldChange("startAt", e.target.value)}
@@ -132,7 +132,7 @@ export function StepDetails({
                             <div className="space-y-1.5 mb-3.5">
                                 <Label>End {showErr && <span className="text-destructive">*</span>}</Label>
                                 <input
-                                    className={cn("flex h-9 w-full rounded border border-input bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", (endAtError || dateOrderError) && "border-destructive focus-visible:ring-destructive")}
+                                    className={cn("flex h-9 w-full rounded border border-border-2-2 bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-fg-3 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", (endAtError || dateOrderError) && "border-destructive focus-visible:ring-destructive")}
                                     type="datetime-local"
                                     value={form.endAt}
                                     onChange={e => onFieldChange("endAt", e.target.value)}
@@ -144,7 +144,7 @@ export function StepDetails({
                             </div>
                         </div>
                     </div>
-                    <div className="flex justify-between mt-5 pt-4 border-t border-border">
+                    <div className="flex justify-between mt-5 pt-4 border-t border-border-2">
                         <span />
                         <Button type="button" onClick={handleNext}>
                             Next: Tasks →

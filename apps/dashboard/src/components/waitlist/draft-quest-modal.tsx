@@ -149,10 +149,10 @@ export function DraftQuestModal({ telegramId, onClose }: DraftQuestModalProps) {
     }
 
     const inputClass =
-        "w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 font-mono text-sm text-white placeholder:text-muted-foreground focus:border-[var(--wl-accent)]/60 focus:outline-none transition-colors"
+        "w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 font-mono text-sm text-white placeholder:text-fg-3 focus:border-[var(--wl-accent)]/60 focus:outline-none transition-colors"
     const datetimeInputClass =
-        "w-full rounded-lg border border-neutral-800 bg-neutral-900 px-4  font-mono text-sm text-white placeholder:text-muted-foreground focus:border-[var(--wl-accent)]/60 focus:outline-none transition-colors min-h-[44px] cursor-pointer"
-    const labelClass = "block font-mono text-xs text-muted-foreground mb-1"
+        "w-full rounded-lg border border-neutral-800 bg-neutral-900 px-4  font-mono text-sm text-white placeholder:text-fg-3 focus:border-[var(--wl-accent)]/60 focus:outline-none transition-colors min-h-[44px] cursor-pointer"
+    const labelClass = "block font-mono text-xs text-fg-3 mb-1"
     const errorClass = "mt-1 font-mono text-xs text-red-400"
 
     if (success) {
@@ -163,7 +163,7 @@ export function DraftQuestModal({ telegramId, onClose }: DraftQuestModalProps) {
                 <div className="relative z-10 w-full max-w-md rounded-xl border border-neutral-800 bg-neutral-950 shadow-2xl shadow-black/60 animate-in fade-in zoom-in-95 duration-300">
                     <button
                         onClick={onClose}
-                        className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-neutral-800 hover:text-white"
+                        className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-md text-fg-3 transition-colors hover:bg-neutral-800 hover:text-white"
                     >
                         <CloseLine size={16} />
                     </button>
@@ -172,13 +172,13 @@ export function DraftQuestModal({ telegramId, onClose }: DraftQuestModalProps) {
                         <div className="text-5xl select-none">🎯</div>
                         <div>
                             <p className="font-mono text-xl font-semibold text-white">Quest saved!</p>
-                            <p className="mt-2 font-mono text-sm text-muted-foreground">
+                            <p className="mt-2 font-mono text-sm text-fg-3">
                                 Your quest has been created. When ClawQuest launches, sign in and link your Telegram to continue editing and fund it.
                             </p>
                         </div>
 
                         <div className="w-full rounded-lg border border-neutral-800 bg-neutral-900/40 p-4 text-left">
-                            <p className="font-mono text-xs text-muted-foreground mb-2">Preview link (save this):</p>
+                            <p className="font-mono text-xs text-fg-3 mb-2">Preview link (save this):</p>
                             <div className="flex items-center gap-2">
                                 <input
                                     readOnly
@@ -187,7 +187,7 @@ export function DraftQuestModal({ telegramId, onClose }: DraftQuestModalProps) {
                                 />
                                 <button
                                     onClick={copyPreviewLink}
-                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-900 border border-neutral-800 text-muted-foreground transition-colors hover:bg-neutral-800 hover:text-white active:scale-95"
+                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-900 border border-neutral-800 text-fg-3 transition-colors hover:bg-neutral-800 hover:text-white active:scale-95"
                                     title={copied ? "Copied!" : "Copy link"}
                                 >
                                     {copied ? <CheckLine size={14} /> : (
@@ -200,7 +200,7 @@ export function DraftQuestModal({ telegramId, onClose }: DraftQuestModalProps) {
                             </div>
                         </div>
 
-                        <p className="font-mono text-xs text-muted-foreground">
+                        <p className="font-mono text-xs text-fg-3">
                             We'll notify you via Telegram when the platform goes live.
                         </p>
 
@@ -243,7 +243,7 @@ export function DraftQuestModal({ telegramId, onClose }: DraftQuestModalProps) {
                 <div className="relative z-10 w-full max-w-lg rounded-xl border border-neutral-800 bg-neutral-950 shadow-2xl shadow-black/60 animate-in fade-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
                     <button
                         onClick={onClose}
-                        className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-neutral-800 hover:text-white"
+                        className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-md text-fg-3 transition-colors hover:bg-neutral-800 hover:text-white"
                     >
                         <CloseLine size={16} />
                     </button>
@@ -251,7 +251,7 @@ export function DraftQuestModal({ telegramId, onClose }: DraftQuestModalProps) {
                     <div className="px-6 pt-8 pb-6 flex flex-col gap-5">
                         <div>
                             <p className="font-mono text-lg font-semibold text-white">Create a Quest</p>
-                            <p className="mt-1 font-mono text-xs text-muted-foreground">
+                            <p className="mt-1 font-mono text-xs text-fg-3">
                                 Save your quest idea now. Finish & fund it when the platform launches.
                             </p>
                         </div>

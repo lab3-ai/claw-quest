@@ -78,7 +78,7 @@ export function SubmitWeb3Skill() {
         <div className="space-y-2">
           <Label htmlFor="summary">Summary * (10–200 chars)</Label>
           <Input id="summary" value={summary} onChange={e => setSummary(e.target.value)} placeholder="Brief description of your skill" maxLength={200} />
-          <p className="text-right text-xs text-muted-foreground">{summary.length}/200</p>
+          <p className="text-right text-xs text-fg-3">{summary.length}/200</p>
         </div>
 
         <div className="space-y-2">

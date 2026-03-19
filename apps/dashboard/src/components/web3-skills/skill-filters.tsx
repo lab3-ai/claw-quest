@@ -32,7 +32,7 @@ export function SkillFilters({
     <div className="space-y-4">
       {/* Search */}
       <div className="relative">
-        <Search2Line size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Search2Line size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-3" />
         <Input
           placeholder="Search skills..."
           value={search}

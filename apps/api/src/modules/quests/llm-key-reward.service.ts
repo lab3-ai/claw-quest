@@ -56,10 +56,15 @@ export async function issueLlmKeysForQuest(
 ): Promise<LlmKeyResult> {
   const quest = await prisma.quest.findUnique({
     where: { id: questId },
-    select: { llmKeyRewardEnabled: true, title: true, llmKeyTokenLimit: true },
+    select: { llmKeyRewardEnabled: true, title: true, llmKeyTokenLimit: true, rewardType: true },
   });
 
-  if (!quest?.llmKeyRewardEnabled) {
+  const isLlmRewardQuest =
+    quest?.llmKeyRewardEnabled ||
+    quest?.rewardType === 'LLMTOKEN_OPENROUTER' ||
+    quest?.rewardType === 'LLM_KEY';
+
+  if (!isLlmRewardQuest) {
     return { issued: 0, failed: 0 };
   }
 

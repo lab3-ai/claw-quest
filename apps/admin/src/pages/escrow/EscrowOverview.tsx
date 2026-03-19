@@ -43,7 +43,13 @@ export function EscrowOverview() {
     const distributeMut = useMutation({
         mutationFn: (questId: string) => api.escrowDistribute(questId),
         onSuccess: (data) => {
-            toast.success(`Distributed! Tx: ${data.txHash.slice(0, 16)}...`);
+            if (data.txHash) {
+                toast.success(`Distributed! Tx: ${data.txHash.slice(0, 16)}...`);
+            } else if (data.issued !== undefined) {
+                toast.success(`LLM keys issued: ${data.issued} success, ${data.failed ?? 0} failed`);
+            } else {
+                toast.success('Distribution successful!');
+            }
             qc.invalidateQueries({ queryKey: ['admin', 'escrow'] });
             setActionModal(null);
         },

@@ -1,0 +1,5 @@
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/.env in the IDE. This may or may not be related to the current task.</ide_opened_file>
+Hiện tại đang có issue như sau
+đã config admin curl rồi
+vậy mà tới response markdown lại mất step
+check 2 image

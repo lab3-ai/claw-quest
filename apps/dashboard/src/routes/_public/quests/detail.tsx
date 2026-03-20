@@ -34,9 +34,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { Badge } from "@/components/ui/badge";
 import {
-  QuestTypeBadge,
   QuestStatusBadge,
-  RewardBadge,
 } from "@/components/quest-badges";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

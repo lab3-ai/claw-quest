@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { useAuth } from "@/context/AuthContext"
 import { Button } from "@/components/ui/button"
 import {
@@ -64,14 +64,13 @@ function BottomNav() {
 }
 
 /** Desktop right-side actions (theme, create quest, user menu) */
-function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email, avatarUrl, useOutlineCreate }: {
+function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email, avatarUrl }: {
     isAuthenticated: boolean
     logout: () => void
     handle: string
     handleLabel: string
     email?: string
     avatarUrl: string
-    useOutlineCreate?: boolean
 }) {
     return (
         <TooltipProvider delayDuration={300}>
@@ -173,23 +172,15 @@ export function Navbar() {
     const handleLabel = displayName ? handle : `@${handle}`
     const avatarUrl = getUserAvatarUrl(user, handle, 40)
 
-    const pathname = useRouterState({ select: s => s.location.pathname })
-    const isHome = pathname === "/"
-
     const [scrolled, setScrolled] = useState(false)
-    const [pastHero, setPastHero] = useState(false)
     useEffect(() => {
         const onScroll = () => {
             setScrolled(window.scrollY > 8)
-            setPastHero(window.scrollY > 400)
         }
         onScroll()
         window.addEventListener("scroll", onScroll, { passive: true })
         return () => window.removeEventListener("scroll", onScroll)
     }, [])
-
-    /** On Home page before scrolling past hero, use outline style for Create Quest */
-    const useOutlineCreate = isHome && !pastHero
 
     return (
         <>
@@ -286,7 +277,6 @@ export function Navbar() {
                         handleLabel={handleLabel}
                         email={user?.email}
                         avatarUrl={avatarUrl}
-                        useOutlineCreate={useOutlineCreate}
                     />
                 </div>
             </header>

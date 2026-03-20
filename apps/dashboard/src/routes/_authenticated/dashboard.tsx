@@ -423,7 +423,7 @@ function CompactTable({ quests, emptyMessage, isOwned = false, onPopup, onPublis
                                 onClick={() => navigate({ to: "/quests/$questId", params: { questId: quest.id } })}
                             >
                                 <td className="px-4 pt-4 pb-4 text-xs border-b border-border-2 align-top min-w-60">
-                                    <Link {...titleLinkProps} className="text-base font-semibold leading-snug no-underline text-fg-1 hover:text-primary font-heading" onClick={e => e.stopPropagation()}>
+                                    <Link {...titleLinkProps} className="text-base font-semibold leading-snug no-underline text-fg-1 hover:text-primary font-heading" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                                         {quest.title}
                                     </Link>
                                     <div className="text-xs text-fg-3 inline-flex items-center mt-1 gap-1">

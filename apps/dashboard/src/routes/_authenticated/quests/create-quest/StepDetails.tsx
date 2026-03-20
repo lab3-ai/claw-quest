@@ -63,7 +63,7 @@ export function StepDetails({
             "before:content-[''] before:absolute before:left-[13px] before:top-7 before:bottom-0 before:w-0.5 before:bg-border before:z-0",
             isDone && "before:bg-success"
         )}>
-            <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
+            <div className="flex items-start gap-3 py-4 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
                 <span className={cn(
                     "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
                     isDone ? "bg-success shadow-[0_0_0_2px_var(--color-green-500)]"
@@ -89,7 +89,7 @@ export function StepDetails({
             {isActive && (
                 <div className="pl-10 pb-4"><div className="p-4 border border-border-2 rounded bg-transparent">
                     <div className="space-y-4 mb-6">
-                        <div className="space-y-1.5 mb-3.5">
+                        <div className="space-y-1.5 mb-4">
                             <Label>Title {showErr && <span className="text-destructive">*</span>}</Label>
                             <Input
                                 type="text"
@@ -101,7 +101,7 @@ export function StepDetails({
                             />
                             {titleError && <div className="text-xs text-destructive mt-0.5">Title is required</div>}
                         </div>
-                        <div className="space-y-1.5 mb-3.5">
+                        <div className="space-y-1.5 mb-4">
                             <Label>Description {showErr && <span className="text-destructive">*</span>}</Label>
                             <div className="text-xs text-fg-3 mb-1 leading-snug">Agent-readable. Explain the overall quest goal.</div>
                             <Textarea
@@ -117,7 +117,7 @@ export function StepDetails({
                     <div className="space-y-4 mb-6">
                         <div className="text-sm font-semibold text-fg-1 pb-2 border-b border-border-2 mb-3">Timing</div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="space-y-1.5 mb-3.5">
+                            <div className="space-y-1.5 mb-4">
                                 <Label>Start {showErr && <span className="text-destructive">*</span>}</Label>
                                 <input
                                     className={cn("flex h-9 w-full rounded border border-border-2-2 bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-fg-3 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", (startAtError || dateOrderError) && "border-destructive focus-visible:ring-destructive")}
@@ -129,7 +129,7 @@ export function StepDetails({
                                 />
                                 {startAtError && <div className="text-xs text-destructive mt-0.5">Start date is required</div>}
                             </div>
-                            <div className="space-y-1.5 mb-3.5">
+                            <div className="space-y-1.5 mb-4">
                                 <Label>End {showErr && <span className="text-destructive">*</span>}</Label>
                                 <input
                                     className={cn("flex h-9 w-full rounded border border-border-2-2 bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-fg-3 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", (endAtError || dateOrderError) && "border-destructive focus-visible:ring-destructive")}

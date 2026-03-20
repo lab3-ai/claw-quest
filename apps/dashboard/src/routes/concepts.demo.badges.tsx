@@ -21,6 +21,7 @@ const PILL_OUTLINE_VARIANTS = [
     { variant: "outline-error", label: "Outline Error", desc: "border-error/40 + bg-error-light" },
     { variant: "outline-primary", label: "Outline Primary", desc: "border-primary/40 + bg-primary/5 + text-fg-1" },
     { variant: "outline-warning", label: "Outline Warning", desc: "border-warning/40 + bg-warning-light" },
+    { variant: "outline-strong", label: "Outline Strong", desc: "border-fg-1 + bg-1 + text-fg-1" },
     { variant: "outline-muted", label: "Outline Muted", desc: "border + bg-2 + text-fg-3" },
 ] as const
 
@@ -54,7 +55,7 @@ const REWARD_TYPES = [
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <section className="flex flex-col gap-4">
-            <h2 className="text-lg font-semibold text-fg-1 border-b border-border-2pb-2">{title}</h2>
+            <h2 className="text-lg font-semibold text-fg-1 border-b border-border-2 pb-2">{title}</h2>
             {children}
         </section>
     )
@@ -62,7 +63,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function VariantRow({ variant, label, desc }: { variant: string; label: string; desc?: string }) {
     return (
-        <div className="flex items-center gap-4 px-4 py-3 border-t border-border-2first:border-t-0">
+        <div className="flex items-center gap-4 px-4 py-3 border-t border-border-2 first:border-t-0">
             <code className="text-xs text-accent font-semibold w-44 shrink-0">{variant}</code>
             <Badge variant={variant as any}>{label}</Badge>
             {desc && <span className="text-2xs text-fg-3 ml-auto font-mono">{desc}</span>}
@@ -77,7 +78,7 @@ export function BadgesDemo() {
             {/* Semantic variants */}
             <Section title="Semantic Variants">
                 <p className="text-xs text-fg-3">Plain colored text, no background or border. For inline status indicators.</p>
-                <div className="border border-border-2rounded-lg overflow-hidden">
+                <div className="border border-border-2 rounded-lg overflow-hidden">
                     {SEMANTIC_VARIANTS.map(v => (
                         <VariantRow key={v.variant} variant={v.variant} label={v.label} desc={v.desc} />
                     ))}
@@ -87,7 +88,7 @@ export function BadgesDemo() {
             {/* Pill & outline variants */}
             <Section title="Pill & Outline Variants">
                 <p className="text-xs text-fg-3">Rounded badges with border. For tags, categories, and subtle labels.</p>
-                <div className="border border-border-2rounded-lg overflow-hidden">
+                <div className="border border-border-2 rounded-lg overflow-hidden">
                     {PILL_OUTLINE_VARIANTS.map(v => (
                         <VariantRow key={v.variant} variant={v.variant} label={v.label} desc={v.desc} />
                     ))}
@@ -97,7 +98,7 @@ export function BadgesDemo() {
             {/* Filled variants */}
             <Section title="Filled Variants">
                 <p className="text-xs text-fg-3">Solid background badges. For status indicators that need more visual weight.</p>
-                <div className="border border-border-2rounded-lg overflow-hidden">
+                <div className="border border-border-2 rounded-lg overflow-hidden">
                     {FILLED_VARIANTS.map(v => (
                         <VariantRow key={v.variant} variant={v.variant} label={v.label} desc={v.desc} />
                     ))}
@@ -107,7 +108,7 @@ export function BadgesDemo() {
             {/* With icons */}
             <Section title="With Icons">
                 <p className="text-xs text-fg-3">Badges composed with MingCute icons for richer semantics.</p>
-                <div className="flex flex-wrap gap-3 p-4 border border-border-2rounded-lg bg-bg-1">
+                <div className="flex flex-wrap gap-3 p-4 border border-border-2 rounded-lg bg-bg-1">
                     <Badge variant="filled-success"><CheckLine size={12} /> Verified</Badge>
                     <Badge variant="filled-error"><CloseLine size={12} /> Failed</Badge>
                     <Badge variant="filled-warning"><AlertLine size={12} /> Pending</Badge>
@@ -121,7 +122,7 @@ export function BadgesDemo() {
                 <p className="text-xs text-fg-3">
                     <code className="text-accent">{"<QuestTypeBadge>"}</code> — icon + colored text per quest type.
                 </p>
-                <div className="flex flex-wrap gap-6 p-4 border border-border-2rounded-lg bg-bg-1">
+                <div className="flex flex-wrap gap-6 p-4 border border-border-2 rounded-lg bg-bg-1">
                     {QUEST_TYPES.map(t => (
                         <div key={t} className="flex flex-col items-center gap-2">
                             <QuestTypeBadge type={t} />
@@ -134,9 +135,9 @@ export function BadgesDemo() {
             {/* Quest Status badges */}
             <Section title="Quest Status Badges">
                 <p className="text-xs text-fg-3">
-                    <code className="text-accent">{"<QuestStatusBadge>"}</code> — filled/outline badge per quest status. "live" includes a pulsing dot.
+                    <code className="text-accent">{"<QuestStatusBadge>"}</code> — filled/outline badge per quest status. "live" displays as "ONGOING" with a pulsing dot.
                 </p>
-                <div className="flex flex-wrap gap-3 p-4 border border-border-2rounded-lg bg-bg-1">
+                <div className="flex flex-wrap gap-3 p-4 border border-border-2 rounded-lg bg-bg-1">
                     {QUEST_STATUSES.map(s => (
                         <div key={s} className="flex flex-col items-center gap-2">
                             <QuestStatusBadge status={s} />
@@ -151,7 +152,7 @@ export function BadgesDemo() {
                 <p className="text-xs text-fg-3">
                     <code className="text-accent">{"<RewardBadge>"}</code> — token icon + amount.
                 </p>
-                <div className="flex flex-wrap gap-6 p-4 border border-border-2rounded-lg bg-bg-1">
+                <div className="flex flex-wrap gap-6 p-4 border border-border-2 rounded-lg bg-bg-1">
                     {REWARD_TYPES.map(r => (
                         <div key={r.type} className="flex flex-col items-center gap-2">
                             <RewardBadge type={r.type} amount={r.amount} />
@@ -164,9 +165,9 @@ export function BadgesDemo() {
             {/* Count badges */}
             <Section title="Count Badges">
                 <p className="text-xs text-fg-3">Filled pill with number, used in tabs and navigation counters.</p>
-                <div className="border border-border-2rounded-lg overflow-hidden">
+                <div className="border border-border-2 rounded-lg overflow-hidden">
                     {COUNT_VARIANTS.map(({ variant, value, desc }) => (
-                        <div key={variant} className="flex items-center gap-4 px-4 py-3 border-t border-border-2first:border-t-0">
+                        <div key={variant} className="flex items-center gap-4 px-4 py-3 border-t border-border-2 first:border-t-0">
                             <code className="text-xs text-accent font-semibold w-48 shrink-0">{variant}</code>
                             <Badge variant={variant as any}>{value}</Badge>
                             <Badge variant={variant as any}>128</Badge>
@@ -180,17 +181,17 @@ export function BadgesDemo() {
             <Section title="Composition Examples">
                 <p className="text-xs text-fg-3">Real-world usage patterns combining badges in context.</p>
                 <div className="grid gap-3">
-                    <div className="p-4 rounded-lg border border-border-2bg-bg-1 flex flex-col gap-3">
+                    <div className="p-4 rounded-lg border border-border-2 bg-bg-1 flex flex-col gap-3">
                         <span className="text-2xs font-semibold text-accent uppercase tracking-wider">Quest card header</span>
                         <div className="flex items-center gap-2 flex-wrap">
-                            <Badge variant="outline-primary" className="text-sm font-semibold gap-1.5 px-2.5 py-1">200 ARB</Badge>
+                            <Badge variant="outline-primary" className="text-sm font-semibold gap-1.5 px-3 py-1">200 ARB</Badge>
                             <Badge variant="outline" className="uppercase">FCFS</Badge>
                             <Badge variant="pill">onchain</Badge>
                             <Badge variant="pill">bridge</Badge>
                         </div>
                     </div>
 
-                    <div className="p-4 rounded-lg border border-border-2bg-bg-1 flex flex-col gap-3">
+                    <div className="p-4 rounded-lg border border-border-2 bg-bg-1 flex flex-col gap-3">
                         <span className="text-2xs font-semibold text-accent uppercase tracking-wider">Status row</span>
                         <div className="flex items-center gap-2 flex-wrap">
                             <Badge variant="filled-success"><CheckLine size={12} /> 3 passed</Badge>
@@ -200,7 +201,7 @@ export function BadgesDemo() {
                         </div>
                     </div>
 
-                    <div className="p-4 rounded-lg border border-border-2bg-bg-1 flex flex-col gap-3">
+                    <div className="p-4 rounded-lg border border-border-2 bg-bg-1 flex flex-col gap-3">
                         <span className="text-2xs font-semibold text-accent uppercase tracking-wider">Skill tags</span>
                         <div className="flex items-center gap-2 flex-wrap">
                             <Badge variant="pill">DeFi</Badge>
@@ -215,7 +216,7 @@ export function BadgesDemo() {
             {/* Token mapping reference */}
             <Section title="Token Mapping">
                 <p className="text-xs text-fg-3">Badge variants use numbered design tokens, not shadcn defaults.</p>
-                <div className="p-4 rounded-lg border border-border-2bg-bg-1">
+                <div className="p-4 rounded-lg border border-border-2 bg-bg-1">
                     <pre className="text-xs font-mono text-fg-3 leading-relaxed overflow-auto">{`/* Numbered tokens used in badge variants */
 default     → text-fg-1      (not text-foreground)
 muted       → text-fg-3      (not text-muted-foreground)

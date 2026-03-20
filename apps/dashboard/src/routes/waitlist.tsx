@@ -183,7 +183,7 @@ function WaitlistNavbar() {
                         <button
                             key={id}
                             onClick={() => scrollTo(id)}
-                            className={`font-mono text-xs px-2.5 py-1.5 rounded-md transition-all duration-200 ${activeId === id
+                            className={`font-mono text-xs px-3 py-1.5 rounded-md transition-all duration-200 ${activeId === id
                                 ? "text-white bg-neutral-800"
                                 : "text-fg-3 hover:text-white hover:bg-neutral-900"
                                 }`}
@@ -213,7 +213,7 @@ function WaitlistNavbar() {
                             <button
                                 key={id}
                                 onClick={() => { scrollTo(id); setMenuOpen(false) }}
-                                className={`font-mono text-sm text-left px-3 py-2.5 rounded-md transition-all duration-200 ${activeId === id
+                                className={`font-mono text-sm text-left px-3 py-3 rounded-md transition-all duration-200 ${activeId === id
                                     ? "text-white bg-neutral-800"
                                     : "text-fg-3 hover:text-white"
                                     }`}
@@ -663,7 +663,7 @@ function ProblemColumn({
             <p className={`font-mono text-base font-semibold ${isWith ? "text-[var(--wl-accent)]" : "text-fg-3"}`}>
                 {title}
             </p>
-            <ul className="flex flex-col gap-2.5">
+            <ul className="flex flex-col gap-3">
                 {items.map((item, i) => (
                     <li key={i} className="flex items-start gap-2">
                         <span className={`mt-0.5 shrink-0 ${isWith ? "text-[var(--wl-accent)]" : "text-neutral-600"}`}>

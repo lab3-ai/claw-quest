@@ -259,20 +259,43 @@ All actor colors use grayscale to match the monochromatic theme. Light and dark 
 
 ## Spacing Scale
 
-Based on 4px grid. Use consistently across all components.
+**4px grid — strictly enforced.** All margin, padding, and gap values MUST be multiples of 4px.
 
-| Token | Value | Use |
-|-------|-------|-----|
-| `--space-1` | `4px` | Tight gaps (icon-to-text) |
-| `--space-2` | `8px` | Inline padding, small gaps |
-| `--space-3` | `12px` | Button padding, card inner spacing |
-| `--space-4` | `16px` | Section gaps, card padding |
-| `--space-5` | `20px` | Card padding (comfortable) |
-| `--space-6` | `24px` | Section separation |
-| `--space-8` | `32px` | Page section gaps |
-| `--space-10` | `40px` | Large section separation |
-| `--space-12` | `48px` | Page top/bottom margins |
-| `--space-16` | `64px` | Hero/landing sections |
+### Allowed Tailwind values
+
+| Tailwind | px | Use |
+|----------|-----|-----|
+| `1` | `4px` | Tight gaps (icon-to-text) |
+| `2` | `8px` | Inline padding, small gaps |
+| `3` | `12px` | Button padding, card inner spacing |
+| `4` | `16px` | Section gaps, card padding |
+| `5` | `20px` | Card padding (comfortable) |
+| `6` | `24px` | Section separation |
+| `8` | `32px` | Page section gaps |
+| `10` | `40px` | Large section separation |
+| `12` | `48px` | Page top/bottom margins |
+| `16` | `64px` | Hero/landing sections |
+
+### Exceptions (allowed small values)
+
+| Tailwind | px | Use |
+|----------|-----|-----|
+| `0.5` | `2px` | Micro spacing (badge padding, indicator gaps) |
+| `1.5` | `6px` | Small inline padding (badge `px-1.5 py-0.5`) |
+| `px` | `1px` | Hairline borders, dividers |
+
+### Banned values
+
+**Do NOT use `.5` values for margin/padding/gap** except `0.5` and `1.5`:
+
+| Banned | px | Replace with |
+|--------|-----|-------------|
+| `2.5` | `10px` | `3` (12px) |
+| `3.5` | `14px` | `4` (16px) |
+| `4.5` | `18px` | `5` (20px) |
+| `5.5` | `22px` | `6` (24px) |
+
+**Why:** Non-4px values create inconsistent visual rhythm. 10px and 14px gaps feel arbitrary next to 8/12/16px grid.
 
 ---
 
@@ -383,11 +406,11 @@ Each color has 3 styles: **fill** (solid bg), **tonal** (12% opacity bg), **outl
 | Color | Fill | Tonal | Outline |
 |-------|------|-------|---------|
 | **default** | `bg-foreground text-background hover:bg-fg-2` | `bg-bg-2 text-foreground hover:bg-bg-3` | `border border-border-2 bg-transparent hover:bg-bg-2` |
-| **primary** | `bg-primary text-primary-foreground` | `bg-primary/12 text-primary hover:bg-primary/20` | `border border-primary/40 text-primary hover:bg-primary/10` |
-| **danger** | `bg-destructive text-destructive-foreground` | `bg-destructive/12 text-destructive hover:bg-destructive/20` | `border border-destructive/40 text-destructive hover:bg-destructive/10` |
-| **success** | `bg-emerald-600 text-white` | `bg-emerald-600/12 text-emerald-600` | `border border-emerald-600/40 text-emerald-600 hover:bg-emerald-600/10` |
-| **warning** | `bg-amber-500 text-white` | `bg-amber-500/12 text-amber-500` | `border border-amber-500/40 text-amber-500 hover:bg-amber-500/10` |
-| **info** | `bg-sky-500 text-white` | `bg-sky-500/12 text-sky-500` | `border border-sky-500/40 text-sky-500 hover:bg-sky-500/10` |
+| **primary** | `bg-primary text-primary-foreground` | `bg-primary/12 text-primary hover:bg-primary/20` | `border border-primary text-primary hover:bg-primary/10` |
+| **danger** | `bg-destructive text-destructive-foreground` | `bg-destructive/12 text-destructive hover:bg-destructive/20` | `border border-destructive text-destructive hover:bg-destructive/10` |
+| **success** | `bg-emerald-600 text-white` | `bg-emerald-600/12 text-emerald-600` | `border border-emerald-600 text-emerald-600 hover:bg-emerald-600/10` |
+| **warning** | `bg-amber-500 text-white` | `bg-amber-500/12 text-amber-500` | `border border-amber-500 text-amber-500 hover:bg-amber-500/10` |
+| **info** | `bg-sky-500 text-white` | `bg-sky-500/12 text-sky-500` | `border border-sky-500 text-sky-500 hover:bg-sky-500/10` |
 
 Utility variants: **ghost** (`hover:bg-bg-4`), **link** (`text-foreground underline-offset-4 hover:underline`), **outline** (neutral border, alias for `default-outline`).
 
@@ -395,10 +418,11 @@ Naming: `variant="primary"`, `variant="primary-tonal"`, `variant="primary-outlin
 
 | Size | Height | Padding | Font |
 |------|--------|---------|------|
-| `sm` | 26px | px-2.5 | text-xs |
-| `default` | 36px | px-4 | text-sm |
-| `lg` | 44px | px-6 | text-sm |
-| `xl` | 52px | px-8 | text-base |
+| `xs` | 24px (h-6) | px-2 | text-xs |
+| `sm` | 28px (h-7) | px-3 | text-xs |
+| `default` | 32px (h-8) | px-3 | text-sm |
+| `lg` | 36px (h-9) | px-4 | text-sm |
+| `xl` | 40px (h-10) | px-4 | text-sm |
 
 **Icon button**: `iconOnly` prop — square (w=h), follows size. Use with any variant. All buttons: `font-semibold`, `rounded-button` (2px), `btn-pop` (scale bounce on click), **min `gap-2`** for icon+text spacing. No focus ring — `focus-visible:outline-hidden`.
 

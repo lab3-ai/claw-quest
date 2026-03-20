@@ -466,7 +466,7 @@ export function QuestList() {
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="flex gap-4 py-3.5 border-b border-border-2 items-start pointer-events-none"
+              className="flex gap-4 py-4 border-b border-border-2 items-start pointer-events-none"
             >
               <div className="hidden sm:flex flex-col items-end gap-1.5 min-w-[110px] pt-0.5">
                 <div className="animate-pulse bg-bg-3 rounded w-[50px] h-5 mb-1" />
@@ -474,7 +474,7 @@ export function QuestList() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="animate-pulse bg-bg-3 rounded w-3/5 h-4 mb-2" />
-                <div className="animate-pulse bg-bg-3 rounded w-[90%] h-3 mb-2.5" />
+                <div className="animate-pulse bg-bg-3 rounded w-[90%] h-3 mb-3" />
                 <div className="animate-pulse bg-bg-3 rounded w-2/5 h-3" />
               </div>
               <div className="hidden sm:flex flex-col items-end min-w-[100px] pt-0.5 shrink-0">
@@ -519,22 +519,22 @@ export function QuestList() {
             <table className="w-full min-w-[640px] border border-border-2 border-b-0 rounded bg-bg-1 overflow-hidden border-separate border-spacing-0">
               <thead>
                 <tr>
-                  <th className="text-left px-4 py-2.5 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none min-w-60">
+                  <th className="text-left px-4 py-3 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none min-w-60">
                     Name
                   </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none min-w-36">
+                  <th className="text-left px-4 py-3 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none min-w-36">
                     Reward
                   </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none">
+                  <th className="text-left px-4 py-3 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none">
                     Type
                   </th>
-                  <th className="text-left px-4 py-2.5 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none">
+                  <th className="text-left px-4 py-3 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none">
                     Questers
                   </th>
-                  <th className="text-right px-4 py-2.5 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none">
+                  <th className="text-right px-4 py-3 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none">
                     Slots
                   </th>
-                  <th className="text-right px-4 py-2.5 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none">
+                  <th className="text-right px-4 py-3 text-xs font-normal text-fg-3 uppercase tracking-wide border-b border-border-2 bg-transparent whitespace-nowrap cursor-default select-none">
                     Time Left
                   </th>
                 </tr>
@@ -645,7 +645,7 @@ export function QuestList() {
 
       {/* Animated banner — only on featured tab */}
       {tab === "featured" && (
-        <div className="mt-6 sm:mt-12">
+        <div className="mt-8 sm:mt-12">
           <AnimatedBanner />
         </div>
       )}

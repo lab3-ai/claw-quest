@@ -104,7 +104,7 @@ export function StepReward({
             "before:content-[''] before:absolute before:left-[13px] before:top-0 before:bottom-0 before:w-0.5 before:bg-border before:z-0",
             isDone && "before:bg-success"
         )}>
-            <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
+            <div className="flex items-start gap-3 py-4 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
                 <span className={cn(
                     "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
                     isDone ? "bg-success shadow-[0_0_0_2px_var(--color-green-500)]"
@@ -131,11 +131,11 @@ export function StepReward({
                 <div className="pl-10 pb-4"><div className="p-4 border border-border-2 rounded bg-transparent">
                     {/* Payment Rail */}
                     <div className="space-y-4 mb-6">
-                        <div className="space-y-1.5 mb-3.5">
+                        <div className="space-y-1.5 mb-4">
                             <Label className="mr-4">Reward Method</Label>
                             <div className="inline-flex border border-border-2 rounded overflow-hidden">
                                 <button
-                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none border-r border-border-2 bg-bg-base text-fg-3 transition-all flex items-center gap-1.5 hover:bg-bg-2 hover:text-fg-1", form.rail === "crypto" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
+                                    className={cn("py-1.5 px-4 text-xs font-medium cursor-pointer border-none border-r border-border-2 bg-bg-base text-fg-3 transition-all flex items-center gap-1.5 hover:bg-bg-2 hover:text-fg-1", form.rail === "crypto" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
                                     onClick={() => onFieldChange("rail", "crypto")}
                                 >
                                     <span className="text-base leading-none">⛓</span> Crypto
@@ -144,7 +144,7 @@ export function StepReward({
                                     <TooltipTrigger asChild>
                                         <span
                                             className={cn(
-                                                "inline-flex items-center gap-1.5 py-1.5 px-3.5 text-xs font-medium border-none border-r border-border-2 bg-bg-base text-fg-3 opacity-60 cursor-not-allowed",
+                                                "inline-flex items-center gap-1.5 py-1.5 px-4 text-xs font-medium border-none border-r border-border-2 bg-bg-base text-fg-3 opacity-60 cursor-not-allowed",
                                                 form.rail === "fiat" && "bg-(--tag-bg) text-(--tag-fg) font-semibold"
                                             )}
                                             aria-disabled
@@ -155,7 +155,7 @@ export function StepReward({
                                     <TooltipContent>Coming Soon</TooltipContent>
                                 </Tooltip>
                                 <button
-                                    className={cn("py-1.5 px-3.5 text-xs font-medium cursor-pointer border-none bg-bg-base text-fg-3 transition-all flex items-center gap-1.5 hover:bg-bg-2 hover:text-fg-1", form.rail === "llm" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
+                                    className={cn("py-1.5 px-4 text-xs font-medium cursor-pointer border-none bg-bg-base text-fg-3 transition-all flex items-center gap-1.5 hover:bg-bg-2 hover:text-fg-1", form.rail === "llm" && "bg-(--tag-bg) text-(--tag-fg) font-semibold")}
                                     onClick={() => onFieldChange("rail", "llm")}
                                 >
                                     <span className="text-base leading-none">🤖</span> LLM Token
@@ -169,7 +169,7 @@ export function StepReward({
                         <div className="space-y-4 mb-6">
                             <div className="text-sm font-semibold text-fg-1 pb-2 border-b border-border-2 mb-3">Network &amp; Token</div>
                             <div className="flex items-start gap-3">
-                                <div className="flex-1 space-y-1.5 mb-3.5">
+                                <div className="flex-1 space-y-1.5 mb-4">
                                     <Label>Network</Label>
                                     <select className="flex h-9 w-full rounded border border-border-2-2 bg-transparent px-3 py-1 text-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring" value={form.network} onChange={e => onFieldChange("network", e.target.value)}>
                                         <optgroup label="Primary">
@@ -180,7 +180,7 @@ export function StepReward({
                                         </optgroup>
                                     </select>
                                 </div>
-                                <div className="flex-1 space-y-1.5 mb-3.5">
+                                <div className="flex-1 space-y-1.5 mb-4">
                                     <Label>Token</Label>
                                     <select className="flex h-9 w-full rounded border border-border-2-2 bg-transparent px-3 py-1 text-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring" value={form.token} onChange={e => onFieldChange("token", e.target.value)}>
                                         <optgroup label="Stablecoin">
@@ -193,7 +193,7 @@ export function StepReward({
                                     </select>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2.5 p-2 px-3 border border-border-2 rounded bg-bg-3" style={{ marginTop: 8 }}>
+                            <div className="flex items-center gap-3 p-2 px-3 border border-border-2 rounded bg-bg-3" style={{ marginTop: 8 }}>
                                 <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0" style={{ background: tokenIconColor }}>
                                     {tokenIconChar}
                                 </div>
@@ -213,7 +213,7 @@ export function StepReward({
                                 <span className="text-sm shrink-0">ℹ️</span>
                                 <span>Sponsor pays via <strong>Stripe</strong> (charged upfront at quest creation). Winners withdraw rewards as crypto.</span>
                             </div>
-                            <div className="flex items-center gap-2.5 p-2 px-3 border border-border-2 rounded bg-bg-3" style={{ marginTop: 10 }}>
+                            <div className="flex items-center gap-3 p-2 px-3 border border-border-2 rounded bg-bg-3" style={{ marginTop: 10 }}>
                                 <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 bg-(--stripe-fg)">S</div>
                                 <div className="flex-1">
                                     <div className="text-sm font-semibold text-fg-1">USD via Stripe</div>
@@ -331,7 +331,7 @@ export function StepReward({
                         <div style={{ marginTop: 12 }}>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {form.rail !== "llm" && (
-                                    <div className="space-y-1.5 mb-3.5">
+                                    <div className="space-y-1.5 mb-4">
                                         <Label>Total Reward ({tokenLabel}) <span className="text-destructive">*</span></Label>
                                         <Input
                                             className={cn("font-mono text-xs", totalError && "border-destructive focus-visible:ring-destructive")}
@@ -342,7 +342,7 @@ export function StepReward({
                                         {totalError && <div className="text-xs text-destructive mt-0.5">Total reward must be greater than 0</div>}
                                     </div>
                                 )}
-                                <div className="space-y-1.5 mb-3.5">
+                                <div className="space-y-1.5 mb-4">
                                     <Label>
                                         Number of Winners {showErr && <span className="text-destructive">*</span>}
                                         {form.type === "LEADERBOARD" && (
@@ -376,7 +376,7 @@ export function StepReward({
                                 <div className="text-xs text-fg-3 mb-1 leading-snug" style={{ marginBottom: 8 }}>
                                     First N eligible agents get paid immediately.
                                 </div>
-                                <div className="text-xs text-fg-3 mt-1.5 p-1.5 px-2.5 bg-bg-3 rounded border border-border-2">
+                                <div className="text-xs text-fg-3 mt-1.5 p-1.5 px-3 bg-bg-3 rounded border border-border-2">
                                     Per winner: <strong className="text-accent font-mono">{perWinner} {tokenLabel}</strong>
                                 </div>
                             </div>
@@ -388,7 +388,7 @@ export function StepReward({
                                 <div className="text-xs text-fg-3 mb-1 leading-snug" style={{ marginBottom: 8 }}>
                                     All eligible submissions enter a raffle. N winners drawn at end.
                                 </div>
-                                <div className="space-y-1.5 mb-3.5">
+                                <div className="space-y-1.5 mb-4">
                                     <Label>Draw Time {showErr && <span className="text-destructive">*</span>}</Label>
                                     <input
                                         className={cn("flex h-9 w-full rounded border border-border-2-2 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-fg-3 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", drawTimeError && "border-destructive focus-visible:ring-destructive")}
@@ -400,7 +400,7 @@ export function StepReward({
                                     />
                                     {drawTimeError && <div className="text-xs text-destructive mt-0.5">Draw time is required for Lucky Draw</div>}
                                 </div>
-                                <div className="text-xs text-fg-3 mt-1.5 p-1.5 px-2.5 bg-bg-3 rounded border border-border-2">
+                                <div className="text-xs text-fg-3 mt-1.5 p-1.5 px-3 bg-bg-3 rounded border border-border-2">
                                     Per winner: <strong className="text-accent font-mono">{perWinner} {tokenLabel}</strong>
                                 </div>
                             </div>
@@ -412,12 +412,12 @@ export function StepReward({
                                 <div className="text-xs text-fg-3 mb-1 leading-snug" style={{ marginBottom: 8 }}>
                                     All verified submissions ranked by completion time. At quest end, top N get tiered rewards (1st gets more than 2nd, etc.).
                                 </div>
-                                <div className="space-y-1.5 mb-3.5">
+                                <div className="space-y-1.5 mb-4">
                                     <Label>Payout Structure ({tokenLabel})</Label>
                                     <div className="text-xs text-fg-3 mb-1 leading-snug">
                                         Auto-generated from total &amp; winners count. Weighted decay: 1st gets most.
                                     </div>
-                                    <div className="flex flex-wrap gap-1 px-2.5 py-2 border border-border-2 rounded bg-bg-3/50 font-mono text-xs">
+                                    <div className="flex flex-wrap gap-1 px-3 py-2 border border-border-2 rounded bg-bg-3/50 font-mono text-xs">
                                         {lbWinnersNum <= 20
                                             ? lbPayouts.map((amt, i) => (
                                                 <div key={i} className={cn("inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-bg-base border border-border-2 rounded", i === 0 && "border-accent")}>
@@ -445,7 +445,7 @@ export function StepReward({
                                         }
                                     </div>
                                 </div>
-                                <div className="text-xs text-fg-3 mt-1.5 p-1.5 px-2.5 bg-bg-3 rounded border border-border-2">
+                                <div className="text-xs text-fg-3 mt-1.5 p-1.5 px-3 bg-bg-3 rounded border border-border-2">
                                     <span>1st: <strong className="text-accent font-mono">{lbPayouts[0]?.toFixed(2)} {tokenLabel}</strong></span>
                                     <span style={{ marginLeft: 8 }}>→ Last: <strong className="text-accent font-mono">{lbPayouts[lbPayouts.length - 1]?.toFixed(2)} {tokenLabel}</strong></span>
                                     <span style={{ marginLeft: "auto" }}>Total: <strong className="text-accent font-mono">{activeTotal.toFixed(2)} {tokenLabel}</strong></span>

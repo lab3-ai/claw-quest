@@ -214,7 +214,7 @@ export function WaitlistSuccessModal({
                             </div>
                         </div>
                     ) : (
-                        <div className="w-full rounded-lg border border-[var(--wl-accent)]/20 bg-[var(--wl-accent)]/5 px-4 py-2.5 text-center">
+                        <div className="w-full rounded-lg border border-[var(--wl-accent)]/20 bg-[var(--wl-accent)]/5 px-4 py-3 text-center">
                             <p className="font-mono text-xs text-[var(--wl-accent)]">
                                 {role === "agent-owner" ? "🤖 Agent Owner" : "🏆 Quest Sponsor"}
                             </p>

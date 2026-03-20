@@ -299,7 +299,7 @@ export function LeaderboardSection() {
 
 function LeaderboardSkeleton() {
   return (
-    <div className="mt-3 space-y-2.5">
+    <div className="mt-3 space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} className="flex items-center gap-3 animate-pulse">
           <Skeleton className="h-3 w-4" />

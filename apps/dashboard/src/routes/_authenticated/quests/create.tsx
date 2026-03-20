@@ -450,7 +450,7 @@ function DiscordRoleFields({ task, idx, setTaskParam, addChip, removeChip, chipE
 
     return (
         <>
-            <div className="flex items-center gap-2 px-2.5 py-2 bg-indigo-50 border border-indigo-300 rounded text-xs text-fg-1 mb-2">
+            <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50 border border-indigo-300 rounded text-xs text-fg-1 mb-2">
                 <span>🤖</span>
                 <span style={{ flex: 1 }}>
                     {botPresent === true && guildName
@@ -464,7 +464,7 @@ function DiscordRoleFields({ task, idx, setTaskParam, addChip, removeChip, chipE
                     <Button variant="ghost" size="sm" className="ml-1" onClick={handleRefresh}>Refresh</Button>
                 )}
             </div>
-            <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 8 }}>
+            <div className="space-y-1.5 mb-4" style={{ marginBottom: 8 }}>
                 <Label>Discord Server URL</Label>
                 <div className="text-xs text-fg-3 mb-1 leading-snug">Invite link. Press ↵ to confirm.</div>
                 <ChipInput
@@ -480,7 +480,7 @@ function DiscordRoleFields({ task, idx, setTaskParam, addChip, removeChip, chipE
                 {loading && <div className="text-xs text-fg-3 mb-1 leading-snug" style={{ color: "var(--accent)" }}>Checking server...</div>}
                 {error && <div className="text-xs text-destructive mt-0.5 leading-snug">{error}</div>}
             </div>
-            <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 0 }}>
+            <div className="space-y-1.5 mb-4" style={{ marginBottom: 0 }}>
                 <Label>Required Role</Label>
                 <div className="text-xs text-fg-3 mb-1 leading-snug">
                     {botPresent === true ? "Select a role from the server." : "Invite the bot first to load roles."}
@@ -522,7 +522,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
     const fields = actionDef.fields
 
     return (
-        <div className="block px-3 py-2.5">
+        <div className="block px-3 py-3">
             {(fields === "follow") && (
                 <div className="space-y-1.5 mb-0">
                     <Label>X Usernames</Label>
@@ -556,7 +556,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
             )}
             {(fields === "post_content") && (
                 <>
-                    <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 8 }}>
+                    <div className="space-y-1.5 mb-4" style={{ marginBottom: 8 }}>
                         <Label>Post Template</Label>
                         <div className="text-xs text-fg-3 mb-1 leading-snug">Provide a template or required content. User can customize around it.</div>
                         <div className="relative">
@@ -583,7 +583,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
             )}
             {(fields === "quote_post") && (
                 <>
-                    <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 8 }}>
+                    <div className="space-y-1.5 mb-4" style={{ marginBottom: 8 }}>
                         <Label>Post URL</Label>
                         <div className="text-xs text-fg-3 mb-1 leading-snug">Link to the X post to quote. Press ↵ to confirm.</div>
                         <ChipInput
@@ -597,7 +597,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
                             chipStatus={chipStatus}
                         />
                     </div>
-                    <div className="space-y-1.5 mb-3.5" style={{ marginBottom: 8 }}>
+                    <div className="space-y-1.5 mb-4" style={{ marginBottom: 8 }}>
                         <Label>Quote Template</Label>
                         <div className="text-xs text-fg-3 mb-1 leading-snug">Provide required content for the quote (hashtags, links, etc.).</div>
                         <div className="relative">
@@ -622,7 +622,7 @@ function SocialEntryBody({ task, idx, setTaskParam, toggleTagFriends, addChip, r
             )}
             {(fields === "discord_join") && (
                 <>
-                    <div className="flex items-center gap-2 px-2.5 py-2 bg-indigo-50 border border-indigo-300 rounded text-xs text-fg-1 mb-2">
+                    <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50 border border-indigo-300 rounded text-xs text-fg-1 mb-2">
                         <span>🤖</span>
                         <span style={{ flex: 1 }}>
                             Add the <strong>ClawQuest bot</strong> to your server to enable join verification.

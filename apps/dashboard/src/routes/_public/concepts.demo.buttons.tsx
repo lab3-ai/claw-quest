@@ -26,7 +26,7 @@ const VARIANTS = [
     "link",
 ] as const
 
-const SIZES = ["sm", "default", "lg", "xl"] as const
+const SIZES = ["xs", "sm", "default", "lg", "xl"] as const
 
 export function ConceptsDemoButtons() {
     return (
@@ -96,7 +96,7 @@ export function ConceptsDemoButtons() {
                             <span className="w-36 font-mono text-xs text-fg-3">{v}</span>
                             {SIZES.map((s) => (
                                 <Button key={s} variant={v} size={s} iconOnly>
-                                    <StarLine size={s === "sm" ? 14 : s === "xl" ? 22 : 16} />
+                                    <StarLine size={s === "xs" ? 12 : s === "sm" ? 14 : s === "xl" ? 22 : 16} />
                                 </Button>
                             ))}
                         </div>

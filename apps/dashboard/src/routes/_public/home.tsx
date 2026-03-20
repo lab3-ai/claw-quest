@@ -7,7 +7,6 @@ import { SkillCard } from "@/components/web3-skills/skill-card";
 import { SeoHead } from "@/components/seo-head";
 import { Badge } from "@/components/ui/badge";
 import { HomeBanner } from "@/components/animated-banner";
-import { LeaderboardSection } from "@/components/leaderboard-section";
 import {
   ArrowRightLine,
   FlashLine,

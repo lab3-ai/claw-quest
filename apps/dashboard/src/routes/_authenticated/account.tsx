@@ -417,7 +417,7 @@ export function Account() {
 
             {/* Profile */}
             <div className="border border-border-2 rounded mb-5 bg-bg-base overflow-hidden">
-                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border-2 bg-bg-2 text-fg-1">Profile</div>
+                <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">Profile</div>
                 <div className="p-4">
                     {profileLoading ? (
                         <>
@@ -511,7 +511,7 @@ export function Account() {
 
             {/* Connected Accounts */}
             <div className="border border-border-2 rounded mb-5 bg-bg-base overflow-hidden">
-                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border-2 bg-bg-2 text-fg-1">Connected Accounts</div>
+                <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">Connected Accounts</div>
                 <div className="p-4">
                     {LINK_PROVIDERS.map((p, idx) => {
                         const identity = identities.find(i => i.provider === p.key)
@@ -527,7 +527,7 @@ export function Account() {
                         else if (identity?.identity_data?.user_name) detail = identity.identity_data.user_name as string
 
                         return (
-                            <div key={p.key} className={`flex items-center gap-2.5 py-2 text-sm min-w-0${idx > 0 ? " border-t border-border-2" : ""}`}>
+                            <div key={p.key} className={`flex items-center gap-3 py-2 text-sm min-w-0${idx > 0 ? " border-t border-border-2" : ""}`}>
                                 <span className="w-5 flex items-center justify-center shrink-0">
                                     <PlatformIcon name={p.key as "google" | "telegram" | "x" | "discord"} size={16} />
                                 </span>
@@ -536,7 +536,7 @@ export function Account() {
                                 {isTelegram ? (
                                     telegramLinked ? (
                                         <>
-                                            <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
+                                            <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
                                                 <span className="text-success text-xs font-semibold">Connected</span>
                                                 <span className="text-fg-3 text-xs">
                                                     {profile?.telegramUsername ? `@${profile.telegramUsername}` : ""}
@@ -567,7 +567,7 @@ export function Account() {
                                     )
                                 ) : isLinked ? (
                                     <>
-                                        <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
+                                        <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
                                             <span className="text-success text-xs font-semibold">Connected</span>
                                             {detail && <span className="text-fg-3 text-xs">{detail}</span>}
                                             {/* X read access button: show when X linked but no read token yet */}
@@ -616,10 +616,10 @@ export function Account() {
                         const info = PROVIDER_LABELS[identity.provider] ?? { label: identity.provider, icon: "?" }
                         const detail = (identity.identity_data?.email as string) || (identity.identity_data?.user_name as string) || ""
                         return (
-                            <div key={identity.id} className="flex items-center gap-2.5 py-2 text-sm min-w-0 opacity-70 border-t border-border-2">
+                            <div key={identity.id} className="flex items-center gap-3 py-2 text-sm min-w-0 opacity-70 border-t border-border-2">
                                 <span className="w-5 text-center text-sm shrink-0">{info.icon}</span>
                                 <span className="font-semibold min-w-[90px]">{info.label}</span>
-                                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <span className="text-success text-xs font-semibold">Connected</span>
                                     {detail && <span className="text-fg-3 text-xs">{detail}</span>}
                                 </div>
@@ -644,14 +644,14 @@ export function Account() {
 
             {/* GitHub for Bounties */}
             <div className="border border-border-2 rounded mb-5 bg-bg-base">
-                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border-2 bg-bg-3 text-fg-1">GitHub for Bounties</div>
+                <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-3 text-fg-1">GitHub for Bounties</div>
                 <div className="p-4">
-                    <div className="flex items-center gap-2.5 text-sm">
+                    <div className="flex items-center gap-3 text-sm">
                         <span className="w-5 text-center text-sm shrink-0 font-mono">GH</span>
                         <span className="font-semibold min-w-[90px]">GitHub</span>
                         {profile?.githubHandle ? (
                             <>
-                                <div className="flex items-center gap-2.5 flex-1 min-w-0 justify-end">
+                                <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
                                     <span className="text-success text-xs font-semibold">Connected</span>
                                     <span className="text-fg-3 text-xs font-mono">@{profile.githubHandle}</span>
                                 </div>
@@ -683,7 +683,7 @@ export function Account() {
 
             {/* Wallets */}
             <div className="border border-border-2 rounded mb-5 bg-bg-base overflow-hidden">
-                <div className="text-sm font-semibold px-4 py-2.5 border-b border-border-2 bg-bg-2 text-fg-1">Wallets</div>
+                <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">Wallets</div>
                 <div className="p-4">
                     {walletsLoading ? (
                         <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
@@ -696,7 +696,7 @@ export function Account() {
                         <div className="text-xs text-fg-3 py-2">No wallets linked yet.</div>
                     ) : (
                         wallets.map((w, idx) => (
-                            <div key={w.id} className={`flex items-center gap-2.5 py-2 text-sm${idx > 0 ? " border-t border-border-2" : ""}`}>
+                            <div key={w.id} className={`flex items-center gap-3 py-2 text-sm${idx > 0 ? " border-t border-border-2" : ""}`}>
                                 <span className="font-mono text-xs text-fg-1">{shortenAddress(w.address)}</span>
                                 {w.chainId && (
                                     <span className="text-xs text-fg-3">
@@ -798,7 +798,7 @@ function FiatPayoutSection({ token }: { token: string | undefined }) {
 
     return (
         <div className="border border-border-2 rounded mb-5 bg-bg-base overflow-hidden">
-            <div className="text-sm font-semibold px-4 py-2.5 border-b border-border-2 bg-bg-2 text-fg-1">Fiat Payout</div>
+            <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">Fiat Payout</div>
             <div className="p-4">
                 {isLoading ? (
                     <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>

@@ -82,7 +82,7 @@ function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email, a
                 <>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button asChild variant={useOutlineCreate ? "primary-outline" : "primary"}>
+                            <Button asChild variant="primary-outline">
                                 <Link to="/quests/new" className="no-underline">
                                     <AddLine size={16} />
                                     Create Quest
@@ -96,7 +96,7 @@ function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email, a
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <DropdownMenuTrigger asChild>
-                                    <button className="h-9 w-9 rounded overflow-hidden cursor-pointer p-0.5 border border-border-2 bg-bg-1 hover:opacity-70 transition-opacity">
+                                    <button className="h-8 w-8 rounded overflow-hidden cursor-pointer p-0.5 border border-border-2 bg-bg-1 hover:opacity-70 transition-opacity">
                                         <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
                                     </button>
                                 </DropdownMenuTrigger>
@@ -105,7 +105,7 @@ function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email, a
                         </Tooltip>
                         <DropdownMenuContent align="end" className="w-52">
                             {/* User info header */}
-                            <div className="flex items-center gap-2.5 px-2 py-2">
+                            <div className="flex items-center gap-3 px-2 py-2">
                                 <img src={avatarUrl} alt="" className="h-9 w-9 rounded shrink-0 object-cover" />
                                 <div className="min-w-0">
                                     <div className="text-sm font-semibold text-fg-1 truncate">{handleLabel}</div>
@@ -152,7 +152,7 @@ function DesktopActions({ isAuthenticated, logout, handle, handleLabel, email, a
                             Log in
                         </Link>
                     </Button>
-                    <Button asChild variant={useOutlineCreate ? "primary-outline" : "primary"}>
+                    <Button asChild variant="primary-outline">
                         <Link to="/quests/new" className="no-underline">
                             <AddLine size={16} />
                             Create Quest
@@ -214,7 +214,7 @@ export function Navbar() {
                         <ThemeSwitcher />
                         {isAuthenticated ? (
                             <>
-                                <Button asChild variant={useOutlineCreate ? "primary-outline" : "primary"} size="default">
+                                <Button asChild variant="primary-outline" size="default">
                                     <Link to="/quests/new" className="no-underline">
                                         <AddLine size={16} />
                                         Create
@@ -222,12 +222,12 @@ export function Navbar() {
                                 </Button>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <button className="h-9 w-9 rounded overflow-hidden cursor-pointer p-0.5 border border-border-2 bg-bg-1 hover:opacity-70 transition-opacity">
+                                        <button className="h-8 w-8 rounded overflow-hidden cursor-pointer p-0.5 border border-border-2 bg-bg-1 hover:opacity-70 transition-opacity">
                                             <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
                                         </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-52">
-                                        <div className="flex items-center gap-2.5 px-2 py-2">
+                                        <div className="flex items-center gap-3 px-2 py-2">
                                             <img src={avatarUrl} alt="" className="h-9 w-9 rounded shrink-0 object-cover" />
                                             <div className="min-w-0">
                                                 <div className="text-sm font-semibold text-fg-1 truncate">{handleLabel}</div>
@@ -269,7 +269,7 @@ export function Navbar() {
                                 <Button asChild variant="outline" size="default">
                                     <Link to="/login" className="no-underline">Log in</Link>
                                 </Button>
-                                <Button asChild variant={useOutlineCreate ? "primary-outline" : "primary"} size="default">
+                                <Button asChild variant="primary-outline" size="default">
                                     <Link to="/quests/new" className="no-underline">
                                         <AddLine size={16} />
                                         Create

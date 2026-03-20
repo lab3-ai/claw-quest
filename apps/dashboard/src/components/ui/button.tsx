@@ -19,7 +19,7 @@ const buttonVariants = cva(
         warning: "bg-amber-500 text-white hover:bg-amber-600",
         info: "bg-sky-500 text-white hover:bg-sky-600",
         /* Tonal: light bg → slightly darker bg on hover */
-        "default-tonal": "bg-bg-2 text-foreground hover:bg-bg-3",
+        "default-tonal": "bg-fg-1/10 text-foreground hover:bg-fg-1/20",
         "primary-tonal": "bg-primary/12 text-primary hover:bg-primary/20",
         "danger-tonal":
           "bg-destructive/12 text-destructive hover:bg-destructive/20",
@@ -32,15 +32,15 @@ const buttonVariants = cva(
         "default-outline":
           "border border-border-2 bg-transparent hover:bg-bg-2",
         "primary-outline":
-          "border border-primary/40 bg-transparent text-primary hover:bg-primary/10",
+          "border border-primary bg-transparent text-primary hover:bg-primary/10",
         "danger-outline":
-          "border border-destructive/40 bg-transparent text-destructive hover:bg-destructive/10",
+          "border border-destructive bg-transparent text-destructive hover:bg-destructive/10",
         "success-outline":
-          "border border-emerald-600/40 bg-transparent text-emerald-600 hover:bg-emerald-600/10",
+          "border border-emerald-600 bg-transparent text-emerald-600 hover:bg-emerald-600/10",
         "warning-outline":
-          "border border-amber-500/40 bg-transparent text-amber-500 hover:bg-amber-500/10",
+          "border border-amber-500 bg-transparent text-amber-500 hover:bg-amber-500/10",
         "info-outline":
-          "border border-sky-500/40 bg-transparent text-sky-500 hover:bg-sky-500/10",
+          "border border-sky-500 bg-transparent text-sky-500 hover:bg-sky-500/10",
         /* Utility */
         secondary:
           "bg-foreground text-background hover:bg-fg-2" /* @deprecated use "default" */,
@@ -48,10 +48,11 @@ const buttonVariants = cva(
         link: "text-foreground underline-offset-4 hover:underline",
       },
       size: {
-        sm: "h-[26px] px-2.5 text-xs",
-        default: "h-9 px-4",
-        lg: "h-11 px-6",
-        xl: "h-[52px] px-8 text-base",
+        xs: "h-6 px-2 text-xs",
+        sm: "h-7 px-3 text-xs",
+        default: "h-8 px-3 text-sm",
+        lg: "h-9 px-4 text-sm",
+        xl: "h-10 px-4 text-sm",
       },
       /* Icon-only: square button, w = h */
       iconOnly: {
@@ -59,10 +60,11 @@ const buttonVariants = cva(
       },
     },
     compoundVariants: [
-      { iconOnly: true, size: "sm", className: "!w-[26px] !px-0" },
-      { iconOnly: true, size: "default", className: "!w-9 !px-0" },
-      { iconOnly: true, size: "lg", className: "!w-11 !px-0" },
-      { iconOnly: true, size: "xl", className: "!w-[52px] !px-0" },
+      { iconOnly: true, size: "xs", className: "!w-6 !px-0" },
+      { iconOnly: true, size: "sm", className: "!w-7 !px-0" },
+      { iconOnly: true, size: "default", className: "!w-8 !px-0" },
+      { iconOnly: true, size: "lg", className: "!w-9 !px-0" },
+      { iconOnly: true, size: "xl", className: "!w-10 !px-0" },
     ],
     defaultVariants: {
       variant: "default",

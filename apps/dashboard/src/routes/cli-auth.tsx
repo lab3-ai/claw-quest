@@ -235,7 +235,7 @@ export function CliAuth() {
             <div className="flex-1 flex items-center justify-center px-4 py-10">
                 <div className="bg-bg-base rounded border border-border-2 w-full max-w-[380px] p-7 text-center relative">
                     {/* CLI badge */}
-                    <div className="inline-flex items-center gap-1.5 bg-accent/10 text-accent text-xs font-medium px-2.5 py-1 rounded-full mb-4">
+                    <div className="inline-flex items-center gap-1.5 bg-accent/10 text-accent text-xs font-medium px-3 py-1 rounded-full mb-4">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <polyline points="4 17 10 11 4 5" />
                             <line x1="12" y1="19" x2="20" y2="19" />
@@ -260,7 +260,7 @@ export function CliAuth() {
                     <Button
                         type="button"
                         variant="outline"
-                        className="w-full mb-3 flex items-center justify-center gap-2 text-sm py-2.5"
+                        className="w-full mb-3 flex items-center justify-center gap-2 text-sm py-3"
                         onClick={handleGoogleLogin}
                         disabled={googleLoading}
                     >
@@ -281,7 +281,7 @@ export function CliAuth() {
                     <Button
                         type="button"
                         variant="outline"
-                        className="w-full mb-3 flex items-center justify-center gap-2 text-sm py-2.5"
+                        className="w-full mb-3 flex items-center justify-center gap-2 text-sm py-3"
                         onClick={async () => {
                             setTelegramLoading(true)
                             setErrorMsg("")
@@ -311,7 +311,7 @@ export function CliAuth() {
                     <Button
                         type="button"
                         variant="outline"
-                        className="w-full mb-3 flex items-center justify-center gap-2 text-sm py-2.5"
+                        className="w-full mb-3 flex items-center justify-center gap-2 text-sm py-3"
                         onClick={handleTwitterLogin}
                         disabled={twitterLoading}
                     >
@@ -329,7 +329,7 @@ export function CliAuth() {
                     <Button
                         type="button"
                         variant="outline"
-                        className="w-full mb-3 flex items-center justify-center gap-2 text-sm py-2.5"
+                        className="w-full mb-3 flex items-center justify-center gap-2 text-sm py-3"
                         onClick={handleDiscordLogin}
                         disabled={discordLoading}
                     >
@@ -350,10 +350,10 @@ export function CliAuth() {
                     </div>
 
                     <form onSubmit={handleEmailLogin}>
-                        <div className="space-y-1.5 mb-3.5 text-left">
+                        <div className="space-y-1.5 mb-4 text-left">
                             <label className="block text-xs font-semibold text-fg-1 mb-1">Email</label>
                             <input
-                                className="w-full px-2.5 py-2 text-sm border border-border-2-2 rounded bg-bg-base text-fg-1 focus:border-accent focus:ring-2 focus:ring-accent/10 outline-hidden box-border"
+                                className="w-full px-3 py-2 text-sm border border-border-2-2 rounded bg-bg-base text-fg-1 focus:border-accent focus:ring-2 focus:ring-accent/10 outline-hidden box-border"
                                 type="email"
                                 placeholder="you@example.com"
                                 required
@@ -361,10 +361,10 @@ export function CliAuth() {
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
-                        <div className="space-y-1.5 mb-3.5 text-left">
+                        <div className="space-y-1.5 mb-4 text-left">
                             <label className="block text-xs font-semibold text-fg-1 mb-1">Password</label>
                             <input
-                                className="w-full px-2.5 py-2 text-sm border border-border-2-2 rounded bg-bg-base text-fg-1 focus:border-accent focus:ring-2 focus:ring-accent/10 outline-hidden box-border"
+                                className="w-full px-3 py-2 text-sm border border-border-2-2 rounded bg-bg-base text-fg-1 focus:border-accent focus:ring-2 focus:ring-accent/10 outline-hidden box-border"
                                 type="password"
                                 required
                                 value={password}
@@ -373,7 +373,7 @@ export function CliAuth() {
                         </div>
                         <Button
                             type="submit"
-                            className="w-full mt-2 text-sm py-2.5"
+                            className="w-full mt-2 text-sm py-3"
                             disabled={loading}
                         >
                             {loading ? "Signing in..." : "Sign in"}

@@ -91,7 +91,7 @@ export function StepPreview({
 
     return (
         <div className="relative mb-0 border-none rounded-none">
-            <div className="flex items-start gap-3 py-3.5 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
+            <div className="flex items-start gap-3 py-4 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
                 <span className={cn(
                     "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
                     isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
@@ -124,14 +124,14 @@ export function StepPreview({
                     </div>
 
                     {/* Description */}
-                    <div className="py-3.5 border-b border-border-2 mb-5 text-sm leading-relaxed text-fg-1">
-                        <div className="text-sm font-semibold text-fg-1 pb-2 border-b border-border-2 mb-3.5">About this Quest</div>
+                    <div className="py-4 border-b border-border-2 mb-5 text-sm leading-relaxed text-fg-1">
+                        <div className="text-sm font-semibold text-fg-1 pb-2 border-b border-border-2 mb-4">About this Quest</div>
                         <p>{form.description || <span className="text-fg-3 italic">No description provided</span>}</p>
                     </div>
 
                     {/* Reward grid */}
-                    <div className="grid grid-cols-2 gap-2.5 mb-2.5">
-                        <div className="px-3 py-2.5 border border-border-2 rounded bg-bg-3">
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                        <div className="px-3 py-3 border border-border-2 rounded bg-bg-3">
                             <div className="text-xs text-fg-3 mb-0.5">total reward</div>
                             <div className="text-sm font-semibold text-accent font-mono">
                                 {form.rail === "llm"
@@ -139,11 +139,11 @@ export function StepPreview({
                                     : activeTotal > 0 ? `${activeTotal.toLocaleString()} ${tokenLabel}` : "—"}
                             </div>
                         </div>
-                        <div className="px-3 py-2.5 border border-border-2 rounded bg-bg-3">
+                        <div className="px-3 py-3 border border-border-2 rounded bg-bg-3">
                             <div className="text-xs text-fg-3 mb-0.5">total slots</div>
                             <div className="text-sm font-semibold text-fg-1">{activeWinners}</div>
                         </div>
-                        <div className="px-3 py-2.5 border border-border-2 rounded bg-bg-3">
+                        <div className="px-3 py-3 border border-border-2 rounded bg-bg-3">
                             <div className="text-xs text-fg-3 mb-0.5">per winner</div>
                             <div className="text-sm font-semibold text-accent font-mono">
                                 {form.rail === "llm"
@@ -153,7 +153,7 @@ export function StepPreview({
                                         : `${perWinner} ${tokenLabel}`}
                             </div>
                         </div>
-                        <div className="px-3 py-2.5 border border-border-2 rounded bg-bg-3">
+                        <div className="px-3 py-3 border border-border-2 rounded bg-bg-3">
                             <div className="text-xs text-fg-3 mb-0.5">duration</div>
                             <div className="text-sm font-semibold text-fg-1">
                                 {durationDays !== null && durationDays > 0 ? `${durationDays} day${durationDays === 1 ? "" : "s"}` : "—"}
@@ -163,15 +163,15 @@ export function StepPreview({
 
                     {/* Human Tasks */}
                     {humanTasks.length > 0 && (
-                        <div className="mb-6 pl-3.5 border-l-4 border-l-(--human-fg) mt-4">
-                            <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
+                        <div className="mb-6 pl-4 border-l-4 border-l-(--human-fg) mt-4">
+                            <div className="flex items-center gap-2 text-sm font-semibold mb-3">
                                 Human Tasks
                                 <span className="text-xs font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--human-bg) text-(--human-fg)">HUMAN</span>
                                 <span className="font-normal text-xs text-fg-3 ml-auto">Complete these yourself</span>
                             </div>
                             {humanTasks.map((task, i) => (
-                                <div key={i} className="border border-border-2 rounded mb-2.5 overflow-hidden last:mb-0">
-                                    <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
+                                <div key={i} className="border border-border-2 rounded mb-3 overflow-hidden last:mb-0">
+                                    <div className="flex items-center gap-3 px-3 py-3 text-xs">
                                         <span className="w-5 h-5 rounded-full border-2 border-border-2-2 shrink-0 flex items-center justify-center text-xs"></span>
                                         <span className="flex-1 font-medium">
                                             <span className="text-xs text-fg-3 font-mono mr-1">#{i + 1}</span>
@@ -191,15 +191,15 @@ export function StepPreview({
 
                     {/* Agent Tasks */}
                     {requiredSkills.length > 0 && (
-                        <div className={cn("mb-6 pl-3.5 border-l-4 border-l-(--agent-fg)", humanTasks.length > 0 ? "mt-2.5" : "mt-4")}>
-                            <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
+                        <div className={cn("mb-6 pl-4 border-l-4 border-l-(--agent-fg)", humanTasks.length > 0 ? "mt-3" : "mt-4")}>
+                            <div className="flex items-center gap-2 text-sm font-semibold mb-3">
                                 Agent Tasks
                                 <span className="text-xs font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--agent-bg) text-(--agent-fg)">AGENT</span>
                                 <span className="font-normal text-xs text-fg-3 ml-auto">Your AI agent handles these</span>
                             </div>
                             {requiredSkills.map((skill) => (
-                                <div key={skill.id} className="border border-border-2 rounded mb-2.5 overflow-hidden last:mb-0">
-                                    <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
+                                <div key={skill.id} className="border border-border-2 rounded mb-3 overflow-hidden last:mb-0">
+                                    <div className="flex items-center gap-3 px-3 py-3 text-xs">
                                         <span className="w-5 h-5 rounded-full border-2 border-border-2-2 shrink-0 flex items-center justify-center text-xs"></span>
                                         <span className="flex-1 font-medium">
                                             Requires skill: <code className="font-mono text-xs bg-bg-3 px-1 py-px rounded">{skill.name}</code>
@@ -221,8 +221,8 @@ export function StepPreview({
                     {/* Payment Summary — hidden for LLM rail */}
                     {form.rail !== "llm" && (
                         <div className="border border-border-2 rounded mt-4 overflow-hidden">
-                            <div className="bg-bg-3/50 px-3.5 py-2.5 font-semibold text-base border-b border-border-2">Payment Summary</div>
-                            <div className="px-3.5 py-3">
+                            <div className="bg-bg-3/50 px-4 py-3 font-semibold text-base border-b border-border-2">Payment Summary</div>
+                            <div className="px-4 py-3">
                                 <div className="flex justify-between py-1.5 text-xs border-b border-border-2/30 last:border-b-0">
                                     <span className="text-fg-3">Payment</span>
                                     <span className="font-semibold text-right">{form.rail === "crypto" ? "Crypto" : "Fiat (Stripe)"}</span>
@@ -263,7 +263,7 @@ export function StepPreview({
 
                     {/* LLM Key Reward info — shown instead of Payment Summary */}
                     {form.rail === "llm" && (
-                        <div className="mt-4 p-3.5 border border-border-2 rounded bg-bg-3">
+                        <div className="mt-4 p-4 border border-border-2 rounded bg-bg-3">
                             <div className="text-sm font-semibold mb-1">LLM Key Reward</div>
                             <div className="text-xs text-fg-3">
                                 Each winner receives a personal LLM API key with {llmKeyTokenLimit.toLocaleString()} tokens.
@@ -275,7 +275,7 @@ export function StepPreview({
                     {/* Pay With — hidden for LLM rail */}
                     {form.rail !== "llm" && (
                         <div className="mt-4">
-                            <div className="text-xs font-semibold uppercase tracking-wide text-fg-3 mb-2.5">Pay with</div>
+                            <div className="text-xs font-semibold uppercase tracking-wide text-fg-3 mb-3">Pay with</div>
                             {form.rail === "crypto" ? (
                                 <div className="flex items-center gap-2 mb-2">
                                     <span className="text-xl">{"\uD83D\uDD17"}</span>
@@ -288,7 +288,7 @@ export function StepPreview({
                                 </div>
                             ) : (
                                 <>
-                                    <div className="flex items-center gap-2.5 p-2 px-3 border border-border-2 rounded bg-bg-3" style={{ marginBottom: 8 }}>
+                                    <div className="flex items-center gap-3 p-2 px-3 border border-border-2 rounded bg-bg-3" style={{ marginBottom: 8 }}>
                                         <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 bg-(--stripe-fg)">S</div>
                                         <div className="flex-1">
                                             <div className="text-sm font-semibold text-fg-1">Pay via Stripe</div>
@@ -305,7 +305,7 @@ export function StepPreview({
 
                     {/* Mutation error */}
                     {mutation.isError && (
-                        <div className="mt-4 px-3 py-2.5 bg-error-light border border-error rounded-sm text-xs text-error">
+                        <div className="mt-4 px-3 py-3 bg-error-light border border-error rounded-sm text-xs text-error">
                             {mutation.error?.message}
                         </div>
                     )}

@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { RunLine, TrophyLine, RandomLine } from "@mingcute/react"
 import { TokenIcon } from "./token-icon"
 import { typeColorClass } from "./quest-utils"
@@ -12,13 +13,27 @@ const TYPE_ICON: Record<string, React.ElementType> = {
     LUCKY_DRAW: RandomLine,
 }
 
+const TYPE_TOOLTIP: Record<string, string> = {
+    FCFS: "First Come First Served — first N agents to complete win",
+    LEADERBOARD: "Ranked by score — top performers get rewarded",
+    LUCKY_DRAW: "Random draw at deadline — all entries have equal chance",
+}
+
 export function QuestTypeBadge({ type, size = 14 }: { type: string; size?: number }) {
     const Icon = TYPE_ICON[type]
-    return (
-        <span className={cn("inline-flex items-center gap-1 text-xs font-semibold uppercase", typeColorClass(type))}>
+    const tooltip = TYPE_TOOLTIP[type]
+    const badge = (
+        <span className={cn("inline-flex items-center gap-1 text-xs font-semibold uppercase cursor-default", typeColorClass(type))}>
             {Icon && <Icon size={size} />}
             {type.replace("_", " ")}
         </span>
+    )
+    if (!tooltip) return badge
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild><span className="inline-flex">{badge}</span></TooltipTrigger>
+            <TooltipContent side="top" className="max-w-60 text-center">{tooltip}</TooltipContent>
+        </Tooltip>
     )
 }
 
@@ -39,14 +54,14 @@ export function QuestStatusBadge({ status }: { status: string }) {
     const variant = STATUS_VARIANT[status.toLowerCase()] ?? "filled-muted"
     const isLive = status.toLowerCase() === "live"
     return (
-        <Badge variant={variant} className="uppercase">
+        <Badge variant={variant} className="uppercase gap-2">
             {isLive && (
                 <span className="relative inline-flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
                 </span>
             )}
-            {status}
+            {isLive ? "Ongoing" : status}
         </Badge>
     )
 }

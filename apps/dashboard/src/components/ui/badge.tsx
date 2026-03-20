@@ -34,6 +34,8 @@ const badgeVariants = cva(
           "border border-warning/40 rounded-md px-2 py-0.5 bg-warning/10 text-warning",
         "outline-primary":
           "border border-primary/40 rounded-md px-2 py-0.5 bg-primary/10 text-fg-1",
+        "outline-strong":
+          "border border-fg-1 rounded-md px-2 py-0.5 bg-bg-1 text-fg-1",
         "outline-muted":
           "border border-border rounded-md px-2 py-0.5 bg-bg-2 text-fg-3",
         /* Count — small filled pill for numbers in tabs/nav */

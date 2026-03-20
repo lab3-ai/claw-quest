@@ -155,7 +155,7 @@ function ActiveQuestCard({ participation }: { participation: Participation }) {
 
 function StatItem({ label, value }: { label: string; value: string | number }) {
     return (
-        <div className="flex justify-between items-center py-2.5 border-b border-border-2 last:border-b-0">
+        <div className="flex justify-between items-center py-3 border-b border-border-2 last:border-b-0">
             <span className="text-xs text-fg-2">{label}</span>
             <span className="text-sm font-semibold text-fg-1">{value}</span>
         </div>
@@ -187,7 +187,7 @@ function ActivityLog({ logs }: { logs: AgentLog[] }) {
             ) : (
                 <div className="flex flex-col gap-3">
                     {logs.map((log) => (
-                        <div key={log.id} className="flex gap-2.5 items-start">
+                        <div key={log.id} className="flex gap-3 items-start">
                             <div className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 shrink-0" aria-hidden="true" />
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm text-fg-1 leading-relaxed">{log.message}</p>
@@ -216,7 +216,7 @@ function QuestHistory({ participations }: { participations: Participation[] }) {
                         key={p.id}
                         to="/quests/$questId"
                         params={{ questId: p.quest.id }}
-                        className="flex items-center justify-between py-2.5 px-3 border border-border-2 hover:bg-bg-2/50 transition-colors"
+                        className="flex items-center justify-between py-3 px-3 border border-border-2 hover:bg-bg-2/50 transition-colors"
                     >
                         <div className="flex items-center gap-2 min-w-0">
                             <CheckCircleLine size={16} className="text-success shrink-0" />

@@ -65,9 +65,32 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 - Click: entire card is clickable (`cursor-pointer`)
 - Type badge: `outline` variant with icon
 - Tags: `pill` variant, truncated with +N counter
-- Progress bar: 10-segment linear bar, no rounded corners
 - Border: `border border-border-2` (1px)
 - Radius: `rounded` (2px Terminal theme)
+
+#### Progress — theo Quest type
+
+**FCFS:** progress bar 10 đoạn (không rounded) + label "X/Y slots"
+
+```
+[██████████] 8/10 slots
+```
+
+**Lucky Draw:** 2-cột box thay thế progress bar — bên trái số người đã tham gia, bên phải số phần thưởng
+
+```
++------------------+------------------+
+| [Group2Line] 42  | [GiftLine] 5     |
+| entered          | rewards          |
++------------------+------------------+
+```
+
+- Container: `border border-border-2 rounded grid grid-cols-2 divide-x divide-border-2`
+- Icon: MingCute `Group2Line` (entered) / `GiftLine` (rewards), `text-fg-3`
+- Count: `text-sm font-semibold text-fg-1`
+- Label: `text-xs text-fg-3`
+
+**Leaderboard:** progress bar giống FCFS (tính theo số slot/participant tối đa)
 
 ### Quest Card — Compact (Table) View
 
@@ -97,6 +120,20 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 | Mobile (< 640px) | Single column, full-width cards | Stacked layout (reward above title) |
 | Tablet (md: 768px) | 2-column grid | 2-column flex layout |
 | Desktop (xl: 1280px) | 3-column grid | 2-column flex layout |
+
+### Quest Status Badge
+
+Component: `<QuestStatusBadge>` (`src/components/quest-badges.tsx`) — hiển thị trạng thái của quest.
+
+| Status (DB) | Label hiển thị | Badge variant | Màu |
+|-------------|---------------|---------------|-----|
+| `draft` | DRAFT | `outline` | neutral |
+| `scheduled` | SCHEDULED | `outline-warning` | warning |
+| `live` | ONGOING | `filled-success` | success |
+| `completed` | COMPLETED | `filled-muted` | muted |
+| `cancelled` | CANCELLED | `filled-error` | error |
+
+> Lưu ý: status `live` hiển thị label **"ONGOING"** (không phải "LIVE") để phản ánh đúng trạng thái đang diễn ra.
 
 ### Empty State
 
@@ -186,6 +223,20 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 | Empty table | Full-width empty state inside table body |
 | Responsive | Stack to cards on mobile (< 768px) |
 
+### Countdown Timer
+
+Component: `<CountdownTimer>` (`src/components/countdown-timer.tsx`) — đếm ngược đến deadline của quest.
+
+```
+2d : 14h : 32m : 09s
+```
+
+- Format: D:H:M:S, mỗi segment có label bên dưới
+- Màu mặc định: `text-fg-1`
+- Khi còn < 6 giờ: chuyển sang `text-error` (toàn bộ timer)
+- Font: monospace (Geist Mono), `font-semibold`
+- Khi hết hạn (deadline đã qua): hiển thị `--` hoặc ẩn component
+
 ### Navigation / Topbar
 
 - Active link: `text-primary font-semibold` (color change, no underline/bg)
@@ -197,6 +248,7 @@ Used by: Quest Detail, Agent Detail, Fund Quest
 - Breadcrumbs: only on 3+ level deep pages
 - Logo: `<BrandLogo animated />` — full on desktop, icon-only on mobile
 - Theme toggle: sun/moon icon button (light↔dark)
+- **"Create Quest" button**: luôn dùng `variant="primary-outline"` (cả desktop lẫn mobile header)
 
 ---
 

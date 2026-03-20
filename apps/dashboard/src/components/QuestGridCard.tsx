@@ -3,7 +3,13 @@ import { Link } from "@tanstack/react-router";
 import type { Quest } from "@clawquest/shared";
 import { formatTimeLeft } from "./quest-utils";
 import { SponsorLogo } from "./sponsor-logo";
-import { RunLine, TrophyLine, RandomLine } from "@mingcute/react";
+import {
+  RunLine,
+  TrophyLine,
+  RandomLine,
+  Group2Line,
+  GiftLine,
+} from "@mingcute/react";
 import { TokenIcon } from "./token-icon";
 import { QuestersAvatarStack } from "./QuestCard";
 import { Badge } from "@/components/ui/badge";
@@ -94,7 +100,7 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
           {TYPE_ICON[quest.type] &&
             (() => {
               const Icon = TYPE_ICON[quest.type];
-              return <Icon size={12} />;
+              return <Icon size={14} />;
             })()}
           {quest.type.replace("_", " ")}
         </Badge>
@@ -119,42 +125,32 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
       <div className="mt-auto flex flex-col gap-3 pt-4 border-t border-border-2">
         {/* Progress */}
         {isLuckyDraw ? (
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-fg-3">
-                <strong className="text-fg-1">
-                  {quest.filledSlots.toLocaleString()}
-                </strong>
-                /{quest.totalSlots.toLocaleString()} entered
-              </span>
+          <div className="flex flex-col border border-border-2 min-h-[26px] justify-center">
+            <div className="flex items-center text-xs text-fg-3">
+              <div className="flex items-center px-2 py-1 gap-1.5 w-full">
+                <span className="w-full">
+                  <strong className="text-fg-1">
+                    {quest.filledSlots.toLocaleString()}
+                  </strong>{" "}
+                  entered
+                </span>
+                <Group2Line size={14} className="text-fg-3 shrink-0" />
+              </div>
+              <span className="text-border-2 h-full w-px bg-bg-3">·</span>
+              <div className="flex items-center px-2 py-1 gap-1.5 w-full">
+                <span className="w-full">
+                  <strong className="text-fg-1">
+                    {quest.totalSlots.toLocaleString()}
+                  </strong>{" "}
+                  rewards
+                </span>
+                <GiftLine size={14} className="text-fg-3 shrink-0" />
+              </div>
             </div>
-            <div className="flex gap-px w-full">
-              {Array.from({ length: 10 }, (_, i) => {
-                const pct =
-                  quest.totalSlots > 0
-                    ? (quest.filledSlots / quest.totalSlots) * 100
-                    : 0;
-                const filled = pct >= (i + 1) * 10;
-                const partial = !filled && pct > i * 10;
-                return (
-                  <div key={i} className="flex-1 h-1.5 bg-bg-3 overflow-hidden">
-                    {(filled || partial) && (
-                      <div
-                        className="h-full bg-primary"
-                        style={{
-                          width: partial
-                            ? `${((pct - i * 10) / 10) * 100}%`
-                            : "100%",
-                        }}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            {/* Spacer to match FCFS progress bar height */}
           </div>
         ) : (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 min-h-[26px] justify-center">
             <div className="flex items-center justify-between text-xs">
               <span className="text-fg-3">
                 <strong className="text-fg-1">
@@ -163,7 +159,10 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
                 /{quest.totalSlots.toLocaleString()} slots
               </span>
               <span className="text-fg-3">
-                <strong className="text-fg-1 font-semibold">{(quest.totalSlots - quest.filledSlots).toLocaleString()}</strong> left
+                <strong className="text-fg-1 font-semibold">
+                  {(quest.totalSlots - quest.filledSlots).toLocaleString()}
+                </strong>{" "}
+                left
               </span>
             </div>
             <div className="flex gap-px w-full">

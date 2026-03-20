@@ -15,6 +15,7 @@ import { BadgesDemo } from './routes/concepts.demo.badges'
 import { DemoIndex } from './routes/concepts.demo.index'
 import { ColorsDemo } from './routes/concepts.demo.colors'
 import { TooltipsDemo } from './routes/concepts.demo.tooltips'
+import { QuestSidebarDemo } from './routes/concepts.demo.quest-sidebar'
 import { Dashboard } from './routes/_authenticated/dashboard'
 import { QuestList } from './routes/_authenticated/quests/index'
 import { QuestDetail } from './routes/_public/quests/detail'
@@ -553,6 +554,12 @@ const conceptsDemoTooltipsRoute = createRoute({
     component: TooltipsDemo,
 })
 
+const conceptsDemoQuestSidebarRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/concepts/demo/quest-sidebar',
+    component: QuestSidebarDemo,
+})
+
 const routeTree = rootRoute.addChildren([
     conceptsDemoButtonsRoute,
     conceptsDemoTypographyRoute,
@@ -560,6 +567,7 @@ const routeTree = rootRoute.addChildren([
     conceptsDemoIndexRoute,
     conceptsDemoColorsRoute,
     conceptsDemoTooltipsRoute,
+    conceptsDemoQuestSidebarRoute,
     devLab3Route,
     loginRoute,
     registerRoute,

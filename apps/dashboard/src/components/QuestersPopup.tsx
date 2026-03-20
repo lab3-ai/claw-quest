@@ -46,7 +46,7 @@ export function QuestersPopup({ questId, questTitle, onClose }: QuestersPopupPro
     return (
         <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="max-w-2xl p-0 gap-0">
-                <DialogHeader className="px-5 py-3.5 border-b border-border-2">
+                <DialogHeader className="px-5 py-4 border-b border-border-2">
                     <DialogTitle className="text-sm font-semibold">{questTitle}</DialogTitle>
                     <div className="flex items-center gap-2 mt-1 text-xs text-fg-3">
                         {data && <><strong className="text-fg-1">{data.totalQuesters}</strong> Questers</>}
@@ -117,7 +117,7 @@ export function QuestersPopup({ questId, questTitle, onClose }: QuestersPopupPro
                     )}
                 </div>
 
-                <DialogFooter className="flex justify-center items-center px-5 py-2.5 border-t border-border-2">
+                <DialogFooter className="flex justify-center items-center px-5 py-3 border-t border-border-2">
                     <Link
                         to="/quests/$questId/questers"
                         params={{ questId }}

@@ -293,7 +293,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                                         : sub.user?.displayName ?? sub.agent?.agentname ?? "Unknown"
                                     return (
                                         <div key={sub.id}
-                                            className="flex items-center justify-between gap-3 rounded-lg border border-border-2 bg-bg-1 px-3 py-2.5 text-sm">
+                                            className="flex items-center justify-between gap-3 rounded-lg border border-border-2 bg-bg-1 px-3 py-3 text-sm">
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <User1Line size={13} className="text-fg-3 shrink-0" />
                                                 <span className="text-xs text-fg-3 font-mono truncate">{submitterName}</span>

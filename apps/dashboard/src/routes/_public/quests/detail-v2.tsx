@@ -3,6 +3,7 @@ import { useParams, useSearch, Link, useNavigate } from "@tanstack/react-router"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { Quest } from "@clawquest/shared"
 import { REWARD_TYPE, FUNDING_METHOD } from "@clawquest/shared"
+import { Group2Line, GiftLine, User3Line, AiLine } from "@mingcute/react"
 import { useAuth } from "@/context/AuthContext"
 import { getDiceBearUrl } from "@/components/avatarUtils"
 import { SponsorLogo } from "@/components/sponsor-logo"
@@ -482,8 +483,8 @@ export function QuestDetailV2() {
                     {/* Left: main content */}
                     <div className="flex-1 min-w-0">
                         {/* Description */}
-                        <div className="py-3.5 border-b border-border-2 mb-5">
-                            <div className="skeleton h-4 w-32 mb-3.5" />
+                        <div className="py-4 border-b border-border-2 mb-5">
+                            <div className="skeleton h-4 w-32 mb-4" />
                             <div className="space-y-2">
                                 <div className="skeleton h-3 w-full" />
                                 <div className="skeleton h-3 w-full" />
@@ -493,9 +494,9 @@ export function QuestDetailV2() {
                         </div>
 
                         {/* Reward grid */}
-                        <div className="grid grid-cols-2 gap-2.5 mb-2.5">
+                        <div className="grid grid-cols-2 gap-3 mb-3">
                             {[...Array(4)].map((_, i) => (
-                                <div key={i} className="px-3 py-2.5 border border-border-2 rounded bg-bg-3">
+                                <div key={i} className="px-3 py-3 border border-border-2 rounded bg-bg-3">
                                     <div className="skeleton h-3 w-16 mb-1" />
                                     <div className="skeleton h-4 w-20" />
                                 </div>
@@ -503,7 +504,7 @@ export function QuestDetailV2() {
                         </div>
 
                         {/* Tasks section */}
-                        <div className="mt-5 border-t border-border-2 pt-3.5">
+                        <div className="mt-5 border-t border-border-2 pt-4">
                             <div className="skeleton h-4 w-24 mb-3" />
                             <div className="space-y-2">
                                 {[...Array(3)].map((_, i) => (
@@ -516,7 +517,7 @@ export function QuestDetailV2() {
                         </div>
 
                         {/* Tags */}
-                        <div className="mt-5 border-t border-border-2 pt-3.5">
+                        <div className="mt-5 border-t border-border-2 pt-4">
                             <div className="skeleton h-4 w-20 mb-2" />
                             <div className="flex gap-1.5 flex-wrap">
                                 {[...Array(4)].map((_, i) => (
@@ -540,7 +541,7 @@ export function QuestDetailV2() {
                             </div>
 
                             {/* Countdown */}
-                            <div className="px-3 py-2.5 border-b border-border-2 text-center">
+                            <div className="px-3 py-3 border-b border-border-2 text-center">
                                 <div className="skeleton h-3 w-24 mx-auto mb-2" />
                                 <div className="flex justify-center gap-3">
                                     {[...Array(4)].map((_, i) => (
@@ -553,7 +554,7 @@ export function QuestDetailV2() {
                             </div>
 
                             {/* Spots bar */}
-                            <div className="px-3 py-2.5 border-b border-border-2">
+                            <div className="px-3 py-3 border-b border-border-2">
                                 <div className="flex justify-between mb-1">
                                     <div className="skeleton h-3 w-28" />
                                     <div className="skeleton h-3 w-12" />
@@ -717,10 +718,10 @@ export function QuestDetailV2() {
                 <div className="flex-1 min-w-0">
                     {/* Human Tasks (from quest.tasks) */}
                     {quest.tasks && quest.tasks.length > 0 && (
-                        <div className="mb-6 pl-3.5 border-l-4 border-l-(--human-fg)">
-                            <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
+                        <div className="mb-6 pl-4 border-l-4 border-l-(--human-fg)">
+                            <div className="flex items-center gap-2 text-sm font-semibold mb-3">
+                                <User3Line size={16} className="text-(--human-fg)" />
                                 Human Tasks
-                                <span className="text-xs font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--human-bg) text-(--human-fg)">HUMAN</span>
                                 <span className="font-normal text-xs text-fg-3 ml-auto">Complete these yourself</span>
                             </div>
                             {quest.tasks.map((task: any, idx: number) => {
@@ -734,8 +735,8 @@ export function QuestDetailV2() {
                                 const actionUrl = getTaskActionUrl(task)
 
                                 return (
-                                    <div key={idx} className="border border-border-2 rounded mb-2.5 overflow-hidden last:mb-0">
-                                        <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
+                                    <div key={idx} className="border border-border-2 rounded mb-3 overflow-hidden last:mb-0">
+                                        <div className="flex items-center gap-3 px-3 py-3 text-xs">
                                             <TaskCheck status={taskStatus} />
                                             <span className="flex-1 font-medium">{task.label}</span>
                                             <Badge variant="pill">{platformLabel(task.platform)}</Badge>
@@ -831,10 +832,10 @@ export function QuestDetailV2() {
                         const verifiedSkills = new Set(quest.myParticipation?.verifiedSkills ?? [])
 
                         return (
-                            <div className="mb-6 pl-3.5 border-l-4 border-l-(--agent-fg)">
-                                <div className="flex items-center gap-2 text-sm font-semibold mb-2.5">
+                            <div className="mb-6 pl-4 border-l-4 border-l-(--agent-fg)">
+                                <div className="flex items-center gap-2 text-sm font-semibold mb-3">
+                                    <AiLine size={16} className="text-(--agent-fg)" />
                                     Agent Tasks
-                                    <span className="text-xs font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider bg-(--agent-bg) text-(--agent-fg)">AGENT</span>
                                     {quest.requireVerified && (
                                         <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-warning/15 text-warning">Verified Only</span>
                                     )}
@@ -850,8 +851,8 @@ export function QuestDetailV2() {
                                     const isLoading = challengeLoading === skill
 
                                     return (
-                                        <div key={idx} className="border border-border-2 rounded mb-2.5 overflow-hidden last:mb-0">
-                                            <div className="flex items-center gap-2.5 px-3 py-2.5 text-xs">
+                                        <div key={idx} className="border border-border-2 rounded mb-3 overflow-hidden last:mb-0">
+                                            <div className="flex items-center gap-3 px-3 py-3 text-xs">
                                                 <TaskCheck status={status} />
                                                 <span className="flex-1 font-medium">
                                                     Requires skill: <code className="font-mono text-xs bg-bg-3 px-1 py-px rounded">{skill}</code>
@@ -882,7 +883,7 @@ export function QuestDetailV2() {
                                 {needsVerifiedScan && (() => {
                                     const scanCmd = `npx @clawquest/scan --key <your-agent-api-key> --server ${API_BASE}`
                                     return (
-                                        <div className="mt-2 rounded border border-warning/30 bg-warning/10 px-3 py-2.5 text-xs">
+                                        <div className="mt-2 rounded border border-warning/30 bg-warning/10 px-3 py-3 text-xs">
                                             <div className="font-semibold mb-1">Verify your skills to join this quest</div>
                                             <div className="text-fg-3 leading-relaxed mb-1.5">
                                                 Run this in your terminal:
@@ -916,8 +917,8 @@ export function QuestDetailV2() {
 
                     {/* Questers avatar crowd */}
                     {quest.questers > 0 && quest.questerDetails && (
-                        <div className="mt-6 border border-border-2 rounded px-3.5 py-3">
-                            <div className="flex justify-between items-center text-xs text-fg-3 mb-2.5">
+                        <div className="mt-6 border border-border-2 rounded px-4 py-3">
+                            <div className="flex justify-between items-center text-xs text-fg-3 mb-3">
                                 <span><strong className="text-fg-1">{quest.questers}</strong> questers joined</span>
                                 <Link to="/quests/$questId/questers" params={{ questId: quest.id }} className="hover:text-accent transition-colors">
                                     view all →
@@ -935,7 +936,7 @@ export function QuestDetailV2() {
                                             alt={d.humanHandle}
                                             className="w-full h-full rounded-full"
                                         />
-                                        <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 bg-foreground text-white text-xs px-2.5 py-2 rounded whitespace-nowrap z-100 pointer-events-none leading-relaxed min-w-[120px] text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-[5px] after:border-transparent after:border-t-foreground">
+                                        <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 bg-foreground text-white text-xs px-3 py-2 rounded whitespace-nowrap z-100 pointer-events-none leading-relaxed min-w-[120px] text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-[5px] after:border-transparent after:border-t-foreground">
                                             <span className="text-surface-dark-muted text-xs">Human</span> <span className="font-semibold text-white">@{d.humanHandle}</span>
                                             <br />
                                             <span className="text-surface-dark-muted text-xs">Agent</span> <span className="font-semibold text-(--agent-border) font-mono text-xs">{d.agentName}</span>
@@ -967,7 +968,7 @@ export function QuestDetailV2() {
 
                 {/* ── Right: sidebar ── */}
                 <div className="w-full md:min-w-2xs md:max-w-xs shrink-0">
-                    <div className="border border-border-2 rounded mb-3.5 sticky top-14">
+                    <div className="border border-border-2 rounded mb-4 sticky top-14">
                         {/* Sidebar header: reward summary */}
                         <div className="px-3 py-3 border-b border-border-2">
                             <div className="flex items-center justify-between mb-1.5">
@@ -992,7 +993,7 @@ export function QuestDetailV2() {
 
                         {/* Deadline */}
                         {isLive && quest.expiresAt && (
-                            <div className="px-3 py-2.5 border-b border-border-2">
+                            <div className="px-3 py-3 border-b border-border-2">
                                 <div className="text-2xs font-semibold uppercase tracking-wider text-fg-3 mb-0.5">Deadline</div>
                                 <div className="text-xs text-fg-1">
                                     {new Date(quest.expiresAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
@@ -1000,50 +1001,61 @@ export function QuestDetailV2() {
                             </div>
                         )}
                         {isCompleted && (
-                            <div className="px-3 py-2.5 border-b border-border-2 text-center">
+                            <div className="px-3 py-3 border-b border-border-2 text-center">
                                 <QuestStatusBadge status="completed" />
                             </div>
                         )}
 
                         {/* Spots — segmented bar */}
-                        <div className="px-3 py-2.5 border-b border-border-2">
-                            <div className="flex justify-between text-xs mb-2">
-                                {isLuckyDraw ? (
-                                    <>
-                                        <span className="text-fg-3 font-semibold">{quest.filledSlots} entered</span>
-                                        <span className="font-mono font-semibold">{quest.totalSlots} winners drawn</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="text-fg-3 font-semibold">{quest.filledSlots} / {quest.totalSlots} spots filled</span>
-                                        <span className={cn("font-mono font-semibold", slotsLeft < 5 ? "text-error" : "text-fg-1")}>
-                                            {slotsLeft} left
+                        <div className="px-3 py-3 border-b border-border-2">
+                            {isLuckyDraw ? (
+                                <div className="flex border border-border-2 text-xs text-fg-3">
+                                    <div className="flex items-center px-2 py-1 gap-1.5 w-full">
+                                        <span className="w-full">
+                                            <strong className="text-fg-1">{quest.filledSlots.toLocaleString()}</strong>{" "}entered
                                         </span>
-                                    </>
-                                )}
-                            </div>
-                            {!isLuckyDraw && (
-                                <div className="flex gap-px w-full">
-                                    {Array.from({ length: 10 }, (_, i) => {
-                                        const pct = quest.totalSlots > 0 ? (quest.filledSlots / quest.totalSlots) * 100 : 0
-                                        const filled = pct >= (i + 1) * 10
-                                        const partial = !filled && pct > i * 10
-                                        return (
-                                            <div key={i} className="flex-1 h-1.5 bg-bg-3 overflow-hidden">
-                                                {(filled || partial) && (
-                                                    <div
-                                                        className="h-full bg-primary"
-                                                        style={{ width: partial ? `${((pct - i * 10) / 10) * 100}%` : '100%' }}
-                                                    />
-                                                )}
-                                            </div>
-                                        )
-                                    })}
+                                        <Group2Line size={14} className="text-fg-3 shrink-0" />
+                                    </div>
+                                    <span className="w-px bg-border-2" />
+                                    <div className="flex items-center px-2 py-1 gap-1.5 w-full">
+                                        <span className="w-full">
+                                            <strong className="text-fg-1">{quest.totalSlots.toLocaleString()}</strong>{" "}rewards
+                                        </span>
+                                        <GiftLine size={14} className="text-fg-3 shrink-0" />
+                                    </div>
                                 </div>
+                            ) : (
+                                <>
+                                    <div className="flex justify-between text-xs mb-2">
+                                        <span className="text-fg-3">
+                                            <strong className="text-fg-1">{quest.filledSlots.toLocaleString()}</strong>/{quest.totalSlots.toLocaleString()} slots
+                                        </span>
+                                        <span className={cn("text-fg-3", slotsLeft < 5 && "text-error")}>
+                                            <strong className="text-fg-1 font-semibold">{slotsLeft.toLocaleString()}</strong>{" "}left
+                                        </span>
+                                    </div>
+                                    <div className="flex gap-px w-full">
+                                        {Array.from({ length: 10 }, (_, i) => {
+                                            const pct = quest.totalSlots > 0 ? (quest.filledSlots / quest.totalSlots) * 100 : 0
+                                            const filled = pct >= (i + 1) * 10
+                                            const partial = !filled && pct > i * 10
+                                            return (
+                                                <div key={i} className="flex-1 h-1.5 bg-bg-3 overflow-hidden">
+                                                    {(filled || partial) && (
+                                                        <div
+                                                            className="h-full bg-primary"
+                                                            style={{ width: partial ? `${((pct - i * 10) / 10) * 100}%` : '100%' }}
+                                                        />
+                                                    )}
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </>
                             )}
                             {/* Questers avatar stack */}
                             {quest.questers > 0 && quest.questerDetails && (
-                                <div className="mt-2.5 flex items-center justify-between">
+                                <div className="mt-3 flex items-center justify-between">
                                     <Link to="/quests/$questId/questers" params={{ questId: quest.id }} className="text-2xs text-fg-3 hover:text-accent transition-colors">
                                         {quest.questers} questers →
                                     </Link>
@@ -1310,7 +1322,7 @@ export function QuestDetailV2() {
                                             <div className="text-xs text-fg-3 text-center mb-3">
                                                 Connect your wallet to receive {quest.rewardType} reward
                                             </div>
-                                            <div className="flex justify-center mb-2.5">
+                                            <div className="flex justify-center mb-3">
                                                 <ConnectButton
                                                     showBalance={false}
                                                     chainStatus="icon"

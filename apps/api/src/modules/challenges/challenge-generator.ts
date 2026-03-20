@@ -149,11 +149,11 @@ export function generateMarkdown(opts: {
     const fetchCmd = generateFetchCommand(fetchCfg, fullUrl);
 
     // Determine whether to include the Fetch step (3-step vs 2-step script).
-    // Include fetch when: api_endpoint has a valid URL, OR fetch type is 'custom' with its own command.
+    // Include fetch when: fetch config is explicitly provided (any type), OR api_endpoint has a valid URL.
     const apiEndpointStr = (opts.apiEndpoint ?? '').trim();
     const hasApiEndpoint = apiEndpointStr.length > 0 && fullUrl !== '?';
-    const hasCustomFetch = fetchCfg.type === 'custom' && !!fetchCfg.command?.trim();
-    const hasValidFetchUrl = hasApiEndpoint || hasCustomFetch;
+    const hasFetchConfig = !!opts.fetch;
+    const hasValidFetchUrl = hasApiEndpoint || hasFetchConfig;
 
     const scriptBody = hasValidFetchUrl
         ? `# Step 1: Install the skill

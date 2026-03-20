@@ -18,7 +18,11 @@ import {
   RandomLine,
 } from "@mingcute/react";
 import { PlatformIcon } from "@/components/PlatformIcon";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { TokenIcon } from "@/components/token-icon";
 import { CountdownTimer } from "@/components/countdown-timer";
 import { useAuth } from "@/context/AuthContext";
@@ -848,7 +852,7 @@ export function QuestDetail() {
         <div className="flex items-center gap-2 mt-3 text-xs text-fg-3 flex-wrap">
           <QuestStatusBadge status={quest.status} />
           <span className="w-1 h-1 rounded-full bg-border inline-block" />
-          <span className="inline-flex items-center gap-1">
+          <span className="inline-flex items-center gap-1.5">
             by <SponsorLogo sponsor={quest.sponsor} size={14} />{" "}
             <strong className="text-fg-1">{quest.sponsor}</strong>
           </span>
@@ -1234,8 +1238,8 @@ export function QuestDetail() {
 
           {/* Questers avatar crowd */}
           {quest.questers > 0 && quest.questerDetails && (
-            <div className="mt-6 border border-border-2 rounded px-4 py-3">
-              <div className="flex justify-between items-center text-xs text-fg-3 mb-3">
+            <div className="border border-border-2 rounded px-4 py-4">
+              <div className="flex justify-between items-center text-sm text-fg-3 mb-3">
                 <span>
                   <strong className="text-fg-1">{quest.questers}</strong>{" "}
                   questers joined
@@ -1243,43 +1247,52 @@ export function QuestDetail() {
                 <Link
                   to="/quests/$questId/questers"
                   params={{ questId: quest.id }}
-                  className="hover:text-accent transition-colors"
+                  className="hover:text-accent transition-colors text-xs"
                 >
                   view all →
                 </Link>
               </div>
               <div className="flex items-center pl-1">
-                {quest.questerDetails.slice(0, 8).map((d, i) => (
-                  <div
-                    key={i}
-                    className="relative w-8 h-8 -ml-2 first:ml-0 rounded-full border-2 border-background cursor-pointer overflow-visible shrink-0 hover:-translate-y-0.5 transition-transform group/avatar"
-                    style={{ zIndex: 8 - i }}
-                  >
-                    <img
-                      src={getDiceBearUrl(d.agentName, 64)}
-                      alt={d.humanHandle}
-                      className="w-full h-full rounded-full"
-                    />
-                    <div className="hidden group-hover/avatar:block absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 bg-foreground text-white text-xs px-3 py-2 rounded whitespace-nowrap z-100 pointer-events-none leading-relaxed min-w-[120px] text-left after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-[5px] after:border-transparent after:border-t-foreground">
-                      <span className="text-surface-dark-muted text-xs">
-                        Human
-                      </span>{" "}
-                      <span className="font-semibold text-white">
-                        @{d.humanHandle}
-                      </span>
-                      <br />
-                      <span className="text-surface-dark-muted text-xs">
-                        Agent
-                      </span>{" "}
-                      <span className="font-semibold text-(--agent-border) font-mono text-xs">
-                        {d.agentName}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-                {quest.questers > 8 && (
-                  <div className="w-8 h-8 -ml-2 rounded-full border-2 border-background bg-bg-3 flex items-center justify-center text-xs font-semibold text-fg-3 cursor-pointer shrink-0 hover:bg-accent/10 hover:text-accent-foreground">
-                    +{quest.questers - 8}
+                {quest.questerDetails.slice(0, 12).map((d, i) => {
+                  // Show 5 on mobile, 8 on sm, 10 on md, 12 on lg+
+                  const hideClass =
+                    i >= 10
+                      ? "hidden lg:block"
+                      : i >= 8
+                        ? "hidden md:block"
+                        : i >= 5
+                          ? "hidden sm:block"
+                          : "";
+                  return (
+                    <Tooltip key={i}>
+                      <TooltipTrigger asChild>
+                        <div
+                          className={cn(
+                            "relative w-8 h-8 ml-1 first:ml-0 rounded-full border-2 border-background cursor-pointer overflow-visible shrink-0 hover:scale-125 hover:z-20 transition-transform",
+                            hideClass,
+                          )}
+                          style={{ zIndex: 12 - i }}
+                        >
+                          <img
+                            src={getDiceBearUrl(d.agentName, 64)}
+                            alt={d.humanHandle}
+                            className="w-full h-full rounded-full"
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs">
+                        <span className="text-surface-dark-muted">Human</span>{" "}
+                        <span className="font-semibold">@{d.humanHandle}</span>
+                        <br />
+                        <span className="text-surface-dark-muted">Agent</span>{" "}
+                        <span className="font-mono">{d.agentName}</span>
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+                {quest.questers > 12 && (
+                  <div className="w-auto h-8 px-2 ml-2 rounded-full bg-bg-2 border border-border-2 flex items-center justify-center text-xs font-semibold text-fg-3 shrink-0">
+                    +{quest.questers - 12}
                   </div>
                 )}
               </div>
@@ -1320,7 +1333,10 @@ export function QuestDetail() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="inline-flex">
-                      <Badge variant="outline" className="uppercase gap-1 cursor-default">
+                      <Badge
+                        variant="outline"
+                        className="uppercase gap-1 cursor-default"
+                      >
                         {(() => {
                           const icons: Record<string, React.ElementType> = {
                             FCFS: RunLine,
@@ -1335,9 +1351,12 @@ export function QuestDetail() {
                     </span>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="max-w-60 text-center">
-                    {quest.type === "FCFS" && "First Come First Served — first N agents to complete win"}
-                    {quest.type === "LEADERBOARD" && "Ranked by score — top performers get rewarded"}
-                    {quest.type === "LUCKY_DRAW" && "Random draw at deadline — all entries have equal chance"}
+                    {quest.type === "FCFS" &&
+                      "First Come First Served — first N agents to complete win"}
+                    {quest.type === "LEADERBOARD" &&
+                      "Ranked by score — top performers get rewarded"}
+                    {quest.type === "LUCKY_DRAW" &&
+                      "Random draw at deadline — all entries have equal chance"}
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -1490,7 +1509,7 @@ export function QuestDetail() {
                         to="/quests/$questId/edit"
                         params={{ questId: quest.id }}
                       >
-                        <Button className="w-full mb-2">Edit Draft</Button>
+                        <Button size="xl" className="w-full mb-2">Edit Draft</Button>
                       </Link>
                       {isFunded ? (
                         <div className="flex items-center justify-center gap-1.5 px-3 py-2 rounded bg-accent-light border border-green-600 text-sm font-semibold text-accent">
@@ -1501,7 +1520,7 @@ export function QuestDetail() {
                           to="/quests/$questId/fund"
                           params={{ questId: quest.id }}
                         >
-                          <Button className="w-full bg-success hover:bg-success/90 border-success">
+                          <Button size="xl" className="w-full bg-success hover:bg-success/90 border-success">
                             Fund Quest
                           </Button>
                         </Link>
@@ -1562,7 +1581,7 @@ export function QuestDetail() {
                             to="/quests/$questId/fund"
                             params={{ questId: quest.id }}
                           >
-                            <Button className="w-full bg-success hover:bg-success/90 border-success">
+                            <Button size="xl" className="w-full bg-success hover:bg-success/90 border-success">
                               Fund Quest
                             </Button>
                           </Link>
@@ -1574,7 +1593,7 @@ export function QuestDetail() {
                 // Ended states (completed/expired/cancelled)
                 if (isEnded) {
                   return (
-                    <Button variant="secondary" className="w-full" disabled>
+                    <Button variant="secondary" size="xl" className="w-full" disabled>
                       Quest Ended
                     </Button>
                   );
@@ -1591,7 +1610,7 @@ export function QuestDetail() {
                 if (quest.status === "draft" && !isAuthenticated) {
                   return (
                     <Link to="/login">
-                      <Button className="w-full">Log in to Edit</Button>
+                      <Button size="xl" className="w-full">Log in to Edit</Button>
                     </Link>
                   );
                 }
@@ -1669,6 +1688,7 @@ export function QuestDetail() {
                 if (isLive && !isAuthenticated) {
                   return (
                     <Button
+                      size="xl"
                       className="w-full"
                       onClick={() => {
                         localStorage.setItem(

@@ -214,7 +214,7 @@ export async function questsRoutes(server: FastifyInstance) {
                     include: {
                         _count: { select: { participations: true } },
                         participations: {
-                            take: 5,
+                            take: 12,
                             include: {
                                 user: { select: USER_IDENTITY_SELECT },
                                 agent: { select: { agentname: true } },

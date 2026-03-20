@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { toast } from 'sonner';
 import {
   useParams,
   useSearch,
@@ -287,7 +288,7 @@ export function QuestDetail() {
       if (!res.ok) throw new Error(data.error ?? "Failed to create challenge");
       navigate({ to: "/verify/$token", params: { token: data.token } });
     } catch (err: any) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setChallengeLoading(null);
     }

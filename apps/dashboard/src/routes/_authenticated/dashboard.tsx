@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react"
+import { toast } from 'sonner'
 import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
@@ -667,9 +668,9 @@ export function Dashboard() {
         if (!res.ok) {
             const err = await res.json().catch(() => ({ message: 'Failed to publish' }))
             if (err.code === 'PUBLISH_VALIDATION') {
-                alert(`Cannot publish:\n${Object.values(err.fields as Record<string, string>).join('\n')}`)
+                toast.error(`Cannot publish: ${Object.values(err.fields as Record<string, string>).join(', ')}`)
             } else {
-                alert(err.message || 'Failed to publish')
+                toast.error(err.message || 'Failed to publish')
             }
             return
         }

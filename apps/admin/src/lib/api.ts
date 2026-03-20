@@ -112,7 +112,7 @@ export const api = {
     escrowQuests: (params: Record<string, any> = {}) =>
         adminFetch<{ data: any[]; pagination: Pagination }>(`/admin/escrow/quests?${qs(params)}`),
     escrowDistribute: (questId: string, chainId?: number) =>
-        adminFetch<{ message: string; txHash: string }>(`/escrow/distribute/${questId}`, {
+        adminFetch<{ message: string; txHash: string; issued?: number; failed?: number }>(`/escrow/distribute/${questId}`, {
             method: 'POST', body: JSON.stringify({ chainId }),
         }),
     escrowRefund: (questId: string, chainId?: number) =>

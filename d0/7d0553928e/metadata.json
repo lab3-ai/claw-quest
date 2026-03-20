@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "d07d0553928e",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/admin/src/pages/escrow/EscrowOverview.tsx",
+    "apps/api/src/modules/escrow/escrow.routes.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d0/7d0553928e/0/metadata.json",
+      "transcript": "/d0/7d0553928e/0/full.jsonl",
+      "content_hash": "/d0/7d0553928e/0/content_hash.txt",
+      "prompt": "/d0/7d0553928e/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 31,
+    "cache_creation_tokens": 246538,
+    "cache_read_tokens": 2507972,
+    "output_tokens": 9344,
+    "api_call_count": 23
+  }
+}

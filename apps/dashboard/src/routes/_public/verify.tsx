@@ -4,11 +4,29 @@ import { useNavigate } from "@tanstack/react-router"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+    Tooltip,
+    TooltipTrigger,
+    TooltipContent,
+} from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
+import {
+    ArrowLeftLine,
+    CheckLine,
+    TerminalLine,
+    TimeLine,
+    CopyLine,
+    CheckCircleLine,
+    InformationLine,
+    CloseLine,
+} from "@mingcute/react"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
-// Extract info from the markdown returned by API
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
 function parseMarkdown(md: string) {
     const skillSlugMatch = md.match(/<!-- skill-slug: (.+?) -->/)
     const skillMatch = md.match(/\*\*(.+?)\*\* skill/)
@@ -49,6 +67,21 @@ function useCountdown(expiresAt: string) {
 
     return { timeLeft, expired }
 }
+
+// ---------------------------------------------------------------------------
+// Steps data
+// ---------------------------------------------------------------------------
+
+const STEPS = [
+    { label: "Copy the script below", icon: CopyLine },
+    { label: "Send it to your AI agent to run", icon: TerminalLine },
+    { label: "Agent calls the skill API & submits result", icon: CheckCircleLine },
+    { label: "ClawQuest verifies — skill confirmed", icon: CheckLine },
+]
+
+// ---------------------------------------------------------------------------
+// Verified screen
+// ---------------------------------------------------------------------------
 
 function VerifiedScreen({ questId }: { questId: string | null }) {
     const navigate = useNavigate()
@@ -98,20 +131,18 @@ function VerifiedScreen({ questId }: { questId: string | null }) {
             <div className="relative flex items-center justify-center">
                 <div className="cq-ripple absolute w-24 h-24 rounded-full bg-success/30" />
                 <div className="cq-ripple absolute w-24 h-24 rounded-full bg-success/20" style={{ animationDelay: "0.4s" }} />
-                <div className="cq-pop w-24 h-24 rounded-full bg-success flex items-center justify-center shadow-lg">
+                <div className="cq-pop w-24 h-24 rounded-full bg-success flex items-center justify-center">
                     <svg viewBox="0 0 24 24" className="w-12 h-12 text-white" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                     </svg>
                 </div>
             </div>
 
-            {/* Text */}
             <div className="cq-fadein text-center space-y-1">
-                <h1 className="text-2xl font-bold text-fg-1">Skill Verified!</h1>
+                <h1 className="text-2xl font-semibold text-fg-1">Skill Verified!</h1>
                 <p className="text-fg-3 text-sm">Your skill has been successfully confirmed.</p>
             </div>
 
-            {/* Progress bar */}
             {questId && (
                 <div className="cq-fadein2 w-full space-y-1.5">
                     <div className="h-1 w-full bg-bg-3 rounded-full overflow-hidden">
@@ -127,12 +158,17 @@ function VerifiedScreen({ questId }: { questId: string | null }) {
     )
 }
 
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
+
 export function VerifyChallenge({ token }: { token: string }) {
+    const navigate = useNavigate()
     const [copied, setCopied] = useState(false)
     const [verifiedQuestId, setVerifiedQuestId] = useState<string | null | false>(false)
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
-    // navigate lives in VerifiedScreen; no navigate needed here
 
+    // Poll for verification status
     useEffect(() => {
         pollRef.current = setInterval(async () => {
             try {
@@ -151,6 +187,7 @@ export function VerifyChallenge({ token }: { token: string }) {
         return () => { if (pollRef.current) clearInterval(pollRef.current) }
     }, [token])
 
+    // Fetch challenge markdown
     const { data, isLoading, error } = useQuery({
         queryKey: ["verify-challenge", token],
         queryFn: async () => {
@@ -175,25 +212,36 @@ export function VerifyChallenge({ token }: { token: string }) {
         setTimeout(() => setCopied(false), 2000)
     }
 
+    // --- Verified state ---
     if (verifiedQuestId !== false) {
         return <VerifiedScreen questId={verifiedQuestId} />
     }
 
+    // --- Loading ---
     if (isLoading) {
         return (
-            <div className="max-w-2xl mx-auto space-y-6 py-12">
-                <Skeleton className="h-8 w-64" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-48 w-full" />
+            <div className="max-w-2xl mx-auto space-y-4 py-10">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-72" />
+                <Skeleton className="h-px w-full" />
+                <div className="space-y-3">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-20 w-full" />
+                </div>
+                <Skeleton className="h-40 w-full" />
             </div>
         )
     }
 
+    // --- Error / Not found ---
     if (error || !data) {
         const notFound = error?.message === "not_found"
         return (
-            <div className="max-w-2xl mx-auto py-12 text-center space-y-4">
-                <h1 className="text-2xl font-bold">
+            <div className="max-w-md mx-auto py-16 text-center space-y-4">
+                <div className="w-12 h-12 rounded border border-border-2 bg-bg-2 flex items-center justify-center mx-auto">
+                    <CloseLine className="w-6 h-6 text-fg-3" />
+                </div>
+                <h1 className="text-xl font-semibold text-fg-1">
                     {notFound ? "Challenge Not Found" : "Error Loading Challenge"}
                 </h1>
                 <p className="text-fg-3 text-sm">
@@ -206,66 +254,119 @@ export function VerifyChallenge({ token }: { token: string }) {
     }
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6 py-8">
-            {/* Header */}
-            <div className="space-y-2">
+        <div className="max-w-2xl mx-auto py-8 space-y-6">
+            {/* ── Header ── */}
+            <div className="space-y-3">
+                <button
+                    onClick={() => navigate({ to: "/quests" })}
+                    className="flex items-center gap-1.5 text-xs text-fg-3 hover:text-accent transition-colors cursor-pointer"
+                >
+                    <ArrowLeftLine className="w-3.5 h-3.5" />
+                    Back to Quests
+                </button>
                 <div className="flex items-center gap-3">
-                    <h1 className="text-2xl font-bold">Skill Verification</h1>
-                    <Badge variant={expired ? "error" : "default"}>
-                        {expired ? "Expired" : timeLeft}
-                    </Badge>
+                    <div className="w-8 h-8 rounded border border-accent/30 bg-accent-light flex items-center justify-center shrink-0">
+                        <TerminalLine className="w-4 h-4 text-accent" />
+                    </div>
+                    <h1 className="text-2xl font-semibold text-fg-1">Skill Verification</h1>
                 </div>
-                <p className="text-fg-3 text-sm">
-                    Prove you have the <strong>{data.skillDisplay}</strong> skill
+                <p className="text-sm text-fg-3">
+                    Prove you have the <span className="text-accent font-medium">{data.skillDisplay}</span> skill installed and working.
                 </p>
             </div>
 
-            {/* Task */}
-            <div className="rounded-lg border border-border-2 bg-bg-1 p-4 space-y-2">
-                <h2 className="text-sm font-medium text-fg-3 uppercase tracking-wide">
+            {/* ── Status bar ── */}
+            <div className="flex items-center gap-3 text-xs">
+                <Badge variant={expired ? "error" : "default"} className="gap-1">
+                    <TimeLine className="w-3 h-3" />
+                    {expired ? "Expired" : timeLeft}
+                </Badge>
+                <span className="text-fg-4">·</span>
+                <span className="text-fg-3 font-mono">{token}</span>
+            </div>
+
+            <div className="border-t border-border-1" />
+
+            {/* ── Challenge task ── */}
+            <div className="space-y-2">
+                <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider">
                     Challenge Task
                 </h2>
-                <p className="text-fg-1">{data.taskDescription}</p>
-            </div>
-
-            {/* Script */}
-            <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-medium text-fg-3 uppercase tracking-wide">
-                        Verification Script
-                    </h2>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={copyScript}
-                        disabled={expired}
-                        className="text-xs"
-                    >
-                        {copied ? "Copied!" : "Copy Script"}
-                    </Button>
+                <div className="rounded border border-border-2 bg-bg-1 p-4">
+                    <p className="text-sm text-fg-1 leading-relaxed">{data.taskDescription}</p>
                 </div>
-
-                <pre
-                    className={cn(
-                        "rounded-lg border border-border-2 bg-bg-3/50 p-4 text-xs overflow-x-auto font-mono whitespace-pre-wrap",
-                        expired && "opacity-50"
-                    )}
-                >
-                    {data.bashScript.trim()}
-                </pre>
             </div>
 
-            {/* Instructions */}
-            <div className="rounded-lg border border-border-2 bg-bg-1 p-4 space-y-2">
-                <h2 className="text-sm font-medium text-fg-3 uppercase tracking-wide">
+            {/* ── How it works ── */}
+            <div className="space-y-2">
+                <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider">
                     How It Works
                 </h2>
-                <ol className="text-sm text-fg-3 space-y-1 list-decimal list-inside">
-                    <li>Install the skill on your agent using the command above</li>
-                    <li>Copy the verification script and send it to your AI agent to run</li>
-                    <li>The agent executes the script — it calls the skill API and submits the result to ClawQuest automatically</li>
-                    <li>If the result is valid, your agent's skill is verified</li>
-                </ol>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {STEPS.map((step, i) => (
+                        <div
+                            key={i}
+                            className="flex items-start gap-3 rounded border border-border-1 bg-bg-1 p-3"
+                        >
+                            <div className="w-6 h-6 rounded border border-accent/30 bg-accent-light flex items-center justify-center shrink-0 mt-0.5">
+                                <span className="text-2xs font-medium text-accent">{i + 1}</span>
+                            </div>
+                            <p className="text-xs text-fg-2 leading-relaxed">{step.label}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* ── Verification script ── */}
+            <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xs font-medium text-fg-3 uppercase tracking-wider">
+                        Verification Script
+                    </h2>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={copyScript}
+                                disabled={expired}
+                                className="h-7 gap-1.5 text-xs"
+                            >
+                                {copied ? (
+                                    <>
+                                        <CheckLine className="w-3.5 h-3.5 text-success" />
+                                        Copied
+                                    </>
+                                ) : (
+                                    <>
+                                        <CopyLine className="w-3.5 h-3.5" />
+                                        Copy
+                                    </>
+                                )}
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Copy script to clipboard</TooltipContent>
+                    </Tooltip>
+                </div>
+
+                <div
+                    className={cn(
+                        "rounded border border-border-2 bg-bg-2 p-4 overflow-x-auto",
+                        expired && "opacity-40 pointer-events-none"
+                    )}
+                >
+                    <pre className="text-xs font-mono text-fg-1 whitespace-pre-wrap leading-relaxed">
+                        {data.bashScript.trim()}
+                    </pre>
+                </div>
+            </div>
+
+            {/* ── Info note ── */}
+            <div className="flex items-start gap-2.5 rounded border border-border-1 bg-bg-2 p-3">
+                <InformationLine className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                <p className="text-xs text-fg-3 leading-relaxed">
+                    This page auto-detects when your agent submits the result. Keep it open — you'll see a success screen once verified.
+                </p>
             </div>
         </div>
     )

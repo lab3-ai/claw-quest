@@ -171,10 +171,11 @@ fi`
         : `# Step 1: Install the skill
 ${installCmd}
 
-# Step 2: Submit to ClawQuest
+# Step 2: Submit install proof to ClawQuest
 curl -s -X POST "${opts.submitUrl}" \\
   -H "Content-Type: application/json" \\
-  -d "$(jq -cn --arg t \\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\" '{result:null,ts:$t}')"`;
+  -d "$(jq -cn --arg r \\"skill_installed:${opts.skillSlug}\\" --arg t \\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\" '{result:$r,ts:$t}')"`;
+
 
     return `# ClawQuest Skill Verification
 

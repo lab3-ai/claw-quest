@@ -125,7 +125,31 @@ export async function submitChallengeResult(
     }
 
     const config = skill.verification_config as unknown as VerificationConfig;
-    const passed = validateResult(submission, config);
+
+    // Validate timestamp: must be valid, not in the future, and within challenge lifetime
+    const tsDate = new Date(submission.ts);
+    if (isNaN(tsDate.getTime())) {
+        return { passed: false, message: 'Invalid timestamp format' };
+    }
+    const now = new Date();
+    const toleranceMs = 2 * 60 * 1000;
+    // ts must not be in the future (with tolerance for clock skew)
+    if (tsDate > new Date(now.getTime() + toleranceMs)) {
+        return { passed: false, message: 'Timestamp cannot be in the future' };
+    }
+    // ts must be after challenge was created (with tolerance)
+    const earliest = new Date(challenge.createdAt.getTime() - toleranceMs);
+    if (tsDate < earliest) {
+        return { passed: false, message: 'Timestamp is before challenge was created' };
+    }
+    // ts must be before challenge expires (with tolerance)
+    const latest = new Date(challenge.expiresAt.getTime() + toleranceMs);
+    if (tsDate > latest) {
+        return { passed: false, message: 'Timestamp is after challenge expired' };
+    }
+
+    // Validate the actual result payload, not the whole submission wrapper
+    const passed = validateResult(submission.result, config);
 
     await prisma.skillChallenge.update({
         where: { token },
@@ -200,21 +224,27 @@ export async function submitChallengeResult(
     };
 }
 
+/** Check value is truthy — rejects null, undefined, false, 0, "", empty array */
+function isTruthyValue(val: unknown): boolean {
+    if (val === null || val === undefined || val === false || val === 0 || val === '') return false;
+    if (Array.isArray(val)) return val.length > 0;
+    return true;
+}
+
 function validateResult(result: unknown, config: VerificationConfig): boolean {
     try {
         if (config.validation.type === 'non_empty_response') {
             const path = config.validation.check_path;
-            if (!path) return result !== null && result !== undefined;
+            if (!path) return isTruthyValue(result);
             const parts = path.split('.');
             let val: unknown = result;
             for (const part of parts) {
                 if (val == null || typeof val !== 'object') return false;
                 val = (val as Record<string, unknown>)[part];
             }
-            if (Array.isArray(val)) return val.length > 0;
-            return val !== null && val !== undefined;
+            return isTruthyValue(val);
         }
-        return result !== null && result !== undefined;
+        return isTruthyValue(result);
     } catch {
         return false;
     }

@@ -1379,7 +1379,7 @@ export function QuestDetail() {
                 <span className="text-2xl">
                   {quest.fundingMethod === FUNDING_METHOD.STRIPE
                     ? "USD"
-                    : quest.rewardType}
+                    : (quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER ? "" : quest.rewardType)}
                 </span>
               </div>
               <div className="text-xs text-fg-3 mt-1">

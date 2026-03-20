@@ -8,6 +8,11 @@ binding = "DB"
 database_name = "clawquest-llm"
 database_id = "26009ae6-052a-4982-85fc-512d58e4c7c9"
 
+[observability]
+[observability.logs]
+enabled = false
+invocation_logs = true
+
 # Secrets (set via: wrangler secret put <NAME>)
 # SECRET_KEY            - Secret for POST /api/v1/keys
 # ADMIN_SECRET_KEY      - Secret for admin upstream URL management

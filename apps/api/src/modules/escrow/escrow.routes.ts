@@ -232,6 +232,7 @@ export async function escrowRoutes(server: FastifyInstance) {
                     });
                     return {
                         message: `LLM keys issued: ${result.issued} success, ${result.failed} failed`,
+                        txHash: '',
                         issued: result.issued,
                         failed: result.failed,
                     };
@@ -256,7 +257,7 @@ export async function escrowRoutes(server: FastifyInstance) {
 
             try {
                 const txHash = await executeDistribute(server.prisma, questId, targetChainId);
-                return { message: 'Distribution submitted — poller will confirm', txHash };
+                return { message: 'Distribution submitted — poller will confirm', txHash, issued: 0, failed: 0 };
             } catch (err: any) {
                 server.log.error({ err, questId }, '[escrow:distribute] failed');
                 return reply.status(500).send({ message: `Distribution failed: ${err.message}` } as any);
@@ -272,7 +273,7 @@ export async function escrowRoutes(server: FastifyInstance) {
         {
             schema: {
                 tags: ['Escrow'],
-                summary: 'Trigger on-chain refund (creator or admin)',
+                summary: 'Refund remaining funds (on-chain for crypto, budget calc for LLM)',
                 security: [{ bearerAuth: [] }],
                 params: z.object({ questId: z.string().uuid() }),
                 body: z.object({
@@ -281,7 +282,9 @@ export async function escrowRoutes(server: FastifyInstance) {
                 response: {
                     200: z.object({
                         message: z.string(),
-                        txHash: z.string(),
+                        txHash: z.string().optional(),
+                        refundAmount: z.number().optional(),
+                        winnersCount: z.number().optional(),
                     }),
                 },
             },
@@ -322,6 +325,35 @@ export async function escrowRoutes(server: FastifyInstance) {
                 return reply.status(400).send({ message: 'Rewards must be distributed before a refund can be issued' } as any);
             }
 
+            // LLM reward quests: calculate refund (total - winners * amount_per_winner)
+            const isLlmReward = quest.rewardType === 'LLMTOKEN_OPENROUTER' || quest.rewardType === 'LLM_KEY';
+            if (isLlmReward) {
+                const winnersCount = await server.prisma.questParticipation.count({
+                    where: {
+                        questId,
+                        status: { in: ['completed', 'submitted', 'verified'] },
+                        llmRewardApiKey: { not: null },
+                    },
+                });
+                const totalBudget = Number(quest.totalFunded ?? quest.rewardAmount);
+                const perWinner = Number(quest.tokenBudgetPerWinner ?? 0);
+                const usedBudget = winnersCount * perWinner;
+                const refundAmount = Math.max(0, totalBudget - usedBudget);
+
+                await server.prisma.quest.update({
+                    where: { id: questId },
+                    data: { fundingStatus: 'refunded' },
+                });
+
+                return {
+                    message: `LLM refund: ${refundAmount} tokens returned (${winnersCount} winners × ${perWinner} per winner)`,
+                    txHash: '',
+                    refundAmount,
+                    winnersCount,
+                };
+            }
+
+            // Crypto quests: on-chain refund
             const targetChainId = chainId || quest.cryptoChainId || escrowConfig.defaultChainId;
 
             if (!isChainAllowed(targetChainId)) {
@@ -332,7 +364,7 @@ export async function escrowRoutes(server: FastifyInstance) {
 
             try {
                 const txHash = await executeRefund(server.prisma, questId, targetChainId);
-                return { message: 'Refund submitted — poller will confirm', txHash };
+                return { message: 'Refund submitted — poller will confirm', txHash, refundAmount: 0, winnersCount: 0 };
             } catch (err: any) {
                 server.log.error({ err, questId }, '[escrow:refund] failed');
                 return reply.status(500).send({ message: `Refund failed: ${err.message}` } as any);

@@ -60,8 +60,11 @@ export function EscrowOverview() {
 
     const refundMut = useMutation({
         mutationFn: (questId: string) => api.escrowRefund(questId),
-        onSuccess: (data) => {
-            toast.success(`Refunded! Tx: ${data.txHash.slice(0, 16)}...`);
+        onSuccess: (data: any) => {
+            const msg = data.txHash
+                ? `Refunded! Tx: ${data.txHash.slice(0, 16)}...`
+                : data.message ?? 'Refunded!';
+            toast.success(msg);
             qc.invalidateQueries({ queryKey: ['admin', 'escrow'] });
             setActionModal(null);
         },
@@ -167,7 +170,7 @@ export function EscrowOverview() {
                                                     <ArrowUpRight size={12} /> Distribute
                                                 </button>
                                             )}
-                                            {q.fundingStatus === 'confirmed' && (
+                                            {(q.fundingStatus === 'distributed' || (q.fundingStatus === 'confirmed' && ['completed', 'expired', 'cancelled'].includes(q.status))) && (
                                                 <button
                                                     onClick={() => setActionModal({ type: 'refund', questId: q.id, questTitle: q.title })}
                                                     className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-600/30 transition-colors"
@@ -271,8 +274,8 @@ export function EscrowOverview() {
                 <div className="space-y-3 mt-2">
                     <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                         {actionModal?.type === 'distribute'
-                            ? `This will distribute escrowed rewards to participants of "${actionModal?.questTitle}". This action triggers an on-chain transaction.`
-                            : `This will refund escrowed funds back to the sponsor of "${actionModal?.questTitle}". This action triggers an on-chain transaction.`
+                            ? `This will distribute rewards to participants of "${actionModal?.questTitle}".`
+                            : `This will refund remaining funds back to the sponsor of "${actionModal?.questTitle}".`
                         }
                     </p>
                     {activeMut.error && (

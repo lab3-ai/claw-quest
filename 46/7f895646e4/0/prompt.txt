@@ -1,0 +1,5 @@
+hãy kiểm tra lại sao function generateMarkdown lại về 2 step? rõ ràng có 3 mà?
+
+---
+
+Tôi thấy bạn nên sửa ở function  generateMarkdown thôi, phần config thì tôi sửa mỗi Fetch Configuration (thôi cũng cần show nha) api_endpoint thiếu vẫn show nha

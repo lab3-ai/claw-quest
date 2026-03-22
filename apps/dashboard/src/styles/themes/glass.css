@@ -63,16 +63,16 @@
     --link-visited: #E64A3F;
 
     --success: #10b981;
-    --success-light: rgba(16, 185, 129, 0.08);
+    --success-light: color-mix(in srgb, var(--success) 10%, transparent);
     --success-border: rgba(16, 185, 129, 0.3);
     --error: #ef4444;
-    --error-light: rgba(239, 68, 68, 0.08);
+    --error-light: color-mix(in srgb, var(--error) 10%, transparent);
     --error-border: rgba(239, 68, 68, 0.3);
     --warning: #f59e0b;
-    --warning-light: rgba(245, 158, 11, 0.08);
+    --warning-light: color-mix(in srgb, var(--warning) 10%, transparent);
     --warning-border: rgba(245, 158, 11, 0.3);
     --info: #3b82f6;
-    --info-light: rgba(59, 130, 246, 0.08);
+    --info-light: color-mix(in srgb, var(--info) 10%, transparent);
 
     --human-fg: #475569;
     --human-bg: rgba(241, 245, 249, 0.6);
@@ -152,16 +152,16 @@
     --link-visited: #FF8A82;
 
     --success: #34d399;
-    --success-light: rgba(16, 185, 129, 0.12);
+    --success-light: color-mix(in srgb, var(--success) 10%, transparent);
     --success-border: rgba(52, 211, 153, 0.3);
     --error: #f87171;
-    --error-light: rgba(239, 68, 68, 0.12);
+    --error-light: color-mix(in srgb, var(--error) 10%, transparent);
     --error-border: rgba(248, 113, 113, 0.3);
     --warning: #fbbf24;
-    --warning-light: rgba(245, 158, 11, 0.12);
+    --warning-light: color-mix(in srgb, var(--warning) 10%, transparent);
     --warning-border: rgba(251, 191, 36, 0.3);
     --info: #60a5fa;
-    --info-light: rgba(59, 130, 246, 0.12);
+    --info-light: color-mix(in srgb, var(--info) 10%, transparent);
 
     --human-fg: #94a3b8;
     --human-bg: rgba(30, 41, 59, 0.5);

@@ -40,6 +40,11 @@ Start-of-session workflow for Hiru (UI/UX branch `hiru-uiux`).
    - Team changes that affect UI/UX
    - Today's suggested focus from HIRU-PLAN
 
+7. **Start dev server:**
+   - Run `pnpm dev` in background after report summary
+   - API (port 3000) + Dashboard (port 5173) start in parallel
+   - Report server status to user
+
 ## Rules
 - Never force-push
 - If merge fails, stop and report — don't auto-resolve

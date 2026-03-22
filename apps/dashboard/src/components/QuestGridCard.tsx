@@ -3,29 +3,19 @@ import { Link } from "@tanstack/react-router";
 import type { Quest } from "@clawquest/shared";
 import { formatTimeLeft } from "./quest-utils";
 import { SponsorLogo } from "./sponsor-logo";
-import {
-  RunLine,
-  TrophyLine,
-  RandomLine,
-  Group2Line,
-  GiftLine,
-} from "@mingcute/react";
+import { Group2Line, GiftLine } from "@mingcute/react";
 import { TokenIcon } from "./token-icon";
 import { QuestersAvatarStack } from "./QuestCard";
+import { QuestTypeBadge } from "./quest-badges";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-const TYPE_ICON: Record<string, React.ElementType> = {
-  FCFS: RunLine,
-  LEADERBOARD: TrophyLine,
-  LUCKY_DRAW: RandomLine,
-};
-
 interface QuestGridCardProps {
   quest: Quest;
+  className?: string;
 }
 
-export function QuestGridCard({ quest }: QuestGridCardProps) {
+export function QuestGridCard({ quest, className }: QuestGridCardProps) {
   const [, tick] = useState(0);
   const time = formatTimeLeft(quest.expiresAt);
 
@@ -51,7 +41,10 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
     <Link
       to="/quests/$questId"
       params={{ questId: quest.id }}
-      className="group hover-shadow flex flex-col h-full border border-border-2 rounded p-4 max-sm:p-3 no-underline text-fg-1 hover:border-fg-1 bg-bg-1"
+      className={cn(
+        "group hover-shadow flex flex-col h-full border border-border-2 rounded p-4 max-sm:p-3 no-underline text-fg-1 hover:border-fg-1 bg-bg-1",
+        className,
+      )}
     >
       {/* Reward + Time */}
       <div className="flex items-center justify-between mb-2">
@@ -59,7 +52,11 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
           <TokenIcon token={quest.rewardType} size={16} />
           {quest.rewardAmount.toLocaleString()} {quest.rewardType}
         </span>
-        {quest.expiresAt && (
+        {quest.status === "draft" ? (
+          <Badge variant="filled-muted" className="text-2xs">
+            Draft
+          </Badge>
+        ) : quest.expiresAt ? (
           <span
             className={cn(
               "font-mono text-xs font-normal tracking-wide",
@@ -70,13 +67,13 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
           >
             {time.label}
           </span>
-        )}
+        ) : null}
       </div>
 
       {/* Title — max 2 lines */}
       <h3
         ref={titleRef}
-        className="text-md font-semibold leading-snug mb-1.5 line-clamp-2"
+        className="text-md font-semibold font-heading leading-snug mb-1.5 line-clamp-2 group-hover:text-primary transition-colors"
       >
         {quest.title}
       </h3>
@@ -93,17 +90,7 @@ export function QuestGridCard({ quest }: QuestGridCardProps) {
 
       {/* Type badge + Tags (single row, overflow → +N) */}
       <div className="flex gap-1 mb-4 items-center overflow-hidden">
-        <Badge
-          variant="outline"
-          className="uppercase shrink-0 text-2xs text-fg-3 group-hover:border-primary/40 group-hover:bg-primary/10 group-hover:text-primary transition-colors"
-        >
-          {TYPE_ICON[quest.type] &&
-            (() => {
-              const Icon = TYPE_ICON[quest.type];
-              return <Icon size={14} />;
-            })()}
-          {quest.type.replace("_", " ")}
-        </Badge>
+        <QuestTypeBadge type={quest.type} />
         {quest.tags &&
           quest.tags.slice(0, 2).map((tag) => (
             <Badge

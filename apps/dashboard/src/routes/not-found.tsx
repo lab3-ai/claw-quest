@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router"
 import { Button } from "@/components/ui/button"
 import { SeoHead } from "@/components/seo-head"
 import { BrandLogo } from "@/components/brand-logo"
-import { ArrowLeftLine, Home1Line } from "@mingcute/react"
+import { ArrowLeftFill, Home1Fill } from "@mingcute/react"
 
 export function NotFoundPage() {
     return (
@@ -23,12 +23,12 @@ export function NotFoundPage() {
 
             <div className="flex flex-wrap items-center justify-center gap-3">
                 <Button variant="outline" onClick={() => window.history.back()}>
-                    <ArrowLeftLine size={16} />
+                    <ArrowLeftFill size={16} />
                     Go Back
                 </Button>
                 <Button asChild>
                     <Link to="/quests" className="no-underline">
-                        <Home1Line size={16} />
+                        <Home1Fill size={16} />
                         Browse Quests
                     </Link>
                 </Button>

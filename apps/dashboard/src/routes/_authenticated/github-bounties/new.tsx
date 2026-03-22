@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { CheckLine } from "@mingcute/react"
+import { CheckFill } from "@mingcute/react"
 import { cn } from "@/lib/utils"
 import { GitHubIcon } from "@/components/github-icon"
 
@@ -429,7 +429,7 @@ function StepSuccess({ count, hasLlmKey, hasPaid }: { count: number; hasLlmKey: 
     return (
         <div className="text-center space-y-4 py-4">
             <div className="w-12 h-12 rounded-full border border-green-500/30 bg-green-500/10 flex items-center justify-center mx-auto">
-                <CheckLine size={22} className="text-green-400" />
+                <CheckFill size={22} className="text-green-400" />
             </div>
             <div>
                 <p className="text-sm font-semibold mb-1">
@@ -470,7 +470,7 @@ function WizardStepper({ step }: { step: number }) {
                             i < step ? "bg-foreground/20 text-fg-1 border-foreground/20" :
                                 "border-border text-fg-3"
                     )}>
-                        {i < step ? <CheckLine size={12} /> : i + 1}
+                        {i < step ? <CheckFill size={12} /> : i + 1}
                     </div>
                     <span className={cn(
                         "text-xs",

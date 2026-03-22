@@ -424,7 +424,7 @@ Naming: `variant="primary"`, `variant="primary-tonal"`, `variant="primary-outlin
 | `lg` | 36px (h-9) | px-4 | text-sm |
 | `xl` | 40px (h-10) | px-4 | text-sm |
 
-**Icon button**: `iconOnly` prop — square (w=h), follows size. Use with any variant. All buttons: `font-semibold`, `rounded-button` (2px), `btn-pop` (scale bounce on click), **min `gap-2`** for icon+text spacing. No focus ring — `focus-visible:outline-hidden`.
+**Icon button**: `iconOnly` prop — square (w=h), follows size. Use with any variant. All buttons: `font-semibold`, `rounded-button` (2px), `btn-pop` (scale bounce on click), **min `gap-2`** for icon+text spacing. `focus-visible:ring-2 focus-visible:ring-ring` for keyboard navigation.
 
 ### Cards
 
@@ -477,7 +477,7 @@ Naming: `variant="primary"`, `variant="primary-tonal"`, `variant="primary-outlin
 - Height: `52px` (`h-13`) — Apple HIG tab bar standard
 - Touch target: `44px` minimum per item
 - 3 items: Quests (`Compass3`), Web3 Skills (`Code`), Bounties (`Trophy`)
-- Icons: MingCute **Line** variant inactive, **Fill** variant active (`[&.active]` class toggle)
+- Icons: MingCute **Line** variant default/inactive, **Fill** variant for active state (toggle pattern)
 - Labels: `text-2xs font-medium`
 - **On scroll**: `border-t border-border backdrop-blur-md bg-bg-base/80` (glass effect)
 - **At rest**: `bg-bg-base` (no border, no glass)
@@ -676,9 +676,14 @@ Use `bottts-neutral` style with transparent background.
 
 | State | Variant | Example |
 |-------|---------|---------|
-| Default / inactive | **Line** (outline) | `<StarLine />` |
-| Active / selected | **Fill** (solid) | `<StarFill />` |
+| **Default** | **Line** (outline) | `<StarLine />` — general UI, inline, labels |
+| Active state (nav, tabs) | **Fill** (solid) | `<StarFill />` active tab |
+| Section titles | **Fill** (solid) | `<User3Fill />` in "Human Tasks" header |
+| Special emphasis | **Fill** (solid) | Hero icons, CTA highlights |
+| Toggle inactive (nav, tabs) | **Line** (outline) | `<StarLine />` inactive tab |
 | Decorative (no meaning) | Line + `aria-hidden="true"` | Activity dots, dividers |
+
+> **Rule:** Use **Line** variant by default for all icons. Use **Fill** variant for active states, section titles, and special emphasis where the icon needs visual weight.
 
 ### Brand Icons
 

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Breadcrumb } from "@/components/breadcrumb"
 import { useWeb3SkillDetail } from "@/hooks/useWeb3Skills"
-import { Download2Line, StarLine, FlashLine, GlobeLine } from "@mingcute/react"
+import { Download2Fill, StarFill, FlashFill, GlobeFill } from "@mingcute/react"
 import { GitHubIcon } from "@/components/github-icon"
 
 function formatCount(n: number): string {
@@ -85,9 +85,9 @@ export function Web3SkillDetail({ skillSlug }: { skillSlug: string }) {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { icon: Download2Line, label: "Downloads", value: formatCount(skill.downloads) },
-          { icon: StarLine, label: "Stars", value: formatCount(skill.stars) },
-          { icon: FlashLine, label: "Agents", value: formatCount(skill.installs) },
+          { icon: Download2Fill, label: "Downloads", value: formatCount(skill.downloads) },
+          { icon: StarFill, label: "Stars", value: formatCount(skill.stars) },
+          { icon: FlashFill, label: "Agents", value: formatCount(skill.installs) },
         ].map(({ icon: Icon, label, value }) => (
           <div key={label} className="flex flex-col items-center border border-border-2 rounded p-3">
             <Icon size={16} className="text-fg-3" />
@@ -109,7 +109,7 @@ export function Web3SkillDetail({ skillSlug }: { skillSlug: string }) {
           {skill.websiteUrl && (
             <Button variant="outline" size="sm" asChild>
               <a href={skill.websiteUrl} target="_blank" rel="noopener noreferrer" className="no-underline">
-                <GlobeLine size={14} /> Website
+                <GlobeFill size={14} /> Website
               </a>
             </Button>
           )}

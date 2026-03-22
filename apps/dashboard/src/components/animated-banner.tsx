@@ -99,7 +99,7 @@ export function AnimatedBanner() {
   return (
     <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
       <div className="w-full text-center lg:w-1/2 lg:text-left">
-        <h2 className="text-2xl font-semibold leading-tight tracking-tight text-fg-1 md:text-2xl lg:text-3xl">
+        <h2 className="text-2xl font-semibold font-heading leading-tight tracking-tight text-fg-1 md:text-2xl lg:text-3xl">
           Paid Distribution for AI Skills
         </h2>
         <p className="mt-2 text-xs leading-relaxed text-fg-3 mb-3 md:mt-2 md:text-sm md:mb-4">
@@ -192,7 +192,7 @@ export function HomeBanner() {
         <div className="h-4 mb-2">
           <TypingTagline />
         </div>
-        <h2 className="text-3xl font-semibold leading-tight tracking-wide text-fg-1 lg:text-4xl">
+        <h2 className="text-3xl font-semibold leading-tight tracking-wide text-fg-1 lg:text-4xl font-heading">
           Paid Distribution for AI Skills
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-fg-1 mb-4">

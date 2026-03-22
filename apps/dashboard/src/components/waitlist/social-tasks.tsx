@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { CheckFill, LoadingLine, ArrowRightLine } from "@mingcute/react"
+import { CheckFill, LoadingLine, ArrowRightFill } from "@mingcute/react"
 import { PlatformIcon } from "@/components/PlatformIcon"
 import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 import { WAITLIST_TOKEN_KEY } from "@/components/waitlist/telegram-join-button"
@@ -181,7 +181,7 @@ export function SocialTasks({ referralCode }: SocialTasksProps) {
                             <PlatformIcon name="telegram" size={12} style={{ filter: "brightness(0) invert(1)" }} />
                         )}
                         {claimLoading ? "Opening..." : "Claim"}
-                        {!claimLoading && followDone && <ArrowRightLine size={12} />}
+                        {!claimLoading && followDone && <ArrowRightFill size={12} />}
                     </button>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { PlatformIcon } from "@/components/PlatformIcon"
-import { ArrowRightLine, LoadingLine } from "@mingcute/react"
+import { ArrowRightFill, LoadingLine } from "@mingcute/react"
 import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
 import { Button } from "@/components/ui/button"
 
@@ -74,7 +74,7 @@ export function TelegramJoinButton({
                     )}
                     {buttonText}
                     {!loading && (
-                        <ArrowRightLine size={16} className="transition-transform group-hover:translate-x-0.5" />
+                        <ArrowRightFill size={16} className="transition-transform group-hover:translate-x-0.5" />
                     )}
                 </a>
             </Button>

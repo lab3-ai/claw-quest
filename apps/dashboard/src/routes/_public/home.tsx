@@ -9,11 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { HomeBanner } from "@/components/animated-banner";
 import {
   ArrowRightLine,
-  FlashLine,
-  ShieldLine,
+  FlashFill,
+  ShieldFill,
   AddLine,
   CloseLine,
-  GitBranchLine,
+  GitBranchFill,
 } from "@mingcute/react";
 import { GitHubIcon } from "@/components/github-icon";
 import { cn } from "@/lib/utils";
@@ -62,7 +62,7 @@ function FeaturedQuests({
   return (
     <section>
       <SectionHeader
-        icon={FlashLine}
+        icon={FlashFill}
         title="Featured Quests"
         linkTo="/quests"
         linkLabel="View all quests"
@@ -103,7 +103,7 @@ function PopularSkills() {
   return (
     <section>
       <SectionHeader
-        icon={ShieldLine}
+        icon={ShieldFill}
         title="Popular Web3 Skills"
         linkTo="/web3-skills"
         linkLabel="Browse all skills"
@@ -157,7 +157,7 @@ function LatestBounties() {
   return (
     <section>
       <SectionHeader
-        icon={GitBranchLine}
+        icon={GitBranchFill}
         title="Latest Bounties"
         linkTo="/github-bounties"
         linkLabel="View all bounties"
@@ -250,9 +250,7 @@ function HowItWorks() {
                 Step {idx + 1}
               </span>
               <p className="text-sm font-semibold text-fg-1">{title}</p>
-              <p className="text-xs text-fg-3 leading-relaxed">
-                {desc}
-              </p>
+              <p className="text-xs text-fg-3 leading-relaxed">{desc}</p>
             </div>
           </div>
         ))}
@@ -308,7 +306,10 @@ function FAQSection() {
         {FAQS.map((faq, idx) => {
           const isOpen = openIdx === idx;
           return (
-            <div key={idx}>
+            <div
+              key={idx}
+              className={cn("transition-colors", isOpen && "bg-bg-1")}
+            >
               <button
                 type="button"
                 className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left bg-transparent border-none cursor-pointer group"
@@ -318,15 +319,9 @@ function FAQSection() {
                   {faq.q}
                 </span>
                 {isOpen ? (
-                  <CloseLine
-                    size={16}
-                    className="shrink-0 text-fg-3"
-                  />
+                  <CloseLine size={16} className="shrink-0 text-fg-3" />
                 ) : (
-                  <AddLine
-                    size={16}
-                    className="shrink-0 text-fg-3"
-                  />
+                  <AddLine size={16} className="shrink-0 text-fg-3" />
                 )}
               </button>
               <div
@@ -364,7 +359,7 @@ function SectionHeader({
 }) {
   return (
     <div className="mb-4 flex items-center justify-between">
-      <h2 className="flex items-center gap-1.5 text-lg font-semibold text-fg-1 md:gap-2 md:text-xl">
+      <h2 className="flex items-center gap-1.5 text-lg font-semibold font-heading text-fg-1 md:gap-2 md:text-xl">
         <Icon size={20} className="text-accent md:size-6" />
         {title}
       </h2>

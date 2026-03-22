@@ -103,7 +103,7 @@ API docs auto-generated via `@fastify/swagger` + Scalar at `/docs`.
 - **Data fetching**: TanStack Query
 - **Styling**: Tailwind CSS (utility-first) + CSS variables for design tokens
 - **UI components**: shadcn/ui (Radix UI primitives) in `src/components/ui/`
-- **Icons**: MingCute (`@mingcute/react`) for UI icons — **Line** variant for default/hover, **Fill** variant for active state. `<PlatformIcon>` for brand SVGs
+- **Icons**: MingCute (`@mingcute/react`) for UI icons — **Line** variant by default, **Fill** variant for active states, section titles, and special emphasis. `<PlatformIcon>` for brand SVGs
 - **Auth context**: `src/context/AuthContext.tsx` — provides `useAuth()` → `{ session, user, isAuthenticated, isLoading }`
 
 ### Styling conventions

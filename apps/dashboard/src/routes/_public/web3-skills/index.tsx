@@ -6,7 +6,7 @@ import { SkillCard } from "@/components/web3-skills/skill-card"
 import { SkillFilters } from "@/components/web3-skills/skill-filters"
 import { useWeb3Skills, useWeb3Categories } from "@/hooks/useWeb3Skills"
 import { useAuth } from "@/context/AuthContext"
-import { AddLine } from "@mingcute/react"
+import { AddFill } from "@mingcute/react"
 
 export function Web3SkillsPage() {
   const { isAuthenticated } = useAuth()
@@ -50,7 +50,7 @@ export function Web3SkillsPage() {
           isAuthenticated ? (
             <Button asChild>
               <a href="/web3-skills/submit" className="no-underline">
-                <AddLine size={16} />
+                <AddFill size={16} />
                 Submit Skill
               </a>
             </Button>

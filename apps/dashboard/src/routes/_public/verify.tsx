@@ -11,14 +11,14 @@ import {
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import {
-    ArrowLeftLine,
-    CheckLine,
-    TerminalLine,
-    TimeLine,
-    CopyLine,
-    CheckCircleLine,
-    InformationLine,
-    CloseLine,
+    ArrowLeftFill,
+    CheckFill,
+    TerminalFill,
+    TimeFill,
+    CopyFill,
+    CheckCircleFill,
+    InformationFill,
+    CloseFill,
 } from "@mingcute/react"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
@@ -73,10 +73,10 @@ function useCountdown(expiresAt: string) {
 // ---------------------------------------------------------------------------
 
 const STEPS = [
-    { label: "Copy the script below", icon: CopyLine },
-    { label: "Send it to your AI agent to run", icon: TerminalLine },
-    { label: "Agent calls the skill API & submits result", icon: CheckCircleLine },
-    { label: "ClawQuest verifies — skill confirmed", icon: CheckLine },
+    { label: "Copy the script below", icon: CopyFill },
+    { label: "Send it to your AI agent to run", icon: TerminalFill },
+    { label: "Agent calls the skill API & submits result", icon: CheckCircleFill },
+    { label: "ClawQuest verifies — skill confirmed", icon: CheckFill },
 ]
 
 // ---------------------------------------------------------------------------
@@ -239,7 +239,7 @@ export function VerifyChallenge({ token }: { token: string }) {
         return (
             <div className="max-w-md mx-auto py-16 text-center space-y-4">
                 <div className="w-12 h-12 rounded border border-border-2 bg-bg-2 flex items-center justify-center mx-auto">
-                    <CloseLine className="w-6 h-6 text-fg-3" />
+                    <CloseFill className="w-6 h-6 text-fg-3" />
                 </div>
                 <h1 className="text-xl font-semibold text-fg-1">
                     {notFound ? "Challenge Not Found" : "Error Loading Challenge"}
@@ -261,12 +261,12 @@ export function VerifyChallenge({ token }: { token: string }) {
                     onClick={() => navigate({ to: "/quests" })}
                     className="flex items-center gap-1.5 text-xs text-fg-3 hover:text-accent transition-colors cursor-pointer"
                 >
-                    <ArrowLeftLine className="w-3.5 h-3.5" />
+                    <ArrowLeftFill className="w-3.5 h-3.5" />
                     Back to Quests
                 </button>
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded border border-accent/30 bg-accent-light flex items-center justify-center shrink-0">
-                        <TerminalLine className="w-4 h-4 text-accent" />
+                        <TerminalFill className="w-4 h-4 text-accent" />
                     </div>
                     <h1 className="text-2xl font-semibold text-fg-1">Skill Verification</h1>
                 </div>
@@ -278,7 +278,7 @@ export function VerifyChallenge({ token }: { token: string }) {
             {/* ── Status bar ── */}
             <div className="flex items-center gap-3 text-xs">
                 <Badge variant={expired ? "error" : "default"} className="gap-1">
-                    <TimeLine className="w-3 h-3" />
+                    <TimeFill className="w-3 h-3" />
                     {expired ? "Expired" : timeLeft}
                 </Badge>
                 <span className="text-fg-4">·</span>
@@ -334,12 +334,12 @@ export function VerifyChallenge({ token }: { token: string }) {
                             >
                                 {copied ? (
                                     <>
-                                        <CheckLine className="w-3.5 h-3.5 text-success" />
+                                        <CheckFill className="w-3.5 h-3.5 text-success" />
                                         Copied
                                     </>
                                 ) : (
                                     <>
-                                        <CopyLine className="w-3.5 h-3.5" />
+                                        <CopyFill className="w-3.5 h-3.5" />
                                         Copy
                                     </>
                                 )}
@@ -363,7 +363,7 @@ export function VerifyChallenge({ token }: { token: string }) {
 
             {/* ── Info note ── */}
             <div className="flex items-start gap-2.5 rounded border border-border-1 bg-bg-2 p-3">
-                <InformationLine className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                <InformationFill className="w-4 h-4 text-accent shrink-0 mt-0.5" />
                 <p className="text-xs text-fg-3 leading-relaxed">
                     This page auto-detects when your agent submits the result. Keep it open — you'll see a success screen once verified.
                 </p>

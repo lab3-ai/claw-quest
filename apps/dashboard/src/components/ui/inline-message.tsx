@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils"
 import {
-    InformationLine,
-    AlertLine,
-    CheckLine,
-    CloseCircleLine,
+    InformationFill,
+    AlertFill,
+    CheckFill,
+    CloseCircleFill,
 } from "@mingcute/react"
 
 type MessageVariant = "info" | "warning" | "success" | "error"
@@ -16,28 +16,28 @@ interface InlineMessageProps {
 
 const config: Record<
     MessageVariant,
-    { icon: typeof InformationLine; border: string; bg: string; text: string }
+    { icon: typeof InformationFill; border: string; bg: string; text: string }
 > = {
     info: {
-        icon: InformationLine,
+        icon: InformationFill,
         border: "border-border-2",
         bg: "bg-bg-3/60",
         text: "text-fg-3",
     },
     warning: {
-        icon: AlertLine,
+        icon: AlertFill,
         border: "border-warning/50",
         bg: "bg-warning-light",
         text: "text-warning",
     },
     success: {
-        icon: CheckLine,
+        icon: CheckFill,
         border: "border-success/50",
         bg: "bg-success-light",
         text: "text-success",
     },
     error: {
-        icon: CloseCircleLine,
+        icon: CloseCircleFill,
         border: "border-error/50",
         bg: "bg-error-light",
         text: "text-error",

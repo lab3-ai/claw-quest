@@ -63,16 +63,16 @@
     --link-visited: #CC3529;
 
     --success: #00aa00;
-    --success-light: #eeffee;
+    --success-light: color-mix(in srgb, var(--success) 10%, transparent);
     --success-border: #00aa00;
     --error: #ff0000;
-    --error-light: #ffeeee;
+    --error-light: color-mix(in srgb, var(--error) 10%, transparent);
     --error-border: #ff0000;
     --warning: #ffaa00;
-    --warning-light: #fff8e6;
+    --warning-light: color-mix(in srgb, var(--warning) 10%, transparent);
     --warning-border: #ffaa00;
     --info: #0066ff;
-    --info-light: #eef4ff;
+    --info-light: color-mix(in srgb, var(--info) 10%, transparent);
 
     --human-fg: #333333;
     --human-bg: #f5f5f5;
@@ -152,16 +152,16 @@
     --link-visited: #FF9A93;
 
     --success: #33cc33;
-    --success-light: #003300;
+    --success-light: color-mix(in srgb, var(--success) 10%, transparent);
     --success-border: #33cc33;
     --error: #ff3333;
-    --error-light: #330000;
+    --error-light: color-mix(in srgb, var(--error) 10%, transparent);
     --error-border: #ff3333;
     --warning: #ffcc00;
-    --warning-light: #332200;
+    --warning-light: color-mix(in srgb, var(--warning) 10%, transparent);
     --warning-border: #ffcc00;
     --info: #4488ff;
-    --info-light: #001133;
+    --info-light: color-mix(in srgb, var(--info) 10%, transparent);
 
     --human-fg: #cccccc;
     --human-bg: #1a1a1a;

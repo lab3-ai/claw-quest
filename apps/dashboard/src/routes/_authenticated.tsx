@@ -16,7 +16,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { useState, useEffect } from "react"
-import { BankCardLine, Dashboard4Line, AddLine, DownLine } from "@mingcute/react"
+import { BankCardFill, Dashboard4Fill, AddFill, DownFill } from "@mingcute/react"
 import { getUserAvatarUrl } from "@/components/avatarUtils"
 import { BrandLogo } from "@/components/brand-logo"
 import { TELEGRAM_BOT_USERNAME } from "@/lib/telegram-oidc"
@@ -127,7 +127,7 @@ export function AuthenticatedLayout() {
                                     onClick={() => setMobileOpen(false)}
                                     className="rounded px-3 py-3 text-sm text-fg-1 no-underline hover:bg-bg-2 flex items-center gap-2"
                                 >
-                                    <BankCardLine className="h-4 w-4" />
+                                    <BankCardFill className="h-4 w-4" />
                                     Stripe Payout
                                 </Link>
                                 <div className="my-1 h-px bg-border" />
@@ -148,14 +148,14 @@ export function AuthenticatedLayout() {
                     <div className="ml-auto hidden items-center gap-3 lg:flex">
                         <Button asChild>
                             <Link to="/quests/new" className="no-underline">
-                                <AddLine size={16} />
+                                <AddFill size={16} />
                                 Create Quest
                             </Link>
                         </Button>
 
                         <Button asChild variant="outline">
                             <Link to="/dashboard" className="no-underline">
-                                <Dashboard4Line size={16} />
+                                <Dashboard4Fill size={16} />
                                 Dashboard
                             </Link>
                         </Button>
@@ -165,7 +165,7 @@ export function AuthenticatedLayout() {
                                 <Button variant="outline">
                                     <img src={avatarUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
                                     {handleLabel}
-                                    <DownLine size={16} />
+                                    <DownFill size={16} />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-40">
@@ -176,7 +176,7 @@ export function AuthenticatedLayout() {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
                                     <Link to="/stripe-connect" className="no-underline flex items-center gap-2">
-                                        <BankCardLine className="h-4 w-4" />
+                                        <BankCardFill className="h-4 w-4" />
                                         Stripe Payout
                                     </Link>
                                 </DropdownMenuItem>

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import { ThemeSwitcher } from "./theme-switcher"
-import { ArrowLeftLine } from "@mingcute/react"
+import { ArrowLeftFill } from "@mingcute/react"
 
 interface DemoLayoutProps {
     title: string
@@ -19,7 +19,7 @@ export function DemoLayout({ title, description, children }: DemoLayoutProps) {
                         to="/concepts/demo"
                         className="inline-flex items-center gap-1.5 text-xs text-fg-3 hover:text-fg-1 transition-colors no-underline"
                     >
-                        <ArrowLeftLine size={14} />
+                        <ArrowLeftFill size={14} />
                         Demo Index
                     </Link>
                     <ThemeSwitcher />

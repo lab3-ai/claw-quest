@@ -2,7 +2,7 @@ import { useState } from "react"
 import { PageTitle } from "@/components/page-title"
 import { Button } from "@/components/ui/button"
 import { WalletPortfolio } from "@/components/WalletPortfolio"
-import { Search2Line } from "@mingcute/react"
+import { Search2Fill } from "@mingcute/react"
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -37,7 +37,7 @@ export function WalletPortfolioPage({ address: initialAddress }: WalletPortfolio
                     className="flex-1 px-3 py-2 text-sm border border-border-2 bg-bg-base text-fg-1 placeholder:text-fg-3 focus:outline-none focus:ring-1 focus:ring-accent"
                 />
                 <Button type="submit" disabled={!inputValue.trim()}>
-                    <Search2Line size={16} className="mr-1.5" />
+                    <Search2Fill size={16} className="mr-1.5" />
                     Lookup
                 </Button>
             </form>

@@ -1,18 +1,20 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { toast } from 'sonner'
 import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/context/AuthContext"
+import { QuestGridCard } from "@/components/QuestGridCard"
 import { QuestersPopup } from "@/components/QuestersPopup"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { QuestTypeBadge } from "@/components/quest-badges"
+import { TabBar, GRID_VIEW_ICON, LIST_VIEW_ICON } from "@/components/tab-bar"
+import type { ViewOption } from "@/components/tab-bar"
 import { cn } from "@/lib/utils"
-import { PageTitle } from "@/components/page-title"
+import { getUserAvatarUrl } from "@/components/avatarUtils"
 import { TokenIcon } from "@/components/token-icon"
 import { SponsorLogo } from "@/components/sponsor-logo"
-import { formatTimeShort, typeColorClass } from "@/components/quest-utils"
-import { RunLine, TrophyLine, RandomLine } from "@mingcute/react"
+import { formatTimeShort } from "@/components/quest-utils"
+import { QuestTypeBadge } from "@/components/quest-badges"
 import type { Quest } from "@clawquest/shared"
 import { FUNDING_STATUS } from "@clawquest/shared"
 
@@ -98,6 +100,11 @@ type AcceptedFilter = "all" | "active" | "ended"
 type MainTab = "my-quest" | "accepted"
 type View = "grid" | "compact"
 
+const DASHBOARD_VIEW_OPTIONS: ViewOption<View>[] = [
+    { id: "grid", icon: GRID_VIEW_ICON, tooltip: "Grid view" },
+    { id: "compact", icon: LIST_VIEW_ICON, tooltip: "Compact view" },
+]
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatRewardLabel(rewardType: string): string {
@@ -117,229 +124,39 @@ function getPublishErrors(quest: MineQuest): Record<string, string> {
     return errors
 }
 
-function getDraftCompletion(quest: MineQuest): { done: number; total: number } {
-    const checks = [
-        !!quest.title?.trim(),
-        !!quest.description?.trim(),
-        quest.rewardAmount > 0,
-        ((quest.tasks as any[]) ?? []).length > 0,
-        !!quest.expiresAt,
-    ]
-    return { done: checks.filter(Boolean).length, total: checks.length }
-}
-
-// ─── View Toggle ─────────────────────────────────────────────────────────────
-
-interface ViewToggleProps {
-    view: View
-    onChange: (v: View) => void
-}
-
-function ViewToggle({ view, onChange }: ViewToggleProps) {
-    const viewRefs = useRef<Record<string, HTMLButtonElement | null>>({})
-    const [indicatorStyle, setIndicatorStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 })
-
-    const updateIndicator = useCallback(() => {
-        const el = viewRefs.current[view]
-        if (el) setIndicatorStyle({ left: el.offsetLeft, width: el.offsetWidth })
-    }, [view])
-
-    useEffect(() => { updateIndicator() }, [updateIndicator])
-    useEffect(() => {
-        document.fonts.ready.then(updateIndicator)
-        window.addEventListener("resize", updateIndicator)
-        return () => window.removeEventListener("resize", updateIndicator)
-    }, [updateIndicator])
-
-    return (
-        <div className="relative inline-flex border border-border-2 p-0.5 gap-0.5 rounded-button overflow-hidden shrink-0">
-            <span
-                className="absolute top-0.5 bottom-0.5 rounded-button bg-bg-3 transition-all duration-200 ease-out z-0"
-                style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
-            />
-            <button
-                ref={(el) => { viewRefs.current["grid"] = el }}
-                className={cn(
-                    "relative z-10 flex items-center justify-center w-7 h-7 cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
-                    view === "grid" ? "text-fg-1" : "text-fg-3 hover:text-fg-1",
-                )}
-                onClick={() => onChange("grid")}
-                title="Grid view"
-            >
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <rect x="1" y="1" width="6" height="6" rx="1" />
-                    <rect x="9" y="1" width="6" height="6" rx="1" />
-                    <rect x="1" y="9" width="6" height="6" rx="1" />
-                    <rect x="9" y="9" width="6" height="6" rx="1" />
-                </svg>
-            </button>
-            <button
-                ref={(el) => { viewRefs.current["compact"] = el }}
-                className={cn(
-                    "relative z-10 flex items-center justify-center w-7 h-7 cursor-pointer border-none [&_svg]:w-3.5 [&_svg]:h-3.5 transition-colors duration-150",
-                    view === "compact" ? "text-fg-1" : "text-fg-3 hover:text-fg-1",
-                )}
-                onClick={() => onChange("compact")}
-                title="Compact view"
-            >
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <line x1="1" y1="2" x2="15" y2="2" />
-                    <line x1="1" y1="5.5" x2="15" y2="5.5" />
-                    <line x1="1" y1="9" x2="15" y2="9" />
-                    <line x1="1" y1="12.5" x2="15" y2="12.5" />
-                </svg>
-            </button>
-        </div>
-    )
-}
-
-// ─── Quest Card (dashboard-specific, has action buttons) ─────────────────────
+// ─── Dashboard Quest Card (QuestGridCard + action buttons) ───────────────────
 
 interface DashboardQuestCardProps {
     quest: MineQuest
-    onPopup: (q: { id: string; title: string }) => void
     onPublish: (id: string) => void
     isOwned?: boolean
 }
 
-function DashboardQuestCard({ quest, onPopup, onPublish, isOwned = false }: DashboardQuestCardProps) {
+function DashboardQuestCard({ quest, onPublish, isOwned = false }: DashboardQuestCardProps) {
     const isDraft = quest.status === "draft"
-    const time = formatTimeShort(quest.expiresAt ?? null)
-    const slotsLeft = quest.totalSlots - quest.filledSlots
-    const titleLinkProps = isDraft && (quest as any).previewToken
-        ? { to: "/quests/$questId" as const, params: { questId: quest.id }, search: { token: (quest as any).previewToken } }
-        : { to: "/quests/$questId" as const, params: { questId: quest.id } }
 
     return (
         <div className={cn(
-            "flex flex-col border border-border-2 rounded bg-bg-1 hover:border-fg-1 transition-colors",
+            "flex flex-col border border-border-2 rounded bg-bg-1 hover:border-fg-1 hover-shadow transition-colors",
             isDraft && "border-dashed opacity-80 hover:opacity-100",
         )}>
-            {/* Card body — mimics QuestGridCard layout */}
-            <div className="flex flex-col flex-1 p-4 max-sm:p-3">
-                {/* Reward + Time */}
-                <div className="flex items-center justify-between mb-2">
-                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold">
-                        <TokenIcon token={quest.rewardType} size={16} />
-                        {quest.rewardAmount.toLocaleString()} {formatRewardLabel(quest.rewardType)}
-                    </span>
-                    {quest.expiresAt ? (
-                        <span className={cn(
-                            "font-mono text-xs font-normal tracking-wide",
-                            time.cls === "urgent" && "text-error",
-                            time.cls === "warning" && "text-warning",
-                            time.cls === "normal" && "text-fg-3",
-                            time.cls === "muted" && "text-fg-3",
-                        )}>
-                            {time.label}
-                        </span>
-                    ) : isDraft ? (
-                        <Badge variant="filled-muted" className="text-2xs">Draft</Badge>
-                    ) : null}
-                </div>
+            <QuestGridCard quest={quest} className="border-0 rounded-none !translate-y-0 !shadow-none" />
 
-                {/* Title */}
-                <Link {...titleLinkProps} className="no-underline text-fg-1 hover:text-primary">
-                    <h3 className="text-md font-semibold leading-snug mb-1.5 line-clamp-2">{quest.title}</h3>
-                </Link>
-
-                {/* Description */}
-                <p className="flex-1 text-xs text-fg-3 leading-relaxed mb-3 line-clamp-2 overflow-hidden">
-                    {quest.description}
-                </p>
-
-                {/* Type + tags */}
-                <div className="flex gap-1 mb-4 items-center overflow-hidden">
-                    <QuestTypeBadge type={quest.type} />
-                    {quest.tags?.slice(0, 2).map(tag => (
-                        <Badge key={tag} variant="pill">{tag}</Badge>
-                    ))}
-                    {(quest.tags?.length ?? 0) > 2 && (
-                        <span className="text-fg-3 px-1 text-xs">+{quest.tags!.length - 2}</span>
-                    )}
-                </div>
-
-                {/* Progress bar */}
-                {!isDraft && (
-                    <div className="flex flex-col gap-1 mb-3">
-                        <div className="flex items-center justify-between text-xs">
-                            <span className="text-fg-3">
-                                <strong className="text-fg-1">{quest.filledSlots.toLocaleString()}</strong>
-                                /{quest.totalSlots.toLocaleString()} slots
-                            </span>
-                            <span className={cn("font-semibold text-fg-1", slotsLeft < 5 && "text-error")}>
-                                {slotsLeft} left
-                            </span>
-                        </div>
-                        <div className="flex gap-px w-full">
-                            {Array.from({ length: 10 }, (_, i) => {
-                                const pct = quest.totalSlots > 0 ? (quest.filledSlots / quest.totalSlots) * 100 : 0
-                                const segThreshold = (i + 1) * 10
-                                const filled = pct >= segThreshold
-                                const partial = !filled && pct > i * 10
-                                return (
-                                    <div key={i} className="flex-1 h-1.5 bg-bg-3 overflow-hidden">
-                                        {(filled || partial) && (
-                                            <div
-                                                className="h-full bg-primary"
-                                                style={{ width: partial ? `${((pct - i * 10) / 10) * 100}%` : "100%" }}
-                                            />
-                                        )}
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    </div>
-                )}
-
-                {isDraft && (() => {
-                    const comp = getDraftCompletion(quest)
-                    return (
-                        <div className="flex flex-col gap-1 mb-3">
-                            <div className="flex items-center justify-between text-xs">
-                                <span className="text-fg-3">Setup progress</span>
-                                <span className="text-fg-1 font-semibold">{comp.done}/{comp.total}</span>
-                            </div>
-                            <div className="flex gap-px w-full">
-                                {Array.from({ length: comp.total }, (_, i) => (
-                                    <div key={i} className={cn("flex-1 h-1.5", i < comp.done ? "bg-primary" : "bg-bg-3")} />
-                                ))}
-                            </div>
-                        </div>
-                    )
-                })()}
-
-                {/* Sponsor + questers */}
-                <div className="flex items-center justify-between border-t border-border-2 pt-3 mt-auto">
-                    <span className="text-xs text-fg-3 flex items-center gap-1.5 leading-none">
-                        by <SponsorLogo sponsor={quest.sponsor} size={14} />{" "}
-                        <strong className="text-fg-1 font-semibold">{quest.sponsor}</strong>
-                    </span>
-                    {quest.questers > 0 && (
-                        <button
-                            className="text-xs text-fg-3 hover:text-primary cursor-pointer"
-                            onClick={() => onPopup({ id: quest.id, title: quest.title })}
-                        >
-                            <strong className="text-fg-1">{quest.questers}</strong> questers
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* Action bar */}
-            {isOwned && (
-                <div className="flex gap-1.5 px-4 pb-3 max-sm:px-3">
-                    {isDraft ? (() => {
+            {/* Action buttons — outline by default, filled on card hover */}
+            <div className="flex gap-1.5 px-4 pb-4 max-sm:px-3 max-sm:pb-3">
+                {isOwned ? (
+                    isDraft ? (() => {
                         const errors = getPublishErrors(quest)
                         const canPublish = Object.keys(errors).length === 0
                         return (
                             <>
-                                <Button asChild size="sm" variant="secondary" className="flex-1">
+                                <Button asChild size="lg" variant="outline" className="flex-1 ">
                                     <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>Continue Editing</Link>
                                 </Button>
                                 <Button
-                                    size="sm"
-                                    className="flex-1"
+                                    size="lg"
+                                    variant="outline"
+                                    className="flex-1 "
                                     disabled={!canPublish}
                                     title={canPublish ? "Publish quest" : `Missing: ${Object.values(errors).join(", ")}`}
                                     onClick={() => onPublish(quest.id)}
@@ -350,28 +167,24 @@ function DashboardQuestCard({ quest, onPopup, onPublish, isOwned = false }: Dash
                         )
                     })() : quest.status === "scheduled" ? (
                         <>
-                            <Button asChild size="sm" variant="secondary" className="flex-1">
+                            <Button asChild size="lg" variant="outline" className="flex-1 ">
                                 <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>Edit</Link>
                             </Button>
-                            <Button asChild size="sm" className="flex-1">
+                            <Button asChild size="lg" variant="outline" className="flex-1 ">
                                 <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
                             </Button>
                         </>
                     ) : (
-                        <Button asChild size="sm" variant="secondary" className="flex-1">
+                        <Button asChild size="lg" variant="outline" className="flex-1 ">
                             <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
                         </Button>
-                    )}
-                </div>
-            )}
-
-            {!isOwned && (
-                <div className="flex gap-1.5 px-4 pb-3 max-sm:px-3">
-                    <Button asChild size="sm" variant="secondary" className="flex-1">
+                    )
+                ) : (
+                    <Button asChild size="lg" variant="outline" className="flex-1 ">
                         <Link to="/quests/$questId" params={{ questId: quest.id }}>View Quest</Link>
                     </Button>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     )
 }
@@ -439,12 +252,7 @@ function CompactTable({ quests, emptyMessage, isOwned = false, onPopup, onPublis
                                     </span>
                                 </td>
                                 <td className="px-4 py-4 text-xs border-b border-border-2 align-top">
-                                    <span className={cn("inline-flex items-center gap-1 text-xs font-semibold uppercase", typeColorClass(quest.type))}>
-                                        {quest.type === "FCFS" && <RunLine size={14} />}
-                                        {quest.type === "LEADERBOARD" && <TrophyLine size={14} />}
-                                        {quest.type === "LUCKY_DRAW" && <RandomLine size={14} />}
-                                        {quest.type}
-                                    </span>
+                                    <QuestTypeBadge type={quest.type} />
                                 </td>
                                 <td className="px-4 py-4 text-xs border-b border-border-2 align-top whitespace-nowrap">
                                     {quest.questers > 0 ? (
@@ -479,11 +287,12 @@ function CompactTable({ quests, emptyMessage, isOwned = false, onPopup, onPublis
                                             const canPublish = Object.keys(errors).length === 0
                                             return (
                                                 <div className="flex gap-1.5 justify-end">
-                                                    <Button asChild size="sm" variant="secondary">
+                                                    <Button asChild size="lg" variant="outline">
                                                         <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>Edit</Link>
                                                     </Button>
                                                     <Button
                                                         size="sm"
+                                                        variant="outline"
                                                         disabled={!canPublish}
                                                         title={canPublish ? "Publish" : `Missing: ${Object.values(errors).join(", ")}`}
                                                         onClick={() => onPublish?.(quest.id)}
@@ -494,20 +303,20 @@ function CompactTable({ quests, emptyMessage, isOwned = false, onPopup, onPublis
                                             )
                                         })() : quest.status === "scheduled" ? (
                                             <div className="flex gap-1.5 justify-end">
-                                                <Button asChild size="sm" variant="secondary">
+                                                <Button asChild size="lg" variant="outline">
                                                     <Link to="/quests/$questId/edit" params={{ questId: quest.id }}>Edit</Link>
                                                 </Button>
-                                                <Button asChild size="sm">
+                                                <Button asChild size="lg" variant="outline">
                                                     <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
                                                 </Button>
                                             </div>
                                         ) : (
-                                            <Button asChild size="sm" variant="secondary">
+                                            <Button asChild size="lg" variant="outline">
                                                 <Link to="/quests/$questId/manage" params={{ questId: quest.id }}>Manage</Link>
                                             </Button>
                                         )
                                     ) : (
-                                        <Button asChild size="sm" variant="secondary">
+                                        <Button asChild size="lg" variant="outline">
                                             <Link to="/quests/$questId" params={{ questId: quest.id }}>View</Link>
                                         </Button>
                                     )}
@@ -563,40 +372,6 @@ function CompactSkeleton() {
                         <div className="animate-pulse bg-bg-3 rounded w-[70px] h-[18px]" />
                     </div>
                 </div>
-            ))}
-        </div>
-    )
-}
-
-// ─── Sub filter bar ───────────────────────────────────────────────────────────
-
-interface SubFilterBarProps<T extends string> {
-    filters: T[]
-    active: T
-    counts: Record<T, number>
-    onChange: (f: T) => void
-    view: View
-    onViewChange: (v: View) => void
-}
-
-function SubFilterBar<T extends string>({ filters, active, counts, onChange }: Omit<SubFilterBarProps<T>, 'view' | 'onViewChange'>) {
-    return (
-        <div className="flex items-center gap-1.5 py-3 flex-wrap">
-            {filters.map(f => (
-                counts[f] > 0 ? (
-                    <button
-                        key={f}
-                        className={cn(
-                            "cursor-pointer px-3 py-1 text-xs whitespace-nowrap rounded border transition-colors",
-                            active === f
-                                ? "border-fg-1 bg-fg-1 text-bg-1 font-semibold"
-                                : "border-border-2 bg-transparent text-fg-3 hover:text-fg-1 hover:border-fg-3"
-                        )}
-                        onClick={() => onChange(f)}
-                    >
-                        {counts[f]} {f}
-                    </button>
-                ) : null
             ))}
         </div>
     )
@@ -702,6 +477,15 @@ export function Dashboard() {
 
     const displayName = user?.user_metadata?.full_name as string | undefined
     const handle = displayName ?? user?.email?.split("@")[0] ?? "user"
+    const avatarUrl = getUserAvatarUrl(user, handle, 48)
+
+    // Stats
+    const completedQuests = quests.filter(q => q.status === "completed").length
+    const totalJoined = quests.length + allAccepted.length
+    const totalEarned = [...quests, ...allAccepted]
+        .filter(q => q.status === "completed")
+        .reduce((sum, q) => sum + (q.rewardAmount ?? 0), 0)
+    const winRate = totalJoined > 0 ? Math.round((completedQuests / totalJoined) * 100) : 0
 
     return (
         <>
@@ -714,53 +498,73 @@ export function Dashboard() {
                     />
                 )}
 
-                <PageTitle
-                    title="Dashboard"
-                    description={<>{displayName ? handle : `@${handle}`} · {quests.length} quests</>}
-                    border
-                    actions={
-                        <Button asChild>
-                            <Link to="/quests/new">+ Create Quest</Link>
-                        </Button>
-                    }
-                />
-
-                {/* Main tabs + view toggle */}
-                <div className="flex items-center justify-between overflow-x-auto scrollbar-hide">
-                    <div className="flex items-center gap-6">
-                        {(["my-quest", "accepted"] as MainTab[]).map(t => {
-                            const isActive = mainTab === t
-                            const label = t === "my-quest" ? "My Quests" : "Accepted Quests"
-                            const count = t === "my-quest" ? quests.length : (acceptedQuests.data?.length ?? 0)
-                            return (
-                                <button
-                                    key={t}
-                                    className={cn(
-                                        "inline-flex items-center gap-2 py-3 text-sm cursor-pointer bg-transparent border-b-[3px] -mb-px transition-colors duration-150 whitespace-nowrap",
-                                        isActive
-                                            ? "border-fg-1 text-fg-1 font-semibold"
-                                            : "border-transparent text-fg-3 hover:text-fg-1"
-                                    )}
-                                    onClick={() => setMainTab(t)}
-                                >
-                                    {label}
-                                    <Badge variant={isActive ? "count" : "count-muted"}>{count}</Badge>
-                                </button>
-                            )
-                        })}
+                {/* Profile header + stats */}
+                <div className="flex items-center justify-between py-4 border-b border-border-2 gap-4 max-md:flex-col max-md:items-start">
+                    {/* Left: avatar + name + action */}
+                    <div className="flex items-center gap-3">
+                        <img
+                            src={avatarUrl}
+                            alt={handle}
+                            className="w-12 h-12 rounded bg-bg-3 border border-border-1 shrink-0"
+                        />
+                        <div>
+                            <h1 className="text-xl font-semibold font-heading text-fg-1">{displayName || handle}</h1>
+                            <p className="text-xs text-fg-3 mt-0.5">@{handle}</p>
+                        </div>
                     </div>
-                    <ViewToggle view={view} onChange={setView} />
+
+                    {/* Right: stats */}
+                    <div className="grid grid-cols-3 divide-x divide-border-2 border border-border-2 rounded bg-bg-1">
+                        <div className="px-5 py-3 text-center">
+                            <div className="text-2xs text-fg-3 uppercase tracking-widest">total earned</div>
+                            <div className="text-xl font-semibold text-fg-1 font-heading mt-0.5">
+                                ${totalEarned.toLocaleString()}
+                            </div>
+                        </div>
+                        <div className="px-5 py-3 text-center">
+                            <div className="text-2xs text-fg-3 uppercase tracking-widest">completed</div>
+                            <div className="text-xl font-semibold text-fg-1 font-heading mt-0.5">
+                                {completedQuests}
+                            </div>
+                        </div>
+                        <div className="px-5 py-3 text-center">
+                            <div className="text-2xs text-fg-3 uppercase tracking-widest">win rate</div>
+                            <div className="text-xl font-semibold text-fg-1 font-heading mt-0.5">
+                                {winRate}%
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                {/* Main tabs + view toggle + sub-filters */}
+                <TabBar
+                    tabs={[
+                        { id: "my-quest" as MainTab, label: "My Quests" },
+                        { id: "accepted" as MainTab, label: "Accepted Quests" },
+                    ]}
+                    activeTab={mainTab}
+                    onTabChange={setMainTab}
+                    tabCounts={{
+                        "my-quest": quests.length,
+                        "accepted": acceptedQuests.data?.length ?? 0,
+                    }}
+                    viewOptions={DASHBOARD_VIEW_OPTIONS}
+                    activeView={view}
+                    onViewChange={setView}
+                    subFilters={mainTab === "my-quest"
+                        ? (["all", "draft", "live", "scheduled", "completed"] as QuestFilter[]).map(f => ({ id: f, label: f, count: questCounts[f] }))
+                        : (["all", "active", "ended"] as AcceptedFilter[]).map(f => ({ id: f, label: f, count: acceptedCounts[f] }))
+                    }
+                    activeSubFilter={mainTab === "my-quest" ? questFilter : acceptedFilter}
+                    onSubFilterChange={(f) => {
+                        if (mainTab === "my-quest") setQuestFilter(f as QuestFilter)
+                        else setAcceptedFilter(f as AcceptedFilter)
+                    }}
+                />
 
                 {/* My Quests tab */}
                 {mainTab === "my-quest" && (
                     <div>
-                        <SubFilterBar
-                            filters={["all", "draft", "live", "scheduled", "completed"] as QuestFilter[]}
-                            active={questFilter}
-                            counts={questCounts}
-                            onChange={setQuestFilter}
-                        />
 
                         {questsLoading && (view === "grid" ? <GridSkeleton /> : <CompactSkeleton />)}
 
@@ -777,7 +581,6 @@ export function Dashboard() {
                                     <DashboardQuestCard
                                         key={quest.id}
                                         quest={quest}
-                                        onPopup={setPopupQuest}
                                         onPublish={handlePublish}
                                         isOwned
                                     />
@@ -802,13 +605,6 @@ export function Dashboard() {
                 {/* Accepted Quests tab */}
                 {mainTab === "accepted" && (
                     <div>
-                        <SubFilterBar
-                            filters={["all", "active", "ended"] as AcceptedFilter[]}
-                            active={acceptedFilter}
-                            counts={acceptedCounts}
-                            onChange={setAcceptedFilter}
-                        />
-
                         {acceptedQuests.isLoading && (view === "grid" ? <GridSkeleton /> : <CompactSkeleton />)}
 
                         {!acceptedQuests.isLoading && filteredAcceptedQuests.length === 0 && (
@@ -826,9 +622,7 @@ export function Dashboard() {
                                     <DashboardQuestCard
                                         key={quest.id}
                                         quest={quest}
-                                        onPopup={setPopupQuest}
                                         onPublish={handlePublish}
-                                        isOwned={false}
                                     />
                                 ))}
                             </div>

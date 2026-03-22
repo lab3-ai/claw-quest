@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Search2Line } from "@mingcute/react"
+import { Search2Fill } from "@mingcute/react"
 
 interface SkillFiltersProps {
   search: string
@@ -32,7 +32,7 @@ export function SkillFilters({
     <div className="space-y-4">
       {/* Search */}
       <div className="relative">
-        <Search2Line size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-3" />
+        <Search2Fill size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-3" />
         <Input
           placeholder="Search skills..."
           value={search}

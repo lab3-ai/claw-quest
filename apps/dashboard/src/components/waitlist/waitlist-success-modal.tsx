@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import confetti from "canvas-confetti"
 import { Button } from "@/components/ui/button"
-import { CopyLine, CheckLine, CloseLine } from "@mingcute/react"
+import { CopyFill, CheckFill, CloseFill } from "@mingcute/react"
 import { PlatformIcon } from "@/components/PlatformIcon"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
@@ -165,7 +165,7 @@ export function WaitlistSuccessModal({
                     onClick={onClose}
                     className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-md text-fg-3 transition-colors hover:bg-neutral-800 hover:text-white"
                 >
-                    <CloseLine size={16} />
+                    <CloseFill size={16} />
                 </button>
 
                 <div className="px-6 pt-8 pb-6 flex flex-col items-center gap-5">
@@ -260,7 +260,7 @@ export function WaitlistSuccessModal({
                                         onClick={() => copyShareText()}
                                         className="inline-flex items-center gap-1 rounded-md border border-neutral-800 bg-neutral-950 px-2 py-1 font-mono text-xs text-fg-3 transition-colors hover:text-white"
                                     >
-                                        {copiedText ? <CheckLine size={12} /> : <CopyLine size={12} />}
+                                        {copiedText ? <CheckFill size={12} /> : <CopyFill size={12} />}
                                         Copy
                                     </button>
                                 </div>
@@ -282,7 +282,7 @@ export function WaitlistSuccessModal({
                                     title={copied ? "Copied!" : "Copy link"}
                                     className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-900 border border-neutral-800 text-fg-3 transition-colors hover:bg-neutral-800 hover:text-white active:scale-95"
                                 >
-                                    {copied ? <CheckLine size={14} /> : <CopyLine size={14} />}
+                                    {copied ? <CheckFill size={14} /> : <CopyFill size={14} />}
                                 </button>
                             </div>
 

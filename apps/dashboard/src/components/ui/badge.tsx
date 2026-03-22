@@ -18,11 +18,11 @@ const badgeVariants = cva(
         pill: "border border-border-2 rounded-md px-2 py-0.5 text-fg-2 uppercase text-2xs font-normal",
         /* Filled — solid bg (for status indicators) */
         "filled-success":
-          "rounded-md bg-success-light text-success px-2 py-0.5",
-        "filled-error": "rounded-md bg-error-light text-error px-2 py-0.5",
+          "rounded-md bg-success-light text-success px-2.5 h-7 items-center",
+        "filled-error": "rounded-md bg-error-light text-error px-2.5 h-7 items-center",
         "filled-warning":
-          "rounded-md bg-warning-light text-warning px-2 py-0.5",
-        "filled-muted": "rounded-md bg-bg-3 text-fg-3 px-2 py-0.5",
+          "rounded-md bg-warning-light text-warning px-2.5 h-7 items-center",
+        "filled-muted": "rounded-md bg-bg-3 text-fg-3 px-2.5 h-7 items-center",
         /* Outline — border + subtle bg (for labels, quest type badges) */
         outline:
           "border border-border-2 rounded-md px-2 py-0.5 bg-bg-2 text-fg-1",
@@ -38,6 +38,13 @@ const badgeVariants = cva(
           "border border-fg-1 rounded-md px-2 py-0.5 bg-bg-1 text-fg-1",
         "outline-muted":
           "border border-border rounded-md px-2 py-0.5 bg-bg-2 text-fg-3",
+        /* Quest type — neutral by default, primary on card hover */
+        "quest-fcfs":
+          "border border-fg-3/30 rounded-md px-2 py-0.5 bg-fg-3/8 text-fg-3 uppercase text-2xs font-normal transition-colors group-hover:border-primary/40 group-hover:bg-primary/10 group-hover:text-primary",
+        "quest-leaderboard":
+          "border border-fg-3/30 rounded-md px-2 py-0.5 bg-fg-3/8 text-fg-3 uppercase text-2xs font-normal transition-colors group-hover:border-primary/40 group-hover:bg-primary/10 group-hover:text-primary",
+        "quest-lucky-draw":
+          "border border-fg-3/30 rounded-md px-2 py-0.5 bg-fg-3/8 text-fg-3 uppercase text-2xs font-normal transition-colors group-hover:border-primary/40 group-hover:bg-primary/10 group-hover:text-primary",
         /* Count — small filled pill for numbers in tabs/nav */
         count:
           "inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-2xs font-semibold rounded-full bg-fg-1 text-bg-1",

@@ -8,7 +8,7 @@ import { TierProgress } from "@/components/waitlist/tier-progress"
 import { HeroGridBg } from "@/components/waitlist/hero-grid-bg"
 import { MascotEyes, type MascotMood } from "@/components/waitlist/mascot-eyes"
 import { BrandLogo } from "@/components/brand-logo"
-import { CelebrateLine, ArrowUpLine, CheckLine, CloseLine, Share2Line, TrophyLine, FlashLine, RocketLine } from "@mingcute/react"
+import { CelebrateFill, ArrowUpFill, CheckFill, CloseFill, Share2Fill, TrophyFill, FlashFill, RocketFill } from "@mingcute/react"
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
 interface PlatformStats {
@@ -244,7 +244,7 @@ function ScrollToTopButton() {
             className={`fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--wl-accent)] border border-[var(--wl-accent)] text-white shadow-lg shadow-[var(--wl-accent)]/20 transition-all duration-300 hover:bg-[var(--wl-accent-hover)] hover:border-[var(--wl-accent-hover)] active:scale-95 ${visible ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-4 pointer-events-none"
                 }`}
         >
-            <ArrowUpLine size={18} />
+            <ArrowUpFill size={18} />
         </button>
     )
 }
@@ -257,7 +257,7 @@ function WaitlistShareButton({ onClick }: { onClick: () => void }) {
                 onClick={onClick}
                 className="group flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-[var(--wl-accent)] px-6 py-3 font-mono text-sm font-semibold text-white no-underline transition-colors hover:bg-[var(--wl-accent-hover)] active:scale-95"
             >
-                <Share2Line size={18} />
+                <Share2Fill size={18} />
                 Share your link
             </button>
             <p className="text-center font-mono text-xs text-surface-dark-muted">
@@ -336,9 +336,9 @@ export function Waitlist() {
                             <div className="w-full rounded-lg border border-neutral-800 bg-neutral-900/50 overflow-hidden">
                                 <div className="grid grid-cols-3 divide-x divide-neutral-800">
                                     {[
-                                        { icon: <TrophyLine size={24} />, title: "Top 100", desc: "OG Pioneer badge + 500 XP head start" },
-                                        { icon: <FlashLine size={24} />, title: "Top 1,000", desc: "Priority access to top quests" },
-                                        { icon: <RocketLine size={24} />, title: "Every spot", desc: "Early access to the quest marketplace" },
+                                        { icon: <TrophyFill size={24} />, title: "Top 100", desc: "OG Pioneer badge + 500 XP head start" },
+                                        { icon: <FlashFill size={24} />, title: "Top 1,000", desc: "Priority access to top quests" },
+                                        { icon: <RocketFill size={24} />, title: "Every spot", desc: "Early access to the quest marketplace" },
                                     ].map(({ icon, title, desc }) => (
                                         <div key={title} className="flex flex-col items-center gap-2 p-3 sm:p-4 text-center">
                                             <span className="text-[var(--wl-accent)]">{icon}</span>
@@ -508,7 +508,7 @@ export function Waitlist() {
                         {/* Header - centered, no card */}
                         <div className="mb-5 sm:mb-6 text-center">
                             <div className="inline-flex items-center gap-2 mb-2">
-                                <CelebrateLine size={20} style={{ color: "var(--wl-accent)" }} />
+                                <CelebrateFill size={20} style={{ color: "var(--wl-accent)" }} />
                                 <span className="font-mono text-xs tracking-widest text-[var(--wl-accent)] uppercase">
                                     Early Access Tiers
                                 </span>
@@ -667,7 +667,7 @@ function ProblemColumn({
                 {items.map((item, i) => (
                     <li key={i} className="flex items-start gap-2">
                         <span className={`mt-0.5 shrink-0 ${isWith ? "text-[var(--wl-accent)]" : "text-neutral-600"}`}>
-                            {isWith ? <CheckLine size={14} /> : <CloseLine size={14} />}
+                            {isWith ? <CheckFill size={14} /> : <CloseFill size={14} />}
                         </span>
                         <span className={`font-mono text-xs leading-relaxed ${isWith ? "text-white" : "text-fg-3"}`}>
                             {item}

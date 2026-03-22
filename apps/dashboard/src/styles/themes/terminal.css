@@ -75,17 +75,22 @@
   --link: #ff6b61;
   --link-visited: #ff8a82;
 
-  --success: #22c55e;
-  --success-light: #052e16;
-  --success-border: #166534;
-  --error: #ef4444;
-  --error-light: #450a0a;
-  --error-border: #991b1b;
-  --warning: #eab308;
-  --warning-light: #422006;
-  --warning-border: #854d0e;
-  --info: #3b82f6;
-  --info-light: #172554;
+  --success: #16a34a;
+  --success-hover: color-mix(in srgb, #16a34a, black 12%);
+  --success-light: color-mix(in srgb, var(--success) 10%, transparent);
+  --success-border: #86efac;
+  --error: #ff4444;
+  --error-hover: color-mix(in srgb, #ff4444, black 12%);
+  --error-light: color-mix(in srgb, var(--error) 10%, transparent);
+  --error-border: #ff8888;
+  --warning: #d97706;
+  --warning-hover: color-mix(in srgb, #f59e0b, black 12%);
+  --warning-light: color-mix(in srgb, var(--warning) 10%, transparent);
+  --warning-border: #b45309;
+  --info: #4488ff;
+  --info-hover: color-mix(in srgb, #4488ff, black 12%);
+  --info-light: color-mix(in srgb, var(--info) 10%, transparent);
+  --info-border: #88bbff;
 
   --human-fg: #a0a0a0;
   --human-bg: #1a1a1a;

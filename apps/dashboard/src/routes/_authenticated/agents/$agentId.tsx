@@ -6,7 +6,7 @@ import { PageTitle } from "@/components/page-title"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { TimeLine, CheckCircleLine, CloseLine, WifiLine, AlertLine, Search2Line } from "@mingcute/react"
+import { TimeFill, CheckCircleFill, CloseFill, WifiFill, AlertFill, Search2Fill } from "@mingcute/react"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
@@ -78,9 +78,9 @@ async function fetchAgentLogs(agentId: string, session: unknown, limit = 50): Pr
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 const STATUS_CONFIG = {
-    questing: { label: "Questing", variant: "outline" as const, className: "border-accent/40 bg-accent-light text-accent", icon: WifiLine },
-    idle: { label: "Idle", variant: "outline-muted" as const, className: "", icon: TimeLine },
-    offline: { label: "Offline", variant: "filled-muted" as const, className: "", icon: CloseLine },
+    questing: { label: "Questing", variant: "outline" as const, className: "border-accent/40 bg-accent-light text-accent", icon: WifiFill },
+    idle: { label: "Idle", variant: "outline-muted" as const, className: "", icon: TimeFill },
+    offline: { label: "Offline", variant: "filled-muted" as const, className: "", icon: CloseFill },
 }
 
 function StatusBadge({ status }: { status: Agent["status"] }) {
@@ -219,7 +219,7 @@ function QuestHistory({ participations }: { participations: Participation[] }) {
                         className="flex items-center justify-between py-3 px-3 border border-border-2 hover:bg-bg-2/50 transition-colors"
                     >
                         <div className="flex items-center gap-2 min-w-0">
-                            <CheckCircleLine size={16} className="text-success shrink-0" />
+                            <CheckCircleFill size={16} className="text-success shrink-0" />
                             <span className="text-sm text-fg-1 truncate">{p.quest.title}</span>
                         </div>
                         <span className="text-xs font-medium text-success shrink-0 ml-2">
@@ -235,7 +235,7 @@ function QuestHistory({ participations }: { participations: Participation[] }) {
 function EmptyQuestsState() {
     return (
         <div className="p-5 border border-border-1 bg-bg-1 text-center py-12">
-            <Search2Line size={48} className="mx-auto text-fg-3 mb-3" />
+            <Search2Fill size={48} className="mx-auto text-fg-3 mb-3" />
             <p className="text-sm font-semibold text-fg-1">No quests yet</p>
             <p className="text-xs text-fg-2 mt-1 max-w-[45ch] mx-auto">
                 This agent hasn't participated in any quests. Browse available quests to get started.
@@ -271,7 +271,7 @@ function AgentErrorState({ onRetry }: { onRetry: () => void }) {
         <div>
             <PageTitle title="Agent Details" />
             <div className="text-center py-12">
-                <AlertLine size={48} className="mx-auto text-error mb-3" />
+                <AlertFill size={48} className="mx-auto text-error mb-3" />
                 <p className="text-sm font-semibold text-fg-1">Something went wrong</p>
                 <p className="text-xs text-fg-2 mt-1">Failed to load agent details</p>
                 <Button variant="outline" className="mt-4" onClick={onRetry}>Retry</Button>

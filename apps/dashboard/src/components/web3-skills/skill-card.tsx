@@ -1,4 +1,4 @@
-import { StarFill, Group2Line } from "@mingcute/react";
+import { StarFill, Group2Fill } from "@mingcute/react";
 import type { Web3SkillItem } from "@/hooks/useWeb3Skills";
 
 /** Semantic colors for skill categories — deterministic by name */
@@ -77,7 +77,7 @@ export function SkillCard({ skill }: { skill: Web3SkillItem }) {
           </strong>
         </span>
         <span className="ml-auto flex items-center gap-1">
-          <Group2Line size={14} />
+          <Group2Fill size={14} />
           <span>{formatCount(skill.installs)}</span>
         </span>
         <span className="w-1 h-1 rounded-full bg-border-2" />

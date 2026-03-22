@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select"
 import { useSubmitWeb3Skill } from "@/hooks/useWeb3Skills"
 import { WEB3_CATEGORIES } from "@clawquest/shared"
-import { CloseLine } from "@mingcute/react"
+import { CloseFill } from "@mingcute/react"
 import { toast } from "sonner"
 
 export function SubmitWeb3Skill() {
@@ -118,7 +118,7 @@ export function SubmitWeb3Skill() {
               <Badge key={tag} variant="pill" className="gap-1">
                 {tag}
                 <button type="button" onClick={() => removeTag(tag)} className="ml-1">
-                  <CloseLine size={12} />
+                  <CloseFill size={12} />
                 </button>
               </Badge>
             ))}

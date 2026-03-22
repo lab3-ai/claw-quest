@@ -61,7 +61,7 @@
 | Rule | Implementation |
 |------|----------------|
 | Tab order | Matches visual reading order (top → bottom, left → right) |
-| Focus visible | Global `outline: none` — inputs use `border-fg-1` on focus (dark mode uses `#e5e5e5`, light uses `#171717`) |
+| Focus visible | `focus-visible:ring-2 ring-ring` on buttons/links; inputs use `border-fg-1` on focus |
 | Skip link | "Skip to content" link, visible on focus, before topbar |
 | Escape key | Closes modals, dropdowns, popovers |
 | Enter/Space | Activates buttons and links |
@@ -69,19 +69,31 @@
 
 ### Focus Styles
 
+**Buttons & interactive elements:**
 ```css
-/* Global — no visible focus ring (cleaner UI) */
-:focus-visible {
-  outline: none;
-}
+/* Ring-based focus indicator for keyboard navigation */
+focus-visible:outline-hidden
+focus-visible:ring-2
+focus-visible:ring-ring
+focus-visible:ring-offset-2
+focus-visible:ring-offset-bg-base
+```
 
-/* Inputs — subtle border change on focus */
+**Inputs:**
+```css
+/* Subtle border change on focus */
 input:focus-visible {
-  border-color: var(--fg-1); /* --foreground */
+  border-color: var(--fg-1);
 }
 ```
 
-> **Note:** Focus rings were removed globally in Session 31 (2026-03-16) for cleaner UI. Inputs retain a subtle `border-foreground` indicator. Buttons and dropdowns rely on hover/active states instead of focus outlines.
+**Dialog close button:**
+```css
+/* Ring focus for dialog close */
+focus-visible:ring-2 focus-visible:ring-ring
+```
+
+> **Updated (Session 2026-03-23):** Focus rings restored on all interactive elements for keyboard accessibility. Buttons use `ring-2 ring-ring` (2px ring using `--ring` token). Inputs keep subtle `border-fg-1`. Dialog buttons support full Tab navigation with `autoFocus` on primary action.
 
 ---
 

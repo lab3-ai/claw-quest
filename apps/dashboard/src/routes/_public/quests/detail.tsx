@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 import {
   useParams,
   useSearch,
@@ -12,11 +12,12 @@ import { REWARD_TYPE, FUNDING_METHOD } from "@clawquest/shared";
 import {
   Group2Line,
   GiftLine,
-  User3Line,
-  AiLine,
+  User3Fill,
+  AiFill,
   RunLine,
   TrophyLine,
   RandomLine,
+  AlertLine,
 } from "@mingcute/react";
 import { PlatformIcon } from "@/components/PlatformIcon";
 import {
@@ -34,8 +35,15 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { Badge } from "@/components/ui/badge";
 import {
-  QuestStatusBadge,
-} from "@/components/quest-badges";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { QuestStatusBadge } from "@/components/quest-badges";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Breadcrumb } from "@/components/breadcrumb";
@@ -78,7 +86,7 @@ function useCountdown(expiresAt: string | null) {
 
 function platformLabel(platform: string) {
   const map: Record<string, string> = {
-    x: "X/Twitter",
+    x: "",
     telegram: "Telegram",
     discord: "Discord",
     onchain: "On-Chain",
@@ -182,39 +190,39 @@ function TaskActionBtn({
 }) {
   if (status === "done")
     return (
-      <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-green-100 text-success">
+      <Badge variant="filled-success" className="min-w-20 justify-center">
         Verified
-      </span>
+      </Badge>
     );
   if (status === "verifying")
     return (
-      <Button size="xs" disabled className="cursor-default">
+      <Button size="sm" disabled className="min-w-20 cursor-default">
         Checking…
       </Button>
     );
   if (status === "failed")
     return (
-      <Button size="xs" variant="danger" onClick={onClick}>
-        Retry →
+      <Button size="sm" variant="danger" className="min-w-20" onClick={onClick}>
+        Retry
       </Button>
     );
   if (disabled)
     return (
       <Button
-        size="xs"
+        size="sm"
         disabled
         className="min-w-20 opacity-40 cursor-not-allowed"
       >
-        {label} →
+        {label}
       </Button>
     );
   return (
     <Button
-      size="xs"
+      size="sm"
       className="min-w-20 group-hover/task:!bg-primary group-hover/task:!text-primary-foreground transition-colors"
       onClick={onClick}
     >
-      {label} →
+      {label}
     </Button>
   );
 }
@@ -293,6 +301,9 @@ export function QuestDetail() {
   };
   const [taskErrors, setTaskErrors] = useState<Record<number, string>>({});
   const [proofUrls, setProofUrls] = useState<Record<number, string>>({});
+  const [linkAccountPlatform, setLinkAccountPlatform] = useState<string | null>(
+    null,
+  );
   const claimAttempted = useRef(false);
   const { address: connectedWallet, isConnected: isWalletConnected } =
     useAccount();
@@ -845,7 +856,7 @@ export function QuestDetail() {
 
       {/* Page header */}
       <div className="py-4 border-b border-border-2">
-        <h1 className="text-3xl font-semibold text-fg-1 leading-tight">
+        <h1 className="text-3xl font-semibold text-fg-1 leading-tight font-heading">
           {quest.title}
         </h1>
         <div className="flex items-center gap-2 mt-3 text-xs text-fg-3 flex-wrap">
@@ -880,7 +891,7 @@ export function QuestDetail() {
         <div className="flex flex-col gap-4 flex-1 min-w-0 py-8">
           {/* Description */}
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-fg-1 mb-3">
+            <h2 className="text-2xs font-normal uppercase tracking-widest text-fg-3 mb-2">
               About this Quest
             </h2>
             <p className="text-sm leading-relaxed text-fg-1">
@@ -902,20 +913,78 @@ export function QuestDetail() {
           {((quest.tasks && quest.tasks.length > 0) ||
             (quest.requiredSkills && quest.requiredSkills.length > 0)) && (
             <div className="">
-              <h2 className="text-lg font-semibold text-fg-1 mb-4">
+              <h2 className="text-2xs font-normal uppercase tracking-widest text-fg-3 mb-2">
                 Complete below tasks to earn reward
               </h2>
 
               {/* Human Tasks (from quest.tasks) */}
               {quest.tasks && quest.tasks.length > 0 && (
-                <div className="mb-4 border border-border-2 bg-bg-1 p-4">
-                  <div className="flex items-center gap-2 text-sm font-semibold mb-3">
-                    <User3Line size={16} className="text-(--human-fg)" />
+                <div className="mb-4 bg-bg-1 border border-border-2">
+                  <div className="flex items-center gap-2 text-sm font-semibold py-3 px-4">
+                    <User3Fill size={16} className="text-(--human-fg)" />
                     Human Tasks
                     <span className="font-normal text-xs text-fg-3 ml-auto">
                       Complete these yourself
                     </span>
                   </div>
+
+                  {/* Consolidated account linking warning */}
+                  {quest.myParticipation &&
+                    quest.tasks &&
+                    (() => {
+                      const missingPlatforms = [
+                        ...new Set(
+                          quest.tasks
+                            .map((task: any) => {
+                              const warning = getMissingAccountWarning(
+                                task,
+                                meProfile,
+                              );
+                              return warning ? task.platform : null;
+                            })
+                            .filter(Boolean) as string[],
+                        ),
+                      ];
+                      if (missingPlatforms.length === 0) return null;
+                      const needsXGrant =
+                        missingPlatforms.includes("x") &&
+                        meProfile?.xId &&
+                        !meProfile?.hasXToken;
+                      const linkPlatforms = missingPlatforms
+                        .filter((p) => !(p === "x" && meProfile?.xId))
+                        .map((p) => p.charAt(0).toUpperCase() + p.slice(1));
+                      return (
+                        <Link
+                          to="/account"
+                          className="text-xs mb-3 mx-4 flex items-center gap-1.5 px-4 py-2.5 bg-warning-light text-warning border border-warning/20 rounded no-underline hover:bg-warning/15 transition-colors"
+                        >
+                          <AlertLine
+                            size={14}
+                            className="shrink-0 text-warning"
+                          />
+                          <span className="flex-1">
+                            {linkPlatforms.length > 0 && (
+                              <>
+                                Link your{" "}
+                                <span className="font-semibold">
+                                  {linkPlatforms.join(", ")}
+                                </span>{" "}
+                                {linkPlatforms.length === 1
+                                  ? "account"
+                                  : "accounts"}{" "}
+                                to verify
+                              </>
+                            )}
+                            {linkPlatforms.length > 0 && needsXGrant && " · "}
+                            {needsXGrant && "Grant X verification access"}
+                          </span>
+                          <span className="text-fg-3 flex items-center gap-1 shrink-0">
+                            Go to Settings →
+                          </span>
+                        </Link>
+                      );
+                    })()}
+
                   {quest.tasks.map((task: any, idx: number) => {
                     const hasAccepted = !!quest.myParticipation;
                     const isVerified =
@@ -941,14 +1010,14 @@ export function QuestDetail() {
                     return (
                       <div
                         key={idx}
-                        className="group/task bg-bg-2 rounded mb-2 overflow-hidden last:mb-0"
+                        className="group/task bg-bg-1 rounded px-4 py-3 overflow-hidden last:mb-0 border-t border-border-2"
                       >
-                        <div className="flex items-center gap-2 px-3 py-2 text-sm">
+                        <div className="flex items-center gap-2 text-sm">
                           <TaskCheck status={taskStatus} />
                           <span className="flex-1 font-medium">
                             {task.label}
                           </span>
-                          <span className="inline-flex items-center gap-1.5 h-6.5 px-2 text-2xs text-fg-3 border border-border-2 rounded font-medium uppercase tracking-wider shrink-0">
+                          <span className="inline-flex items-center gap-1.5 h-7 px-2 text-2xs text-fg-3 border border-border-2 rounded font-medium uppercase tracking-wider shrink-0">
                             <PlatformIcon name={task.platform} size={12} />
                             {platformLabel(task.platform)}
                           </span>
@@ -958,6 +1027,15 @@ export function QuestDetail() {
                             label={btnLabel}
                             onClick={() => {
                               if (!hasAccepted) return;
+                              // Check if account is linked for this task's platform
+                              const missingWarning = getMissingAccountWarning(
+                                task,
+                                meProfile,
+                              );
+                              if (missingWarning) {
+                                setLinkAccountPlatform(task.platform);
+                                return;
+                              }
                               // verify_role: always trigger verify directly
                               if (task.actionType === "verify_role") {
                                 setVerifyingIndex(idx);
@@ -1011,74 +1089,6 @@ export function QuestDetail() {
                               />
                             </div>
                           )}
-                        {/* Proactive warning when account not linked */}
-                        {hasAccepted &&
-                          !isVerified &&
-                          !hasFailed &&
-                          (() => {
-                            const warning = getMissingAccountWarning(
-                              task,
-                              meProfile,
-                            );
-                            if (!warning) return null;
-                            const needsXGrant =
-                              task.platform === "x" &&
-                              meProfile?.xId &&
-                              !meProfile?.hasXToken;
-                            return (
-                              <div className="text-xs text-fg-3 mt-1 pl-6">
-                                ⚠ {warning}
-                                {needsXGrant ? (
-                                  <>
-                                    {" "}
-                                    —{" "}
-                                    <button
-                                      className="bg-transparent border-none text-primary cursor-pointer p-0 text-xs underline"
-                                      onClick={async () => {
-                                        try {
-                                          const res = await fetch(
-                                            `${API_BASE}/auth/x/authorize`,
-                                            {
-                                              headers: {
-                                                Authorization: `Bearer ${session?.access_token}`,
-                                              },
-                                            },
-                                          );
-                                          const data = await res.json();
-                                          if (data.url) {
-                                            sessionStorage.setItem(
-                                              "x_oauth_state",
-                                              data.state,
-                                            );
-                                            sessionStorage.setItem(
-                                              "x_oauth_code_verifier",
-                                              data.codeVerifier,
-                                            );
-                                            window.location.href = data.url;
-                                          }
-                                        } catch {
-                                          /* noop */
-                                        }
-                                      }}
-                                    >
-                                      Grant X access
-                                    </button>
-                                  </>
-                                ) : (
-                                  <>
-                                    {" "}
-                                    —{" "}
-                                    <Link
-                                      to="/account"
-                                      className="text-primary"
-                                    >
-                                      Go to Settings
-                                    </Link>
-                                  </>
-                                )}
-                              </div>
-                            );
-                          })()}
                         {hasFailed && (
                           <div className="text-xs text-error mt-1 pl-6">
                             {taskErrors[idx]}
@@ -1117,14 +1127,12 @@ export function QuestDetail() {
                   );
 
                   return (
-                    <div className="mb-4 border border-border-2 bg-bg-1 p-4">
-                      <div className="flex items-center gap-2 text-sm font-semibold mb-3">
-                        <AiLine size={16} className="text-(--agent-fg)" />
+                    <div className="mb-4 bg-bg-1 border border-border-2">
+                      <div className="flex items-center gap-2 text-sm font-semibold py-3 px-4">
+                        <AiFill size={16} className="text-(--agent-fg)" />
                         Agent Tasks
                         {quest.requireVerified && (
-                          <span className="text-xs font-semibold px-1.5 py-0.5 rounded bg-warning/15 text-warning">
-                            Verified Only
-                          </span>
+                          <Badge variant="filled-warning">Verified Only</Badge>
                         )}
                         <span className="font-normal text-xs text-fg-3 ml-auto">
                           Your AI agent handles these
@@ -1148,9 +1156,9 @@ export function QuestDetail() {
                           return (
                             <div
                               key={idx}
-                              className="group/task bg-bg-2 rounded mb-2 overflow-hidden last:mb-0"
+                              className="group/task bg-bg-1 rounded overflow-hidden last:mb-0 px-4 py-3 border-t border-border-2"
                             >
-                              <div className="flex items-center gap-3 px-3 py-2 text-sm">
+                              <div className="flex items-center gap-3 text-sm">
                                 <TaskCheck status={status} />
                                 <span className="flex-1 font-medium flex items-center gap-2">
                                   Requires skill:
@@ -1159,20 +1167,19 @@ export function QuestDetail() {
                                   </Badge>
                                 </span>
                                 {quest.myParticipation && (
-                                  <span
-                                    className={cn(
-                                      "text-xs font-semibold px-1.5 py-0.5 rounded",
+                                  <Badge
+                                    variant={
                                       isVerified
-                                        ? "bg-green-100 text-success"
-                                        : "bg-amber-100 text-warning",
-                                    )}
+                                        ? "filled-success"
+                                        : "filled-warning"
+                                    }
                                   >
                                     {isVerified ? "Verified" : "Pending"}
-                                  </span>
+                                  </Badge>
                                 )}
                                 {!isVerified && (
                                   <Button
-                                    size="xs"
+                                    size="sm"
                                     variant="outline"
                                     className="group-hover/task:!border-primary/40 group-hover/task:!bg-primary/10 group-hover/task:!text-primary transition-colors"
                                     disabled={isLoading}
@@ -1237,63 +1244,72 @@ export function QuestDetail() {
 
           {/* Questers avatar crowd */}
           {quest.questers > 0 && quest.questerDetails && (
-            <div className="border border-border-2 rounded px-4 py-4">
-              <div className="flex justify-between items-center text-sm text-fg-3 mb-3">
-                <span>
-                  <strong className="text-fg-1">{quest.questers}</strong>{" "}
-                  questers joined
-                </span>
-                <Link
-                  to="/quests/$questId/questers"
-                  params={{ questId: quest.id }}
-                  className="hover:text-accent transition-colors text-xs"
-                >
-                  view all →
-                </Link>
-              </div>
-              <div className="flex items-center pl-1">
-                {quest.questerDetails.slice(0, 12).map((d, i) => {
-                  // Show 5 on mobile, 8 on sm, 10 on md, 12 on lg+
-                  const hideClass =
-                    i >= 10
-                      ? "hidden lg:block"
-                      : i >= 8
-                        ? "hidden md:block"
-                        : i >= 5
-                          ? "hidden sm:block"
-                          : "";
-                  return (
-                    <Tooltip key={i}>
-                      <TooltipTrigger asChild>
-                        <div
-                          className={cn(
-                            "relative w-8 h-8 ml-1 first:ml-0 rounded-full border-2 border-background cursor-pointer overflow-visible shrink-0 hover:scale-125 hover:z-20 transition-transform",
-                            hideClass,
-                          )}
-                          style={{ zIndex: 12 - i }}
-                        >
-                          <img
-                            src={getDiceBearUrl(d.agentName, 64)}
-                            alt={d.humanHandle}
-                            className="w-full h-full rounded-full"
-                          />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="text-xs">
-                        <span className="text-surface-dark-muted">Human</span>{" "}
-                        <span className="font-semibold">@{d.humanHandle}</span>
-                        <br />
-                        <span className="text-surface-dark-muted">Agent</span>{" "}
-                        <span className="font-mono">{d.agentName}</span>
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                })}
-                {quest.questers > 12 && (
-                  <div className="w-auto h-8 px-2 ml-2 rounded-full bg-bg-2 border border-border-2 flex items-center justify-center text-xs font-semibold text-fg-3 shrink-0">
-                    +{quest.questers - 12}
-                  </div>
-                )}
+            <div>
+              <h2 className="text-2xs font-normal uppercase tracking-widest text-fg-3 mb-3">
+                Questers
+              </h2>
+              <div className="border border-border-2 rounded px-4 py-4">
+                <div className="flex justify-between items-center text-sm text-fg-3 mb-3">
+                  <span>
+                    <strong className="text-fg-1">{quest.questers}</strong>{" "}
+                    questers joined
+                  </span>
+                  <Link
+                    to="/quests/$questId/questers"
+                    params={{ questId: quest.id }}
+                    className="hover:text-accent transition-colors text-xs"
+                  >
+                    view all →
+                  </Link>
+                </div>
+                <div className="flex items-center pl-1">
+                  {quest.questerDetails.slice(0, 12).map((d, i) => {
+                    // Show 5 on mobile, 8 on sm, 10 on md, 12 on lg+
+                    const hideClass =
+                      i >= 10
+                        ? "hidden lg:block"
+                        : i >= 8
+                          ? "hidden md:block"
+                          : i >= 5
+                            ? "hidden sm:block"
+                            : "";
+                    return (
+                      <Tooltip key={i}>
+                        <TooltipTrigger asChild>
+                          <div
+                            className={cn(
+                              "relative w-8 h-8 ml-1 first:ml-0 rounded-full border-2 border-background cursor-pointer overflow-visible shrink-0 hover:scale-125 hover:z-20 transition-transform",
+                              hideClass,
+                            )}
+                            style={{ zIndex: 12 - i }}
+                          >
+                            <img
+                              src={getDiceBearUrl(d.agentName, 64)}
+                              alt={d.humanHandle}
+                              className="w-full h-full rounded-full"
+                            />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs">
+                          <span className="text-surface-dark-muted">Human</span>{" "}
+                          <span className="font-semibold">
+                            @{d.humanHandle}
+                          </span>
+                          <br />
+                          <span className="text-surface-dark-muted">
+                            Agent
+                          </span>{" "}
+                          <span className="font-mono">{d.agentName}</span>
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  })}
+                  {quest.questers > 12 && (
+                    <div className="w-auto h-8 px-2 ml-2 rounded-full bg-bg-2 border border-border-2 flex items-center justify-center text-xs font-semibold text-fg-3 shrink-0">
+                      +{quest.questers - 12}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -1301,7 +1317,9 @@ export function QuestDetail() {
           {/* Completed: results table */}
           {isCompleted && (
             <div className="mt-6 pt-5 border-t border-border-2">
-              <h2 className="text-lg font-semibold text-fg-1 mb-3">Results</h2>
+              <h2 className="text-2xs font-normal uppercase tracking-widest text-fg-3 mb-2">
+                Results
+              </h2>
               <p className="text-fg-3 text-sm">
                 This quest has ended.{" "}
                 <Link
@@ -1317,7 +1335,7 @@ export function QuestDetail() {
         </div>
 
         {/* ── Right: sidebar ── */}
-        <div className="w-full md:min-w-90 md:max-w-xs shrink-0 py-8">
+        <div className="w-full md:min-w-80 md:max-w-xs shrink-0 py-8">
           {/* Countdown timer card */}
           {isLive && quest.expiresAt && (
             <div className="border border-border-2 rounded mb-4 bg-bg-1">
@@ -1325,9 +1343,9 @@ export function QuestDetail() {
             </div>
           )}
 
-          <div className="border border-border-2 rounded mb-4 sticky top-[55px] bg-bg-1 px-4 py-2">
+          <div className="border border-border-2 rounded mb-4 sticky top-[55px] bg-bg-1">
             {/* Reward hero */}
-            <div className="py-4 text-center border-b border-border-2">
+            <div className="p-4 text-center border-b border-border-2">
               <div className="flex justify-center mb-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -1377,7 +1395,9 @@ export function QuestDetail() {
                 <span className="text-2xl">
                   {quest.fundingMethod === FUNDING_METHOD.STRIPE
                     ? "USD"
-                    : (quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER ? "" : quest.rewardType)}
+                    : quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER
+                      ? ""
+                      : quest.rewardType}
                 </span>
               </div>
               <div className="text-xs text-fg-3 mt-1">
@@ -1389,13 +1409,13 @@ export function QuestDetail() {
             </div>
 
             {isCompleted && (
-              <div className="px-3 py-3 border-b border-border-2 text-center">
+              <div className="px-4 py-3 border-b border-border-2 text-center">
                 <QuestStatusBadge status="completed" />
               </div>
             )}
 
             {/* Spots progress */}
-            <div className="py-3 border-b border-border-2">
+            <div className="px-4 py-3 border-b border-border-2">
               {isLuckyDraw ? (
                 <div className="flex border border-border-2 text-xs text-fg-3">
                   <div className="flex items-center px-2 py-1 gap-1.5 w-full">
@@ -1471,9 +1491,12 @@ export function QuestDetail() {
             {isAuthenticated &&
               !stripeStatus?.isOnboarded &&
               quest.fundingMethod === FUNDING_METHOD.STRIPE && (
-                <div className="px-3 pt-3">
+                <div className="px-4 py-3">
                   <div className="flex items-start gap-2 rounded-md bg-warning/10 border border-warning/30 px-3 py-2 text-xs text-warning-foreground">
-                    <span className="shrink-0 mt-0.5">⚠</span>
+                    <AlertLine
+                      size={14}
+                      className="shrink-0 mt-0.5 text-warning"
+                    />
                     <span>
                       This quest pays in USD. Set up your Stripe account to
                       receive rewards.{" "}
@@ -1489,7 +1512,7 @@ export function QuestDetail() {
               )}
 
             {/* CTA */}
-            <div className="py-3">
+            <div className="px-4 py-3">
               {(() => {
                 const isCreator = isAuthenticated && !!quest.isCreator;
                 const isSponsor = isAuthenticated && !!quest.isSponsor;
@@ -1508,7 +1531,9 @@ export function QuestDetail() {
                         to="/quests/$questId/edit"
                         params={{ questId: quest.id }}
                       >
-                        <Button size="xl" className="w-full mb-2">Edit Draft</Button>
+                        <Button size="xl" className="w-full mb-2">
+                          Edit Draft
+                        </Button>
                       </Link>
                       {isFunded ? (
                         <div className="flex items-center justify-center gap-1.5 px-3 py-2 rounded bg-accent-light border border-green-600 text-sm font-semibold text-accent">
@@ -1519,7 +1544,10 @@ export function QuestDetail() {
                           to="/quests/$questId/fund"
                           params={{ questId: quest.id }}
                         >
-                          <Button size="xl" className="w-full bg-success hover:bg-success/90 border-success">
+                          <Button
+                            size="xl"
+                            className="w-full bg-success hover:bg-success/90 border-success"
+                          >
                             Fund Quest
                           </Button>
                         </Link>
@@ -1580,7 +1608,10 @@ export function QuestDetail() {
                             to="/quests/$questId/fund"
                             params={{ questId: quest.id }}
                           >
-                            <Button size="xl" className="w-full bg-success hover:bg-success/90 border-success">
+                            <Button
+                              size="xl"
+                              className="w-full bg-success hover:bg-success/90 border-success"
+                            >
                               Fund Quest
                             </Button>
                           </Link>
@@ -1592,7 +1623,12 @@ export function QuestDetail() {
                 // Ended states (completed/expired/cancelled)
                 if (isEnded) {
                   return (
-                    <Button variant="secondary" size="xl" className="w-full" disabled>
+                    <Button
+                      variant="secondary"
+                      size="xl"
+                      className="w-full"
+                      disabled
+                    >
                       Quest Ended
                     </Button>
                   );
@@ -1609,7 +1645,9 @@ export function QuestDetail() {
                 if (quest.status === "draft" && !isAuthenticated) {
                   return (
                     <Link to="/login">
-                      <Button size="xl" className="w-full">Log in to Edit</Button>
+                      <Button size="xl" className="w-full">
+                        Log in to Edit
+                      </Button>
                     </Link>
                   );
                 }
@@ -1622,14 +1660,14 @@ export function QuestDetail() {
                     // Only show skeleton on initial load, not when refetching after accept
                     if (isLoading && !hasAccepted) {
                       return (
-                        <div className="text-center py-2">
+                        <div className="text-center">
                           <Skeleton className="h-5 w-32 mx-auto mb-1" />
                           <Skeleton className="h-3 w-24 mx-auto" />
                         </div>
                       );
                     }
                     return (
-                      <div className="text-center py-2">
+                      <div className="text-center">
                         <div className="text-sm font-semibold text-accent mb-1">
                           Quest Accepted
                         </div>
@@ -1871,7 +1909,7 @@ export function QuestDetail() {
       {/* ── Related Quests ── */}
       {relatedQuests && relatedQuests.length > 0 && (
         <div className="pt-6 border-t border-border-2">
-          <h2 className="text-lg font-semibold text-fg-1 mb-4">
+          <h2 className="text-2xs font-normal uppercase tracking-widest text-fg-3 mb-2">
             Related Quests
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -1881,6 +1919,58 @@ export function QuestDetail() {
           </div>
         </div>
       )}
+
+      {/* Link Account Dialog */}
+      <Dialog
+        open={!!linkAccountPlatform}
+        onOpenChange={(open) => !open && setLinkAccountPlatform(null)}
+      >
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>
+              Link your{" "}
+              {linkAccountPlatform
+                ? linkAccountPlatform.charAt(0).toUpperCase() +
+                  linkAccountPlatform.slice(1)
+                : ""}{" "}
+              account
+            </DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <DialogDescription>
+              You need to link your{" "}
+              <span className="font-semibold">
+                {linkAccountPlatform
+                  ? linkAccountPlatform.charAt(0).toUpperCase() +
+                    linkAccountPlatform.slice(1)
+                  : ""}
+              </span>{" "}
+              account before you can complete this task.
+            </DialogDescription>
+          </DialogBody>
+          <DialogFooter className="grid grid-cols-2 gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={() => setLinkAccountPlatform(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="lg"
+              className="w-full"
+              autoFocus
+              onClick={() => {
+                setLinkAccountPlatform(null);
+                navigate({ to: "/account" });
+              }}
+            >
+              Go to Settings
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

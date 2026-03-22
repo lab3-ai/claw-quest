@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select"
 import { useWeb3AdminPending, useWeb3AdminReview } from "@/hooks/useWeb3Skills"
 import { WEB3_CATEGORIES } from "@clawquest/shared"
-import { CheckLine, CloseLine } from "@mingcute/react"
+import { CheckFill, CloseFill } from "@mingcute/react"
 import { toast } from "sonner"
 
 export function AdminWeb3Skills() {
@@ -130,11 +130,11 @@ function PendingCard({ item, onReview }: {
 
         <div className="flex gap-2">
           <Button size="sm" variant="primary" onClick={() => onReview(item.id, "approve", category, note || undefined)}>
-            <CheckLine size={14} />
+            <CheckFill size={14} />
             Approve
           </Button>
           <Button size="sm" variant="outline" onClick={() => onReview(item.id, "reject", undefined, note || undefined)}>
-            <CloseLine size={14} />
+            <CloseFill size={14} />
             Reject
           </Button>
         </div>

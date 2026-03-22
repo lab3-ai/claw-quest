@@ -18,7 +18,7 @@ export function PageTitle({ title, description, actions, border, className, chil
             className
         )}>
             <div>
-                <h1 className="text-3xl font-semibold text-fg-1">{title}</h1>
+                <h1 className="text-3xl font-semibold font-heading text-fg-1">{title}</h1>
                 {description && (
                     <div className="mt-2 text-sm text-fg-3">{description}</div>
                 )}

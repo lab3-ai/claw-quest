@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { TrophyLine } from "@mingcute/react";
+import { TrophyFill } from "@mingcute/react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -184,7 +184,7 @@ export function LeaderboardSection() {
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <h2 className="flex items-center gap-1.5 text-lg font-semibold text-fg-1 md:gap-2 md:text-xl">
-          <TrophyLine size={20} className="text-accent md:size-6" />
+          <TrophyFill size={20} className="text-accent md:size-6" />
           Leaderboard
         </h2>
       </div>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { CelebrateLine } from "@mingcute/react"
+import { CelebrateFill } from "@mingcute/react"
 
 interface TierProgressProps {
     totalSignups: number
@@ -35,7 +35,7 @@ export function TierProgress({ totalSignups, position, email }: TierProgressProp
             {/* Current position indicator */}
             {position != null && (
                 <div className="flex flex-col items-center gap-4 rounded-lg bg-primary px-5 py-5">
-                    <CelebrateLine size={40} className="text-white/90" />
+                    <CelebrateFill size={40} className="text-white/90" />
                     <div className="flex flex-col items-center gap-1">
                         {email && (
                             <p className="font-mono text-xs text-white/80">

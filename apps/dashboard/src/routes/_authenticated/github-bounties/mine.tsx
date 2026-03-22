@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { AddLine } from "@mingcute/react"
+import { AddFill } from "@mingcute/react"
 import { cn } from "@/lib/utils"
 import { statusBadgeClass, submissionStatusClass, rewardLabel } from "@/components/bounty-utils"
 
@@ -257,7 +257,7 @@ export function MyGitHubBounties() {
                     <p className="text-sm text-fg-3 mt-1">Bounties you created and PRs you submitted</p>
                 </div>
                 <Button asChild size="sm" className="gap-1.5">
-                    <Link to="/github-bounties/new"><AddLine size={14} /> Post Bounty</Link>
+                    <Link to="/github-bounties/new"><AddFill size={14} /> Post Bounty</Link>
                 </Button>
             </div>
 

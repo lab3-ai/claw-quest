@@ -242,19 +242,19 @@
   /* ── Semantic ── */
   --success: #16a34a;
   --success-hover: color-mix(in srgb, #16a34a, black 12%);
-  --success-light: #f0fdf4;
+  --success-light: color-mix(in srgb, var(--success) 10%, transparent);
   --success-border: #86efac;
   --error: #ff4444;
   --error-hover: color-mix(in srgb, #ff4444, black 12%);
-  --error-light: #fff0f0;
+  --error-light: color-mix(in srgb, var(--error) 10%, transparent);
   --error-border: #ff8888;
-  --warning: #ffaa00;
-  --warning-hover: color-mix(in srgb, #ffaa00, black 12%);
-  --warning-light: #fff8e6;
-  --warning-border: #ffcc66;
+  --warning: #d97706;
+  --warning-hover: color-mix(in srgb, #f59e0b, black 12%);
+  --warning-light: color-mix(in srgb, var(--warning) 10%, transparent);
+  --warning-border: #b45309;
   --info: #4488ff;
   --info-hover: color-mix(in srgb, #4488ff, black 12%);
-  --info-light: #e6f0ff;
+  --info-light: color-mix(in srgb, var(--info) 10%, transparent);
   --info-border: #88bbff;
 
   /* ── Actor Colors — monochrome ── */
@@ -378,7 +378,11 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-heading);
+}
+
+.font-semibold,
+strong {
+  font-weight: 600;
 }
 
 .font-heading {

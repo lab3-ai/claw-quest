@@ -1,16 +1,21 @@
-import { Badge } from "@/components/ui/badge"
+import { Badge, type BadgeProps } from "@/components/ui/badge"
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { RunLine, TrophyLine, RandomLine } from "@mingcute/react"
 import { TokenIcon } from "./token-icon"
-import { typeColorClass } from "./quest-utils"
 import { cn } from "@/lib/utils"
 
-/* ── Quest Type — plain colored text + icon ── */
+/* ── Quest Type — badge with icon, uses quest-* badge variants ── */
 
 const TYPE_ICON: Record<string, React.ElementType> = {
     FCFS: RunLine,
     LEADERBOARD: TrophyLine,
     LUCKY_DRAW: RandomLine,
+}
+
+const TYPE_VARIANT: Record<string, BadgeProps["variant"]> = {
+    FCFS: "quest-fcfs",
+    LEADERBOARD: "quest-leaderboard",
+    LUCKY_DRAW: "quest-lucky-draw",
 }
 
 const TYPE_TOOLTIP: Record<string, string> = {
@@ -19,14 +24,15 @@ const TYPE_TOOLTIP: Record<string, string> = {
     LUCKY_DRAW: "Random draw at deadline — all entries have equal chance",
 }
 
-export function QuestTypeBadge({ type, size = 14 }: { type: string; size?: number }) {
+export function QuestTypeBadge({ type, size = 14, className }: { type: string; size?: number; className?: string }) {
     const Icon = TYPE_ICON[type]
+    const variant = TYPE_VARIANT[type] ?? "outline"
     const tooltip = TYPE_TOOLTIP[type]
     const badge = (
-        <span className={cn("inline-flex items-center gap-1 text-xs font-semibold uppercase cursor-default", typeColorClass(type))}>
+        <Badge variant={variant} className={cn("shrink-0 cursor-default", className)}>
             {Icon && <Icon size={size} />}
             {type.replace("_", " ")}
-        </span>
+        </Badge>
     )
     if (!tooltip) return badge
     return (

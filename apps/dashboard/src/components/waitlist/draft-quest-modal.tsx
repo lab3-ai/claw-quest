@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { CloseLine, CheckLine } from "@mingcute/react"
+import { CloseFill, CheckFill } from "@mingcute/react"
 import { Button } from "@/components/ui/button"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
@@ -165,7 +165,7 @@ export function DraftQuestModal({ telegramId, onClose }: DraftQuestModalProps) {
                         onClick={onClose}
                         className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-md text-fg-3 transition-colors hover:bg-neutral-800 hover:text-white"
                     >
-                        <CloseLine size={16} />
+                        <CloseFill size={16} />
                     </button>
 
                     <div className="px-6 pt-8 pb-6 flex flex-col items-center gap-5 text-center">
@@ -190,7 +190,7 @@ export function DraftQuestModal({ telegramId, onClose }: DraftQuestModalProps) {
                                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-900 border border-neutral-800 text-fg-3 transition-colors hover:bg-neutral-800 hover:text-white active:scale-95"
                                     title={copied ? "Copied!" : "Copy link"}
                                 >
-                                    {copied ? <CheckLine size={14} /> : (
+                                    {copied ? <CheckFill size={14} /> : (
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <rect x="9" y="9" width="13" height="13" rx="2" />
                                             <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
@@ -245,7 +245,7 @@ export function DraftQuestModal({ telegramId, onClose }: DraftQuestModalProps) {
                         onClick={onClose}
                         className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-md text-fg-3 transition-colors hover:bg-neutral-800 hover:text-white"
                     >
-                        <CloseLine size={16} />
+                        <CloseFill size={16} />
                     </button>
 
                     <div className="px-6 pt-8 pb-6 flex flex-col gap-5">

@@ -4,7 +4,7 @@ import type { Quest } from "@clawquest/shared";
 import { getDiceBearUrl } from "./avatarUtils";
 import { SponsorLogo } from "./sponsor-logo";
 import { QuestersPopup } from "./QuestersPopup";
-import { RunLine, TrophyLine, RandomLine } from "@mingcute/react";
+import { RunFill, TrophyFill, RandomFill } from "@mingcute/react";
 import { formatTimeLeft } from "./quest-utils";
 import { TokenIcon } from "./token-icon";
 import { Badge } from "@/components/ui/badge";
@@ -16,9 +16,9 @@ import {
 } from "@/components/ui/tooltip";
 
 const TYPE_ICON: Record<string, React.ElementType> = {
-  FCFS: RunLine,
-  LEADERBOARD: TrophyLine,
-  LUCKY_DRAW: RandomLine,
+  FCFS: RunFill,
+  LEADERBOARD: TrophyFill,
+  LUCKY_DRAW: RandomFill,
 };
 
 interface QuestCardProps {
@@ -184,7 +184,7 @@ export function QuestCard({ quest }: QuestCardProps) {
 
         {/* Right: Body */}
         <div className="flex-1 min-w-0">
-          <div className="text-base max-sm:text-sm font-semibold mb-1 font-heading">
+          <div className="text-base max-sm:text-sm font-semibold mb-1 font-heading group-hover:text-primary transition-colors">
             {quest.title}
           </div>
           <div className="text-xs text-fg-3 group-hover:text-fg-1 transition-colors mb-2 leading-relaxed line-clamp-1">

@@ -63,16 +63,16 @@
     --link-visited: #E64A3F;
 
     --success: #22c55e;
-    --success-light: #f0fdf4;
+    --success-light: color-mix(in srgb, var(--success) 10%, transparent);
     --success-border: #bbf7d0;
     --error: #ef4444;
-    --error-light: #fef2f2;
+    --error-light: color-mix(in srgb, var(--error) 10%, transparent);
     --error-border: #fecaca;
     --warning: #f59e0b;
-    --warning-light: #fffbeb;
+    --warning-light: color-mix(in srgb, var(--warning) 10%, transparent);
     --warning-border: #fde68a;
     --info: #3b82f6;
-    --info-light: #eff6ff;
+    --info-light: color-mix(in srgb, var(--info) 10%, transparent);
 
     --human-fg: #52525b;
     --human-bg: #f4f4f5;
@@ -152,16 +152,16 @@
     --link-visited: #FF8A82;
 
     --success: #4ade80;
-    --success-light: #052e16;
+    --success-light: color-mix(in srgb, var(--success) 10%, transparent);
     --success-border: #166534;
     --error: #f87171;
-    --error-light: #450a0a;
+    --error-light: color-mix(in srgb, var(--error) 10%, transparent);
     --error-border: #991b1b;
     --warning: #fbbf24;
-    --warning-light: #422006;
+    --warning-light: color-mix(in srgb, var(--warning) 10%, transparent);
     --warning-border: #854d0e;
     --info: #60a5fa;
-    --info-light: #172554;
+    --info-light: color-mix(in srgb, var(--info) 10%, transparent);
 
     --human-fg: #a1a1aa;
     --human-bg: #18181b;

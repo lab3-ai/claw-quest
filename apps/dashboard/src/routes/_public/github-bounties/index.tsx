@@ -5,8 +5,9 @@ import { useAuth } from "@/context/AuthContext"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { PageTitle } from "@/components/page-title"
-import { GitBranchLine, CodeLine, AddLine } from "@mingcute/react"
+import { GitBranchFill, CodeFill, AddFill } from "@mingcute/react"
 import { cn } from "@/lib/utils"
+import { TabBar, type TabItem } from "@/components/tab-bar"
 import { GitHubIcon } from "@/components/github-icon"
 import { rewardBadgeClass, rewardLabel, formatDeadline } from "@/components/bounty-utils"
 
@@ -40,11 +41,11 @@ function difficultyFromAmount(amount: string): { label: string; className: strin
     return { label: "hard", className: "text-error border-error/30" }
 }
 
-const STATUS_TABS: { key: StatusTab; label: string }[] = [
-    { key: "all", label: "All" },
-    { key: "open", label: "Open" },
-    { key: "in_review", label: "In Review" },
-    { key: "completed", label: "Completed" },
+const STATUS_TABS: TabItem<StatusTab>[] = [
+    { id: "all", label: "All" },
+    { id: "open", label: "Open" },
+    { id: "in_review", label: "In Review" },
+    { id: "completed", label: "Completed" },
 ]
 
 const REWARD_FILTERS: { label: string; value: RewardFilter }[] = [
@@ -87,37 +88,21 @@ export function GitHubBountiesExplore() {
                 description="Fix open-source issues, earn USDC or LLM API keys"
                 actions={isAuthenticated ? (
                     <Button asChild size="sm">
-                        <Link to="/github-bounties/new" className="no-underline"><AddLine size={14} /> Post Bounty</Link>
+                        <Link to="/github-bounties/new" className="no-underline"><AddFill size={14} /> Post Bounty</Link>
                     </Button>
                 ) : undefined}
             />
 
-            {/* Status tabs — quests-style with sliding underline */}
-            <div className="relative flex items-center gap-4 lg:gap-6 py-4">
-                {STATUS_TABS.map(tab => {
-                    const isActive = statusTab === tab.key
-                    const count = !isLoading && data && tab.key !== "all"
-                        ? filterBounties(data.bounties, tab.key).length
-                        : null
-                    return (
-                        <button
-                            key={tab.key}
-                            onClick={() => setStatusTab(tab.key)}
-                            className={cn(
-                                "inline-flex items-center gap-1.5 pb-1.5 text-sm font-medium whitespace-nowrap cursor-pointer transition-colors duration-150 ease-out bg-transparent border-none border-b-[3px] -mb-px",
-                                isActive
-                                    ? "text-fg-1 font-semibold border-b-fg-1"
-                                    : "text-fg-3 hover:text-fg-1 border-b-transparent"
-                            )}
-                        >
-                            {tab.label}
-                            {count !== null && (
-                                <span className="text-xs text-fg-3">({count})</span>
-                            )}
-                        </button>
-                    )
-                })}
-            </div>
+            <TabBar
+                tabs={STATUS_TABS}
+                activeTab={statusTab}
+                onTabChange={setStatusTab}
+                tabCounts={data ? {
+                    open: filterBounties(data.bounties, "open").length,
+                    in_review: filterBounties(data.bounties, "in_review").length,
+                    completed: filterBounties(data.bounties, "completed").length,
+                } : undefined}
+            />
 
             {/* Reward type filter pills */}
             <div className="flex gap-2 mb-5 flex-wrap">
@@ -156,7 +141,7 @@ export function GitHubBountiesExplore() {
                 </div>
             ) : !filtered.length ? (
                 <div className="text-center py-12 space-y-3">
-                    <CodeLine size={48} className="mx-auto text-fg-3" />
+                    <CodeFill size={48} className="mx-auto text-fg-3" />
                     <p className="text-sm font-semibold text-fg-1">
                         {statusTab === "all" ? "No bounties yet" : `No ${statusTab.replace("_", " ")} bounties`}
                     </p>
@@ -201,7 +186,7 @@ export function GitHubBountiesExplore() {
                                             </Badge>
                                         )}
                                         <span className="text-xs text-fg-3 flex items-center gap-1">
-                                            <GitBranchLine size={12} />
+                                            <GitBranchFill size={12} />
                                             {bounty._count.submissions} PR{bounty._count.submissions !== 1 ? "s" : ""}
                                         </span>
                                         {bounty.deadline && (

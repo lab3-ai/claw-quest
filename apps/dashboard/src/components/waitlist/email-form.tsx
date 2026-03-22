@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react"
-import { ArrowRightLine } from "@mingcute/react"
+import { ArrowRightFill } from "@mingcute/react"
 import { InlineMessage } from "@/components/ui/inline-message"
 
 interface EmailFormProps {
@@ -78,7 +78,7 @@ export function EmailForm({ onSuccess, onError, className = "", compact, buttonT
                     disabled={loading}
                     className="group min-h-12 py-3 flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-6 font-mono text-sm font-semibold text-white transition-colors hover:bg-primary-hover active:scale-95 disabled:opacity-50"
                 >
-                    {loading ? "Joining..." : <>{buttonText ?? "Join the Waitlist"} <ArrowRightLine size={16} className="inline-block transition-transform group-hover:translate-x-0.5" /></>}
+                    {loading ? "Joining..." : <>{buttonText ?? "Join the Waitlist"} <ArrowRightFill size={16} className="inline-block transition-transform group-hover:translate-x-0.5" /></>}
                 </button>
             </form>
             {error && <InlineMessage variant="error">{error}</InlineMessage>}

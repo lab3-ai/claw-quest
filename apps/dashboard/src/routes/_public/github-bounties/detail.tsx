@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { TimeLine, User1Line, CheckLine, CloseLine } from "@mingcute/react"
+import { TimeFill, User1Fill, CheckFill, CloseFill } from "@mingcute/react"
 import { cn } from "@/lib/utils"
 import { GitHubIcon } from "@/components/github-icon"
 import { rewardBadgeClass, rewardLabel, statusBadgeClass, submissionStatusClass, formatDeadline } from "@/components/bounty-utils"
@@ -216,7 +216,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                         <span>{bounty.questType === "fcfs" ? "First-come first-served" : "Leaderboard"}</span>
                         {bounty.deadline && (
                             <span className="flex items-center gap-1">
-                                <TimeLine size={12} />
+                                <TimeFill size={12} />
                                 {formatDeadline(bounty.deadline)}
                             </span>
                         )}
@@ -295,7 +295,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                                         <div key={sub.id}
                                             className="flex items-center justify-between gap-3 rounded-lg border border-border-2 bg-bg-1 px-3 py-3 text-sm">
                                             <div className="flex items-center gap-2 min-w-0">
-                                                <User1Line size={13} className="text-fg-3 shrink-0" />
+                                                <User1Fill size={13} className="text-fg-3 shrink-0" />
                                                 <span className="text-xs text-fg-3 font-mono truncate">{submitterName}</span>
                                                 <a href={sub.prUrl} target="_blank" rel="noopener noreferrer"
                                                     className="text-xs text-fg-3 hover:text-fg-1 font-mono shrink-0">
@@ -315,7 +315,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                                                             className="text-green-400 hover:text-green-300 disabled:opacity-50"
                                                             title="Approve"
                                                         >
-                                                            <CheckLine size={16} />
+                                                            <CheckFill size={16} />
                                                         </button>
                                                         <button
                                                             onClick={() => approveMutation.mutate({ subId: sub.id, action: "reject" })}
@@ -323,7 +323,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                                                             className="text-destructive hover:opacity-70 disabled:opacity-50"
                                                             title="Reject"
                                                         >
-                                                            <CloseLine size={16} />
+                                                            <CloseFill size={16} />
                                                         </button>
                                                     </>
                                                 )}

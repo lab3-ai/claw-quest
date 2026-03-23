@@ -422,11 +422,12 @@ Naming: `variant="primary"`, `variant="primary-tonal"`, `variant="primary-outlin
 
 ### Form Inputs
 
-- Height: 36px (default), 44px (lg)
+- Height: 32px `h-8` (md/default), 36px `h-9` (lg)
 - Border: `border border-input` (`--border-2`)
 - Focus: `focus-visible:border-foreground` (subtle border change, no ring/outline)
 - Error: `border-error`
 - Font: monospace, `text-base` (16px)
+- **Button + Input alignment**: When a button sits beside an input (e.g. inline forms), both MUST share the same height. Use `size="default"` button (h-8) with default input (h-8), or `size="lg"` button (h-9) with `inputSize="lg"` input (h-9). Never mix sizes.
 
 ### Topbar
 

@@ -1,10 +1,10 @@
 /** Shared utility functions for GitHub Bounty pages */
 
-/** CSS class for reward type badge */
-export function rewardBadgeClass(type: string) {
-    if (type === "LLM_KEY") return "bg-purple-500/10 text-purple-400 border-purple-500/20"
-    if (type === "USDC") return "bg-blue-500/10 text-blue-400 border-blue-500/20"
-    return "bg-green-500/10 text-green-400 border-green-500/20"
+/** Badge variant for reward type — uses design system outline variants */
+export function rewardBadgeVariant(type: string) {
+    if (type === "LLM_KEY") return "outline-primary" as const
+    if (type === "USDC") return "outline-success" as const
+    return "outline-warning" as const
 }
 
 /** Human-readable reward label */
@@ -13,19 +13,19 @@ export function rewardLabel(type: string, amount: string, tokenLimit?: number | 
     return `$${Number(amount).toLocaleString()} ${type}`
 }
 
-/** CSS class for bounty status badge */
-export function statusBadgeClass(status: string) {
-    if (status === "live") return "text-green-400 border-green-500/30"
-    if (status === "completed") return "text-fg-3 border-muted"
-    if (status === "cancelled") return "text-destructive border-destructive/30"
-    return "text-yellow-400 border-yellow-500/30"
+/** Badge variant for bounty status */
+export function statusBadgeVariant(status: string) {
+    if (status === "live") return "outline-success" as const
+    if (status === "completed") return "outline-muted" as const
+    if (status === "cancelled") return "outline-error" as const
+    return "outline-warning" as const
 }
 
-/** CSS class for submission status badge */
-export function submissionStatusClass(status: string) {
-    if (status === "approved") return "text-green-400 border-green-500/30"
-    if (status === "rejected") return "text-destructive border-destructive/30"
-    return "text-fg-3 border-border-2"
+/** Badge variant for submission status */
+export function submissionStatusVariant(status: string) {
+    if (status === "approved") return "outline-success" as const
+    if (status === "rejected") return "outline-error" as const
+    return "outline-muted" as const
 }
 
 /** Format deadline as relative time */

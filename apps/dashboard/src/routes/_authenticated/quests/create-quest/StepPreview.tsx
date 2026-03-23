@@ -99,13 +99,13 @@ export function StepPreview({
             <div className="flex items-start gap-3 py-4 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
                 <span className={cn(
                     "relative z-10 size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
-                    isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
+                    isActive ? "bg-primary shadow-[0_0_0_2px_var(--primary)]"
                         : "bg-gray-300 shadow-[0_0_0_2px_var(--color-gray-300)]"
                 )}>4</span>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-fg-1 group-hover:text-primary">Preview &amp; Fund</span>
-                        {isActive && <Badge variant="outline-warning">In Progress</Badge>}
+                        {isActive && <Badge variant="outline-primary">In Progress</Badge>}
                         {!isActive && <Badge variant="outline-muted">Not Started</Badge>}
                     </div>
                     <div className="text-xs text-fg-3 mt-0.5 leading-snug truncate">Review your quest and deposit funds</div>

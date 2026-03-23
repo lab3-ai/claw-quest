@@ -1,859 +1,1116 @@
-import { useState, useEffect } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { Link } from "@tanstack/react-router"
-import { useAuth } from "@/context/AuthContext"
-import { startTelegramLogin } from "@/lib/telegram-oidc"
-import { supabase } from "@/lib/supabase"
-import { Button } from "@/components/ui/button"
-import { PageTitle } from "@/components/page-title"
-import { Input } from "@/components/ui/input"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { cn } from "@/lib/utils"
-import { PlatformIcon } from "@/components/PlatformIcon"
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { useAuth } from "@/context/AuthContext";
+import { startTelegramLogin } from "@/lib/telegram-oidc";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { PageTitle } from "@/components/page-title";
+import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { PlatformIcon } from "@/components/PlatformIcon";
+import { GitHubIcon } from "@/components/github-icon";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
 interface Wallet {
-    id: string
-    address: string
-    chainId: number | null
-    isPrimary: boolean
-    createdAt: string
+  id: string;
+  address: string;
+  chainId: number | null;
+  isPrimary: boolean;
+  createdAt: string;
 }
 
 interface UserProfile {
-    id: string
-    email: string
-    username: string | null
-    displayName: string | null
-    role: string
-    telegramId: string | null
-    telegramUsername: string | null
-    xId: string | null
-    xHandle: string | null
-    hasXToken: boolean
-    discordId: string | null
-    discordHandle: string | null
-    githubId: string | null
-    githubHandle: string | null
-    createdAt: string
+  id: string;
+  email: string;
+  username: string | null;
+  displayName: string | null;
+  role: string;
+  telegramId: string | null;
+  telegramUsername: string | null;
+  xId: string | null;
+  xHandle: string | null;
+  hasXToken: boolean;
+  discordId: string | null;
+  discordHandle: string | null;
+  githubId: string | null;
+  githubHandle: string | null;
+  createdAt: string;
 }
 
 const CHAIN_NAMES: Record<number, string> = {
-    1: "Ethereum",
-    8453: "Base",
-    84532: "Base Sepolia",
-    10: "Optimism",
-    42161: "Arbitrum",
-}
+  1: "Ethereum",
+  8453: "Base",
+  84532: "Base Sepolia",
+  10: "Optimism",
+  42161: "Arbitrum",
+};
 
 function shortenAddress(addr: string) {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 }
 
 function formatDate(iso: string) {
-    return new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric" }).format(new Date(iso))
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    year: "numeric",
+  }).format(new Date(iso));
 }
 
 // Providers available for social linking on account page
 const LINK_PROVIDERS = [
-    { key: "google", label: "Google", icon: "G", supabaseProvider: "google" },
-    { key: "telegram", label: "Telegram", icon: "TG", supabaseProvider: null },
-    { key: "x", label: "X (Twitter)", icon: "X", supabaseProvider: "x" },
-    { key: "discord", label: "Discord", icon: "DC", supabaseProvider: "discord" },
-]
+  { key: "google", label: "Google", icon: "G", supabaseProvider: "google" },
+  { key: "telegram", label: "Telegram", icon: "TG", supabaseProvider: null },
+  { key: "x", label: "X (Twitter)", icon: "X", supabaseProvider: "x" },
+  { key: "discord", label: "Discord", icon: "DC", supabaseProvider: "discord" },
+];
 
 // Map for displaying legacy connected identities not in LINK_PROVIDERS
 const PROVIDER_LABELS: Record<string, { label: string; icon: string }> = {
-    google: { label: "Google", icon: "G" },
-    github: { label: "GitHub", icon: "GH" },
-    telegram: { label: "Telegram", icon: "TG" },
-    twitter: { label: "X (Twitter)", icon: "X" },
-    discord: { label: "Discord", icon: "DC" },
-}
+  google: { label: "Google", icon: "G" },
+  github: { label: "GitHub", icon: "GH" },
+  telegram: { label: "Telegram", icon: "TG" },
+  twitter: { label: "X (Twitter)", icon: "X" },
+  discord: { label: "Discord", icon: "DC" },
+};
 
 export function Account() {
-    const { session, user: supabaseUser } = useAuth()
-    const queryClient = useQueryClient()
-    const token = session?.access_token
+  const { session, user: supabaseUser } = useAuth();
+  const queryClient = useQueryClient();
+  const token = session?.access_token;
 
-    const [walletInput, setWalletInput] = useState("")
-    const [walletError, setWalletError] = useState("")
-    const [walletActionPending, setWalletActionPending] = useState("") // wallet id being acted on
-    const [unlinkError, setUnlinkError] = useState("")
-    const [linkError, setLinkError] = useState("")
-    const [unlinkPending, setUnlinkPending] = useState("")
-    const [linkPending, setLinkPending] = useState("")
-    const [xAuthPending, setXAuthPending] = useState(false)
+  const [walletInput, setWalletInput] = useState("");
+  const [walletError, setWalletError] = useState("");
+  const [walletActionPending, setWalletActionPending] = useState(""); // wallet id being acted on
+  const [unlinkError, setUnlinkError] = useState("");
+  const [linkError, setLinkError] = useState("");
+  const [unlinkPending, setUnlinkPending] = useState("");
+  const [linkPending, setLinkPending] = useState("");
+  const [xAuthPending, setXAuthPending] = useState(false);
 
-    // Profile editing state
-    const [editingField, setEditingField] = useState<"displayName" | "username" | null>(null)
-    const [editValue, setEditValue] = useState("")
-    const [editError, setEditError] = useState("")
+  // Profile editing state
+  const [editingField, setEditingField] = useState<
+    "displayName" | "username" | null
+  >(null);
+  const [editValue, setEditValue] = useState("");
+  const [editError, setEditError] = useState("");
 
-    // Fetch profile from API
-    const { data: profile, isLoading: profileLoading, isError: profileError } = useQuery<UserProfile>({
-        queryKey: ["auth", "me"],
-        queryFn: async () => {
-            const res = await fetch(`${API_BASE}/auth/me`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            if (!res.ok) throw new Error("Failed to fetch profile")
-            return res.json()
-        },
-        enabled: !!token,
-    })
+  // Fetch profile from API
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    isError: profileError,
+  } = useQuery<UserProfile>({
+    queryKey: ["auth", "me"],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch profile");
+      return res.json();
+    },
+    enabled: !!token,
+  });
 
-    // Auto-sync social providers: if Supabase identity exists but Prisma profile is missing xId/discordId,
-    // call /auth/social/sync to populate the local DB. Runs once when profile is first loaded.
-    useEffect(() => {
-        if (!token || !profile || !supabaseUser?.identities) return
+  // Auto-sync social providers: if Supabase identity exists but Prisma profile is missing xId/discordId,
+  // call /auth/social/sync to populate the local DB. Runs once when profile is first loaded.
+  useEffect(() => {
+    if (!token || !profile || !supabaseUser?.identities) return;
 
-        const providerMap: Record<string, { prismaField: string | null; providerAliases: string[] }> = {
-            x:       { prismaField: profile.xId,       providerAliases: ['x', 'twitter'] },
-            discord: { prismaField: profile.discordId,  providerAliases: ['discord'] },
-        }
+    const providerMap: Record<
+      string,
+      { prismaField: string | null; providerAliases: string[] }
+    > = {
+      x: { prismaField: profile.xId, providerAliases: ["x", "twitter"] },
+      discord: { prismaField: profile.discordId, providerAliases: ["discord"] },
+    };
 
-        const toSync: string[] = []
-        for (const [provider, { prismaField, providerAliases }] of Object.entries(providerMap)) {
-            const hasIdentity = supabaseUser.identities.some(i => providerAliases.includes(i.provider))
-            if (hasIdentity && !prismaField) toSync.push(provider)
-        }
-
-        if (toSync.length === 0) return
-
-        Promise.all(
-            toSync.map(provider =>
-                fetch(`${API_BASE}/auth/social/sync`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                    body: JSON.stringify({ provider }),
-                }).catch(() => null)
-            )
-        ).then(results => {
-            if (results.some(r => r?.ok)) {
-                queryClient.invalidateQueries({ queryKey: ['auth', 'me'] })
-            }
-        })
-    }, [profile?.xId, profile?.discordId, supabaseUser?.identities, token])
-
-    // Fetch wallets
-    const { data: wallets = [], isLoading: walletsLoading, isError: walletsError } = useQuery<Wallet[]>({
-        queryKey: ["wallets"],
-        queryFn: async () => {
-            const res = await fetch(`${API_BASE}/wallets`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            if (!res.ok) throw new Error("Failed to fetch wallets")
-            return res.json()
-        },
-        enabled: !!token,
-    })
-
-    // Remove wallet mutation
-    const removeWallet = useMutation({
-        mutationFn: async (id: string) => {
-            const res = await fetch(`${API_BASE}/wallets/${id}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}))
-                throw new Error(err.error?.message ?? "Failed to remove wallet")
-            }
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["wallets"] })
-            setWalletError("")
-        },
-        onError: (err: Error) => setWalletError(err.message),
-        onSettled: () => setWalletActionPending(""),
-    })
-
-    // Set primary wallet mutation
-    const setPrimaryWallet = useMutation({
-        mutationFn: async (id: string) => {
-            const res = await fetch(`${API_BASE}/wallets/${id}/primary`, {
-                method: "PATCH",
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}))
-                throw new Error(err.error?.message ?? "Failed to set primary wallet")
-            }
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["wallets"] })
-            setWalletError("")
-        },
-        onError: (err: Error) => setWalletError(err.message),
-        onSettled: () => setWalletActionPending(""),
-    })
-
-    // Link wallet mutation
-    const linkWallet = useMutation({
-        mutationFn: async (address: string) => {
-            const res = await fetch(`${API_BASE}/wallets`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ address }),
-            })
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({ message: "Failed to link wallet" }))
-                throw new Error(err.message ?? "Failed to link wallet")
-            }
-            return res.json()
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["wallets"] })
-            setWalletInput("")
-            setWalletError("")
-        },
-        onError: (err: Error) => {
-            setWalletError(err.message)
-        },
-    })
-
-    // Update profile mutation
-    const updateProfile = useMutation({
-        mutationFn: async (data: { displayName?: string; username?: string }) => {
-            const res = await fetch(`${API_BASE}/auth/me`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(data),
-            })
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({ error: { message: "Failed to update profile" } }))
-                throw new Error(err.error?.message ?? "Failed to update profile")
-            }
-            return res.json()
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
-            setEditingField(null)
-            setEditValue("")
-            setEditError("")
-        },
-        onError: (err: Error) => {
-            setEditError(err.message)
-        },
-    })
-
-    function startEdit(field: "displayName" | "username") {
-        setEditingField(field)
-        setEditError("")
-        setEditValue(field === "displayName" ? (profile?.displayName ?? "") : (profile?.username ?? ""))
+    const toSync: string[] = [];
+    for (const [provider, { prismaField, providerAliases }] of Object.entries(
+      providerMap,
+    )) {
+      const hasIdentity = supabaseUser.identities.some((i) =>
+        providerAliases.includes(i.provider),
+      );
+      if (hasIdentity && !prismaField) toSync.push(provider);
     }
 
-    function handleSaveEdit() {
-        if (!editingField) return
-        const value = editValue.trim()
-        if (editingField === "username" && value && !/^[a-z0-9][a-z0-9_-]{1,18}[a-z0-9]$/.test(value)) {
-            setEditError("3-20 chars: lowercase letters, numbers, hyphens")
-            return
+    if (toSync.length === 0) return;
+
+    Promise.all(
+      toSync.map((provider) =>
+        fetch(`${API_BASE}/auth/social/sync`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ provider }),
+        }).catch(() => null),
+      ),
+    ).then((results) => {
+      if (results.some((r) => r?.ok)) {
+        queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      }
+    });
+  }, [profile?.xId, profile?.discordId, supabaseUser?.identities, token]);
+
+  // Fetch wallets
+  const {
+    data: wallets = [],
+    isLoading: walletsLoading,
+    isError: walletsError,
+  } = useQuery<Wallet[]>({
+    queryKey: ["wallets"],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/wallets`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch wallets");
+      return res.json();
+    },
+    enabled: !!token,
+  });
+
+  // Remove wallet mutation
+  const removeWallet = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`${API_BASE}/wallets/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message ?? "Failed to remove wallet");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      setWalletError("");
+    },
+    onError: (err: Error) => setWalletError(err.message),
+    onSettled: () => setWalletActionPending(""),
+  });
+
+  // Set primary wallet mutation
+  const setPrimaryWallet = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`${API_BASE}/wallets/${id}/primary`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message ?? "Failed to set primary wallet");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      setWalletError("");
+    },
+    onError: (err: Error) => setWalletError(err.message),
+    onSettled: () => setWalletActionPending(""),
+  });
+
+  // Link wallet mutation
+  const linkWallet = useMutation({
+    mutationFn: async (address: string) => {
+      const res = await fetch(`${API_BASE}/wallets`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ address }),
+      });
+      if (!res.ok) {
+        const err = await res
+          .json()
+          .catch(() => ({ message: "Failed to link wallet" }));
+        throw new Error(err.message ?? "Failed to link wallet");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      setWalletInput("");
+      setWalletError("");
+    },
+    onError: (err: Error) => {
+      setWalletError(err.message);
+    },
+  });
+
+  // Update profile mutation
+  const updateProfile = useMutation({
+    mutationFn: async (data: { displayName?: string; username?: string }) => {
+      const res = await fetch(`${API_BASE}/auth/me`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res
+          .json()
+          .catch(() => ({ error: { message: "Failed to update profile" } }));
+        throw new Error(err.error?.message ?? "Failed to update profile");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      setEditingField(null);
+      setEditValue("");
+      setEditError("");
+    },
+    onError: (err: Error) => {
+      setEditError(err.message);
+    },
+  });
+
+  function startEdit(field: "displayName" | "username") {
+    setEditingField(field);
+    setEditError("");
+    setEditValue(
+      field === "displayName"
+        ? (profile?.displayName ?? "")
+        : (profile?.username ?? ""),
+    );
+  }
+
+  function handleSaveEdit() {
+    if (!editingField) return;
+    const value = editValue.trim();
+    if (
+      editingField === "username" &&
+      value &&
+      !/^[a-z0-9][a-z0-9_-]{1,18}[a-z0-9]$/.test(value)
+    ) {
+      setEditError("3-20 chars: lowercase letters, numbers, hyphens");
+      return;
+    }
+    updateProfile.mutate({
+      [editingField]:
+        value || (editingField === "displayName" ? "" : undefined),
+    });
+  }
+
+  // OAuth identities from Supabase session
+  const identities = supabaseUser?.identities ?? [];
+  const linkedProviders = new Set(identities.map((i) => i.provider));
+  // User can unlink if they have >=2 Supabase identities OR Telegram is linked (separate auth path)
+  const canUnlinkOAuth = identities.length > 1 || !!profile?.telegramId;
+
+  // Find connected identities not in LINK_PROVIDERS (e.g. GitHub after disabling)
+  const linkProviderKeys = new Set(LINK_PROVIDERS.map((p) => p.key));
+  const legacyIdentities = identities.filter(
+    (i) => !linkProviderKeys.has(i.provider),
+  );
+
+  async function handleLinkProvider(supabaseProvider: string) {
+    setLinkError("");
+    setUnlinkError("");
+    setLinkPending(supabaseProvider);
+    try {
+      // Store provider so callback.tsx can detect this is an identity-link flow
+      localStorage.setItem("clawquest_linking_provider", supabaseProvider);
+      const { error } = await supabase.auth.linkIdentity({
+        provider: supabaseProvider as any,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          // Request extra Discord scopes for role verification (guilds.members.read)
+          ...(supabaseProvider === "discord" && {
+            scopes: "identify email guilds guilds.members.read",
+          }),
+        },
+      });
+      if (error) throw error;
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to link provider";
+      setLinkError(msg);
+    } finally {
+      setLinkPending("");
+    }
+  }
+
+  async function handleUnlinkProvider(providerKey: string) {
+    setUnlinkError("");
+    setLinkError("");
+    setUnlinkPending(providerKey);
+
+    try {
+      // Fetch fresh identity list from Supabase to avoid stale cached session data
+      const { data: freshData, error: idError } =
+        await supabase.auth.getUserIdentities();
+      if (idError) throw idError;
+
+      const freshIdentities = freshData?.identities ?? [];
+      const hasTelegram = !!profile?.telegramId;
+
+      // Lockout prevention: need at least 1 identity remaining after unlink
+      if (!hasTelegram && freshIdentities.length <= 1) {
+        setUnlinkError("Cannot unlink — this is your only sign-in method.");
+        return;
+      }
+
+      const identity = freshIdentities.find((i) => i.provider === providerKey);
+      if (!identity) {
+        setUnlinkError("Identity not found. Please refresh and try again.");
+        return;
+      }
+
+      const { error } = await supabase.auth.unlinkIdentity(identity);
+      if (error) throw error;
+
+      // Clear Prisma fields for Twitter/Discord only
+      // API uses "twitter" not "x" (Supabase's key for X/Twitter)
+      if (providerKey === "x" || providerKey === "discord") {
+        const apiProvider = providerKey === "x" ? "twitter" : providerKey;
+        const res = await fetch(`${API_BASE}/auth/social/${apiProvider}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(
+            body?.error?.message ?? "Failed to clear social profile data",
+          );
         }
-        updateProfile.mutate({ [editingField]: value || (editingField === "displayName" ? "" : undefined) })
+      }
+
+      // Refresh session so onAuthStateChange fires with updated user.identities
+      await supabase.auth.refreshSession();
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to unlink provider";
+      setUnlinkError(msg);
+    } finally {
+      setUnlinkPending("");
+    }
+  }
+
+  async function handleUnlinkTelegram() {
+    setUnlinkError("");
+    setLinkError("");
+
+    // Lockout prevention: block if Telegram is the only sign-in method
+    const nonTelegramIdentities = identities.filter(
+      (i) => i.provider !== "telegram",
+    );
+    if (nonTelegramIdentities.length === 0) {
+      setUnlinkError("Cannot unlink — this is your only sign-in method.");
+      return;
     }
 
-    // OAuth identities from Supabase session
-    const identities = supabaseUser?.identities ?? []
-    const linkedProviders = new Set(identities.map(i => i.provider))
-    // User can unlink if they have >=2 Supabase identities OR Telegram is linked (separate auth path)
-    const canUnlinkOAuth = identities.length > 1 || !!profile?.telegramId
-
-    // Find connected identities not in LINK_PROVIDERS (e.g. GitHub after disabling)
-    const linkProviderKeys = new Set(LINK_PROVIDERS.map(p => p.key))
-    const legacyIdentities = identities.filter(i => !linkProviderKeys.has(i.provider))
-
-    async function handleLinkProvider(supabaseProvider: string) {
-        setLinkError("")
-        setUnlinkError("")
-        setLinkPending(supabaseProvider)
-        try {
-            // Store provider so callback.tsx can detect this is an identity-link flow
-            localStorage.setItem("clawquest_linking_provider", supabaseProvider)
-            const { error } = await supabase.auth.linkIdentity({
-                provider: supabaseProvider as any,
-                options: {
-                    redirectTo: `${window.location.origin}/auth/callback`,
-                    // Request extra Discord scopes for role verification (guilds.members.read)
-                    ...(supabaseProvider === "discord" && {
-                        scopes: "identify email guilds guilds.members.read",
-                    }),
-                },
-            })
-            if (error) throw error
-        } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : "Failed to link provider"
-            setLinkError(msg)
-        } finally {
-            setLinkPending("")
-        }
+    setUnlinkPending("telegram");
+    try {
+      const res = await fetch(`${API_BASE}/auth/social/telegram`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error?.message ?? "Failed to unlink Telegram");
+      }
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to unlink Telegram";
+      setUnlinkError(msg);
+    } finally {
+      setUnlinkPending("");
     }
+  }
 
-    async function handleUnlinkProvider(providerKey: string) {
-        setUnlinkError("")
-        setLinkError("")
-        setUnlinkPending(providerKey)
-
-        try {
-            // Fetch fresh identity list from Supabase to avoid stale cached session data
-            const { data: freshData, error: idError } = await supabase.auth.getUserIdentities()
-            if (idError) throw idError
-
-            const freshIdentities = freshData?.identities ?? []
-            const hasTelegram = !!profile?.telegramId
-
-            // Lockout prevention: need at least 1 identity remaining after unlink
-            if (!hasTelegram && freshIdentities.length <= 1) {
-                setUnlinkError("Cannot unlink — this is your only sign-in method.")
-                return
-            }
-
-            const identity = freshIdentities.find(i => i.provider === providerKey)
-            if (!identity) {
-                setUnlinkError("Identity not found. Please refresh and try again.")
-                return
-            }
-
-            const { error } = await supabase.auth.unlinkIdentity(identity)
-            if (error) throw error
-
-            // Clear Prisma fields for Twitter/Discord only
-            // API uses "twitter" not "x" (Supabase's key for X/Twitter)
-            if (providerKey === "x" || providerKey === "discord") {
-                const apiProvider = providerKey === "x" ? "twitter" : providerKey
-                const res = await fetch(`${API_BASE}/auth/social/${apiProvider}`, {
-                    method: "DELETE",
-                    headers: { Authorization: `Bearer ${token}` },
-                })
-                if (!res.ok) {
-                    const body = await res.json().catch(() => ({}))
-                    throw new Error(body?.error?.message ?? "Failed to clear social profile data")
-                }
-            }
-
-            // Refresh session so onAuthStateChange fires with updated user.identities
-            await supabase.auth.refreshSession()
-            queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
-        } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : "Failed to unlink provider"
-            setUnlinkError(msg)
-        } finally {
-            setUnlinkPending("")
-        }
+  async function handleXReadAccess() {
+    setXAuthPending(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/x/authorize`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message ?? "Failed to get X authorize URL");
+      }
+      const { url, state, codeVerifier } = await res.json();
+      localStorage.setItem("x_code_verifier", codeVerifier);
+      localStorage.setItem("x_oauth_state", state);
+      window.location.href = url;
+    } catch (err: unknown) {
+      setLinkError(
+        err instanceof Error ? err.message : "Failed to authorize X",
+      );
+      setXAuthPending(false);
     }
+  }
 
-    async function handleUnlinkTelegram() {
-        setUnlinkError("")
-        setLinkError("")
-
-        // Lockout prevention: block if Telegram is the only sign-in method
-        const nonTelegramIdentities = identities.filter(i => i.provider !== "telegram")
-        if (nonTelegramIdentities.length === 0) {
-            setUnlinkError("Cannot unlink — this is your only sign-in method.")
-            return
-        }
-
-        setUnlinkPending("telegram")
-        try {
-            const res = await fetch(`${API_BASE}/auth/social/telegram`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            if (!res.ok) {
-                const body = await res.json().catch(() => ({}))
-                throw new Error(body?.error?.message ?? "Failed to unlink Telegram")
-            }
-            queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
-        } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : "Failed to unlink Telegram"
-            setUnlinkError(msg)
-        } finally {
-            setUnlinkPending("")
-        }
+  function handleLinkWallet(e: React.FormEvent) {
+    e.preventDefault();
+    setWalletError("");
+    const addr = walletInput.trim();
+    if (!/^0x[a-fA-F0-9]{40}$/.test(addr)) {
+      setWalletError("Invalid wallet address");
+      return;
     }
+    linkWallet.mutate(addr);
+  }
 
-    async function handleXReadAccess() {
-        setXAuthPending(true)
-        try {
-            const res = await fetch(`${API_BASE}/auth/x/authorize`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}))
-                throw new Error(err.error?.message ?? "Failed to get X authorize URL")
-            }
-            const { url, state, codeVerifier } = await res.json()
-            localStorage.setItem("x_code_verifier", codeVerifier)
-            localStorage.setItem("x_oauth_state", state)
-            window.location.href = url
-        } catch (err: unknown) {
-            setLinkError(err instanceof Error ? err.message : "Failed to authorize X")
-            setXAuthPending(false)
-        }
-    }
+  return (
+    <div className="max-w-3xl mx-auto">
+      <PageTitle title="Account" className="mb-4" />
 
-    function handleLinkWallet(e: React.FormEvent) {
-        e.preventDefault()
-        setWalletError("")
-        const addr = walletInput.trim()
-        if (!/^0x[a-fA-F0-9]{40}$/.test(addr)) {
-            setWalletError("Invalid wallet address")
-            return
-        }
-        linkWallet.mutate(addr)
-    }
-
-    return (
-        <div className="max-w-3xl mx-auto">
-            <PageTitle title="Account" className="mb-4" />
-
-            {/* Profile */}
-            <div className="border border-border-2 rounded mb-5 bg-bg-base overflow-hidden">
-                <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">Profile</div>
-                <div className="p-4">
-                    {profileLoading ? (
-                        <>
-                            <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border-2 pt-2 mt-0.5"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border-2 pt-2 mt-0.5"><span className="skeleton" style={{ width: "60%", height: 16 }} /></div>
-                        </>
-                    ) : profileError ? (
-                        <div className="text-xs text-destructive py-3 flex items-center gap-2">
-                            Failed to load profile.{" "}
-                            <Button variant="secondary" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ["auth", "me"] })}>Retry</Button>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="flex items-baseline py-1.5 text-sm justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-xs">Display Name</span>
-                                <span className="text-fg-1 w-full sm:w-auto">
-                                    {editingField === "displayName" ? (
-                                        <span className="flex gap-1.5 items-center flex-wrap">
-                                            <input
-                                                type="text"
-                                                value={editValue}
-                                                onChange={e => setEditValue(e.target.value)}
-                                                maxLength={50}
-                                                placeholder="Your display name"
-                                                className="text-base px-2 py-0.5 w-full sm:w-[180px] border border-border-2 rounded bg-bg-base text-fg-1 outline-hidden focus:border-accent"
-                                                autoFocus
-                                                onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); if (e.key === "Escape") setEditingField(null) }}
-                                            />
-                                            <Button size="sm" onClick={handleSaveEdit} disabled={updateProfile.isPending}>
-                                                {updateProfile.isPending ? "…" : "Save"}
-                                            </Button>
-                                            <Button variant="secondary" size="sm" onClick={() => setEditingField(null)}>Cancel</Button>
-                                        </span>
-                                    ) : (
-                                        <span className="flex gap-2 items-center">
-                                            {profile?.displayName || <span className="text-fg-3 italic">Not set</span>}
-                                            <Button variant="outline" size="sm" className="text-xs px-2 py-0.5" onClick={() => startEdit("displayName")}>Edit</Button>
-                                        </span>
-                                    )}
-                                </span>
-                            </div>
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border-2 pt-2 mt-0.5 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-xs">Username</span>
-                                <span className="text-fg-1 w-full sm:w-auto">
-                                    {editingField === "username" ? (
-                                        <span className="flex gap-1.5 items-center flex-wrap max-sm:justify-start sm:justify-end">
-                                            <input
-                                                type="text"
-                                                value={editValue}
-                                                onChange={e => setEditValue(e.target.value.toLowerCase())}
-                                                maxLength={20}
-                                                placeholder="username"
-                                                className="text-base px-2 py-0.5 w-full sm:w-[180px] border border-border-2 rounded bg-bg-base text-fg-1 outline-hidden focus:border-accent"
-                                                autoFocus
-                                                onKeyDown={e => { if (e.key === "Enter") handleSaveEdit(); if (e.key === "Escape") setEditingField(null) }}
-                                            />
-                                            <Button size="sm" onClick={handleSaveEdit} disabled={updateProfile.isPending}>
-                                                {updateProfile.isPending ? "…" : "Save"}
-                                            </Button>
-                                            <Button variant="secondary" size="sm" onClick={() => setEditingField(null)}>Cancel</Button>
-                                            <span className="text-xs text-fg-3 w-full text-right">3-20 chars, lowercase letters, numbers, hyphens</span>
-                                        </span>
-                                    ) : (
-                                        <span className="flex gap-2 items-center">
-                                            {profile?.username ? `@${profile.username}` : <span className="text-fg-3 italic">Not set</span>}
-                                            <Button variant="outline" size="sm" className="text-xs px-2 py-0.5" onClick={() => startEdit("username")}>Edit</Button>
-                                        </span>
-                                    )}
-                                </span>
-                            </div>
-                            {editError && <div className="text-xs text-destructive py-3 flex items-center gap-2 mt-1">{editError}</div>}
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border-2 pt-2 mt-0.5 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-xs">Email</span>
-                                <span className="text-fg-1">
-                                    {profile?.email?.match(/^tg_\d+@tg\.clawquest\.ai$/)
-                                        ? <span className="text-fg-3 italic">No email linked</span>
-                                        : (profile?.email ?? supabaseUser?.email ?? "—")}
-                                </span>
-                            </div>
-                            <div className="flex items-baseline py-1.5 text-sm border-t border-border-2 pt-2 mt-0.5 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-xs">Member since</span>
-                                <span className="text-fg-1">
-                                    {profile?.createdAt ? formatDate(profile.createdAt) : "—"}
-                                </span>
-                            </div>
-                        </>
-                    )}
-                </div>
-            </div>
-
-            {/* Connected Accounts */}
-            <div className="border border-border-2 rounded mb-5 bg-bg-base overflow-hidden">
-                <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">Connected Accounts</div>
-                <div className="p-4">
-                    {LINK_PROVIDERS.map((p, idx) => {
-                        const identity = identities.find(i => i.provider === p.key)
-                        const isLinked = linkedProviders.has(p.key)
-                        const isTelegram = p.key === "telegram"
-                        const telegramLinked = isTelegram && !!profile?.telegramId
-
-                        // Build handle/email detail text
-                        let detail = ""
-                        if (p.key === "x" && profile?.xHandle) detail = `@${profile.xHandle}`
-                        else if (p.key === "discord" && profile?.discordHandle) detail = `@${profile.discordHandle}`
-                        else if (identity?.identity_data?.email) detail = identity.identity_data.email as string
-                        else if (identity?.identity_data?.user_name) detail = identity.identity_data.user_name as string
-
-                        return (
-                            <div key={p.key} className={`flex items-center gap-3 py-2 text-sm min-w-0${idx > 0 ? " border-t border-border-2" : ""}`}>
-                                <span className="w-5 flex items-center justify-center shrink-0">
-                                    <PlatformIcon name={p.key as "google" | "telegram" | "x" | "discord"} size={16} />
-                                </span>
-                                <span className="font-semibold min-w-[90px]">{p.label}</span>
-
-                                {isTelegram ? (
-                                    telegramLinked ? (
-                                        <>
-                                            <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
-                                                <span className="text-success text-xs font-semibold">Connected</span>
-                                                <span className="text-fg-3 text-xs">
-                                                    {profile?.telegramUsername ? `@${profile.telegramUsername}` : ""}
-                                                </span>
-                                            </div>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="text-[12px] px-[10px] py-1 min-w-[70px]"
-                                                disabled={unlinkPending === "telegram"}
-                                                onClick={() => handleUnlinkTelegram()}
-                                            >
-                                                {unlinkPending === "telegram" ? "Unlinking…" : "Unlink"}
-                                            </Button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="flex-1" />
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="text-[12px] px-[10px] py-1 min-w-[70px]"
-                                                onClick={() => startTelegramLogin("link")}
-                                            >
-                                                Link
-                                            </Button>
-                                        </>
-                                    )
-                                ) : isLinked ? (
-                                    <>
-                                        <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
-                                            <span className="text-success text-xs font-semibold">Connected</span>
-                                            {detail && <span className="text-fg-3 text-xs">{detail}</span>}
-                                            {/* X read access button: show when X linked but no read token yet */}
-                                            {p.key === "x" && profile?.xId && !profile?.hasXToken && (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="ml-2 text-[12px] px-[10px] py-1"
-                                                    disabled={xAuthPending}
-                                                    onClick={handleXReadAccess}
-                                                >
-                                                    {xAuthPending ? "Redirecting…" : "Authorize read access"}
-                                                </Button>
-                                            )}
-                                        </div>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="text-[12px] px-[10px] py-1 min-w-[70px]"
-                                            disabled={!canUnlinkOAuth || unlinkPending === p.key}
-                                            onClick={() => handleUnlinkProvider(p.key)}
-                                        >
-                                            {unlinkPending === p.key ? "Unlinking…" : "Unlink"}
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="flex-1" />
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="text-[12px] px-[10px] py-1 min-w-[70px]"
-                                            disabled={linkPending === p.supabaseProvider}
-                                            onClick={() => handleLinkProvider(p.supabaseProvider!)}
-                                        >
-                                            {linkPending === p.supabaseProvider ? "Linking…" : "Link"}
-                                        </Button>
-                                    </>
-                                )}
-                            </div>
-                        )
-                    })}
-
-                    {/* Legacy connected identities (providers removed from LINK_PROVIDERS but still in Supabase) */}
-                    {legacyIdentities.map(identity => {
-                        const info = PROVIDER_LABELS[identity.provider] ?? { label: identity.provider, icon: "?" }
-                        const detail = (identity.identity_data?.email as string) || (identity.identity_data?.user_name as string) || ""
-                        return (
-                            <div key={identity.id} className="flex items-center gap-3 py-2 text-sm min-w-0 opacity-70 border-t border-border-2">
-                                <span className="w-5 text-center text-sm shrink-0">{info.icon}</span>
-                                <span className="font-semibold min-w-[90px]">{info.label}</span>
-                                <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    <span className="text-success text-xs font-semibold">Connected</span>
-                                    {detail && <span className="text-fg-3 text-xs">{detail}</span>}
-                                </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-[12px] px-[10px] py-1 min-w-[70px]"
-                                    disabled={!canUnlinkOAuth || unlinkPending === identity.provider}
-                                    onClick={() => handleUnlinkProvider(identity.provider)}
-                                >
-                                    {unlinkPending === identity.provider ? "Unlinking…" : "Unlink"}
-                                </Button>
-                            </div>
-                        )
-                    })}
-
-                    {(unlinkError || linkError) && (
-                        <div className="text-xs text-destructive py-3 flex items-center gap-2 mt-2">{unlinkError || linkError}</div>
-                    )}
-                </div>
-            </div>
-
-            {/* GitHub for Bounties */}
-            <div className="border border-border-2 rounded mb-5 bg-bg-base">
-                <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-3 text-fg-1">GitHub for Bounties</div>
-                <div className="p-4">
-                    <div className="flex items-center gap-3 text-sm">
-                        <span className="w-5 text-center text-sm shrink-0 font-mono">GH</span>
-                        <span className="font-semibold min-w-[90px]">GitHub</span>
-                        {profile?.githubHandle ? (
-                            <>
-                                <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
-                                    <span className="text-success text-xs font-semibold">Connected</span>
-                                    <span className="text-fg-3 text-xs font-mono">@{profile.githubHandle}</span>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <div className="flex-1" />
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-[12px] px-[10px] py-1 min-w-[70px]"
-                                    onClick={() => {
-                                        const state = crypto.randomUUID()
-                                        sessionStorage.setItem("github_oauth_state", state)
-                                        sessionStorage.setItem("github_oauth_return_to", "/account")
-                                        window.location.href = `${API_BASE}/auth/github/authorize?scope=read:user&state=${state}`
-                                    }}
-                                >
-                                    Connect
-                                </Button>
-                            </>
-                        )}
-                    </div>
-                    <p className="text-xs text-fg-3 mt-2">
-                        Required to submit PRs for GitHub bounties.
-                    </p>
-                </div>
-            </div>
-
-            {/* Wallets */}
-            <div className="border border-border-2 rounded mb-5 bg-bg-base overflow-hidden">
-                <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">Wallets</div>
-                <div className="p-4">
-                    {walletsLoading ? (
-                        <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
-                    ) : walletsError ? (
-                        <div className="text-xs text-destructive py-3 flex items-center gap-2">
-                            Failed to load wallets.{" "}
-                            <Button variant="secondary" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ["wallets"] })}>Retry</Button>
-                        </div>
-                    ) : wallets.length === 0 ? (
-                        <div className="text-xs text-fg-3 py-2">No wallets linked yet.</div>
-                    ) : (
-                        wallets.map((w, idx) => (
-                            <div key={w.id} className={`flex items-center gap-3 py-2 text-sm${idx > 0 ? " border-t border-border-2" : ""}`}>
-                                <span className="font-mono text-xs text-fg-1">{shortenAddress(w.address)}</span>
-                                {w.chainId && (
-                                    <span className="text-xs text-fg-3">
-                                        {CHAIN_NAMES[w.chainId] ?? `Chain ${w.chainId}`}
-                                    </span>
-                                )}
-                                {w.isPrimary && <span className="text-xs font-semibold text-accent">Primary</span>}
-                                {!w.isPrimary && (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="ml-auto text-xs px-2 py-0.5"
-                                        disabled={walletActionPending === w.id}
-                                        onClick={() => { setWalletActionPending(w.id); setPrimaryWallet.mutate(w.id) }}
-                                    >
-                                        {walletActionPending === w.id ? "…" : "Set primary"}
-                                    </Button>
-                                )}
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className={`${w.isPrimary ? "ml-auto" : "ml-1.5"} text-xs px-2 py-0.5 text-destructive`}
-                                    disabled={walletActionPending === w.id}
-                                    onClick={() => { setWalletActionPending(w.id); removeWallet.mutate(w.id) }}
-                                >
-                                    {walletActionPending === w.id ? "…" : "Remove"}
-                                </Button>
-                            </div>
-                        ))
-                    )}
-                    <form className="flex gap-2 items-center mt-3 pt-3 border-t border-border-2" onSubmit={handleLinkWallet}>
-                        <label htmlFor="wallet-address" className="sr-only">Wallet address</label>
-                        <Input
-                            id="wallet-address"
-                            name="wallet-address"
-                            type="text"
-                            placeholder="0x..."
-                            autoComplete="off"
-                            className="flex-1 font-mono text-xs h-8"
-                            value={walletInput}
-                            onChange={e => setWalletInput(e.target.value)}
-                        />
-                        <Button type="submit" size="sm" disabled={linkWallet.isPending}>
-                            {linkWallet.isPending ? "Linking\u2026" : "+ Link wallet"}
-                        </Button>
-                    </form>
-                    {walletError && <div className="text-xs text-destructive mt-1.5">{walletError}</div>}
-                </div>
-            </div>
-
-            {/* Fiat Payout */}
-            <FiatPayoutSection token={token} />
+      {/* Profile */}
+      <div className="border border-border-2 rounded mb-6 bg-bg-base overflow-hidden">
+        <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">
+          Profile
         </div>
-    )
+        <div className="px-4 py-2">
+          {profileLoading ? (
+            <>
+              <div className="flex items-center min-h-12 py-2 text-sm">
+                <span
+                  className="skeleton"
+                  style={{ width: "100%", height: 16 }}
+                />
+              </div>
+              <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2">
+                <span
+                  className="skeleton"
+                  style={{ width: "100%", height: 16 }}
+                />
+              </div>
+              <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2">
+                <span
+                  className="skeleton"
+                  style={{ width: "60%", height: 16 }}
+                />
+              </div>
+            </>
+          ) : profileError ? (
+            <div className="text-xs text-destructive py-3 flex items-center gap-2">
+              Failed to load profile.{" "}
+              <Button
+                variant="default-tonal"
+                size="default"
+                onClick={() =>
+                  queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
+                }
+              >
+                Retry
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center min-h-12 py-2 text-sm justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
+                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-sm">
+                  Display Name
+                </span>
+                <span className="text-fg-1 w-full sm:w-auto">
+                  {editingField === "displayName" ? (
+                    <span className="flex gap-1.5 items-center flex-wrap">
+                      <input
+                        type="text"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        maxLength={50}
+                        placeholder="Your display name"
+                        className="text-base px-2 py-0.5 w-full sm:w-[180px] border border-border-2 rounded bg-bg-base text-fg-1 outline-hidden focus:border-accent"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveEdit();
+                          if (e.key === "Escape") setEditingField(null);
+                        }}
+                      />
+                      <Button
+                        size="default"
+                        onClick={handleSaveEdit}
+                        disabled={updateProfile.isPending}
+                      >
+                        {updateProfile.isPending ? "…" : "Save"}
+                      </Button>
+                      <Button
+                        variant="default-tonal"
+                        size="default"
+                        onClick={() => setEditingField(null)}
+                      >
+                        Cancel
+                      </Button>
+                    </span>
+                  ) : (
+                    <span className="flex gap-2 items-center">
+                      {profile?.displayName || (
+                        <span className="text-fg-3 italic">Not set</span>
+                      )}
+                      <Button
+                        variant="default-tonal"
+                        size="default"
+                        className="min-w-[80px]"
+                        onClick={() => startEdit("displayName")}
+                      >
+                        Edit
+                      </Button>
+                    </span>
+                  )}
+                </span>
+              </div>
+              <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
+                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-sm">
+                  Username
+                </span>
+                <span className="text-fg-1 w-full sm:w-auto">
+                  {editingField === "username" ? (
+                    <span className="flex gap-1.5 items-center flex-wrap max-sm:justify-start sm:justify-end">
+                      <input
+                        type="text"
+                        value={editValue}
+                        onChange={(e) =>
+                          setEditValue(e.target.value.toLowerCase())
+                        }
+                        maxLength={20}
+                        placeholder="username"
+                        className="text-base px-2 py-0.5 w-full sm:w-[180px] border border-border-2 rounded bg-bg-base text-fg-1 outline-hidden focus:border-accent"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveEdit();
+                          if (e.key === "Escape") setEditingField(null);
+                        }}
+                      />
+                      <Button
+                        size="default"
+                        onClick={handleSaveEdit}
+                        disabled={updateProfile.isPending}
+                      >
+                        {updateProfile.isPending ? "…" : "Save"}
+                      </Button>
+                      <Button
+                        variant="default-tonal"
+                        size="default"
+                        onClick={() => setEditingField(null)}
+                      >
+                        Cancel
+                      </Button>
+                      <span className="text-xs text-fg-3 w-full text-right">
+                        3-20 chars, lowercase letters, numbers, hyphens
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="flex gap-2 items-center">
+                      {profile?.username ? (
+                        `@${profile.username}`
+                      ) : (
+                        <span className="text-fg-3 italic">Not set</span>
+                      )}
+                      <Button
+                        variant="default-tonal"
+                        size="default"
+                        className="min-w-[80px]"
+                        onClick={() => startEdit("username")}
+                      >
+                        Edit
+                      </Button>
+                    </span>
+                  )}
+                </span>
+              </div>
+              {editError && (
+                <div className="text-xs text-destructive py-3 flex items-center gap-2 mt-1">
+                  {editError}
+                </div>
+              )}
+              <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
+                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-sm">
+                  Email
+                </span>
+                <span className="text-fg-1">
+                  {profile?.email?.match(/^tg_\d+@tg\.clawquest\.ai$/) ? (
+                    <span className="text-fg-3 italic">No email linked</span>
+                  ) : (
+                    (profile?.email ?? supabaseUser?.email ?? "—")
+                  )}
+                </span>
+              </div>
+              <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
+                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-sm">
+                  Member since
+                </span>
+                <span className="text-fg-1">
+                  {profile?.createdAt ? formatDate(profile.createdAt) : "—"}
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Connected Accounts */}
+      <div className="border border-border-2 rounded mb-6 bg-bg-base overflow-hidden">
+        <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">
+          Connected Accounts
+        </div>
+        <div className="px-4 py-2">
+          {LINK_PROVIDERS.map((p, idx) => {
+            const identity = identities.find((i) => i.provider === p.key);
+            const isLinked = linkedProviders.has(p.key);
+            const isTelegram = p.key === "telegram";
+            const telegramLinked = isTelegram && !!profile?.telegramId;
+
+            // Build handle/email detail text
+            let detail = "";
+            if (p.key === "x" && profile?.xHandle)
+              detail = `@${profile.xHandle}`;
+            else if (p.key === "discord" && profile?.discordHandle)
+              detail = `@${profile.discordHandle}`;
+            else if (identity?.identity_data?.email)
+              detail = identity.identity_data.email as string;
+            else if (identity?.identity_data?.user_name)
+              detail = identity.identity_data.user_name as string;
+
+            return (
+              <div
+                key={p.key}
+                className={`flex items-center gap-3 min-h-8 py-2 text-sm min-w-0${idx > 0 ? " border-t border-border-2" : ""}`}
+              >
+                <span className="w-5 flex items-center justify-center shrink-0">
+                  <PlatformIcon
+                    name={p.key as "google" | "telegram" | "x" | "discord"}
+                    size={16}
+                  />
+                </span>
+                <span className="font-semibold min-w-[90px]">{p.label}</span>
+
+                {isTelegram ? (
+                  telegramLinked ? (
+                    <>
+                      <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
+                        <span className="text-success text-sm font-semibold">
+                          Connected
+                        </span>
+                        <span className="text-fg-3 text-sm">
+                          {profile?.telegramUsername
+                            ? `@${profile.telegramUsername}`
+                            : ""}
+                        </span>
+                      </div>
+                      <Button
+                        variant="default-tonal"
+                        size="default"
+                        className="min-w-[80px]"
+                        disabled={unlinkPending === "telegram"}
+                        onClick={() => handleUnlinkTelegram()}
+                      >
+                        {unlinkPending === "telegram" ? "Unlinking…" : "Unlink"}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex-1" />
+                      <Button
+                        variant="default-tonal"
+                        size="default"
+                        className="min-w-[80px]"
+                        onClick={() => startTelegramLogin("link")}
+                      >
+                        Link
+                      </Button>
+                    </>
+                  )
+                ) : isLinked ? (
+                  <>
+                    <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
+                      <span className="text-success text-sm font-semibold">
+                        Connected
+                      </span>
+                      {detail && (
+                        <span className="text-fg-3 text-sm">{detail}</span>
+                      )}
+                      {/* X read access button: show when X linked but no read token yet */}
+                      {p.key === "x" && profile?.xId && !profile?.hasXToken && (
+                        <Button
+                          variant="default-tonal"
+                          size="default"
+                          disabled={xAuthPending}
+                          onClick={handleXReadAccess}
+                        >
+                          {xAuthPending
+                            ? "Redirecting…"
+                            : "Authorize read access"}
+                        </Button>
+                      )}
+                    </div>
+                    <Button
+                      variant="default-tonal"
+                      size="default"
+                      className="min-w-[80px]"
+                      disabled={!canUnlinkOAuth || unlinkPending === p.key}
+                      onClick={() => handleUnlinkProvider(p.key)}
+                    >
+                      {unlinkPending === p.key ? "Unlinking…" : "Unlink"}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex-1" />
+                    <Button
+                      variant="default-tonal"
+                      size="default"
+                      className="min-w-[80px]"
+                      disabled={linkPending === p.supabaseProvider}
+                      onClick={() => handleLinkProvider(p.supabaseProvider!)}
+                    >
+                      {linkPending === p.supabaseProvider ? "Linking…" : "Link"}
+                    </Button>
+                  </>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Legacy connected identities (providers removed from LINK_PROVIDERS but still in Supabase) */}
+          {legacyIdentities.map((identity) => {
+            const info = PROVIDER_LABELS[identity.provider] ?? {
+              label: identity.provider,
+              icon: "?",
+            };
+            const detail =
+              (identity.identity_data?.email as string) ||
+              (identity.identity_data?.user_name as string) ||
+              "";
+            return (
+              <div
+                key={identity.id}
+                className="flex items-center gap-3 min-h-8 py-2 text-sm min-w-0 opacity-70 border-t border-border-2"
+              >
+                <span className="w-5 text-center text-sm shrink-0">
+                  {info.icon}
+                </span>
+                <span className="font-semibold min-w-[90px]">{info.label}</span>
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <span className="text-success text-sm font-semibold">
+                    Connected
+                  </span>
+                  {detail && (
+                    <span className="text-fg-3 text-sm">{detail}</span>
+                  )}
+                </div>
+                <Button
+                  variant="default-tonal"
+                  size="default"
+                  className="min-w-[80px]"
+                  disabled={
+                    !canUnlinkOAuth || unlinkPending === identity.provider
+                  }
+                  onClick={() => handleUnlinkProvider(identity.provider)}
+                >
+                  {unlinkPending === identity.provider
+                    ? "Unlinking…"
+                    : "Unlink"}
+                </Button>
+              </div>
+            );
+          })}
+
+          {(unlinkError || linkError) && (
+            <div className="text-xs text-destructive py-3 flex items-center gap-2 mt-2">
+              {unlinkError || linkError}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* GitHub for Bounties */}
+      <div className="border border-border-2 rounded mb-6 bg-bg-base overflow-hidden">
+        <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">
+          GitHub for Bounties
+        </div>
+        <div className="px-4 py-2">
+          <div className="flex items-center gap-3 text-sm">
+            <span className="w-5 flex items-center justify-center shrink-0">
+              <GitHubIcon size={16} />
+            </span>
+            <span className="font-semibold min-w-[90px]">GitHub</span>
+            {profile?.githubHandle ? (
+              <>
+                <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
+                  <span className="text-success text-sm font-semibold">
+                    Connected
+                  </span>
+                  <span className="text-fg-3 text-sm font-mono">
+                    @{profile.githubHandle}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex-1" />
+                <Button
+                  variant="default-tonal"
+                  size="default"
+                  className="min-w-[80px]"
+                  onClick={() => {
+                    const state = crypto.randomUUID();
+                    sessionStorage.setItem("github_oauth_state", state);
+                    sessionStorage.setItem(
+                      "github_oauth_return_to",
+                      "/account",
+                    );
+                    window.location.href = `${API_BASE}/auth/github/authorize?scope=read:user&state=${state}`;
+                  }}
+                >
+                  Connect
+                </Button>
+              </>
+            )}
+          </div>
+          <p className="text-xs text-fg-3 mt-2">
+            Required to submit PRs for GitHub bounties.
+          </p>
+        </div>
+      </div>
+
+      {/* Wallets */}
+      <div className="border border-border-2 rounded mb-6 bg-bg-base overflow-hidden">
+        <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">
+          Wallets
+        </div>
+        <div className="px-4 py-2">
+          {walletsLoading ? (
+            <div className="flex items-center min-h-12 py-2 text-sm">
+              <span
+                className="skeleton"
+                style={{ width: "100%", height: 16 }}
+              />
+            </div>
+          ) : walletsError ? (
+            <div className="text-xs text-destructive py-3 flex items-center gap-2">
+              Failed to load wallets.{" "}
+              <Button
+                variant="default-tonal"
+                size="default"
+                onClick={() =>
+                  queryClient.invalidateQueries({ queryKey: ["wallets"] })
+                }
+              >
+                Retry
+              </Button>
+            </div>
+          ) : wallets.length === 0 ? (
+            <div className="text-xs text-fg-3 py-2">No wallets linked yet.</div>
+          ) : (
+            wallets.map((w, idx) => (
+              <div
+                key={w.id}
+                className={`flex items-center gap-3 min-h-8 py-2 text-sm${idx > 0 ? " border-t border-border-2" : ""}`}
+              >
+                <span className="font-mono text-xs text-fg-1">
+                  {shortenAddress(w.address)}
+                </span>
+                {w.chainId && (
+                  <span className="text-xs text-fg-3">
+                    {CHAIN_NAMES[w.chainId] ?? `Chain ${w.chainId}`}
+                  </span>
+                )}
+                {w.isPrimary && (
+                  <span className="text-xs font-semibold text-accent">
+                    Primary
+                  </span>
+                )}
+                {!w.isPrimary && (
+                  <Button
+                    variant="default-tonal"
+                    size="default"
+                    className="ml-auto text-xs px-2 py-0.5"
+                    disabled={walletActionPending === w.id}
+                    onClick={() => {
+                      setWalletActionPending(w.id);
+                      setPrimaryWallet.mutate(w.id);
+                    }}
+                  >
+                    {walletActionPending === w.id ? "…" : "Set primary"}
+                  </Button>
+                )}
+                <Button
+                  variant="default-tonal"
+                  size="default"
+                  className={`${w.isPrimary ? "ml-auto" : "ml-1.5"} text-xs px-2 py-0.5 text-destructive`}
+                  disabled={walletActionPending === w.id}
+                  onClick={() => {
+                    setWalletActionPending(w.id);
+                    removeWallet.mutate(w.id);
+                  }}
+                >
+                  {walletActionPending === w.id ? "…" : "Remove"}
+                </Button>
+              </div>
+            ))
+          )}
+          <form
+            className="flex gap-2 items-center mt-3 pt-3 border-t border-border-2"
+            onSubmit={handleLinkWallet}
+          >
+            <label htmlFor="wallet-address" className="sr-only">
+              Wallet address
+            </label>
+            <Input
+              id="wallet-address"
+              name="wallet-address"
+              type="text"
+              placeholder="0x..."
+              autoComplete="off"
+              className="flex-1 font-mono text-xs h-8"
+              value={walletInput}
+              onChange={(e) => setWalletInput(e.target.value)}
+            />
+            <Button type="submit" disabled={linkWallet.isPending}>
+              {linkWallet.isPending ? "Linking\u2026" : "+ Link wallet"}
+            </Button>
+          </form>
+          {walletError && (
+            <div className="text-xs text-destructive mt-1.5">{walletError}</div>
+          )}
+        </div>
+      </div>
+
+      {/* Fiat Payout */}
+      <FiatPayoutSection token={token} />
+    </div>
+  );
 }
 
 // ─── Fiat Payout Section ─────────────────────────────────────────────────────
 
 function FiatPayoutSection({ token }: { token: string | undefined }) {
-    const { data: status, isLoading } = useQuery<{
-        hasAccount: boolean
-        isOnboarded: boolean
-        accountId: string | null
-    }>({
-        queryKey: ["stripe-connect-status"],
-        queryFn: async () => {
-            const res = await fetch(`${API_BASE}/stripe/connect/status`, {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            if (!res.ok) throw new Error("Failed to check status")
-            return res.json()
-        },
-        enabled: !!token,
-    })
+  const { data: status, isLoading } = useQuery<{
+    hasAccount: boolean;
+    isOnboarded: boolean;
+    accountId: string | null;
+  }>({
+    queryKey: ["stripe-connect-status"],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/stripe/connect/status`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to check status");
+      return res.json();
+    },
+    enabled: !!token,
+  });
 
-    const onboardMutation = useMutation({
-        mutationFn: async () => {
-            const res = await fetch(`${API_BASE}/stripe/connect/onboard`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    returnUrl: window.location.href,
-                    refreshUrl: window.location.href,
-                }),
-            })
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}))
-                throw new Error(err.message || "Failed to start onboarding")
-            }
-            return res.json()
+  const onboardMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`${API_BASE}/stripe/connect/onboard`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        onSuccess: (data: { onboardingUrl: string }) => {
-            window.location.href = data.onboardingUrl
-        },
-    })
+        body: JSON.stringify({
+          returnUrl: window.location.href,
+          refreshUrl: window.location.href,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to start onboarding");
+      }
+      return res.json();
+    },
+    onSuccess: (data: { onboardingUrl: string }) => {
+      window.location.href = data.onboardingUrl;
+    },
+  });
 
-    return (
-        <div className="border border-border-2 rounded mb-5 bg-bg-base overflow-hidden">
-            <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">Fiat Payout</div>
-            <div className="p-4">
-                {isLoading ? (
-                    <div className="flex items-baseline py-1.5 text-sm"><span className="skeleton" style={{ width: "100%", height: 16 }} /></div>
-                ) : (
-                    <>
-                        <div className="flex items-center gap-2 text-sm mb-3">
-                            <div className={cn(
-                                "w-2 h-2 rounded-full shrink-0",
-                                status?.isOnboarded ? "bg-success"
-                                    : status?.hasAccount ? "bg-warning"
-                                        : "bg-border-heavy"
-                            )} />
-                            <span className="text-fg-1 text-xs">
-                                {status?.isOnboarded
-                                    ? "Ready to receive payouts"
-                                    : status?.hasAccount
-                                        ? "Onboarding incomplete"
-                                        : "No Stripe account connected"}
-                            </span>
-                        </div>
-                        {onboardMutation.isError && (
-                            <div className="text-xs text-destructive mb-2">{(onboardMutation.error as Error).message}</div>
-                        )}
-                        <div className="flex gap-2">
-                            {!status?.isOnboarded && (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <span className="inline-block">
-                                            <Button size="sm" disabled className="opacity-60 cursor-not-allowed">
-                                                {status?.hasAccount ? "Complete Setup" : "Connect Stripe Account"}
-                                            </Button>
-                                        </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Coming Soon</TooltipContent>
-                                </Tooltip>
-                            )}
-                            {status?.isOnboarded && (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <span className="inline-block">
-                                            <Button variant="outline" size="sm" disabled className="opacity-60 cursor-not-allowed">
-                                                Open Stripe Dashboard
-                                            </Button>
-                                        </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Coming Soon</TooltipContent>
-                                </Tooltip>
-                            )}
-                            <Button variant="outline" size="sm" asChild>
-                                <Link to="/stripe-connect" className="no-underline">Details</Link>
-                            </Button>
-                        </div>
-                    </>
+  return (
+    <div className="border border-border-2 rounded mb-6 bg-bg-base overflow-hidden">
+      <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">
+        Fiat Payout
+      </div>
+      <div className="px-4 py-2">
+        {isLoading ? (
+          <div className="flex items-center min-h-12 py-2 text-sm">
+            <span className="skeleton" style={{ width: "100%", height: 16 }} />
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 text-sm mb-3">
+              <div
+                className={cn(
+                  "w-2 h-2 rounded-full shrink-0",
+                  status?.isOnboarded
+                    ? "bg-success"
+                    : status?.hasAccount
+                      ? "bg-warning"
+                      : "bg-border-heavy",
                 )}
+              />
+              <span className="text-fg-1 text-xs">
+                {status?.isOnboarded
+                  ? "Ready to receive payouts"
+                  : status?.hasAccount
+                    ? "Onboarding incomplete"
+                    : "No Stripe account connected"}
+              </span>
             </div>
-        </div>
-    )
+            {onboardMutation.isError && (
+              <div className="text-xs text-destructive mb-2">
+                {(onboardMutation.error as Error).message}
+              </div>
+            )}
+            <div className="flex gap-2">
+              {!status?.isOnboarded && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-block">
+                      <Button
+                        size="default"
+                        disabled
+                        className="opacity-60 cursor-not-allowed"
+                      >
+                        {status?.hasAccount
+                          ? "Complete Setup"
+                          : "Connect Stripe Account"}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>Coming Soon</TooltipContent>
+                </Tooltip>
+              )}
+              {status?.isOnboarded && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-block">
+                      <Button
+                        variant="default-tonal"
+                        size="default"
+                        disabled
+                        className="opacity-60 cursor-not-allowed"
+                      >
+                        Open Stripe Dashboard
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>Coming Soon</TooltipContent>
+                </Tooltip>
+              )}
+              <Button variant="default-tonal" size="default" asChild>
+                <Link to="/stripe-connect" className="no-underline">
+                  Details
+                </Link>
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }

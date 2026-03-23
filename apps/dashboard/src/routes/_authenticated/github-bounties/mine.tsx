@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { AddFill } from "@mingcute/react"
 import { cn } from "@/lib/utils"
-import { statusBadgeClass, submissionStatusClass, rewardLabel } from "@/components/bounty-utils"
+import { statusBadgeVariant, submissionStatusVariant, rewardLabel } from "@/components/bounty-utils"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
@@ -119,7 +119,7 @@ function CreatedTab() {
                                 {bounty.title}
                             </Link>
                             <div className="flex items-center gap-2 flex-wrap">
-                                <Badge variant="outline" className={cn("text-xs", statusBadgeClass(bounty.status))}>
+                                <Badge variant={statusBadgeVariant(bounty.status)} className="text-xs">
                                     {bounty.status}
                                 </Badge>
                                 <span className="text-xs text-fg-3">
@@ -232,7 +232,7 @@ function SubmittedTab() {
                                 </span>
                             </div>
                         </div>
-                        <Badge variant="outline" className={cn("text-xs capitalize shrink-0", submissionStatusClass(sub.status))}>
+                        <Badge variant={submissionStatusVariant(sub.status)} className="text-xs capitalize shrink-0">
                             {sub.status}
                         </Badge>
                     </div>

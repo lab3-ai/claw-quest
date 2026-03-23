@@ -7,9 +7,9 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TimeFill, User1Fill, CheckFill, CloseFill } from "@mingcute/react"
-import { cn } from "@/lib/utils"
+
 import { GitHubIcon } from "@/components/github-icon"
-import { rewardBadgeClass, rewardLabel, statusBadgeClass, submissionStatusClass, formatDeadline } from "@/components/bounty-utils"
+import { rewardBadgeVariant, rewardLabel, statusBadgeVariant, submissionStatusVariant, formatDeadline } from "@/components/bounty-utils"
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3000"
 
@@ -303,7 +303,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                                                 </a>
                                             </div>
                                             <div className="flex items-center gap-2 shrink-0">
-                                                <Badge variant="outline" className={cn("text-xs capitalize", submissionStatusClass(sub.status))}>
+                                                <Badge variant={submissionStatusVariant(sub.status)} className="text-xs capitalize">
                                                     {sub.status}
                                                 </Badge>
                                                 {/* Creator approve/reject actions */}
@@ -346,7 +346,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                                     ? "LLM Key"
                                     : `$${Number(bounty.rewardAmount).toLocaleString()}`}
                             </p>
-                            <Badge variant="outline" className={cn("text-xs mt-1", rewardBadgeClass(bounty.rewardType))}>
+                            <Badge variant={rewardBadgeVariant(bounty.rewardType)} className="text-xs mt-1">
                                 {rewardLabel(bounty.rewardType, bounty.rewardAmount, bounty.llmKeyTokenLimit)}
                             </Badge>
                         </div>
@@ -354,7 +354,7 @@ export function GitHubBountyDetail({ bountyId }: { bountyId: string }) {
                         <div className="border-t border-border-2 pt-3 space-y-1.5 text-xs text-fg-3">
                             <div className="flex justify-between">
                                 <span>Status</span>
-                                <Badge variant="outline" className={cn("text-xs capitalize", statusBadgeClass(bounty.status))}>
+                                <Badge variant={statusBadgeVariant(bounty.status)} className="text-xs capitalize">
                                     {bounty.status}
                                 </Badge>
                             </div>

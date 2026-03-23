@@ -110,14 +110,14 @@ export function StepReward({
                 <span className={cn(
                     "relative z-10 size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
                     isDone ? "bg-success shadow-[0_0_0_2px_var(--color-green-500)]"
-                        : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
+                        : isActive ? "bg-primary shadow-[0_0_0_2px_var(--primary)]"
                             : "bg-gray-300 shadow-[0_0_0_2px_var(--color-gray-300)]"
                 )}>{isDone ? <CheckFill size={12} /> : "3"}</span>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-fg-1 group-hover:text-primary">Reward</span>
                         {isDone && <Badge variant="outline-success">Completed</Badge>}
-                        {isActive && <Badge variant="outline-warning">In Progress</Badge>}
+                        {isActive && <Badge variant="outline-primary">In Progress</Badge>}
                         {!isDone && !isActive && <Badge variant="outline-muted">Not Started</Badge>}
                     </div>
                     <div className="text-xs text-fg-3 mt-0.5 leading-snug truncate">

@@ -9,7 +9,7 @@ import { GitBranchFill, CodeFill, AddLine } from "@mingcute/react";
 import { TabBar, type TabItem } from "@/components/tab-bar";
 import { GitHubIcon } from "@/components/github-icon";
 import {
-  rewardBadgeClass,
+  rewardBadgeVariant,
   rewardLabel,
   formatDeadline,
 } from "@/components/bounty-utils";
@@ -37,16 +37,11 @@ interface GitHubBounty {
 type StatusTab = "all" | "open" | "in_review" | "completed";
 type RewardFilter = "USDC" | "USD" | "LLM_KEY" | undefined;
 
-function difficultyFromAmount(amount: string): {
-  label: string;
-  className: string;
-} {
+function difficultyFromAmount(amount: string) {
   const n = Number(amount);
-  if (n < 100)
-    return { label: "easy", className: "text-success border-success/30" };
-  if (n < 500)
-    return { label: "medium", className: "text-warning border-warning/30" };
-  return { label: "hard", className: "text-error border-error/30" };
+  if (n < 100) return { label: "easy", variant: "outline-success" as const };
+  if (n < 500) return { label: "medium", variant: "outline-warning" as const };
+  return { label: "hard", variant: "outline-error" as const };
 }
 
 const STATUS_TABS: TabItem<StatusTab>[] = [
@@ -193,7 +188,7 @@ export function GitHubBountiesExplore() {
                 key={bounty.id}
                 to="/github-bounties/$bountyId"
                 params={{ bountyId: bounty.id }}
-                className="group flex flex-col gap-2 rounded border border-border-2 bg-bg-1 hover:border-fg-1 transition-colors p-4 no-underline"
+                className="group hover-shadow flex flex-col gap-2 rounded border border-border-2 bg-bg-1 hover:border-fg-1 transition-colors p-4 no-underline"
               >
                 <div className="flex items-center justify-between text-xs text-fg-3">
                   <span className="inline-flex items-center gap-1.5">
@@ -208,23 +203,18 @@ export function GitHubBountiesExplore() {
                     {bounty.maxWinners !== 1 ? "s" : ""}
                   </span>
                 </div>
-                <p className="text-sm font-semibold text-fg-1 leading-snug line-clamp-2">
+                <h3 className="text-base font-heading font-semibold text-fg-1 leading-snug line-clamp-2 group-hover:text-primary transition-colors mb-2">
                   {bounty.title}
-                </p>
+                </h3>
                 <div className="flex items-center gap-2 flex-wrap mt-auto">
                   <Badge
-                    variant="outline"
+                    variant={rewardBadgeVariant(bounty.rewardType)}
                     size="sm"
-                    className={rewardBadgeClass(bounty.rewardType)}
                   >
                     {rewardLabel(bounty.rewardType, bounty.rewardAmount)}
                   </Badge>
                   {bounty.rewardType !== "LLM_KEY" && (
-                    <Badge
-                      variant="outline"
-                      size="sm"
-                      className={difficulty.className}
-                    >
+                    <Badge variant={difficulty.variant} size="sm">
                       {difficulty.label}
                     </Badge>
                   )}

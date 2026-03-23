@@ -227,7 +227,7 @@ export function TabBar<
                     tabRefs.current[t.id] = el;
                   }}
                   className={cn(
-                    "group/tab inline-flex items-center gap-2 pb-1 text-base tracking-tight cursor-pointer transition-colors duration-150 ease-out",
+                    "group/tab inline-flex items-center gap-2 pb-0.5 text-base font-medium tracking-tight cursor-pointer transition-colors duration-150 ease-out",
                     "whitespace-nowrap",
                     "max-sm:gap-1.5 lg:min-h-10",
                     isActive

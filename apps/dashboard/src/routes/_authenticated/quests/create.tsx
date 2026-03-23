@@ -698,7 +698,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
         drawTime: "",
         fundingMethod: "crypto",
     })
-    const [activePlatform, setActivePlatform] = useState<string | null>(null)
+    const [activePlatform, setActivePlatform] = useState<string | null>("X")
     const [humanTasks, setHumanTasks] = useState<SocialEntry[]>([])
     const [expandedTask, setExpandedTask] = useState<number | null>(null)
     const [requiredSkills, setRequiredSkills] = useState<Pick<ClawHubSkill, "id" | "name" | "desc" | "agents" | "version">[]>([])

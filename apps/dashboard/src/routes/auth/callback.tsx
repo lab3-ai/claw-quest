@@ -23,6 +23,8 @@ export function AuthCallback() {
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === "SIGNED_IN" && session) {
+                // Skip redirect if this is a linking flow — wait for USER_UPDATED instead
+                if (localStorage.getItem("clawquest_linking_provider")) return
                 redirectAfterLogin()
             } else if (event === "USER_UPDATED" && session) {
                 // Identity linking callback — guard with localStorage key to avoid spurious triggers

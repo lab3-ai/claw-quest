@@ -51,32 +51,39 @@ const DialogHeader = ({
   className,
   children,
   showClose = false,
+  align = "auto",
   ...props
-}: React.HTMLAttributes<HTMLDivElement> & { showClose?: boolean }) => (
-  <div
-    className={cn(
-      "flex items-center border-b border-border-2 px-6 py-4",
-      showClose ? "justify-between" : "justify-center",
-      className,
-    )}
-    {...props}
-  >
+}: React.HTMLAttributes<HTMLDivElement> & {
+  showClose?: boolean;
+  align?: "left" | "center" | "auto";
+}) => {
+  const isLeft = align === "left" || (align === "auto" && showClose);
+  return (
     <div
       className={cn(
-        "flex flex-col space-y-1.5",
-        showClose ? "text-left flex-1" : "text-center",
+        "flex items-center border-b border-border-2 px-6 py-4",
+        isLeft ? "justify-between" : "justify-center",
+        className,
       )}
+      {...props}
     >
-      {children}
+      <div
+        className={cn(
+          "flex flex-col space-y-1.5",
+          isLeft ? "text-left flex-1" : "text-center",
+        )}
+      >
+        {children}
+      </div>
+      {showClose && (
+        <DialogPrimitive.Close className="shrink-0 inline-flex items-center justify-center h-5 w-5 rounded text-fg-3 hover:text-fg-1 transition-colors focus:outline-hidden focus:ring-2 focus:ring-ring">
+          <XIcon className="h-5 w-5" />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      )}
     </div>
-    {showClose && (
-      <DialogPrimitive.Close className="shrink-0 inline-flex items-center justify-center h-5 w-5 rounded text-fg-3 hover:text-fg-1 transition-colors focus:outline-hidden focus:ring-2 focus:ring-ring">
-        <XIcon className="h-5 w-5" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
-    )}
-  </div>
-);
+  );
+};
 DialogHeader.displayName = "DialogHeader";
 
 /** Body section — use between DialogHeader and DialogFooter */
@@ -84,7 +91,7 @@ const DialogBody = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("px-6 py-6", className)} {...props} />
+  <div className={cn("px-6 py-4", className)} {...props} />
 );
 DialogBody.displayName = "DialogBody";
 
@@ -94,7 +101,7 @@ const DialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 px-6 pt-0 pb-6",
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 px-6 pt-2 pb-6",
       className,
     )}
     {...props}
@@ -120,7 +127,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-fg-1", className)}
+    className={cn("text-xs text-fg-3", className)}
     {...props}
   />
 ));

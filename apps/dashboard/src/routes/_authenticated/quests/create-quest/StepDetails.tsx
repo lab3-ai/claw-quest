@@ -97,11 +97,6 @@ export function StepDetails({
             <span className="font-semibold text-sm text-fg-1 group-hover:text-primary">
               Quest Details
             </span>
-            {isDone && <Badge variant="outline-success">Completed</Badge>}
-            {isActive && <Badge variant="outline-primary">In Progress</Badge>}
-            {!isDone && !isActive && (
-              <Badge variant="outline-muted">Not Started</Badge>
-            )}
           </div>
           <div className="text-xs text-fg-3 mt-0.5 leading-snug truncate">
             {!isActive && stepSummary

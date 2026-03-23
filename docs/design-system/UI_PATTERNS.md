@@ -206,11 +206,21 @@ Component: `<QuestStatusBadge>` (`src/components/quest-badges.tsx`) — hiển t
 
 ### Modals / Dialogs
 
-- Use shadcn `Dialog` component
-- Max width: `480px` (small), `640px` (medium)
-- Always have close button (X) + escape key
-- Destructive modals: title states the action, `bg-error` confirm button
+- Use shadcn `Dialog` component (`DialogContent`, `DialogHeader`, `DialogBody`, `DialogFooter`)
+- Max width: `sm:max-w-sm` (small), `sm:max-w-lg` (default/medium)
+- **Header**: `DialogHeader` with `align="left"` for action dialogs, default center for confirmations
+  - `DialogTitle`: icon + text via `className="flex items-center gap-2"`
+  - `DialogDescription`: optional subtitle, `text-xs text-fg-3`
+  - `showClose` prop adds X button (use when no Cancel in footer)
+- **Body**: `DialogBody` wraps content with `px-6 py-6` padding
+  - If inner component has own padding, use `DialogBody className="p-0"`
+- **Footer**: `DialogFooter` with buttons
+  - Align right, hug content: `className="flex! justify-end gap-2 space-x-0!"`
+  - Button sizes: `size="lg"` for dialog actions
+  - Cancel = `variant="outline"`, primary action = `variant="default"`
+  - Destructive: primary button uses `variant="danger"`
 - Focus trap: auto-managed by Radix Dialog
+- Escape key closes dialog by default
 
 ### Tables
 

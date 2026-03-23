@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/context/AuthContext";
 import { startTelegramLogin } from "@/lib/telegram-oidc";
 import { supabase } from "@/lib/supabase";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/page-title";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { PlatformIcon } from "@/components/PlatformIcon";
 import { GitHubIcon } from "@/components/github-icon";
 
@@ -86,10 +95,8 @@ export function Account() {
   const token = session?.access_token;
 
   const [walletInput, setWalletInput] = useState("");
-  const [walletError, setWalletError] = useState("");
   const [walletActionPending, setWalletActionPending] = useState(""); // wallet id being acted on
-  const [unlinkError, setUnlinkError] = useState("");
-  const [linkError, setLinkError] = useState("");
+  const [promotedWalletId, setPromotedWalletId] = useState(""); // animates newly-promoted wallet
   const [unlinkPending, setUnlinkPending] = useState("");
   const [linkPending, setLinkPending] = useState("");
   const [xAuthPending, setXAuthPending] = useState(false);
@@ -99,7 +106,6 @@ export function Account() {
     "displayName" | "username" | null
   >(null);
   const [editValue, setEditValue] = useState("");
-  const [editError, setEditError] = useState("");
 
   // Fetch profile from API
   const {
@@ -192,9 +198,9 @@ export function Account() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
-      setWalletError("");
+      toast.success("Wallet removed");
     },
-    onError: (err: Error) => setWalletError(err.message),
+    onError: (err: Error) => toast.error(err.message),
     onSettled: () => setWalletActionPending(""),
   });
 
@@ -209,12 +215,15 @@ export function Account() {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error?.message ?? "Failed to set primary wallet");
       }
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: (id) => {
+      setPromotedWalletId(id);
+      setTimeout(() => setPromotedWalletId(""), 1200);
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
-      setWalletError("");
+      toast.success("Primary wallet updated");
     },
-    onError: (err: Error) => setWalletError(err.message),
+    onError: (err: Error) => toast.error(err.message),
     onSettled: () => setWalletActionPending(""),
   });
 
@@ -240,10 +249,10 @@ export function Account() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
       setWalletInput("");
-      setWalletError("");
+      toast.success("Wallet linked");
     },
     onError: (err: Error) => {
-      setWalletError(err.message);
+      toast.error(err.message);
     },
   });
 
@@ -270,17 +279,16 @@ export function Account() {
       queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
       setEditingField(null);
       setEditValue("");
-      setEditError("");
+      toast.success("Profile updated");
     },
     onError: (err: Error) => {
-      setEditError(err.message);
+      toast.error(err.message);
     },
   });
 
   function startEdit(field: "displayName" | "username") {
     setEditingField(field);
-    setEditError("");
-    setEditValue(
+    /* cleared */ setEditValue(
       field === "displayName"
         ? (profile?.displayName ?? "")
         : (profile?.username ?? ""),
@@ -295,7 +303,7 @@ export function Account() {
       value &&
       !/^[a-z0-9][a-z0-9_-]{1,18}[a-z0-9]$/.test(value)
     ) {
-      setEditError("3-20 chars: lowercase letters, numbers, hyphens");
+      toast.error("3-20 chars: lowercase letters, numbers, hyphens");
       return;
     }
     updateProfile.mutate({
@@ -317,9 +325,7 @@ export function Account() {
   );
 
   async function handleLinkProvider(supabaseProvider: string) {
-    setLinkError("");
-    setUnlinkError("");
-    setLinkPending(supabaseProvider);
+    /* cleared */ /* cleared */ setLinkPending(supabaseProvider);
     try {
       // Store provider so callback.tsx can detect this is an identity-link flow
       localStorage.setItem("clawquest_linking_provider", supabaseProvider);
@@ -337,16 +343,14 @@ export function Account() {
     } catch (err: unknown) {
       const msg =
         err instanceof Error ? err.message : "Failed to link provider";
-      setLinkError(msg);
+      toast.error(msg);
     } finally {
       setLinkPending("");
     }
   }
 
   async function handleUnlinkProvider(providerKey: string) {
-    setUnlinkError("");
-    setLinkError("");
-    setUnlinkPending(providerKey);
+    /* cleared */ /* cleared */ setUnlinkPending(providerKey);
 
     try {
       // Fetch fresh identity list from Supabase to avoid stale cached session data
@@ -359,13 +363,13 @@ export function Account() {
 
       // Lockout prevention: need at least 1 identity remaining after unlink
       if (!hasTelegram && freshIdentities.length <= 1) {
-        setUnlinkError("Cannot unlink — this is your only sign-in method.");
+        toast.error("Cannot unlink — this is your only sign-in method.");
         return;
       }
 
       const identity = freshIdentities.find((i) => i.provider === providerKey);
       if (!identity) {
-        setUnlinkError("Identity not found. Please refresh and try again.");
+        toast.error("Identity not found. Please refresh and try again.");
         return;
       }
 
@@ -391,25 +395,23 @@ export function Account() {
       // Refresh session so onAuthStateChange fires with updated user.identities
       await supabase.auth.refreshSession();
       queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      toast.success("Account unlinked");
     } catch (err: unknown) {
       const msg =
         err instanceof Error ? err.message : "Failed to unlink provider";
-      setUnlinkError(msg);
+      toast.error(msg);
     } finally {
       setUnlinkPending("");
     }
   }
 
   async function handleUnlinkTelegram() {
-    setUnlinkError("");
-    setLinkError("");
-
-    // Lockout prevention: block if Telegram is the only sign-in method
+    /* cleared */ /* cleared */ // Lockout prevention: block if Telegram is the only sign-in method
     const nonTelegramIdentities = identities.filter(
       (i) => i.provider !== "telegram",
     );
     if (nonTelegramIdentities.length === 0) {
-      setUnlinkError("Cannot unlink — this is your only sign-in method.");
+      toast.error("Cannot unlink — this is your only sign-in method.");
       return;
     }
 
@@ -424,10 +426,11 @@ export function Account() {
         throw new Error(body?.error?.message ?? "Failed to unlink Telegram");
       }
       queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      toast.success("Telegram unlinked");
     } catch (err: unknown) {
       const msg =
         err instanceof Error ? err.message : "Failed to unlink Telegram";
-      setUnlinkError(msg);
+      toast.error(msg);
     } finally {
       setUnlinkPending("");
     }
@@ -448,19 +451,16 @@ export function Account() {
       localStorage.setItem("x_oauth_state", state);
       window.location.href = url;
     } catch (err: unknown) {
-      setLinkError(
-        err instanceof Error ? err.message : "Failed to authorize X",
-      );
+      toast.error(err instanceof Error ? err.message : "Failed to authorize X");
       setXAuthPending(false);
     }
   }
 
   function handleLinkWallet(e: React.FormEvent) {
     e.preventDefault();
-    setWalletError("");
-    const addr = walletInput.trim();
+    /* cleared */ const addr = walletInput.trim();
     if (!/^0x[a-fA-F0-9]{40}$/.test(addr)) {
-      setWalletError("Invalid wallet address");
+      toast.error("Invalid wallet address");
       return;
     }
     linkWallet.mutate(addr);
@@ -475,7 +475,7 @@ export function Account() {
         <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">
           Profile
         </div>
-        <div className="px-4 py-2">
+        <div className="px-4 py-1">
           {profileLoading ? (
             <>
               <div className="flex items-center min-h-12 py-2 text-sm">
@@ -502,7 +502,7 @@ export function Account() {
               Failed to load profile.{" "}
               <Button
                 variant="default-tonal"
-                size="default"
+                size="sm"
                 onClick={() =>
                   queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
                 }
@@ -513,7 +513,7 @@ export function Account() {
           ) : (
             <>
               <div className="flex items-center min-h-12 py-2 text-sm justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-sm">
+                <span className="sm:w-30 shrink-0 text-fg-1 text-sm">
                   Display Name
                 </span>
                 <span className="text-fg-1 w-full sm:w-auto">
@@ -525,7 +525,7 @@ export function Account() {
                         onChange={(e) => setEditValue(e.target.value)}
                         maxLength={50}
                         placeholder="Your display name"
-                        className="text-base px-2 py-0.5 w-full sm:w-[180px] border border-border-2 rounded bg-bg-base text-fg-1 outline-hidden focus:border-accent"
+                        className="h-7 text-sm px-2 w-full sm:w-45 border border-border-2 rounded bg-bg-base text-fg-1 outline-hidden focus:border-accent"
                         autoFocus
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleSaveEdit();
@@ -533,7 +533,7 @@ export function Account() {
                         }}
                       />
                       <Button
-                        size="default"
+                        size="sm"
                         onClick={handleSaveEdit}
                         disabled={updateProfile.isPending}
                       >
@@ -541,7 +541,7 @@ export function Account() {
                       </Button>
                       <Button
                         variant="default-tonal"
-                        size="default"
+                        size="sm"
                         onClick={() => setEditingField(null)}
                       >
                         Cancel
@@ -554,8 +554,8 @@ export function Account() {
                       )}
                       <Button
                         variant="default-tonal"
-                        size="default"
-                        className="min-w-[80px]"
+                        size="sm"
+                        className="min-w-[72px]"
                         onClick={() => startEdit("displayName")}
                       >
                         Edit
@@ -565,7 +565,7 @@ export function Account() {
                 </span>
               </div>
               <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-sm">
+                <span className="sm:w-30 shrink-0 text-fg-1 text-sm">
                   Username
                 </span>
                 <span className="text-fg-1 w-full sm:w-auto">
@@ -579,7 +579,7 @@ export function Account() {
                         }
                         maxLength={20}
                         placeholder="username"
-                        className="text-base px-2 py-0.5 w-full sm:w-[180px] border border-border-2 rounded bg-bg-base text-fg-1 outline-hidden focus:border-accent"
+                        className="h-7 text-sm px-2 w-full sm:w-45 border border-border-2 rounded bg-bg-base text-fg-1 outline-hidden focus:border-accent"
                         autoFocus
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleSaveEdit();
@@ -587,7 +587,7 @@ export function Account() {
                         }}
                       />
                       <Button
-                        size="default"
+                        size="sm"
                         onClick={handleSaveEdit}
                         disabled={updateProfile.isPending}
                       >
@@ -595,7 +595,7 @@ export function Account() {
                       </Button>
                       <Button
                         variant="default-tonal"
-                        size="default"
+                        size="sm"
                         onClick={() => setEditingField(null)}
                       >
                         Cancel
@@ -613,8 +613,8 @@ export function Account() {
                       )}
                       <Button
                         variant="default-tonal"
-                        size="default"
-                        className="min-w-[80px]"
+                        size="sm"
+                        className="min-w-[72px]"
                         onClick={() => startEdit("username")}
                       >
                         Edit
@@ -623,13 +623,8 @@ export function Account() {
                   )}
                 </span>
               </div>
-              {editError && (
-                <div className="text-xs text-destructive py-3 flex items-center gap-2 mt-1">
-                  {editError}
-                </div>
-              )}
               <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-sm">
+                <span className="sm:w-30 shrink-0 text-fg-1 text-sm">
                   Email
                 </span>
                 <span className="text-fg-1">
@@ -641,7 +636,7 @@ export function Account() {
                 </span>
               </div>
               <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                <span className="sm:w-[120px] shrink-0 font-semibold text-fg-3 text-sm">
+                <span className="sm:w-30 shrink-0 text-fg-1 text-sm">
                   Member since
                 </span>
                 <span className="text-fg-1">
@@ -658,7 +653,7 @@ export function Account() {
         <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">
           Connected Accounts
         </div>
-        <div className="px-4 py-2">
+        <div className="px-4 py-1">
           {LINK_PROVIDERS.map((p, idx) => {
             const identity = identities.find((i) => i.provider === p.key);
             const isLinked = linkedProviders.has(p.key);
@@ -704,8 +699,8 @@ export function Account() {
                       </div>
                       <Button
                         variant="default-tonal"
-                        size="default"
-                        className="min-w-[80px]"
+                        size="sm"
+                        className="min-w-[72px]"
                         disabled={unlinkPending === "telegram"}
                         onClick={() => handleUnlinkTelegram()}
                       >
@@ -717,8 +712,8 @@ export function Account() {
                       <div className="flex-1" />
                       <Button
                         variant="default-tonal"
-                        size="default"
-                        className="min-w-[80px]"
+                        size="sm"
+                        className="min-w-[72px]"
                         onClick={() => startTelegramLogin("link")}
                       >
                         Link
@@ -738,7 +733,7 @@ export function Account() {
                       {p.key === "x" && profile?.xId && !profile?.hasXToken && (
                         <Button
                           variant="default-tonal"
-                          size="default"
+                          size="sm"
                           disabled={xAuthPending}
                           onClick={handleXReadAccess}
                         >
@@ -750,8 +745,8 @@ export function Account() {
                     </div>
                     <Button
                       variant="default-tonal"
-                      size="default"
-                      className="min-w-[80px]"
+                      size="sm"
+                      className="min-w-[72px]"
                       disabled={!canUnlinkOAuth || unlinkPending === p.key}
                       onClick={() => handleUnlinkProvider(p.key)}
                     >
@@ -763,8 +758,8 @@ export function Account() {
                     <div className="flex-1" />
                     <Button
                       variant="default-tonal"
-                      size="default"
-                      className="min-w-[80px]"
+                      size="sm"
+                      className="min-w-[72px]"
                       disabled={linkPending === p.supabaseProvider}
                       onClick={() => handleLinkProvider(p.supabaseProvider!)}
                     >
@@ -805,8 +800,8 @@ export function Account() {
                 </div>
                 <Button
                   variant="default-tonal"
-                  size="default"
-                  className="min-w-[80px]"
+                  size="sm"
+                  className="min-w-[72px]"
                   disabled={
                     !canUnlinkOAuth || unlinkPending === identity.provider
                   }
@@ -819,22 +814,21 @@ export function Account() {
               </div>
             );
           })}
-
-          {(unlinkError || linkError) && (
-            <div className="text-xs text-destructive py-3 flex items-center gap-2 mt-2">
-              {unlinkError || linkError}
-            </div>
-          )}
         </div>
       </div>
 
       {/* GitHub for Bounties */}
       <div className="border border-border-2 rounded mb-6 bg-bg-base overflow-hidden">
-        <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">
-          GitHub for Bounties
+        <div className="px-4 py-3 border-b border-border-2 bg-bg-2">
+          <div className="text-sm font-semibold text-fg-1">
+            GitHub for Bounties
+          </div>
+          <p className="text-xs text-fg-3 mt-0.5">
+            Required to submit PRs for GitHub bounties.
+          </p>
         </div>
-        <div className="px-4 py-2">
-          <div className="flex items-center gap-3 text-sm">
+        <div className="px-4 py-1">
+          <div className="flex items-center gap-3 text-sm py-2">
             <span className="w-5 flex items-center justify-center shrink-0">
               <GitHubIcon size={16} />
             </span>
@@ -849,14 +843,39 @@ export function Account() {
                     @{profile.githubHandle}
                   </span>
                 </div>
+                <Button
+                  variant="default-tonal"
+                  size="sm"
+                  className="min-w-[72px]"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(
+                        `${API_BASE}/auth/social/github`,
+                        {
+                          method: "DELETE",
+                          headers: { Authorization: `Bearer ${token}` },
+                        },
+                      );
+                      if (!res.ok) throw new Error("Failed to unlink GitHub");
+                      queryClient.invalidateQueries({
+                        queryKey: ["auth", "me"],
+                      });
+                      toast.success("GitHub unlinked");
+                    } catch {
+                      toast.error("Failed to unlink GitHub");
+                    }
+                  }}
+                >
+                  Unlink
+                </Button>
               </>
             ) : (
               <>
                 <div className="flex-1" />
                 <Button
                   variant="default-tonal"
-                  size="default"
-                  className="min-w-[80px]"
+                  size="sm"
+                  className="min-w-[72px]"
                   onClick={() => {
                     const state = crypto.randomUUID();
                     sessionStorage.setItem("github_oauth_state", state);
@@ -867,95 +886,108 @@ export function Account() {
                     window.location.href = `${API_BASE}/auth/github/authorize?scope=read:user&state=${state}`;
                   }}
                 >
-                  Connect
+                  Link
                 </Button>
               </>
             )}
           </div>
-          <p className="text-xs text-fg-3 mt-2">
-            Required to submit PRs for GitHub bounties.
-          </p>
         </div>
       </div>
 
       {/* Wallets */}
       <div className="border border-border-2 rounded mb-6 bg-bg-base overflow-hidden">
-        <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">
-          Wallets
+        <div className="px-4 py-3 border-b border-border-2 bg-bg-2">
+          <div className="text-sm font-semibold text-fg-1">Wallets</div>
+          <p className="text-xs text-fg-3 mt-1">
+            EVM addresses for receiving rewards. Supports&nbsp;
+            <strong>Ethereum, Base, Optimism, and Arbitrum</strong>.
+          </p>
         </div>
-        <div className="px-4 py-2">
-          {walletsLoading ? (
-            <div className="flex items-center min-h-12 py-2 text-sm">
-              <span
-                className="skeleton"
-                style={{ width: "100%", height: 16 }}
-              />
-            </div>
-          ) : walletsError ? (
-            <div className="text-xs text-destructive py-3 flex items-center gap-2">
-              Failed to load wallets.{" "}
-              <Button
-                variant="default-tonal"
-                size="default"
-                onClick={() =>
-                  queryClient.invalidateQueries({ queryKey: ["wallets"] })
-                }
-              >
-                Retry
-              </Button>
-            </div>
-          ) : wallets.length === 0 ? (
-            <div className="text-xs text-fg-3 py-2">No wallets linked yet.</div>
-          ) : (
-            wallets.map((w, idx) => (
-              <div
-                key={w.id}
-                className={`flex items-center gap-3 min-h-8 py-2 text-sm${idx > 0 ? " border-t border-border-2" : ""}`}
-              >
-                <span className="font-mono text-xs text-fg-1">
-                  {shortenAddress(w.address)}
-                </span>
-                {w.chainId && (
-                  <span className="text-xs text-fg-3">
-                    {CHAIN_NAMES[w.chainId] ?? `Chain ${w.chainId}`}
-                  </span>
-                )}
-                {w.isPrimary && (
-                  <span className="text-xs font-semibold text-accent">
-                    Primary
-                  </span>
-                )}
-                {!w.isPrimary && (
-                  <Button
-                    variant="default-tonal"
-                    size="default"
-                    className="ml-auto text-xs px-2 py-0.5"
-                    disabled={walletActionPending === w.id}
-                    onClick={() => {
-                      setWalletActionPending(w.id);
-                      setPrimaryWallet.mutate(w.id);
-                    }}
-                  >
-                    {walletActionPending === w.id ? "…" : "Set primary"}
-                  </Button>
-                )}
+        <div className="px-4 py-3">
+          <div className="flex flex-col gap-2">
+            {walletsLoading ? (
+              <div className="flex items-center min-h-12 py-2 text-sm">
+                <span
+                  className="skeleton"
+                  style={{ width: "100%", height: 16 }}
+                />
+              </div>
+            ) : walletsError ? (
+              <div className="text-xs text-destructive py-3 flex items-center gap-2">
+                Failed to load wallets.{" "}
                 <Button
                   variant="default-tonal"
-                  size="default"
-                  className={`${w.isPrimary ? "ml-auto" : "ml-1.5"} text-xs px-2 py-0.5 text-destructive`}
-                  disabled={walletActionPending === w.id}
-                  onClick={() => {
-                    setWalletActionPending(w.id);
-                    removeWallet.mutate(w.id);
-                  }}
+                  size="sm"
+                  onClick={() =>
+                    queryClient.invalidateQueries({ queryKey: ["wallets"] })
+                  }
                 >
-                  {walletActionPending === w.id ? "…" : "Remove"}
+                  Retry
                 </Button>
               </div>
-            ))
-          )}
+            ) : wallets.length === 0 ? null : (
+              wallets.map((w, idx) => (
+                <div
+                  key={w.id}
+                  className={cn(
+                    "flex items-center gap-3 py-2 px-3 text-sm bg-bg-2 border border-border-2 rounded",
+                    promotedWalletId === w.id && "animate-promoted",
+                  )}
+                >
+                  <span className="text-sm text-fg-1 font-mono">
+                    {shortenAddress(w.address)}
+                  </span>
+                  {w.chainId && (
+                    <span className="text-xs text-fg-3">
+                      {CHAIN_NAMES[w.chainId] ?? `Chain ${w.chainId}`}
+                    </span>
+                  )}
+                  {w.isPrimary && (
+                    <Badge variant="outline-primary" size="sm">
+                      Primary
+                    </Badge>
+                  )}
+                  <div className="ml-auto flex items-center gap-2">
+                    {!w.isPrimary && (
+                      <Button
+                        variant="default-tonal"
+                        size="sm"
+                        disabled={walletActionPending === w.id}
+                        onClick={() => {
+                          setWalletActionPending(w.id);
+                          setPrimaryWallet.mutate(w.id);
+                        }}
+                      >
+                        {setPrimaryWallet.isPending &&
+                        walletActionPending === w.id
+                          ? "Setting…"
+                          : "Set primary"}
+                      </Button>
+                    )}
+                    <Button
+                      variant="danger-tonal"
+                      size="sm"
+                      className="min-w-[76px]"
+                      disabled={walletActionPending === w.id}
+                      onClick={() => {
+                        setWalletActionPending(w.id);
+                        removeWallet.mutate(w.id);
+                      }}
+                    >
+                      {removeWallet.isPending && walletActionPending === w.id
+                        ? "…"
+                        : "Remove"}
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
           <form
-            className="flex gap-2 items-center mt-3 pt-3 border-t border-border-2"
+            className={cn(
+              "flex gap-2 items-center",
+              wallets.length > 0 && "mt-4 pt-4 border-t border-border-2",
+            )}
             onSubmit={handleLinkWallet}
           >
             <label htmlFor="wallet-address" className="sr-only">
@@ -967,150 +999,105 @@ export function Account() {
               type="text"
               placeholder="0x..."
               autoComplete="off"
-              className="flex-1 font-mono text-xs h-8"
+              className="flex-1 font-mono h-7 text-xs"
               value={walletInput}
               onChange={(e) => setWalletInput(e.target.value)}
             />
-            <Button type="submit" disabled={linkWallet.isPending}>
-              {linkWallet.isPending ? "Linking\u2026" : "+ Link wallet"}
+            <Button
+              type="submit"
+              variant="default-tonal"
+              disabled={linkWallet.isPending}
+            >
+              {linkWallet.isPending ? "Linking\u2026" : "Link wallet"}
             </Button>
           </form>
-          {walletError && (
-            <div className="text-xs text-destructive mt-1.5">{walletError}</div>
-          )}
         </div>
       </div>
 
       {/* Fiat Payout */}
-      <FiatPayoutSection token={token} />
+      <FiatPayoutSection />
     </div>
   );
 }
 
 // ─── Fiat Payout Section ─────────────────────────────────────────────────────
 
-function FiatPayoutSection({ token }: { token: string | undefined }) {
-  const { data: status, isLoading } = useQuery<{
-    hasAccount: boolean;
-    isOnboarded: boolean;
-    accountId: string | null;
-  }>({
-    queryKey: ["stripe-connect-status"],
-    queryFn: async () => {
-      const res = await fetch(`${API_BASE}/stripe/connect/status`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to check status");
-      return res.json();
-    },
-    enabled: !!token,
-  });
-
-  const onboardMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch(`${API_BASE}/stripe/connect/onboard`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          returnUrl: window.location.href,
-          refreshUrl: window.location.href,
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || "Failed to start onboarding");
-      }
-      return res.json();
-    },
-    onSuccess: (data: { onboardingUrl: string }) => {
-      window.location.href = data.onboardingUrl;
-    },
-  });
+function FiatPayoutSection() {
+  const [showDetails, setShowDetails] = useState(false);
 
   return (
-    <div className="border border-border-2 rounded mb-6 bg-bg-base overflow-hidden">
-      <div className="text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2 text-fg-1">
-        Fiat Payout
+    <>
+      <div className="border border-border-2 rounded mb-6 bg-bg-base overflow-hidden">
+        <div className="px-4 py-3 border-b border-border-2 bg-bg-2">
+          <div className="text-sm font-semibold text-fg-1">Fiat Payout</div>
+          <p className="text-xs text-fg-3 mt-0.5">
+            Coming soon — receive quest rewards via Stripe.
+          </p>
+        </div>
+        <div className="px-4 py-3 flex items-center justify-between">
+          <span className="text-sm text-fg-3">
+            Stripe Connect integration is under development.
+          </span>
+          <Button
+            variant="default-tonal"
+            size="sm"
+            className="min-w-[72px]"
+            onClick={() => setShowDetails(true)}
+          >
+            More info
+          </Button>
+        </div>
       </div>
-      <div className="px-4 py-2">
-        {isLoading ? (
-          <div className="flex items-center min-h-12 py-2 text-sm">
-            <span className="skeleton" style={{ width: "100%", height: 16 }} />
+
+      <Dialog open={showDetails} onOpenChange={setShowDetails}>
+        <DialogContent className="max-w-xl p-8">
+          {/* Coming Soon banner */}
+          {/* Stripe logo */}
+          <svg
+            width="60"
+            height="25"
+            viewBox="0 0 60 25"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="mb-4"
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M60 12.9C60 8.63 57.97 5.22 54.07 5.22C50.15 5.22 47.78 8.63 47.78 12.87C47.78 17.87 50.55 20.48 54.53 20.48C56.48 20.48 57.97 20.01 59.1 19.34V16.07C57.97 16.67 56.67 17.03 55.03 17.03C53.42 17.03 52 16.47 51.82 14.53H59.97C59.97 14.32 60 13.38 60 12.9ZM51.75 11.6C51.75 9.74 52.82 8.93 54.05 8.93C55.25 8.93 56.27 9.74 56.27 11.6H51.75ZM41.38 5.22C39.75 5.22 38.7 5.99 38.12 6.52L37.92 5.48H34.55V24.65L38.2 23.88L38.22 19.38C38.82 19.82 39.7 20.48 41.35 20.48C44.72 20.48 47.78 17.67 47.78 12.72C47.75 8.18 44.67 5.22 41.38 5.22ZM40.55 16.9C39.42 16.9 38.75 16.5 38.22 15.98L38.2 9.92C38.75 9.34 39.45 8.97 40.55 8.97C42.35 8.97 43.6 10.93 43.6 12.92C43.6 14.97 42.37 16.9 40.55 16.9ZM29.18 4.2L32.85 3.42V0.08L29.18 0.83V4.2ZM29.18 5.48H32.85V20.18H29.18V5.48ZM25.25 6.72L25.02 5.48H21.73V20.18H25.38V9.68C26.25 8.55 27.72 8.77 28.18 8.93V5.48C27.7 5.3 25.95 4.97 25.25 6.72ZM17.88 1.63L14.3 2.38L14.28 16.27C14.28 18.6 16.05 20.5 18.38 20.5C19.65 20.5 20.58 20.27 21.1 19.98V16.63C20.6 16.83 17.85 17.65 17.85 15.32V9.12H21.1V5.48H17.85L17.88 1.63ZM5.1 9.92C5.1 9.3 5.6 9.05 6.45 9.05C7.68 9.05 9.22 9.42 10.45 10.1V6.6C9.1 6.05 7.78 5.82 6.45 5.82C2.9 5.82 0.55 7.72 0.55 10.72C0.55 15.35 7.1 14.63 7.1 16.63C7.1 17.37 6.48 17.62 5.57 17.62C4.22 17.62 2.5 17.07 1.12 16.3V19.85C2.65 20.5 4.2 20.78 5.57 20.78C9.2 20.78 11.7 18.93 11.7 15.9C11.67 10.88 5.1 11.75 5.1 9.92Z"
+              fill="#635BFF"
+            />
+          </svg>
+
+          <DialogHeader align="left" className="border-none px-0 py-0">
+            <DialogTitle className="text-lg font-semibold text-fg-1 flex items-center gap-2">
+              Stripe Payout Account
+              <Badge variant="outline-warning" size="sm">Coming Soon</Badge>
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-fg-3 mt-1 mb-5">
+            Connect your Stripe account to receive fiat rewards from quests.
+          </p>
+
+          {/* Info */}
+          <div className="px-4 py-3 border border-border-2 bg-bg-2">
+            <h4 className="text-sm font-semibold text-fg-1 mb-2">
+              How it works
+            </h4>
+            <p className="text-xs text-fg-3 leading-relaxed mb-2">
+              When you win a fiat-funded quest, the reward is automatically
+              transferred to your Stripe account. From there, Stripe pays out to
+              your bank account on a rolling basis (typically 2-7 business
+              days).
+            </p>
+            <p className="text-xs text-fg-3 leading-relaxed">
+              Stripe handles identity verification and tax compliance. Your
+              information is securely managed by Stripe — ClawQuest never sees
+              your bank details.
+            </p>
           </div>
-        ) : (
-          <>
-            <div className="flex items-center gap-2 text-sm mb-3">
-              <div
-                className={cn(
-                  "w-2 h-2 rounded-full shrink-0",
-                  status?.isOnboarded
-                    ? "bg-success"
-                    : status?.hasAccount
-                      ? "bg-warning"
-                      : "bg-border-heavy",
-                )}
-              />
-              <span className="text-fg-1 text-xs">
-                {status?.isOnboarded
-                  ? "Ready to receive payouts"
-                  : status?.hasAccount
-                    ? "Onboarding incomplete"
-                    : "No Stripe account connected"}
-              </span>
-            </div>
-            {onboardMutation.isError && (
-              <div className="text-xs text-destructive mb-2">
-                {(onboardMutation.error as Error).message}
-              </div>
-            )}
-            <div className="flex gap-2">
-              {!status?.isOnboarded && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-block">
-                      <Button
-                        size="default"
-                        disabled
-                        className="opacity-60 cursor-not-allowed"
-                      >
-                        {status?.hasAccount
-                          ? "Complete Setup"
-                          : "Connect Stripe Account"}
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>Coming Soon</TooltipContent>
-                </Tooltip>
-              )}
-              {status?.isOnboarded && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-block">
-                      <Button
-                        variant="default-tonal"
-                        size="default"
-                        disabled
-                        className="opacity-60 cursor-not-allowed"
-                      >
-                        Open Stripe Dashboard
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>Coming Soon</TooltipContent>
-                </Tooltip>
-              )}
-              <Button variant="default-tonal" size="default" asChild>
-                <Link to="/stripe-connect" className="no-underline">
-                  Details
-                </Link>
-              </Button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

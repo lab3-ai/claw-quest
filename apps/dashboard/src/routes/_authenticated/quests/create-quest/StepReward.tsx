@@ -116,9 +116,6 @@ export function StepReward({
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-fg-1 group-hover:text-primary">Reward</span>
-                        {isDone && <Badge variant="outline-success">Completed</Badge>}
-                        {isActive && <Badge variant="outline-primary">In Progress</Badge>}
-                        {!isDone && !isActive && <Badge variant="outline-muted">Not Started</Badge>}
                     </div>
                     <div className="text-xs text-fg-3 mt-0.5 leading-snug truncate">
                         {!isActive && stepSummary ? stepSummary : "Reward method, network, token, and distribution"}

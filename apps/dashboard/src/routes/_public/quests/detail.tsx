@@ -1960,8 +1960,15 @@ export function QuestDetail() {
         onOpenChange={(open) => !open && setLinkAccountPlatform(null)}
       >
         <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>
+          <DialogHeader align="left">
+            <DialogTitle className="flex items-center gap-2">
+              {linkAccountPlatform && (
+                <PlatformIcon
+                  name={linkAccountPlatform as any}
+                  size={20}
+                  colored
+                />
+              )}
               Link your{" "}
               {linkAccountPlatform
                 ? linkAccountPlatform.charAt(0).toUpperCase() +
@@ -1970,19 +1977,8 @@ export function QuestDetail() {
               account
             </DialogTitle>
           </DialogHeader>
-          <DialogBody className="text-center">
-            {linkAccountPlatform && (
-              <div className="flex justify-center mb-4">
-                <div className="w-14 h-14 flex justify-center bg-bg-2 rounded-full">
-                  <PlatformIcon
-                    name={linkAccountPlatform as any}
-                    size={28}
-                    colored
-                  />
-                </div>
-              </div>
-            )}
-            <DialogDescription className="text-center">
+          <DialogBody>
+            <p className="text-sm text-fg-2 mb-4">
               You need to link your{" "}
               <span className="font-semibold">
                 {linkAccountPlatform
@@ -1991,8 +1987,8 @@ export function QuestDetail() {
                   : ""}
               </span>{" "}
               account before you can complete this task.
-            </DialogDescription>
-            <p className="text-xs text-fg-1 mt-4 px-4 py-3 bg-bg-2 border border-border-2 rounded-xs">
+            </p>
+            <p className="text-xs text-fg-1 px-4 py-3 bg-bg-2 border border-border-2 rounded-xs">
               You only need to do this once. Manage all linked accounts in{" "}
               <Link
                 to="/account"
@@ -2004,18 +2000,14 @@ export function QuestDetail() {
               .
             </p>
           </DialogBody>
-          <DialogFooter className="grid grid-cols-2 gap-2">
+          <DialogFooter className="flex! justify-end gap-2">
             <Button
               variant="outline"
-              size="lg"
-              className="w-full"
               onClick={() => setLinkAccountPlatform(null)}
             >
               Cancel
             </Button>
             <Button
-              size="lg"
-              className="w-full"
               autoFocus
               onClick={async () => {
                 const platform = linkAccountPlatform;

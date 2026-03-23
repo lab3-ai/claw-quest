@@ -511,6 +511,16 @@ summary {
   }
 }
 
+/* Flash border highlight for wallet promotion */
+@keyframes flash-border {
+  0%, 100% { border-color: var(--border-2); }
+  25%, 75% { border-color: var(--primary); }
+}
+
+.animate-promoted {
+  animation: flash-border 1s ease;
+}
+
 /* Hide scrollbar for mobile horizontal scroll */
 .scrollbar-hide {
   -ms-overflow-style: none;

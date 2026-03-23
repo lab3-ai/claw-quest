@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { PlatformIcon } from "@/components/PlatformIcon";
 import {
@@ -17,6 +18,8 @@ import {
   AddLine,
   Edit2Line,
   Delete2Line,
+  SearchLine,
+  CloseLine,
 } from "@mingcute/react";
 import { cn } from "@/lib/utils";
 import type { ClawHubSkill } from "@/hooks/useSkillSearch";
@@ -289,19 +292,16 @@ export function StepTasks({
                 <div className="flex items-center gap-2 text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2">
                   <User3Fill size={16} className="text-(--human-fg)" /> Human
                   Tasks
-                  <Badge variant="outline-primary" size="xs">
+                  <Badge variant="outline-primary" size="sm">
                     Social
                   </Badge>
                   <span className="font-normal text-xs text-fg-3 ml-auto">
                     Actions performed by the operator
                   </span>
                 </div>
-                <div className="p-4">
+                <div className="p-0">
                   {humanTasks.length > 0 && (
-                    <div className="mb-4">
-                      <div className="text-sm font-semibold text-fg-1 mb-2">
-                        Added tasks
-                      </div>
+                    <div className="p-4 border-b border-border-2">
                       {humanTasks.map((task, i) => (
                         <div
                           key={i}
@@ -316,26 +316,31 @@ export function StepTasks({
                               <span className="font-semibold text-fg-1 truncate block">
                                 {task.action}
                               </span>
-                              <span className="text-xs text-fg-3 truncate block mt-0.5">
-                                {task.chips.length > 0
-                                  ? task.chips
-                                      .slice(0, 3)
-                                      .map((c) =>
-                                        task.actionType === "follow_account"
-                                          ? `@${c.replace(/^@/, "")}`
-                                          : c,
-                                      )
-                                      .join(", ") +
-                                    (task.chips.length > 3
-                                      ? ` +${task.chips.length - 3}`
-                                      : "")
-                                  : task.params["content"]
-                                    ? task.params["content"].slice(0, 50) +
-                                      (task.params["content"].length > 50
-                                        ? "…"
+                              {task.chips.length > 0 ||
+                              task.params["content"] ? (
+                                <span className="text-xs text-fg-3 truncate block mt-0.5">
+                                  {task.chips.length > 0
+                                    ? task.chips
+                                        .slice(0, 3)
+                                        .map((c) =>
+                                          task.actionType === "follow_account"
+                                            ? `@${c.replace(/^@/, "")}`
+                                            : c,
+                                        )
+                                        .join(", ") +
+                                      (task.chips.length > 3
+                                        ? ` +${task.chips.length - 3}`
                                         : "")
-                                    : "No data yet — click edit to configure"}
-                              </span>
+                                    : task.params["content"]!.slice(0, 50) +
+                                      (task.params["content"]!.length > 50
+                                        ? "…"
+                                        : "")}
+                                </span>
+                              ) : (
+                                <span className="text-xs text-warning truncate block mt-0.5">
+                                  Not configured — click edit
+                                </span>
+                              )}
                             </div>
                             <Button
                               variant="outline"
@@ -433,10 +438,7 @@ export function StepTasks({
                   )}
 
                   {/* Tab picker for adding new tasks */}
-                  <div className="mb-3">
-                    <div className="text-sm font-semibold text-fg-1 mb-2">
-                      Add a task
-                    </div>
+                  <div className="p-4">
                     <div className="flex border-b border-border-2 mb-3 gap-6">
                       {Object.keys(PLATFORM_ACTIONS).map((p) => (
                         <button
@@ -465,7 +467,7 @@ export function StepTasks({
                           .map((action) => (
                             <div
                               key={action.type}
-                              className="group/row flex items-center justify-between px-3 py-2 bg-bg-1 rounded border border-border-2 text-sm cursor-pointer transition-colors hover:bg-bg-2"
+                              className="group/row flex items-center justify-between px-3 py-2 bg-bg-2/50 rounded border border-border-2 text-sm cursor-pointer transition-colors hover:bg-bg-2"
                               onClick={() =>
                                 onAddHumanTask(activePlatform, action)
                               }
@@ -493,7 +495,7 @@ export function StepTasks({
               <div className="mb-6 border border-border-2 rounded-lg overflow-hidden">
                 <div className="flex items-center gap-2 text-sm font-semibold px-4 py-3 border-b border-border-2 bg-bg-2">
                   <AiFill size={16} className="text-(--agent-fg)" /> Agent Tasks
-                  <Badge variant="outline-primary" size="xs">
+                  <Badge variant="outline-primary" size="sm">
                     Skill
                   </Badge>
                   <span className="font-normal text-xs text-fg-3 ml-auto">
@@ -518,51 +520,43 @@ export function StepTasks({
                       No skills required yet. Search below to add.
                     </div>
                   ) : (
-                    <div className="mt-3">
+                    <div className="mt-2">
                       {requiredSkills.map((skill) => {
                         const isCustom = skill.id.startsWith("http");
                         return (
                           <div
                             key={skill.id}
-                            className="flex items-center gap-3 px-3 py-2 border border-(--skill-border) rounded mb-2 bg-bg-base overflow-hidden"
-                            data-agents={skill.agents}
+                            className="flex items-start gap-4 px-3 py-2 border border-border-2 rounded mb-2 last:mb-0 bg-bg-2/50"
                           >
-                            <div className="size-7 rounded bg-(--skill-bg) flex items-center justify-center text-sm shrink-0">
-                              {isCustom ? "🔗" : "🧩"}
-                            </div>
-                            <div className="flex-1 min-w-0 overflow-hidden">
-                              <div className="text-xs font-semibold text-fg-1 font-mono truncate">
+                            <div className="flex-1 min-w-0">
+                              <span className="font-semibold text-sm text-fg-1 truncate block">
                                 {isCustom
                                   ? skill.name
                                   : `${skill.id}@${skill.version ?? "latest"}`}
-                              </div>
-                              <div className="text-xs text-fg-3 leading-tight truncate">
+                              </span>
+                              <span className="text-xs text-fg-3 truncate block mt-0.5">
                                 {skill.desc}
+                              </span>
+                              <div className="mt-1">
+                                {isCustom ? (
+                                  <Badge variant="outline-muted" size="sm">
+                                    custom
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline-primary" size="sm">
+                                    {skill.agents} agents
+                                  </Badge>
+                                )}
                               </div>
-                              {isCustom && (
-                                <div
-                                  className="text-xs text-primary mt-0.5 truncate font-mono opacity-70"
-                                  title={skill.id}
-                                >
-                                  {skill.id}
-                                </div>
-                              )}
                             </div>
-                            {isCustom ? (
-                              <span className="text-xs font-semibold text-fg-3 bg-bg-3 border border-border-2 px-1.5 py-0.5 rounded whitespace-nowrap self-center">
-                                custom
-                              </span>
-                            ) : (
-                              <span className="text-xs font-semibold text-accent bg-accent-light px-1.5 py-0.5 rounded whitespace-nowrap self-center">
-                                {skill.agents} agents
-                              </span>
-                            )}
-                            <button
-                              className="bg-transparent border-none text-fg-3 text-sm cursor-pointer p-0.5 rounded leading-none hover:text-destructive hover:bg-destructive/10"
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              iconOnly
                               onClick={() => onRemoveSkill(skill.id)}
                             >
-                              ✕
-                            </button>
+                              <Delete2Line size={14} />
+                            </Button>
                           </div>
                         );
                       })}
@@ -571,7 +565,7 @@ export function StepTasks({
 
                   {/* Require verified toggle */}
                   {requiredSkills.length > 0 && (
-                    <label className="flex items-center gap-2 mb-3 cursor-pointer select-none">
+                    <label className="flex items-center gap-2 my-4 cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={requireVerified}
@@ -587,39 +581,42 @@ export function StepTasks({
                     </label>
                   )}
 
-                  <div className="relative mb-3">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-3 text-base pointer-events-none">
-                      🔍
-                    </span>
-                    <input
-                      className="w-full py-2 px-3 pl-[30px] text-sm border border-border-2 rounded bg-bg-base text-fg-1 placeholder:text-fg-3 focus:outline-hidden focus:border-primary focus:ring-[3px] focus:ring-primary/15"
-                      type="text"
-                      placeholder="Search on ClawHub or paste skill URL…"
-                      value={skillSearch}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        onSetSkillSearch(val);
-                        onSetShowSkillResults(true);
-                        onSetUrlFetchError(null);
-                        onSetUrlPreview(null);
-                        if (isSkillUrl(val.trim())) {
-                          onSetUrlFetching(true);
-                          fetchSkillFromUrl(val.trim())
-                            .then((skill) => {
-                              onSetUrlPreview(skill);
-                              if (!skill)
-                                onSetUrlFetchError(
-                                  "Could not parse skill.md from this URL",
-                                );
-                            })
-                            .catch(() =>
-                              onSetUrlFetchError("Failed to fetch URL"),
-                            )
-                            .finally(() => onSetUrlFetching(false));
-                        }
-                      }}
-                      onFocus={() => onSetShowSkillResults(true)}
-                    />
+                  <div className="mb-3">
+                    <div className="relative">
+                      <SearchLine
+                        size={16}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-3 pointer-events-none z-10"
+                      />
+                      <Input
+                        className="pl-9"
+                        type="text"
+                        placeholder="Search on ClawHub or paste skill URL…"
+                        value={skillSearch}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          onSetSkillSearch(val);
+                          onSetShowSkillResults(true);
+                          onSetUrlFetchError(null);
+                          onSetUrlPreview(null);
+                          if (isSkillUrl(val.trim())) {
+                            onSetUrlFetching(true);
+                            fetchSkillFromUrl(val.trim())
+                              .then((skill) => {
+                                onSetUrlPreview(skill);
+                                if (!skill)
+                                  onSetUrlFetchError(
+                                    "Could not parse skill.md from this URL",
+                                  );
+                              })
+                              .catch(() =>
+                                onSetUrlFetchError("Failed to fetch URL"),
+                              )
+                              .finally(() => onSetUrlFetching(false));
+                          }
+                        }}
+                        onFocus={() => onSetShowSkillResults(true)}
+                      />
+                    </div>
 
                     {/* URL-based skill preview */}
                     {showSkillResults &&
@@ -634,12 +631,14 @@ export function StepTasks({
                                   ? "Skill found"
                                   : "Error"}
                             </span>
-                            <span
-                              className="cursor-pointer"
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              iconOnly
                               onClick={() => onSetShowSkillResults(false)}
                             >
-                              ✕ close
-                            </span>
+                              <CloseLine size={14} />
+                            </Button>
                           </div>
                           {urlFetching && (
                             <div className="p-3 text-center text-fg-3 text-xs">
@@ -659,7 +658,7 @@ export function StepTasks({
                               return (
                                 <div
                                   className={cn(
-                                    "flex items-start gap-3 px-3 py-2 border-b border-border-2/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-bg-2/50",
+                                    "flex items-start gap-3 px-3 py-2 border-b border-border-2 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-bg-3",
                                     isAdded &&
                                       "opacity-50 cursor-default bg-bg-3/50",
                                   )}
@@ -695,9 +694,13 @@ export function StepTasks({
                                     </div>
                                   </div>
                                   {isAdded ? (
-                                    <span className="bg-accent-light border border-accent-border text-accent text-xs font-semibold py-1 px-3 rounded whitespace-nowrap self-center">
-                                      ✓ Added
-                                    </span>
+                                    <Badge
+                                      variant="outline-success"
+                                      size="sm"
+                                      className="self-center"
+                                    >
+                                      <CheckFill size={12} /> Added
+                                    </Badge>
                                   ) : (
                                     <button className="bg-transparent border border-(--agent-border) text-(--agent-fg) text-xs font-semibold py-1 px-3 rounded cursor-pointer whitespace-nowrap self-center hover:bg-(--agent-bg)">
                                       + Add
@@ -714,19 +717,21 @@ export function StepTasks({
                       !isSkillUrl(skillSearch.trim()) &&
                       skillSearch.length >= 2 &&
                       (skillSearchResults.length > 0 || skillSearchLoading) && (
-                        <div className="border border-border-2 rounded bg-bg-base overflow-hidden overflow-y-auto mb-3 max-h-[360px]">
+                        <div className="border border-border-2 rounded bg-bg-1 overflow-hidden overflow-y-auto mb-3 max-h-[360px]">
                           <div className="px-3 py-1.5 text-xs text-fg-3 bg-bg-3/50 border-b border-border-2 flex justify-between">
                             <span>
                               {skillSearchLoading
                                 ? `Searching "${skillSearch}"…`
                                 : `${skillSearchResults.length} results for "${skillSearch}"`}
                             </span>
-                            <span
-                              className="cursor-pointer"
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              iconOnly
                               onClick={() => onSetShowSkillResults(false)}
                             >
-                              ✕ close
-                            </span>
+                              <CloseLine size={14} />
+                            </Button>
                           </div>
                           {skillSearchLoading &&
                             skillSearchResults.length === 0 && (
@@ -740,7 +745,7 @@ export function StepTasks({
                               <div
                                 key={s.id}
                                 className={cn(
-                                  "flex items-start gap-3 px-3 py-2 border-b border-border-2/30 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-bg-2/50",
+                                  "flex items-start gap-3 px-4 py-3 border-b border-border-2 cursor-pointer transition-colors overflow-hidden last:border-b-0 hover:bg-bg-2",
                                   isAdded &&
                                     "opacity-50 cursor-default bg-bg-3/50",
                                 )}
@@ -779,9 +784,13 @@ export function StepTasks({
                                   </div>
                                 </div>
                                 {isAdded ? (
-                                  <span className="bg-accent-light border border-accent-border text-accent text-xs font-semibold py-1 px-3 rounded whitespace-nowrap self-center">
-                                    ✓ Added
-                                  </span>
+                                  <Badge
+                                    variant="outline-success"
+                                    size="sm"
+                                    className="self-center"
+                                  >
+                                    <CheckFill size={12} /> Added
+                                  </Badge>
                                 ) : (
                                   <Button
                                     variant="outline"

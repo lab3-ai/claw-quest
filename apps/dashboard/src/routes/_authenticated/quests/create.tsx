@@ -641,7 +641,7 @@ function DiscordRoleFields({
 
   return (
     <>
-      <div className="flex items-center gap-2 px-3 py-2 bg-info/10 border border-info/30 rounded text-xs text-fg-1 mb-2">
+      <div className="flex items-center gap-2 px-4 py-3 bg-bg-2 border border-border-2 rounded text-xs text-fg-2 mb-4">
         <span className="flex-1">
           {botPresent === true && guildName ? (
             <>

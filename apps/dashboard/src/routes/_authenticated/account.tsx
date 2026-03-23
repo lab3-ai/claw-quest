@@ -18,10 +18,12 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { CloseLine } from "@mingcute/react";
 import { PlatformIcon } from "@/components/PlatformIcon";
 import { GitHubIcon } from "@/components/github-icon";
 
@@ -1051,7 +1053,9 @@ function FiatPayoutSection() {
 
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
         <DialogContent className="max-w-xl p-8">
-          {/* Coming Soon banner */}
+          <DialogClose className="absolute top-4 right-4 text-fg-3 hover:text-fg-1 transition-colors">
+            <CloseLine size={20} />
+          </DialogClose>
           {/* Stripe logo */}
           <svg
             width="60"

@@ -45,7 +45,6 @@ import {
   DialogBody,
   DialogFooter,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { QuestTypeBadge, QuestStatusBadge } from "@/components/quest-badges";
 import { Button } from "@/components/ui/button";

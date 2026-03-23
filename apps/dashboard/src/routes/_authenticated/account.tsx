@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/context/AuthContext";
 import { startTelegramLogin } from "@/lib/telegram-oidc";
 import { supabase } from "@/lib/supabase";
@@ -8,11 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageTitle } from "@/components/page-title";
 import { Input } from "@/components/ui/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 import { toast } from "sonner";
@@ -928,7 +922,7 @@ export function Account() {
                 </Button>
               </div>
             ) : wallets.length === 0 ? null : (
-              wallets.map((w, idx) => (
+              wallets.map((w) => (
                 <div
                   key={w.id}
                   className={cn(

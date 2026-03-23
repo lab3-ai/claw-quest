@@ -86,17 +86,7 @@
     --social-fg: #475569;
     --social-bg: rgba(241, 245, 249, 0.6);
 
-    --tone-quest: #FF574B;
-    --tone-quest-dark: #E64A3F;
-    --tone-quest-bg: rgba(255, 87, 75, 0.06);
-    --tone-agent: #FF574B;
-    --tone-agent-dark: #E64A3F;
-    --tone-agent-bg: rgba(255, 87, 75, 0.06);
 
-    --tag-bg: rgba(241, 245, 249, 0.8);
-    --tag-fg: #475569;
-    --code-bg: rgba(15, 23, 42, 0.9);
-    --sidebar-bg: rgba(248, 250, 252, 0.8);
 }
 
 [data-theme="glass"].dark {
@@ -142,11 +132,11 @@
     --accent-hover: #FF574B;
     --accent-light: rgba(255, 87, 75, 0.12);
     --accent-border: rgba(255, 107, 97, 0.3);
-    --accent-fg: #000000;
+    --accent-fg: #ffffff;
 
     --primary: #FF6B61;
     --primary-hover: #FF574B;
-    --primary-fg: #000000;
+    --primary-fg: #ffffff;
 
     --link: #FF6B61;
     --link-visited: #FF8A82;
@@ -175,17 +165,7 @@
     --social-fg: #94a3b8;
     --social-bg: rgba(30, 41, 59, 0.5);
 
-    --tone-quest: #FF6B61;
-    --tone-quest-dark: #FF574B;
-    --tone-quest-bg: rgba(255, 87, 75, 0.1);
-    --tone-agent: #FF6B61;
-    --tone-agent-dark: #FF574B;
-    --tone-agent-bg: rgba(255, 87, 75, 0.1);
 
-    --tag-bg: rgba(51, 65, 85, 0.5);
-    --tag-fg: #94a3b8;
-    --code-bg: rgba(2, 6, 23, 0.9);
-    --sidebar-bg: rgba(15, 23, 42, 0.8);
 }
 
 /* Glass effects — frosted backdrop on overlays & sticky header */

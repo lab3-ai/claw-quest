@@ -12,14 +12,25 @@ const SelectGroup = SelectPrimitive.Group
 
 const SelectValue = SelectPrimitive.Value
 
+const SELECT_SIZES = {
+  xs: "h-6 px-2 text-xs",
+  sm: "h-7 px-3 text-xs",
+  default: "h-8 px-3 text-sm",
+  lg: "h-9 px-4 text-sm",
+  xl: "h-10 px-4 text-sm",
+} as const
+
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & {
+    size?: keyof typeof SELECT_SIZES
+  }
+>(({ className, children, size = "default", ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between rounded border border-border-2 bg-bg-base px-3 py-2 text-sm ring-offset-background data-placeholder:text-fg-3 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "inline-flex w-full items-center justify-between gap-2 rounded-button border border-border-2 bg-transparent font-semibold cursor-pointer transition-all duration-150 data-placeholder:text-fg-3 hover:bg-bg-2 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-bg-base disabled:pointer-events-none disabled:opacity-50 [&>span]:line-clamp-1",
+      SELECT_SIZES[size],
       className
     )}
     {...props}
@@ -118,7 +129,7 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded py-1.5 pl-8 pr-2 text-sm outline-hidden focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50",
+      "relative flex w-full cursor-pointer select-none items-center rounded py-2 pl-8 pr-2 text-sm outline-hidden transition-colors focus:bg-bg-2 focus:text-fg-1 data-disabled:pointer-events-none data-disabled:opacity-50",
       className
     )}
     {...props}

@@ -22,6 +22,7 @@ interface Skill {
 interface StepPreviewProps {
     isActive: boolean
     isFuture: boolean
+    isPrevDone?: boolean
     form: {
         title: string
         description: string
@@ -58,6 +59,7 @@ interface StepPreviewProps {
 export function StepPreview({
     isActive,
     isFuture,
+    isPrevDone = false,
     form,
     humanTasks,
     requiredSkills,
@@ -90,18 +92,21 @@ export function StepPreview({
         : null
 
     return (
-        <div className="relative mb-0 border-none rounded-none">
+        <div className={cn(
+            "relative mb-0 border-none rounded-none",
+            isPrevDone && "before:content-[''] before:absolute before:left-[13px] before:top-0 before:h-7 before:w-0.5 before:bg-success before:z-0"
+        )}>
             <div className="flex items-start gap-3 py-4 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
                 <span className={cn(
-                    "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
+                    "relative z-10 size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
                     isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
                         : "bg-gray-300 shadow-[0_0_0_2px_var(--color-gray-300)]"
                 )}>4</span>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-fg-1 group-hover:text-primary">Preview &amp; Fund</span>
-                        {isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-50 text-warning">In Progress</span>}
-                        {!isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-bg-3 text-fg-3">Not Started</span>}
+                        {isActive && <Badge variant="outline-warning">In Progress</Badge>}
+                        {!isActive && <Badge variant="outline-muted">Not Started</Badge>}
                     </div>
                     <div className="text-xs text-fg-3 mt-0.5 leading-snug truncate">Review your quest and deposit funds</div>
                 </div>
@@ -111,7 +116,7 @@ export function StepPreview({
                 </div>
             </div>
             {isActive && (
-                <div className="pl-10 pb-4"><div className="p-4 border border-border-2 rounded bg-transparent">
+                <div className="pl-10 pb-4"><div className="p-4 sm:p-6 border border-border-2 rounded bg-bg-1">
                     {/* Header badges */}
                     <div className="flex items-center gap-2 mt-2 text-xs text-fg-3 flex-wrap" style={{ marginBottom: 16 }}>
                         <QuestStatusBadge status="draft" />

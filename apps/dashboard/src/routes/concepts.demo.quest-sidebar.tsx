@@ -1,13 +1,9 @@
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { TokenIcon } from "@/components/token-icon"
-import { QuestStatusBadge } from "@/components/quest-badges"
+import { QuestTypeBadge, QuestStatusBadge } from "@/components/quest-badges"
 import { DemoLayout } from "@/components/demo-layout"
 import { cn } from "@/lib/utils"
 import {
-    RunLine,
-    TrophyLine,
-    RandomLine,
     CheckLine,
     Group2Line,
     GiftLine,
@@ -206,22 +202,6 @@ const CASES: SidebarCase[] = [
 
 // ── Sub-components ──
 
-const QUEST_TYPE_ICONS: Record<QuestType, React.ElementType> = {
-    FCFS: RunLine,
-    LEADERBOARD: TrophyLine,
-    LUCKY_DRAW: RandomLine,
-}
-
-function TypeBadge({ type }: { type: QuestType }) {
-    const Icon = QUEST_TYPE_ICONS[type]
-    return (
-        <Badge variant="outline" className="uppercase gap-1">
-            <Icon size={14} />
-            {type.replace("_", " ")}
-        </Badge>
-    )
-}
-
 function SegmentedBar({ filled, total }: { filled: number; total: number }) {
     const pct = total > 0 ? (filled / total) * 100 : 0
     return (
@@ -300,7 +280,7 @@ function RewardDisplay({ c }: { c: SidebarCase }) {
     return (
         <div className="pb-4 text-center border-b border-border-2">
             <div className="flex justify-center mb-2">
-                <TypeBadge type={c.type} />
+                <QuestTypeBadge type={c.type} />
             </div>
             <div className="flex items-center justify-center gap-2 text-2xl font-semibold font-mono">
                 {isLlm ? (

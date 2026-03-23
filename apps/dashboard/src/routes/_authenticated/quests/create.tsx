@@ -1323,6 +1323,7 @@ export function CreateQuest({ editQuestId }: { editQuestId?: string } = {}) {
                         <StepPreview
                             isActive={tab === "preview"}
                             isFuture={TABS.indexOf(tab as Tab) < TABS.indexOf("preview")}
+                            isPrevDone={tabDone.reward}
                             form={{
                                 title: form.title,
                                 description: form.description,

@@ -1,4 +1,4 @@
-import { StarFill, Group2Fill } from "@mingcute/react";
+import { StarFill, Group2Line } from "@mingcute/react";
 import type { Web3SkillItem } from "@/hooks/useWeb3Skills";
 
 /** Semantic colors for skill categories — deterministic by name */
@@ -59,7 +59,7 @@ export function SkillCard({ skill }: { skill: Web3SkillItem }) {
       </div>
 
       {/* Title — text-md matches quest card */}
-      <h3 className="text-md font-semibold leading-snug mb-2 line-clamp-2">
+      <h3 className="text-md font-semibold leading-snug mb-2 line-clamp-2 font-heading">
         {skill.name}
       </h3>
 
@@ -77,12 +77,12 @@ export function SkillCard({ skill }: { skill: Web3SkillItem }) {
           </strong>
         </span>
         <span className="ml-auto flex items-center gap-1">
-          <Group2Fill size={14} />
+          <Group2Line size={14} />
           <span>{formatCount(skill.installs)}</span>
         </span>
         <span className="w-1 h-1 rounded-full bg-border-2" />
         <span className="flex items-center gap-1">
-          <StarFill size={14} style={{ color: "var(--yellow)" }} />
+          <StarFill size={14} className="text-yellow-500" />
           <span>{formatCount(skill.stars)}</span>
         </span>
       </div>

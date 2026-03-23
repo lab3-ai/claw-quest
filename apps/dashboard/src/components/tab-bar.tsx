@@ -41,6 +41,8 @@ interface TabBarProps<
   tabs: TabItem<T>[];
   activeTab: T;
   onTabChange: (tab: T) => void;
+  /** "main" = underline tabs (default), "sub" = smaller pill/chip tabs */
+  variant?: "main" | "sub";
   /** Optional count badge per tab */
   tabCounts?: Partial<Record<T, number>>;
   /** Optional view toggle options (e.g. grid/compact). Hidden on mobile by default */
@@ -84,6 +86,7 @@ export function TabBar<
   tabs,
   activeTab,
   onTabChange,
+  variant = "main",
   tabCounts,
   viewOptions,
   activeView,
@@ -149,9 +152,51 @@ export function TabBar<
     activeSubFilter !== undefined &&
     onSubFilterChange;
 
+  /* ── Sub variant: compact pill/chip tabs ── */
+  if (variant === "sub") {
+    return (
+      <div
+        className={cn(
+          "flex items-center gap-1.5 pb-3 overflow-x-auto scrollbar-hide flex-wrap",
+          className,
+        )}
+      >
+        {tabs.map((t) => {
+          const isActive = activeTab === t.id;
+          const count = tabCounts?.[t.id] ?? 0;
+          return (
+            <button
+              key={t.id}
+              className={cn(
+                "cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 text-xs whitespace-nowrap rounded border transition-colors",
+                isActive
+                  ? "border-fg-1 bg-fg-1 text-bg-1 font-semibold"
+                  : "border-border-2 bg-transparent text-fg-1 hover:text-fg-1 hover:border-fg-3",
+              )}
+              onClick={() => onTabChange(t.id)}
+            >
+              {t.label}
+              {count > 0 && (
+                <span
+                  className={cn(
+                    "text-xs",
+                    isActive ? "opacity-70" : "opacity-50",
+                  )}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  /* ── Main variant: underline tabs ── */
   return (
     <div className={cn("flex flex-col", className)}>
-      <div className="flex items-center gap-3 py-4">
+      <div className="flex items-center gap-3 pt-2 pb-3">
         {/* Scrollable tabs with right fade mask on mobile */}
         <div className="relative flex-1 min-w-0">
           <div
@@ -193,7 +238,10 @@ export function TabBar<
                 >
                   {t.label}
                   {count > 0 && (
-                    <Badge variant={isActive ? "count" : "count-outline"}>
+                    <Badge
+                      variant={isActive ? "count" : "count-outline"}
+                      size="sm"
+                    >
                       {count}
                     </Badge>
                   )}
@@ -258,14 +306,22 @@ export function TabBar<
               <button
                 key={f.id}
                 className={cn(
-                  "cursor-pointer px-3 py-1 text-xs whitespace-nowrap rounded border transition-colors",
+                  "cursor-pointer inline-flex items-center gap-1.5 px-3 py-1 text-xs whitespace-nowrap rounded border transition-colors",
                   activeSubFilter === f.id
                     ? "border-fg-1 bg-fg-1 text-bg-1 font-semibold"
-                    : "border-border-2 bg-transparent text-fg-3 hover:text-fg-1 hover:border-fg-3",
+                    : "border-border-2 bg-transparent text-fg-1 hover:text-fg-1 hover:border-fg-3",
                 )}
                 onClick={() => onSubFilterChange(f.id)}
               >
-                {f.count} {f.label}
+                {f.label}
+                <span
+                  className={cn(
+                    "text-xs",
+                    activeSubFilter === f.id ? "opacity-70" : "opacity-50",
+                  )}
+                >
+                  {f.count}
+                </span>
               </button>
             ) : null,
           )}

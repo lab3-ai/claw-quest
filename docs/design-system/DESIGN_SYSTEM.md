@@ -227,34 +227,6 @@ All actor colors use grayscale to match the monochromatic theme. Light and dark 
 | Discord | `--discord` | `#5865f2` |
 | X/Twitter | `--x-twitter` | `#111111` |
 
-### Tone Colors — brand
-
-| Token | Light | Dark | Use |
-|-------|-------|------|-----|
-| `--tone-quest` | `#ff574b` | `#ff6b61` | Quest-themed foreground |
-| `--tone-quest-dark` | `#e64a3f` | `#ff574b` | Quest-themed hover |
-| `--tone-quest-bg` | `#fff0ef` | `#3d1512` | Quest-themed background |
-| `--tone-agent` | `#ff574b` | `#ff6b61` | Agent-themed foreground |
-| `--tone-agent-dark` | `#e64a3f` | `#ff574b` | Agent-themed hover |
-| `--tone-agent-bg` | `#fff0ef` | `#3d1512` | Agent-themed background |
-
-### Legacy Color Aliases
-
-> Map to new palette for backward compatibility. **Do not use in new code.**
-
-| Token | Hex | Migrate to |
-|-------|-----|-----------|
-| `--green` | `#16a34a` | `--success` |
-| `--green-bg` | `#f0fdf4` | `--success-light` |
-| `--red` | `#ff4444` | `--error` |
-| `--red-bg` | `#fff0f0` | `--error-light` |
-| `--yellow` | `#ffaa00` | `--warning` |
-| `--yellow-bg` | `#fff8e6` | `--warning-light` |
-| `--tag-bg` | `#dcdcdc` | `--bg-4` |
-| `--tag-fg` | `#555555` | `--fg-2` |
-| `--code-bg` | `#1a1a1a` | `--surface-dark` |
-| `--sidebar-bg` | `#e8e8e8` | `--bg-3` |
-
 ---
 
 ## Spacing Scale
@@ -633,7 +605,7 @@ Currently **only Terminal theme is active** (light/dark). Other themes (Glass, B
 
 ### What stays constant across themes
 
-- Brand color: `#FF574B` (accent, primary, link, tone-quest, tone-agent)
+- Brand color: `#FF574B` (accent, primary, link)
 - Semantic colors: success, error, warning, info
 - Typography scale, spacing, z-index, animation tokens
 - Platform colors (Stripe, Telegram, Discord, X)

@@ -511,7 +511,7 @@ function FundingProgress({ quest, session, questId }: { quest: any; session: any
 
             <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
                 <DialogContent>
-                    <DialogHeader>
+                    <DialogHeader showClose>
                         <DialogTitle>Invite a Partner</DialogTitle>
                         <DialogDescription>
                             Share this link. Expires in 7 days, single use.

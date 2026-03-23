@@ -285,7 +285,7 @@ export function QuestList() {
           (sorted.length === 0 ? (
             <div className="py-12 text-center text-fg-3">{emptyMessage}</div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-sm:gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2 max-sm:gap-3">
               {sorted.map((quest) => (
                 <QuestGridCard key={quest.id} quest={quest} />
               ))}
@@ -365,7 +365,11 @@ export function QuestList() {
                           </span>
                         </td>
                         <td className="px-4 py-4 text-xs border-b border-border-2 align-top">
-                          <QuestTypeBadge type={quest.type} />
+                          <QuestTypeBadge
+                            type={quest.type}
+                            size={12}
+                            badgeSize="sm"
+                          />
                         </td>
                         <td className="px-4 py-4 text-xs border-b border-border-2 align-top whitespace-nowrap">
                           {quest.questers > 0 ? (

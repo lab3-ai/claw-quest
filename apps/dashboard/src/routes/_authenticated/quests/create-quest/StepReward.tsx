@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Badge } from "@/components/ui/badge"
+import { CheckFill } from "@mingcute/react"
 import { cn } from "@/lib/utils"
 import { NETWORKS_PRIMARY, NETWORKS_OTHER, NATIVE_TOKENS, TOKEN_CONTRACTS, TOKEN_COLORS, getTokenSymbol, calcLbPayouts } from "./constants"
 
@@ -106,17 +108,17 @@ export function StepReward({
         )}>
             <div className="flex items-start gap-3 py-4 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
                 <span className={cn(
-                    "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
+                    "relative z-10 size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
                     isDone ? "bg-success shadow-[0_0_0_2px_var(--color-green-500)]"
                         : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
                             : "bg-gray-300 shadow-[0_0_0_2px_var(--color-gray-300)]"
-                )}>{isDone ? "\u2713" : "3"}</span>
+                )}>{isDone ? <CheckFill size={12} /> : "3"}</span>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-fg-1 group-hover:text-primary">Reward</span>
-                        {isDone && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-accent-light text-accent">Completed</span>}
-                        {isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-50 text-warning">In Progress</span>}
-                        {!isDone && !isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-bg-3 text-fg-3">Not Started</span>}
+                        {isDone && <Badge variant="outline-success">Completed</Badge>}
+                        {isActive && <Badge variant="outline-warning">In Progress</Badge>}
+                        {!isDone && !isActive && <Badge variant="outline-muted">Not Started</Badge>}
                     </div>
                     <div className="text-xs text-fg-3 mt-0.5 leading-snug truncate">
                         {!isActive && stepSummary ? stepSummary : "Reward method, network, token, and distribution"}
@@ -128,10 +130,10 @@ export function StepReward({
                 </div>
             </div>
             {isActive && (
-                <div className="pl-10 pb-4"><div className="p-4 border border-border-2 rounded bg-transparent">
+                <div className="pl-10 pb-4"><div className="p-4 sm:p-6 border border-border-2 rounded bg-bg-1">
                     {/* Payment Rail */}
-                    <div className="space-y-4 mb-6">
-                        <div className="space-y-1.5 mb-4">
+                    <div className="space-y-6 mb-6">
+                        <div className="flex flex-col gap-2">
                             <Label className="mr-4">Reward Method</Label>
                             <div className="inline-flex border border-border-2 rounded overflow-hidden">
                                 <button
@@ -166,10 +168,10 @@ export function StepReward({
 
                     {/* Network & Token (crypto only) */}
                     {form.rail === "crypto" && (
-                        <div className="space-y-4 mb-6">
+                        <div className="space-y-6 mb-6">
                             <div className="text-sm font-semibold text-fg-1 pb-2 border-b border-border-2 mb-3">Network &amp; Token</div>
                             <div className="flex items-start gap-3">
-                                <div className="flex-1 space-y-1.5 mb-4">
+                                <div className="flex-1 flex flex-col gap-2">
                                     <Label>Network</Label>
                                     <select className="flex h-9 w-full rounded border border-border-2-2 bg-transparent px-3 py-1 text-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring" value={form.network} onChange={e => onFieldChange("network", e.target.value)}>
                                         <optgroup label="Primary">
@@ -180,7 +182,7 @@ export function StepReward({
                                         </optgroup>
                                     </select>
                                 </div>
-                                <div className="flex-1 space-y-1.5 mb-4">
+                                <div className="flex-1 flex flex-col gap-2">
                                     <Label>Token</Label>
                                     <select className="flex h-9 w-full rounded border border-border-2-2 bg-transparent px-3 py-1 text-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring" value={form.token} onChange={e => onFieldChange("token", e.target.value)}>
                                         <optgroup label="Stablecoin">
@@ -207,7 +209,7 @@ export function StepReward({
 
                     {/* Fiat */}
                     {form.rail === "fiat" && (
-                        <div className="space-y-4 mb-6">
+                        <div className="space-y-6 mb-6">
                             <div className="text-sm font-semibold text-fg-1 pb-2 border-b border-border-2 mb-3">Fiat Payment</div>
                             <div className="flex items-center gap-2 px-3 py-2 bg-info-light border border-info rounded text-xs text-fg-1 leading-relaxed mt-2">
                                 <span className="text-sm shrink-0">ℹ️</span>
@@ -227,7 +229,7 @@ export function StepReward({
 
                     {/* LLM Token Reward */}
                     {form.rail === "llm" && (
-                        <div className="space-y-4 mb-6">
+                        <div className="space-y-6 mb-6">
                             <div className="text-sm font-semibold text-fg-1 pb-2 border-b border-border-2 mb-3">LLM Token Reward</div>
                             <div className="space-y-1.5">
                                 <Label>Model {showErr && <span className="text-destructive">*</span>}</Label>
@@ -294,7 +296,7 @@ export function StepReward({
                     )}
 
                     {/* Distribution Method */}
-                    <div className="space-y-4 mb-6">
+                    <div className="space-y-6 mb-6">
                         <div className="text-sm font-semibold text-fg-1 pb-2 border-b border-border-2 mb-3">Distribution Method</div>
                         <div className="flex border border-border-2-2 rounded overflow-hidden">
                             {[
@@ -331,7 +333,7 @@ export function StepReward({
                         <div style={{ marginTop: 12 }}>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {form.rail !== "llm" && (
-                                    <div className="space-y-1.5 mb-4">
+                                    <div className="flex flex-col gap-2">
                                         <Label>Total Reward ({tokenLabel}) <span className="text-destructive">*</span></Label>
                                         <Input
                                             className={cn("font-mono text-xs", totalError && "border-destructive focus-visible:ring-destructive")}
@@ -342,7 +344,7 @@ export function StepReward({
                                         {totalError && <div className="text-xs text-destructive mt-0.5">Total reward must be greater than 0</div>}
                                     </div>
                                 )}
-                                <div className="space-y-1.5 mb-4">
+                                <div className="flex flex-col gap-2">
                                     <Label>
                                         Number of Winners {showErr && <span className="text-destructive">*</span>}
                                         {form.type === "LEADERBOARD" && (
@@ -388,7 +390,7 @@ export function StepReward({
                                 <div className="text-xs text-fg-3 mb-1 leading-snug" style={{ marginBottom: 8 }}>
                                     All eligible submissions enter a raffle. N winners drawn at end.
                                 </div>
-                                <div className="space-y-1.5 mb-4">
+                                <div className="flex flex-col gap-2">
                                     <Label>Draw Time {showErr && <span className="text-destructive">*</span>}</Label>
                                     <input
                                         className={cn("flex h-9 w-full rounded border border-border-2-2 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-fg-3 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", drawTimeError && "border-destructive focus-visible:ring-destructive")}
@@ -412,7 +414,7 @@ export function StepReward({
                                 <div className="text-xs text-fg-3 mb-1 leading-snug" style={{ marginBottom: 8 }}>
                                     All verified submissions ranked by completion time. At quest end, top N get tiered rewards (1st gets more than 2nd, etc.).
                                 </div>
-                                <div className="space-y-1.5 mb-4">
+                                <div className="flex flex-col gap-2">
                                     <Label>Payout Structure ({tokenLabel})</Label>
                                     <div className="text-xs text-fg-3 mb-1 leading-snug">
                                         Auto-generated from total &amp; winners count. Weighted decay: 1st gets most.

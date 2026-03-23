@@ -62,34 +62,34 @@
   --surface-dark-fg: #ffffff;
   --surface-dark-muted: #777777;
 
-  --accent: #ff6b61;
-  --accent-hover: #ff574b;
-  --accent-light: #3d1512;
+  --accent: #ff574b;
+  --accent-hover: #e64a3f;
+  --accent-light: #fff0ef;
   --accent-border: #ff574b;
-  --accent-fg: #000000;
+  --accent-fg: #ffffff;
 
-  --primary: #ff6b61;
-  --primary-hover: #ff574b;
-  --primary-fg: #000000;
+  --primary: #ff574b;
+  --primary-hover: #e64a3f;
+  --primary-fg: #ffffff;
 
   --link: #ff6b61;
   --link-visited: #ff8a82;
 
-  --success: #16a34a;
-  --success-hover: color-mix(in srgb, #16a34a, black 12%);
-  --success-light: color-mix(in srgb, var(--success) 10%, transparent);
+  --success: #22c55e;
+  --success-hover: color-mix(in srgb, #22c55e, black 12%);
+  --success-light: color-mix(in srgb, var(--success) 20%, transparent);
   --success-border: #86efac;
-  --error: #ff4444;
-  --error-hover: color-mix(in srgb, #ff4444, black 12%);
-  --error-light: color-mix(in srgb, var(--error) 10%, transparent);
+  --error: #f43f5e;
+  --error-hover: color-mix(in srgb, #f43f5e, black 12%);
+  --error-light: color-mix(in srgb, var(--error) 20%, transparent);
   --error-border: #ff8888;
-  --warning: #d97706;
+  --warning: #f59e0b;
   --warning-hover: color-mix(in srgb, #f59e0b, black 12%);
-  --warning-light: color-mix(in srgb, var(--warning) 10%, transparent);
+  --warning-light: color-mix(in srgb, var(--warning) 20%, transparent);
   --warning-border: #b45309;
   --info: #4488ff;
   --info-hover: color-mix(in srgb, #4488ff, black 12%);
-  --info-light: color-mix(in srgb, var(--info) 10%, transparent);
+  --info-light: color-mix(in srgb, var(--info) 20%, transparent);
   --info-border: #88bbff;
 
   --human-fg: #a0a0a0;
@@ -104,21 +104,4 @@
   --social-fg: #a0a0a0;
   --social-bg: #1a1a1a;
 
-  --tone-quest: #ff6b61;
-  --tone-quest-dark: #ff574b;
-  --tone-quest-bg: #3d1512;
-  --tone-agent: #ff6b61;
-  --tone-agent-dark: #ff574b;
-  --tone-agent-bg: #3d1512;
-
-  --green: #22c55e;
-  --green-bg: #052e16;
-  --red: #ef4444;
-  --red-bg: #450a0a;
-  --yellow: #eab308;
-  --yellow-bg: #422006;
-  --tag-bg: #262626;
-  --tag-fg: #a0a0a0;
-  --code-bg: #111111;
-  --sidebar-bg: #111111;
 }

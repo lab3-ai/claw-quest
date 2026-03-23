@@ -24,12 +24,12 @@ const TYPE_TOOLTIP: Record<string, string> = {
     LUCKY_DRAW: "Random draw at deadline — all entries have equal chance",
 }
 
-export function QuestTypeBadge({ type, size = 14, className }: { type: string; size?: number; className?: string }) {
+export function QuestTypeBadge({ type, size = 14, badgeSize, className }: { type: string; size?: number; badgeSize?: "xs" | "sm" | "default" | "md" | "lg"; className?: string }) {
     const Icon = TYPE_ICON[type]
     const variant = TYPE_VARIANT[type] ?? "outline"
     const tooltip = TYPE_TOOLTIP[type]
     const badge = (
-        <Badge variant={variant} className={cn("shrink-0 cursor-default", className)}>
+        <Badge variant={variant} size={badgeSize} className={cn("shrink-0 cursor-default", className)}>
             {Icon && <Icon size={size} />}
             {type.replace("_", " ")}
         </Badge>

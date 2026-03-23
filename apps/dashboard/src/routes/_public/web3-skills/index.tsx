@@ -6,7 +6,7 @@ import { SkillCard } from "@/components/web3-skills/skill-card"
 import { SkillFilters } from "@/components/web3-skills/skill-filters"
 import { useWeb3Skills, useWeb3Categories } from "@/hooks/useWeb3Skills"
 import { useAuth } from "@/context/AuthContext"
-import { AddFill } from "@mingcute/react"
+import { AddLine } from "@mingcute/react"
 
 export function Web3SkillsPage() {
   const { isAuthenticated } = useAuth()
@@ -42,7 +42,7 @@ export function Web3SkillsPage() {
   const { data: categories } = useWeb3Categories()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PageTitle
         title="Web3 Skills"
         description="Discover Web3 agent skills for your quests"
@@ -50,7 +50,7 @@ export function Web3SkillsPage() {
           isAuthenticated ? (
             <Button asChild>
               <a href="/web3-skills/submit" className="no-underline">
-                <AddFill size={16} />
+                <AddLine size={16} />
                 Submit Skill
               </a>
             </Button>

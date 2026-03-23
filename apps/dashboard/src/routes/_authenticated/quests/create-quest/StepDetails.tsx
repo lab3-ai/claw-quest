@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import { CheckFill } from "@mingcute/react"
 import { cn } from "@/lib/utils"
 
 interface StepDetailsProps {
@@ -65,17 +67,17 @@ export function StepDetails({
         )}>
             <div className="flex items-start gap-3 py-4 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
                 <span className={cn(
-                    "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
+                    "relative z-10 size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
                     isDone ? "bg-success shadow-[0_0_0_2px_var(--color-green-500)]"
                         : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
                             : "bg-gray-300 shadow-[0_0_0_2px_var(--color-gray-300)]"
-                )}>{isDone ? "\u2713" : "1"}</span>
+                )}>{isDone ? <CheckFill size={12} /> : "1"}</span>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-fg-1 group-hover:text-primary">Quest Details</span>
-                        {isDone && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-accent-light text-accent">Completed</span>}
-                        {isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-50 text-warning">In Progress</span>}
-                        {!isDone && !isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-bg-3 text-fg-3">Not Started</span>}
+                        {isDone && <Badge variant="outline-success">Completed</Badge>}
+                        {isActive && <Badge variant="outline-warning">In Progress</Badge>}
+                        {!isDone && !isActive && <Badge variant="outline-muted">Not Started</Badge>}
                     </div>
                     <div className="text-xs text-fg-3 mt-0.5 leading-snug truncate">
                         {!isActive && stepSummary ? stepSummary : "Title, description, and timing"}
@@ -87,9 +89,9 @@ export function StepDetails({
                 </div>
             </div>
             {isActive && (
-                <div className="pl-10 pb-4"><div className="p-4 border border-border-2 rounded bg-transparent">
-                    <div className="space-y-4 mb-6">
-                        <div className="space-y-1.5 mb-4">
+                <div className="pl-10 pb-4"><div className="p-4 sm:p-6 border border-border-2 rounded bg-bg-1">
+                    <div className="space-y-6 mb-6">
+                        <div className="flex flex-col gap-2">
                             <Label>Title {showErr && <span className="text-destructive">*</span>}</Label>
                             <Input
                                 type="text"
@@ -101,7 +103,7 @@ export function StepDetails({
                             />
                             {titleError && <div className="text-xs text-destructive mt-0.5">Title is required</div>}
                         </div>
-                        <div className="space-y-1.5 mb-4">
+                        <div className="flex flex-col gap-2">
                             <Label>Description {showErr && <span className="text-destructive">*</span>}</Label>
                             <div className="text-xs text-fg-3 mb-1 leading-snug">Agent-readable. Explain the overall quest goal.</div>
                             <Textarea
@@ -114,10 +116,10 @@ export function StepDetails({
                             {descriptionError && <div className="text-xs text-destructive mt-0.5">Description is required</div>}
                         </div>
                     </div>
-                    <div className="space-y-4 mb-6">
+                    <div className="space-y-6 mb-6">
                         <div className="text-sm font-semibold text-fg-1 pb-2 border-b border-border-2 mb-3">Timing</div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="space-y-1.5 mb-4">
+                            <div className="flex flex-col gap-2">
                                 <Label>Start {showErr && <span className="text-destructive">*</span>}</Label>
                                 <input
                                     className={cn("flex h-9 w-full rounded border border-border-2-2 bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-fg-3 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", (startAtError || dateOrderError) && "border-destructive focus-visible:ring-destructive")}
@@ -129,7 +131,7 @@ export function StepDetails({
                                 />
                                 {startAtError && <div className="text-xs text-destructive mt-0.5">Start date is required</div>}
                             </div>
-                            <div className="space-y-1.5 mb-4">
+                            <div className="flex flex-col gap-2">
                                 <Label>End {showErr && <span className="text-destructive">*</span>}</Label>
                                 <input
                                     className={cn("flex h-9 w-full rounded border border-border-2-2 bg-transparent px-3 py-1 text-sm transition-colors placeholder:text-fg-3 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer", (endAtError || dateOrderError) && "border-destructive focus-visible:ring-destructive")}

@@ -42,7 +42,10 @@ export function QuestGridCard({ quest, className }: QuestGridCardProps) {
       to="/quests/$questId"
       params={{ questId: quest.id }}
       className={cn(
-        "group hover-shadow flex flex-col h-full border border-border-2 rounded p-4 max-sm:p-3 no-underline text-fg-1 hover:border-fg-1 bg-bg-1",
+        "group hover-shadow flex flex-col h-full border rounded p-4 max-sm:p-3 no-underline text-fg-1 bg-bg-1",
+        quest.status === "draft"
+          ? "border-dashed border-border-1 hover:border-fg-3"
+          : "border-border-2 hover:border-fg-1",
         className,
       )}
     >
@@ -53,7 +56,7 @@ export function QuestGridCard({ quest, className }: QuestGridCardProps) {
           {quest.rewardAmount.toLocaleString()} {quest.rewardType}
         </span>
         {quest.status === "draft" ? (
-          <Badge variant="filled-muted" className="text-2xs">
+          <Badge variant="filled-muted" size="sm">
             Draft
           </Badge>
         ) : quest.expiresAt ? (
@@ -90,12 +93,13 @@ export function QuestGridCard({ quest, className }: QuestGridCardProps) {
 
       {/* Type badge + Tags (single row, overflow → +N) */}
       <div className="flex gap-1 mb-4 items-center overflow-hidden">
-        <QuestTypeBadge type={quest.type} />
+        <QuestTypeBadge type={quest.type} size={12} badgeSize="sm" />
         {quest.tags &&
           quest.tags.slice(0, 2).map((tag) => (
             <Badge
               key={tag}
               variant="pill"
+              size="sm"
               className="shrink-0 text-fg-3 group-hover:text-fg-1 transition-colors"
             >
               {tag}

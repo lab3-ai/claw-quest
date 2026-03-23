@@ -46,7 +46,7 @@ export function QuestersPopup({ questId, questTitle, onClose }: QuestersPopupPro
     return (
         <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="max-w-2xl p-0 gap-0">
-                <DialogHeader className="px-5 py-4 border-b border-border-2">
+                <DialogHeader showClose>
                     <DialogTitle className="text-sm font-semibold">{questTitle}</DialogTitle>
                     <div className="flex items-center gap-2 mt-1 text-xs text-fg-3">
                         {data && <><strong className="text-fg-1">{data.totalQuesters}</strong> Questers</>}

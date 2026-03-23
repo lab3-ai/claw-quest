@@ -49,7 +49,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                             <TooltipProvider delayDuration={300}>
                                 <AuthProvider>
                                     <InnerApp />
-                                    <Toaster richColors position="top-right" />
+                                    <Toaster richColors position="top-center" />
                                 </AuthProvider>
                             </TooltipProvider>
                         </ThemeProvider>

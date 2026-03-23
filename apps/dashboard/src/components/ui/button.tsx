@@ -10,23 +10,23 @@ const buttonVariants = cva(
     variants: {
       variant: {
         /* Fill: solid bg + 12% darker on hover */
-        default: "bg-foreground text-background hover:bg-fg-2",
+        default: "bg-fg-1 text-bg-1 hover:bg-fg-2",
         primary:
           "border border-transparent bg-primary text-primary-foreground hover:bg-(--primary-hover)",
         danger:
           "bg-destructive text-destructive-foreground hover:bg-(--error-hover)",
-        success: "bg-emerald-600 text-white hover:bg-emerald-700",
-        warning: "bg-amber-500 text-white hover:bg-amber-600",
-        info: "bg-sky-500 text-white hover:bg-sky-600",
+        success: "bg-success text-white hover:bg-(--success-hover)",
+        warning: "bg-warning text-white hover:bg-(--warning-hover)",
+        info: "bg-info text-white hover:bg-(--info-hover)",
         /* Tonal: light bg → slightly darker bg on hover */
-        "default-tonal": "bg-fg-1/10 text-foreground hover:bg-fg-1/20",
+        "default-tonal": "bg-fg-1/10 text-fg-1 hover:bg-fg-1/20",
         "primary-tonal": "bg-primary/12 text-primary hover:bg-primary/20",
         "danger-tonal":
           "bg-destructive/12 text-destructive hover:bg-destructive/20",
         "success-tonal":
-          "bg-emerald-600/12 text-emerald-600 hover:bg-emerald-600/20",
-        "warning-tonal": "bg-amber-500/12 text-amber-500 hover:bg-amber-500/20",
-        "info-tonal": "bg-sky-500/12 text-sky-500 hover:bg-sky-500/20",
+          "bg-success/12 text-success hover:bg-success/20",
+        "warning-tonal": "bg-warning/12 text-warning hover:bg-warning/20",
+        "info-tonal": "bg-info/12 text-info hover:bg-info/20",
         /* Outline: border + bg shift on hover */
         outline: "border border-border-2 bg-transparent hover:bg-bg-2",
         "default-outline":
@@ -36,16 +36,16 @@ const buttonVariants = cva(
         "danger-outline":
           "border border-destructive bg-transparent text-destructive hover:bg-destructive/10",
         "success-outline":
-          "border border-emerald-600 bg-transparent text-emerald-600 hover:bg-emerald-600/10",
+          "border border-success bg-transparent text-success hover:bg-success/10",
         "warning-outline":
-          "border border-amber-500 bg-transparent text-amber-500 hover:bg-amber-500/10",
+          "border border-warning bg-transparent text-warning hover:bg-warning/10",
         "info-outline":
-          "border border-sky-500 bg-transparent text-sky-500 hover:bg-sky-500/10",
+          "border border-info bg-transparent text-info hover:bg-info/10",
         /* Utility */
         secondary:
-          "bg-foreground text-background hover:bg-fg-2" /* @deprecated use "default" */,
+          "bg-fg-1 text-bg-1 hover:bg-fg-2" /* @deprecated use "default" */,
         ghost: "hover:bg-bg-4",
-        link: "text-foreground underline-offset-4 hover:underline",
+        link: "text-fg-1 underline-offset-4 hover:underline",
       },
       size: {
         xs: "h-6 px-2 text-xs",

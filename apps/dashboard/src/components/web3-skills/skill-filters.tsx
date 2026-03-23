@@ -1,5 +1,5 @@
+import { useMemo } from "react"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import {
   Select,
   SelectContent,
@@ -8,16 +8,20 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Search2Fill } from "@mingcute/react"
+import { TabBar, type TabItem } from "@/components/tab-bar"
+
+type SortValue = "popular" | "newest" | "stars"
+type SourceValue = "all" | "clawhub" | "community"
 
 interface SkillFiltersProps {
   search: string
   onSearchChange: (val: string) => void
   category: string | null
   onCategoryChange: (val: string | null) => void
-  sort: "popular" | "newest" | "stars"
-  onSortChange: (val: "popular" | "newest" | "stars") => void
-  source: "all" | "clawhub" | "community"
-  onSourceChange: (val: "all" | "clawhub" | "community") => void
+  sort: SortValue
+  onSortChange: (val: SortValue) => void
+  source: SourceValue
+  onSourceChange: (val: SourceValue) => void
   categories: Array<{ name: string; count: number }>
 }
 
@@ -28,47 +32,24 @@ export function SkillFilters({
   source, onSourceChange,
   categories,
 }: SkillFiltersProps) {
+  const categoryTabs = useMemo<TabItem[]>(() => [
+    { id: "all", label: "All" },
+    ...categories.map((cat) => ({ id: cat.name, label: cat.name })),
+  ], [categories])
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const cat of categories) counts[cat.name] = cat.count
+    return counts
+  }, [categories])
+
   return (
     <div className="space-y-4">
-      {/* Search */}
-      <div className="relative">
-        <Search2Fill size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-3" />
-        <Input
-          placeholder="Search skills..."
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-9"
-        />
-      </div>
-
-      {/* Category pills */}
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-        <Button
-          variant={category === null ? "default" : "outline"}
-          size="sm"
-          onClick={() => onCategoryChange(null)}
-          className="shrink-0"
-        >
-          All
-        </Button>
-        {categories.map((cat) => (
-          <Button
-            key={cat.name}
-            variant={category === cat.name ? "default" : "outline"}
-            size="sm"
-            onClick={() => onCategoryChange(cat.name === category ? null : cat.name)}
-            className="shrink-0"
-          >
-            {cat.name}
-            <span className="ml-1 text-xs opacity-60">{cat.count}</span>
-          </Button>
-        ))}
-      </div>
-
-      {/* Sort + Source */}
-      <div className="flex gap-3">
-        <Select value={sort} onValueChange={(v) => onSortChange(v as typeof sort)}>
-          <SelectTrigger className="w-36">
+      {/* Search + Sort/Source dropdowns */}
+      <div className="flex items-center gap-3">
+        <Select value={sort} onValueChange={(v) => onSortChange(v as SortValue)}>
+          <SelectTrigger size="lg" className="w-auto shrink-0">
+            <span className="text-fg-3 font-normal">Sort:</span>
             <SelectValue placeholder="Sort" />
           </SelectTrigger>
           <SelectContent>
@@ -77,9 +58,9 @@ export function SkillFilters({
             <SelectItem value="stars">Stars</SelectItem>
           </SelectContent>
         </Select>
-
-        <Select value={source} onValueChange={(v) => onSourceChange(v as typeof source)}>
-          <SelectTrigger className="w-36">
+        <Select value={source} onValueChange={(v) => onSourceChange(v as SourceValue)}>
+          <SelectTrigger size="lg" className="w-auto shrink-0">
+            <span className="text-fg-3 font-normal">Source:</span>
             <SelectValue placeholder="Source" />
           </SelectTrigger>
           <SelectContent>
@@ -88,7 +69,25 @@ export function SkillFilters({
             <SelectItem value="community">Community</SelectItem>
           </SelectContent>
         </Select>
+        <div className="relative flex-1">
+          <Search2Fill size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-3" />
+          <Input
+            placeholder="Search skills..."
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-9"
+          />
+        </div>
       </div>
+
+      {/* Category sub-tabs */}
+      <TabBar
+        variant="sub"
+        tabs={categoryTabs}
+        activeTab={category ?? "all"}
+        onTabChange={(id) => onCategoryChange(id === "all" ? null : id)}
+        tabCounts={categoryCounts}
+      />
     </div>
   )
 }

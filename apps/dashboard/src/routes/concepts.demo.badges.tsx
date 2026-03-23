@@ -19,7 +19,7 @@ const PILL_OUTLINE_VARIANTS = [
     { variant: "outline", label: "Outline", desc: "border-2 + bg-2 + text-fg-1" },
     { variant: "outline-success", label: "Outline Success", desc: "border-success/40 + bg-success-light" },
     { variant: "outline-error", label: "Outline Error", desc: "border-error/40 + bg-error-light" },
-    { variant: "outline-primary", label: "Outline Primary", desc: "border-primary/40 + bg-primary/5 + text-fg-1" },
+    { variant: "outline-primary", label: "Outline Primary", desc: "border-primary/40 + bg-primary/10 + text-primary" },
     { variant: "outline-warning", label: "Outline Warning", desc: "border-warning/40 + bg-warning-light" },
     { variant: "outline-strong", label: "Outline Strong", desc: "border-fg-1 + bg-1 + text-fg-1" },
     { variant: "outline-muted", label: "Outline Muted", desc: "border + bg-2 + text-fg-3" },
@@ -30,6 +30,12 @@ const FILLED_VARIANTS = [
     { variant: "filled-error", label: "Filled Error", desc: "bg-error-light + text-error" },
     { variant: "filled-warning", label: "Filled Warning", desc: "bg-warning-light + text-warning" },
     { variant: "filled-muted", label: "Filled Muted", desc: "bg-3 + text-fg-3" },
+] as const
+
+const QUEST_TYPE_VARIANTS = [
+    { variant: "quest-fcfs", label: "FCFS", desc: "border-fg-3/30 + bg-fg-3/8 → primary on hover" },
+    { variant: "quest-leaderboard", label: "LEADERBOARD", desc: "border-fg-3/30 + bg-fg-3/8 → primary on hover" },
+    { variant: "quest-lucky-draw", label: "LUCKY DRAW", desc: "border-fg-3/30 + bg-fg-3/8 → primary on hover" },
 ] as const
 
 const COUNT_VARIANTS = [
@@ -105,6 +111,23 @@ export function BadgesDemo() {
                 </div>
             </Section>
 
+            {/* Quest type badge variants */}
+            <Section title="Quest Type Badge Variants">
+                <p className="text-xs text-fg-3">Dedicated badge variants for quest types. Neutral by default, transitions to primary on card hover (group-hover).</p>
+                <div className="border border-border-2 rounded-lg overflow-hidden">
+                    {QUEST_TYPE_VARIANTS.map(v => (
+                        <VariantRow key={v.variant} variant={v.variant} label={v.label} desc={v.desc} />
+                    ))}
+                </div>
+                <p className="text-xs text-fg-3 mt-2">Hover demo (wrap in <code className="text-accent">group</code>):</p>
+                <div className="group p-4 border border-border-2 rounded-lg bg-bg-1 flex gap-3 cursor-pointer hover:border-fg-1 transition-colors">
+                    {QUEST_TYPE_VARIANTS.map(v => (
+                        <Badge key={v.variant} variant={v.variant as any}>{v.label}</Badge>
+                    ))}
+                    <span className="text-xs text-fg-3 ml-auto">← hover me</span>
+                </div>
+            </Section>
+
             {/* With icons */}
             <Section title="With Icons">
                 <p className="text-xs text-fg-3">Badges composed with MingCute icons for richer semantics.</p>
@@ -118,9 +141,9 @@ export function BadgesDemo() {
             </Section>
 
             {/* Quest Type badges */}
-            <Section title="Quest Type Badges">
+            <Section title="Quest Type Badges (Component)">
                 <p className="text-xs text-fg-3">
-                    <code className="text-accent">{"<QuestTypeBadge>"}</code> — icon + colored text per quest type.
+                    <code className="text-accent">{"<QuestTypeBadge>"}</code> — uses <code className="text-accent">quest-*</code> badge variants + Line icon + tooltip. Single component for all quest type display.
                 </p>
                 <div className="flex flex-wrap gap-6 p-4 border border-border-2 rounded-lg bg-bg-1">
                     {QUEST_TYPES.map(t => (
@@ -177,15 +200,38 @@ export function BadgesDemo() {
                 </div>
             </Section>
 
+            {/* Badge Sizes */}
+            <Section title="Badge Sizes">
+                <p className="text-xs text-fg-3">Size prop controls height, padding, and font size — matching button height scale.</p>
+                <div className="border border-border-2 rounded-lg overflow-hidden">
+                    {(["xs", "sm", "default", "lg"] as const).map(size => (
+                        <div key={size} className="flex items-center gap-4 px-4 py-3 border-t border-border-2 first:border-t-0">
+                            <code className="text-xs text-accent font-semibold w-24 shrink-0">{size}</code>
+                            <Badge variant="filled-success" size={size}>Success</Badge>
+                            <Badge variant="filled-error" size={size}>Error</Badge>
+                            <Badge variant="outline" size={size}>Outline</Badge>
+                            <Badge variant="count" size={size}>12</Badge>
+                            <Badge variant="count-outline" size={size}>8</Badge>
+                            <span className="text-2xs text-fg-3 ml-auto font-mono">
+                                {size === "xs" && "h-4 min-w-4 px-1 text-[10px]"}
+                                {size === "sm" && "h-5 min-w-5 px-1.5 text-2xs"}
+                                {size === "default" && "h-6 min-w-6 px-2 text-2xs"}
+                                {size === "lg" && "h-7 min-w-7 px-2.5 text-xs"}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </Section>
+
             {/* Composition examples */}
             <Section title="Composition Examples">
                 <p className="text-xs text-fg-3">Real-world usage patterns combining badges in context.</p>
                 <div className="grid gap-3">
-                    <div className="p-4 rounded-lg border border-border-2 bg-bg-1 flex flex-col gap-3">
-                        <span className="text-2xs font-semibold text-accent uppercase tracking-wider">Quest card header</span>
+                    <div className="group p-4 rounded-lg border border-border-2 bg-bg-1 flex flex-col gap-3 hover:border-fg-1 transition-colors cursor-pointer">
+                        <span className="text-2xs font-semibold text-accent uppercase tracking-wider">Quest card header (hover to see transition)</span>
                         <div className="flex items-center gap-2 flex-wrap">
                             <Badge variant="outline-primary" className="text-sm font-semibold gap-1.5 px-3 py-1">200 ARB</Badge>
-                            <Badge variant="outline" className="uppercase">FCFS</Badge>
+                            <QuestTypeBadge type="FCFS" />
                             <Badge variant="pill">onchain</Badge>
                             <Badge variant="pill">bridge</Badge>
                         </div>

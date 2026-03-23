@@ -14,10 +14,12 @@ import {
   GiftLine,
   User3Fill,
   AiFill,
-  RunLine,
-  TrophyLine,
-  RandomLine,
   AlertLine,
+  ArrowRightUpLine,
+  Sandglass2Line,
+  TimeLine,
+  CheckLine,
+  CloseCircleLine,
 } from "@mingcute/react";
 import { PlatformIcon } from "@/components/PlatformIcon";
 import {
@@ -28,6 +30,8 @@ import {
 import { TokenIcon } from "@/components/token-icon";
 import { CountdownTimer } from "@/components/countdown-timer";
 import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabase";
+import { startTelegramLogin } from "@/lib/telegram-oidc";
 import { getDiceBearUrl } from "@/components/avatarUtils";
 import { SponsorLogo } from "@/components/sponsor-logo";
 import { SeoHead } from "@/components/seo-head";
@@ -43,9 +47,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { QuestStatusBadge } from "@/components/quest-badges";
+import { QuestTypeBadge, QuestStatusBadge } from "@/components/quest-badges";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { cn } from "@/lib/utils";
 import { QuestGridCard } from "@/components/QuestGridCard";
@@ -1181,13 +1184,13 @@ export function QuestDetail() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="group-hover/task:!border-primary/40 group-hover/task:!bg-primary/10 group-hover/task:!text-primary transition-colors"
+                                    className="min-w-20 group-hover/task:!border-primary/40 group-hover/task:!bg-primary/10 group-hover/task:!text-primary transition-colors"
                                     disabled={isLoading}
                                     onClick={() =>
                                       openVerifyChallenge(skill, quest.id)
                                     }
                                   >
-                                    {isLoading ? "Loading…" : "How to verify →"}
+                                    {isLoading ? "Loading…" : "Verify"}
                                   </Button>
                                 )}
                               </div>
@@ -1343,39 +1346,85 @@ export function QuestDetail() {
             </div>
           )}
 
+          {/* ── My Quest Status card ── */}
+          {isAuthenticated &&
+            (hasAccepted || quest.myParticipation) &&
+            (() => {
+              const pStatus = quest.myParticipation?.status || "in_progress";
+              const completed = quest.myParticipation?.tasksCompleted ?? 0;
+              const total =
+                quest.myParticipation?.tasksTotal ?? quest.tasks?.length ?? 0;
+              const remaining = total - completed;
+
+              const statusConfig: Record<
+                string,
+                {
+                  label: string;
+                  variant:
+                    | "outline-warning"
+                    | "outline-success"
+                    | "outline-error"
+                    | "outline-muted";
+                  icon: React.ElementType;
+                }
+              > = {
+                in_progress: {
+                  label: "In Progress",
+                  variant: "outline-warning",
+                  icon: Sandglass2Line,
+                },
+                submitted: {
+                  label: "Submitted",
+                  variant: "outline-muted",
+                  icon: TimeLine,
+                },
+                completed: {
+                  label: "Completed",
+                  variant: "outline-success",
+                  icon: CheckLine,
+                },
+                failed: {
+                  label: "Failed",
+                  variant: "outline-error",
+                  icon: CloseCircleLine,
+                },
+              };
+              const cfg = statusConfig[pStatus] ?? statusConfig.in_progress;
+              const StatusIcon = cfg.icon;
+
+              return (
+                <div className="border border-border-2 rounded mb-4 bg-bg-1 p-4">
+                  <h3 className="text-2xs font-normal uppercase tracking-widest text-fg-3 mb-3 text-center">
+                    Your Status
+                  </h3>
+                  <div className="text-center">
+                    <Badge variant={cfg.variant} size="md">
+                      <StatusIcon size={14} />
+                      {cfg.label}
+                    </Badge>
+                    {pStatus === "in_progress" && remaining > 0 && (
+                      <div className="text-xs text-fg-3 mt-2">
+                        {remaining} {remaining === 1 ? "task" : "tasks"}{" "}
+                        remaining
+                      </div>
+                    )}
+                    {pStatus === "in_progress" &&
+                      remaining === 0 &&
+                      total > 0 && (
+                        <div className="text-xs text-success mt-2">
+                          All tasks done
+                        </div>
+                      )}
+                  </div>
+                </div>
+              );
+            })()}
+
           <div className="border border-border-2 rounded mb-4 sticky top-[55px] bg-bg-1">
             {/* Reward hero */}
             <div className="p-4 text-center border-b border-border-2">
               <div className="flex justify-center mb-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex">
-                      <Badge
-                        variant="outline"
-                        className="uppercase gap-1 cursor-default"
-                      >
-                        {(() => {
-                          const icons: Record<string, React.ElementType> = {
-                            FCFS: RunLine,
-                            LEADERBOARD: TrophyLine,
-                            LUCKY_DRAW: RandomLine,
-                          };
-                          const Icon = icons[quest.type];
-                          return Icon ? <Icon size={14} /> : null;
-                        })()}
-                        {quest.type.replace("_", " ")}
-                      </Badge>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-60 text-center">
-                    {quest.type === "FCFS" &&
-                      "First Come First Served — first N agents to complete win"}
-                    {quest.type === "LEADERBOARD" &&
-                      "Ranked by score — top performers get rewarded"}
-                    {quest.type === "LUCKY_DRAW" &&
-                      "Random draw at deadline — all entries have equal chance"}
-                  </TooltipContent>
-                </Tooltip>
+                <QuestTypeBadge type={quest.type} badgeSize="md" />
               </div>
               <div className="flex items-center justify-center gap-2 text-2xl font-semibold font-mono">
                 <TokenIcon
@@ -1657,24 +1706,9 @@ export function QuestDetail() {
                   // Already accepted — show status
                   // Use hasAccepted state to avoid flickering when refetching
                   if (hasAccepted || quest.myParticipation) {
-                    // Only show skeleton on initial load, not when refetching after accept
-                    if (isLoading && !hasAccepted) {
-                      return (
-                        <div className="text-center">
-                          <Skeleton className="h-5 w-32 mx-auto mb-1" />
-                          <Skeleton className="h-3 w-24 mx-auto" />
-                        </div>
-                      );
-                    }
                     return (
-                      <div className="text-center">
-                        <div className="text-sm font-semibold text-accent mb-1">
-                          Quest Accepted
-                        </div>
-                        <div className="text-xs text-fg-3">
-                          Status:{" "}
-                          {quest.myParticipation?.status || "in_progress"}
-                        </div>
+                      <div className="text-center text-xs text-fg-3">
+                        Quest accepted
                       </div>
                     );
                   }
@@ -1936,8 +1970,19 @@ export function QuestDetail() {
               account
             </DialogTitle>
           </DialogHeader>
-          <DialogBody>
-            <DialogDescription>
+          <DialogBody className="text-center">
+            {linkAccountPlatform && (
+              <div className="flex justify-center mb-4">
+                <div className="w-14 h-14 flex justify-center bg-bg-2 rounded-full">
+                  <PlatformIcon
+                    name={linkAccountPlatform as any}
+                    size={28}
+                    colored
+                  />
+                </div>
+              </div>
+            )}
+            <DialogDescription className="text-center">
               You need to link your{" "}
               <span className="font-semibold">
                 {linkAccountPlatform
@@ -1947,6 +1992,17 @@ export function QuestDetail() {
               </span>{" "}
               account before you can complete this task.
             </DialogDescription>
+            <p className="text-xs text-fg-1 mt-4 px-4 py-3 bg-bg-2 border border-border-2 rounded-xs">
+              You only need to do this once. Manage all linked accounts in{" "}
+              <Link
+                to="/account"
+                className="underline hover:text-fg-1 transition-colors"
+                onClick={() => setLinkAccountPlatform(null)}
+              >
+                Settings
+              </Link>
+              .
+            </p>
           </DialogBody>
           <DialogFooter className="grid grid-cols-2 gap-2">
             <Button
@@ -1961,12 +2017,41 @@ export function QuestDetail() {
               size="lg"
               className="w-full"
               autoFocus
-              onClick={() => {
-                setLinkAccountPlatform(null);
-                navigate({ to: "/account" });
+              onClick={async () => {
+                const platform = linkAccountPlatform;
+                if (!platform) return;
+                try {
+                  if (platform === "x") {
+                    const res = await fetch(`${API_BASE}/auth/x/authorize`, {
+                      headers: {
+                        Authorization: `Bearer ${session?.access_token}`,
+                      },
+                    });
+                    const { url, state, codeVerifier } = await res.json();
+                    localStorage.setItem("x_code_verifier", codeVerifier);
+                    localStorage.setItem("x_oauth_state", state);
+                    window.location.href = url;
+                  } else if (platform === "discord") {
+                    localStorage.setItem(
+                      "clawquest_linking_provider",
+                      "discord",
+                    );
+                    await supabase.auth.linkIdentity({
+                      provider: "discord",
+                      options: {
+                        redirectTo: `${window.location.origin}/auth/callback`,
+                        scopes: "identify email guilds guilds.members.read",
+                      },
+                    });
+                  } else if (platform === "telegram") {
+                    startTelegramLogin("link");
+                  }
+                } catch {
+                  toast.error(`Failed to link ${platform} account`);
+                }
               }}
             >
-              Go to Settings
+              Link now <ArrowRightUpLine size={14} />
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1982,7 +2067,7 @@ function LlmKeyCard({ apiKey }: { apiKey: string }) {
   const baseUrl = `${llmServerUrl}/v1`;
   const snippet = `import OpenAI from "openai"
 
-const client = new OpenAI({
+const client = new OpenAI({"
   baseURL: "${baseUrl}",
   apiKey: "${apiKey}",
 })

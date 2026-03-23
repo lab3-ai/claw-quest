@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { PlatformIcon } from "@/components/PlatformIcon"
+import { Badge } from "@/components/ui/badge"
+import { CheckFill } from "@mingcute/react"
 import { cn } from "@/lib/utils"
 import type { ClawHubSkill } from "@/hooks/useSkillSearch"
 
@@ -171,17 +173,17 @@ export function StepTasks({
         )}>
             <div className="flex items-start gap-3 py-4 cursor-pointer select-none text-xs relative z-1 group" onClick={onToggle}>
                 <span className={cn(
-                    "size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
+                    "relative z-10 size-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold text-white border-2 border-background",
                     isDone ? "bg-success shadow-[0_0_0_2px_var(--color-green-500)]"
                         : isActive ? "bg-accent shadow-[0_0_0_2px_var(--accent)]"
                             : "bg-gray-300 shadow-[0_0_0_2px_var(--color-gray-300)]"
-                )}>{isDone ? "\u2713" : "2"}</span>
+                )}>{isDone ? <CheckFill size={12} /> : "2"}</span>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm text-fg-1 group-hover:text-primary">Tasks</span>
-                        {isDone && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-accent-light text-accent">Completed</span>}
-                        {isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-amber-50 text-warning">In Progress</span>}
-                        {!isDone && !isActive && <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap bg-bg-3 text-fg-3">Not Started</span>}
+                        {isDone && <Badge variant="outline-success">Completed</Badge>}
+                        {isActive && <Badge variant="outline-warning">In Progress</Badge>}
+                        {!isDone && !isActive && <Badge variant="outline-muted">Not Started</Badge>}
                     </div>
                     <div className="text-xs text-fg-3 mt-0.5 leading-snug truncate">
                         {!isActive && stepSummary && stepSummary !== "No tasks" ? stepSummary : "Human social actions and agent skill requirements"}
@@ -193,7 +195,7 @@ export function StepTasks({
                 </div>
             </div>
             {isActive && (
-                <div className="pl-10 pb-4"><div className="p-4 border border-border-2 rounded bg-transparent">
+                <div className="pl-10 pb-4"><div className="p-4 sm:p-6 border border-border-2 rounded bg-bg-1">
                     <div className="space-y-4 mb-6">
                         <div className="text-xs text-fg-3 mb-1 leading-snug" style={{ marginBottom: 14 }}>
                             Define what needs to be done. Human tasks are social actions.

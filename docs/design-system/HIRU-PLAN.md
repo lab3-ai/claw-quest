@@ -5,14 +5,18 @@
 
 ---
 
-## Current Sprint (March W2)
+## Current Sprint (March W3–4)
 
-| Priority | Task | Team Plan | Status | Blocked by |
-|----------|------|-----------|--------|------------|
-| P0 | Agent detail page — redesign to design system v3 | `260302-0040` frontend-design-improvements | todo | — |
-| P0 | Dashboard fund page — UI polish | `260301-1221` dashboard-fund-page | todo | — |
-| P0 | Animated banner — responsive polish (mobile/tablet breakpoints) | — | in-progress | — |
-| P1 | Frontend design improvements — UX polish pass | `260302-0040` frontend-design-improvements | todo | — |
+| Priority | Task | Status | Notes |
+|----------|------|--------|-------|
+| P0 | **Create Quest — StepReward polish** | todo | Refactor inline styles → DS, section headings, tab selector, form fields |
+| P0 | **Create Quest — StepPreview polish** | todo | Fix border-left Agent Tasks, payment summary, button styling |
+| P0 | **Quest detail — task sections card style** | todo | Apply same card style as create (already fixed create, not detail) |
+| P1 | **StepTasks linter revert fix** | todo | Linter reverted badge size, skill rows, search icon — re-apply |
+| P1 | **DateTimePicker on StepReward** | todo | Lucky Draw drawTime field needs DateTimePicker comp |
+| P1 | Agent detail page — redesign to DS v3 | todo | — |
+| P1 | Dashboard fund page — UI polish | todo | — |
+| P2 | Animated banner — responsive polish | in-progress | — |
 
 ## Next Up
 

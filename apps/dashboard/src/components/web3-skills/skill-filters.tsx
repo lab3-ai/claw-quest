@@ -83,13 +83,22 @@ export function SkillFilters({
       </div>
 
       {/* Category sub-tabs */}
-      <TabBar
-        variant="sub"
-        tabs={categoryTabs}
-        activeTab={category ?? "all"}
-        onTabChange={(id) => onCategoryChange(id === "all" ? null : id)}
-        tabCounts={categoryCounts}
-      />
+      {categories.length === 0 ? (
+        <div className="flex items-center gap-1.5 pb-3 overflow-x-auto scrollbar-hide">
+          <button className="inline-flex items-center px-3 py-1 text-xs whitespace-nowrap rounded border border-fg-1 bg-fg-1 text-bg-1 font-semibold">All</button>
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="h-7 rounded border border-border-2 bg-bg-2 animate-pulse shrink-0" style={{ width: `${60 + (i % 3) * 24}px` }} />
+          ))}
+        </div>
+      ) : (
+        <TabBar
+          variant="sub"
+          tabs={categoryTabs}
+          activeTab={category ?? "all"}
+          onTabChange={(id) => onCategoryChange(id === "all" ? null : id)}
+          tabCounts={categoryCounts}
+        />
+      )}
     </div>
   )
 }

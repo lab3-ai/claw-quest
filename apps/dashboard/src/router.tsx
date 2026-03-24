@@ -20,7 +20,6 @@ import { InputsDemo } from './routes/concepts.demo.inputs'
 import { Dashboard } from './routes/_authenticated/dashboard'
 import { QuestList } from './routes/_authenticated/quests/index'
 import { QuestDetail } from './routes/_public/quests/detail'
-import { QuestDetailV2 } from './routes/_public/quests/detail-v2'
 import { QuestersPage } from './routes/_public/quests/questers'
 import { CreateQuest } from './routes/_authenticated/quests/create'
 import { ClaimQuest } from './routes/_authenticated/quests/claim'
@@ -216,17 +215,6 @@ const questDetailRoute = createRoute({
     component: QuestDetail,
 })
 
-const questDetailV2Route = createRoute({
-    getParentRoute: () => appLayoutRoute,
-    path: '/quests/$questId/v2',
-    validateSearch: (search: Record<string, unknown>): { token?: string; claim?: string } => {
-        const result: { token?: string; claim?: string } = {}
-        if (search.token) result.token = search.token as string
-        if (search.claim) result.claim = search.claim as string
-        return result
-    },
-    component: QuestDetailV2,
-})
 
 const questersRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
@@ -594,7 +582,6 @@ const routeTree = rootRoute.addChildren([
         claimQuestRoute,
         myQuestsRoute,
         questDetailRoute,
-        questDetailV2Route,
         fundQuestRoute,
         fundSuccessRoute,
         fundCancelRoute,

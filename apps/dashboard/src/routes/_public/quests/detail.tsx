@@ -192,7 +192,7 @@ function TaskActionBtn({
 }) {
   if (status === "done")
     return (
-      <Badge variant="filled-success" className="min-w-20 justify-center">
+      <Badge variant="filled-success" className="h-7 min-w-20 justify-center">
         Verified
       </Badge>
     );
@@ -1160,7 +1160,7 @@ export function QuestDetail() {
                               key={idx}
                               className="group/task bg-bg-1 rounded overflow-hidden last:mb-0 px-4 py-3 border-t border-border-2"
                             >
-                              <div className="flex items-center gap-3 text-sm">
+                              <div className="flex items-center gap-2 text-sm">
                                 <TaskCheck status={status} />
                                 <span className="flex-1 font-medium flex items-center gap-2">
                                   Requires skill:
@@ -1175,6 +1175,7 @@ export function QuestDetail() {
                                         ? "filled-success"
                                         : "filled-warning"
                                     }
+                                    className="h-7 px-3"
                                   >
                                     {isVerified ? "Verified" : "Pending"}
                                   </Badge>
@@ -1182,8 +1183,7 @@ export function QuestDetail() {
                                 {!isVerified && (
                                   <Button
                                     size="sm"
-                                    variant="outline"
-                                    className="min-w-20 group-hover/task:!border-primary/40 group-hover/task:!bg-primary/10 group-hover/task:!text-primary transition-colors"
+                                    className="min-w-20 group-hover/task:!bg-primary group-hover/task:!text-primary-foreground transition-colors"
                                     disabled={isLoading}
                                     onClick={() =>
                                       openVerifyChallenge(skill, quest.id)
@@ -2042,7 +2042,7 @@ export function QuestDetail() {
                 }
               }}
             >
-              Link now <ArrowRightUpLine size={14} />
+              Link now
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -496,9 +496,8 @@ export function Account() {
           ) : profileError ? (
             <div className="text-xs text-destructive py-3 flex items-center gap-2">
               Failed to load profile.{" "}
-              <Button
+              <Button size="sm"
                 variant="outline"
-                size="sm"
                 onClick={() =>
                   queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
                 }
@@ -509,35 +508,33 @@ export function Account() {
           ) : (
             <>
               <div className="flex items-center min-h-12 py-2 text-sm gap-2">
-                <span className="max-sm:hidden sm:w-30 shrink-0 text-fg-1 text-sm">
+                <span className="max-sm:hidden sm:w-34 shrink-0 font-normal text-fg-3 text-sm">
                   Display Name
                 </span>
                 <span className="text-fg-1 flex-1 min-w-0 max-sm:flex max-sm:flex-col">
                   {editingField === "displayName" ? (
-                    <span className="flex gap-1.5 items-center flex-wrap">
+                    <span className="flex gap-1.5 items-center flex-wrap sm:flex-wrap sm:justify-end">
                       <input
                         type="text"
                         value={editValue}
                         onChange={(e) => setEditValue(e.target.value)}
                         maxLength={50}
                         placeholder="Your display name"
-                        className="h-7 text-sm px-2 w-full sm:w-45 border border-border-2 rounded bg-bg-base text-fg-1 outline-hidden focus:border-accent"
+                        className="h-7 text-sm px-2 flex-1 min-w-0 sm:w-45 sm:flex-none border border-border-2 rounded bg-bg-base text-fg-1 outline-hidden focus:border-accent"
                         autoFocus
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleSaveEdit();
                           if (e.key === "Escape") setEditingField(null);
                         }}
                       />
-                      <Button
-                        size="sm"
+                      <Button size="sm"
                         onClick={handleSaveEdit}
                         disabled={updateProfile.isPending}
                       >
                         {updateProfile.isPending ? "…" : "Save"}
                       </Button>
-                      <Button
+                      <Button size="sm"
                         variant="outline"
-                        size="sm"
                         onClick={() => setEditingField(null)}
                       >
                         Cancel
@@ -545,15 +542,25 @@ export function Account() {
                     </span>
                   ) : (
                     <>
-                      <span className="sm:hidden text-fg-3 text-xs">Display Name</span>
-                      <span className="truncate">{profile?.displayName || <span className="text-fg-3 italic">Not set</span>}</span>
+                      <span className="sm:hidden text-fg-3 text-xs">
+                        Display Name
+                      </span>
+                      <span
+                        className={cn(
+                          "truncate",
+                          profile?.displayName
+                            ? "font-medium"
+                            : "text-fg-4 font-normal",
+                        )}
+                      >
+                        {profile?.displayName || "Not set"}
+                      </span>
                     </>
                   )}
                 </span>
                 {editingField !== "displayName" && (
-                  <Button
+                  <Button size="sm"
                     variant="outline"
-                    size="sm"
                     className="min-w-[72px] shrink-0"
                     onClick={() => startEdit("displayName")}
                   >
@@ -561,57 +568,67 @@ export function Account() {
                   </Button>
                 )}
               </div>
-              <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 gap-2">
-                <span className="max-sm:hidden sm:w-30 shrink-0 text-fg-1 text-sm">
+              <div className="flex items-start min-h-12 py-2 text-sm border-t border-border-2 gap-2">
+                <span className="max-sm:hidden sm:w-34 shrink-0 font-normal text-fg-3 text-sm pt-0.5">
                   Username
                 </span>
                 <span className="text-fg-1 flex-1 min-w-0 max-sm:flex max-sm:flex-col">
                   {editingField === "username" ? (
-                    <span className="flex gap-1.5 items-center flex-wrap">
-                      <input
-                        type="text"
-                        value={editValue}
-                        onChange={(e) =>
-                          setEditValue(e.target.value.toLowerCase())
-                        }
-                        maxLength={20}
-                        placeholder="username"
-                        className="h-7 text-sm px-2 w-full sm:w-45 border border-border-2 rounded bg-bg-base text-fg-1 outline-hidden focus:border-accent"
-                        autoFocus
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleSaveEdit();
-                          if (e.key === "Escape") setEditingField(null);
-                        }}
-                      />
-                      <Button
-                        size="sm"
-                        onClick={handleSaveEdit}
-                        disabled={updateProfile.isPending}
-                      >
-                        {updateProfile.isPending ? "…" : "Save"}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditingField(null)}
-                      >
-                        Cancel
-                      </Button>
-                      <span className="text-xs text-fg-3 w-full">
+                    <>
+                      <span className="flex gap-1.5 items-center flex-wrap sm:flex-wrap sm:justify-end">
+                        <input
+                          type="text"
+                          value={editValue}
+                          onChange={(e) =>
+                            setEditValue(e.target.value.toLowerCase())
+                          }
+                          maxLength={20}
+                          placeholder="username"
+                          className="h-7 text-sm px-2 flex-1 min-w-0 sm:w-45 sm:flex-none border border-border-2 rounded bg-bg-base text-fg-1 outline-hidden focus:border-accent"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSaveEdit();
+                            if (e.key === "Escape") setEditingField(null);
+                          }}
+                        />
+                        <Button size="sm"
+                          onClick={handleSaveEdit}
+                          disabled={updateProfile.isPending}
+                        >
+                          {updateProfile.isPending ? "…" : "Save"}
+                        </Button>
+                        <Button size="sm"
+                          variant="outline"
+                          onClick={() => setEditingField(null)}
+                        >
+                          Cancel
+                        </Button>
+                      </span>
+                      <span className="block text-xs text-fg-3 mt-1 sm:text-right">
                         3-20 chars, lowercase letters, numbers, hyphens
                       </span>
-                    </span>
+                    </>
                   ) : (
                     <>
-                      <span className="sm:hidden text-fg-3 text-xs">Username</span>
-                      <span className="truncate">{profile?.username ? `@${profile.username}` : <span className="text-fg-3 italic">Not set</span>}</span>
+                      <span className="sm:hidden text-fg-3 text-xs">
+                        Username
+                      </span>
+                      <span
+                        className={cn(
+                          "truncate",
+                          profile?.username
+                            ? "font-medium"
+                            : "text-fg-4 font-normal",
+                        )}
+                      >
+                        {profile?.username ? `@${profile.username}` : "Not set"}
+                      </span>
                     </>
                   )}
                 </span>
                 {editingField !== "username" && (
-                  <Button
+                  <Button size="sm"
                     variant="outline"
-                    size="sm"
                     className="min-w-[72px] shrink-0"
                     onClick={() => startEdit("username")}
                   >
@@ -620,23 +637,37 @@ export function Account() {
                 )}
               </div>
               <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 gap-2">
-                <span className="max-sm:hidden sm:w-30 shrink-0 text-fg-1 text-sm">Email</span>
+                <span className="max-sm:hidden sm:w-34 shrink-0 font-normal text-fg-3 text-sm">
+                  Email
+                </span>
                 <span className="text-fg-1 flex-1 min-w-0 max-sm:flex max-sm:flex-col">
                   <span className="sm:hidden text-fg-3 text-xs">Email</span>
-                  <span className="truncate">
-                    {profile?.email?.match(/^tg_\d+@tg\.clawquest\.ai$/) ? (
-                      <span className="text-fg-3 italic">No email linked</span>
-                    ) : (
-                      (profile?.email ?? supabaseUser?.email ?? "—")
+                  <span
+                    className={cn(
+                      "truncate",
+                      profile?.email &&
+                        !profile.email.match(/^tg_\d+@tg\.clawquest\.ai$/)
+                        ? "font-medium"
+                        : "text-fg-4 font-normal",
                     )}
+                  >
+                    {profile?.email?.match(/^tg_\d+@tg\.clawquest\.ai$/)
+                      ? "No email linked"
+                      : (profile?.email ?? supabaseUser?.email ?? "—")}
                   </span>
                 </span>
               </div>
               <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 gap-2">
-                <span className="max-sm:hidden sm:w-30 shrink-0 text-fg-1 text-sm">Member since</span>
+                <span className="max-sm:hidden sm:w-34 shrink-0 font-normal text-fg-3 text-sm">
+                  Member since
+                </span>
                 <span className="text-fg-1 flex-1 min-w-0 max-sm:flex max-sm:flex-col">
-                  <span className="sm:hidden text-fg-3 text-xs">Member since</span>
-                  <span>{profile?.createdAt ? formatDate(profile.createdAt) : "—"}</span>
+                  <span className="sm:hidden text-fg-3 text-xs">
+                    Member since
+                  </span>
+                  <span className="font-medium">
+                    {profile?.createdAt ? formatDate(profile.createdAt) : "—"}
+                  </span>
                 </span>
               </div>
             </>
@@ -678,29 +709,55 @@ export function Account() {
                     size={16}
                   />
                 </span>
-                <span className="font-semibold min-w-[90px]">
-                  {/* Mobile: show account name when linked, desktop: always show label */}
-                  <span className="sm:hidden">{(isLinked || (isTelegram && telegramLinked)) && detail ? detail : p.label}</span>
-                  <span className="max-sm:hidden">{p.label}</span>
-                </span>
-
-                {/* Detail text: left-aligned after label */}
-                <span className="flex-1 text-sm text-fg-3 max-sm:hidden">
-                  {isTelegram
+                {/* Mobile: stacked label + value */}
+                {(() => {
+                  const linked = isTelegram ? telegramLinked : isLinked;
+                  const text = isTelegram
                     ? telegramLinked
-                      ? (profile?.telegramUsername ? `@${profile.telegramUsername}` : "Linked")
-                      : "Not linked"
+                      ? profile?.telegramUsername
+                        ? `@${profile.telegramUsername}`
+                        : "Linked"
+                      : null
                     : isLinked
-                      ? (detail || "Linked")
-                      : "Not linked"}
-                </span>
+                      ? detail || "Linked"
+                      : null;
+                  return (
+                    <>
+                      <span className="sm:hidden flex-1 flex flex-col min-w-0">
+                        <span className="text-fg-3 text-xs">{p.label}</span>
+                        <span
+                          className={cn(
+                            "truncate",
+                            linked
+                              ? "font-medium text-fg-1"
+                              : "text-fg-4 font-normal",
+                          )}
+                        >
+                          {text || "Not linked"}
+                        </span>
+                      </span>
+                      <span className="max-sm:hidden font-normal text-fg-3 sm:w-26 shrink-0">
+                        {p.label}
+                      </span>
+                      <span
+                        className={cn(
+                          "flex-1 text-sm max-sm:hidden",
+                          linked
+                            ? "font-medium text-fg-1"
+                            : "text-fg-4 font-normal",
+                        )}
+                      >
+                        {text || "Not linked"}
+                      </span>
+                    </>
+                  );
+                })()}
 
                 {/* Action buttons */}
                 {isTelegram ? (
                   telegramLinked ? (
-                    <Button
+                    <Button size="sm"
                       variant="outline"
-                      size="sm"
                       className="min-w-[72px]"
                       disabled={unlinkPending === "telegram"}
                       onClick={() => handleUnlinkTelegram()}
@@ -708,9 +765,7 @@ export function Account() {
                       {unlinkPending === "telegram" ? "Unlinking…" : "Unlink"}
                     </Button>
                   ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <Button size="sm"
                       className="min-w-[72px]"
                       onClick={() => startTelegramLogin("link")}
                     >
@@ -720,18 +775,16 @@ export function Account() {
                 ) : isLinked ? (
                   <span className="flex items-center gap-2">
                     {p.key === "x" && profile?.xId && !profile?.hasXToken && (
-                      <Button
+                      <Button size="sm"
                         variant="outline"
-                        size="sm"
                         disabled={xAuthPending}
                         onClick={handleXReadAccess}
                       >
                         {xAuthPending ? "Redirecting…" : "Authorize"}
                       </Button>
                     )}
-                    <Button
+                    <Button size="sm"
                       variant="outline"
-                      size="sm"
                       className="min-w-[72px]"
                       disabled={!canUnlinkOAuth || unlinkPending === p.key}
                       onClick={() => handleUnlinkProvider(p.key)}
@@ -740,9 +793,7 @@ export function Account() {
                     </Button>
                   </span>
                 ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <Button size="sm"
                     className="min-w-[72px]"
                     disabled={linkPending === p.supabaseProvider}
                     onClick={() => handleLinkProvider(p.supabaseProvider!)}
@@ -772,18 +823,18 @@ export function Account() {
                 <span className="w-5 text-center text-sm shrink-0">
                   {info.icon}
                 </span>
-                <span className="font-semibold min-w-[90px]">{info.label}</span>
+                <span className="font-normal text-fg-3 sm:w-26">
+                  {info.label}
+                </span>
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  {/* <span className="text-success text-sm font-semibold">
-                    Connected
-                  </span> */}
                   {detail && (
-                    <span className="text-fg-1 text-sm">{detail}</span>
+                    <span className="text-fg-1 text-sm font-medium">
+                      {detail}
+                    </span>
                   )}
                 </div>
-                <Button
+                <Button size="sm"
                   variant="outline"
-                  size="sm"
                   className="min-w-[72px]"
                   disabled={
                     !canUnlinkOAuth || unlinkPending === identity.provider
@@ -815,20 +866,42 @@ export function Account() {
             <span className="w-5 flex items-center justify-center shrink-0">
               <GitHubIcon size={16} />
             </span>
-            <span className="font-semibold min-w-[90px]">GitHub</span>
+            {/* Mobile: stacked */}
+            <span className="sm:hidden flex-1 flex flex-col min-w-0">
+              <span className="text-fg-3 text-xs">GitHub</span>
+              <span
+                className={cn(
+                  "truncate",
+                  profile?.githubHandle
+                    ? "font-medium text-fg-1"
+                    : "text-fg-4 font-normal",
+                )}
+              >
+                {profile?.githubHandle
+                  ? `@${profile.githubHandle}`
+                  : "Not linked"}
+              </span>
+            </span>
+            {/* Desktop */}
+            <span className="max-sm:hidden font-normal text-fg-3 sm:w-26 shrink-0">
+              GitHub
+            </span>
+            <span
+              className={cn(
+                "flex-1 text-sm max-sm:hidden",
+                profile?.githubHandle
+                  ? "font-medium text-fg-1"
+                  : "text-fg-4 font-normal",
+              )}
+            >
+              {profile?.githubHandle
+                ? `@${profile.githubHandle}`
+                : "Not linked"}
+            </span>
             {profile?.githubHandle ? (
               <>
-                <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
-                  {/* <span className="text-success text-sm font-semibold">
-                    Connected
-                  </span> */}
-                  <span className="text-fg-1 text-sm font-mono">
-                    @{profile.githubHandle}
-                  </span>
-                </div>
-                <Button
+                <Button size="sm"
                   variant="outline"
-                  size="sm"
                   className="min-w-[72px]"
                   onClick={async () => {
                     try {
@@ -853,11 +926,7 @@ export function Account() {
                 </Button>
               </>
             ) : (
-              <>
-                <div className="flex-1" />
-                <Button
-                  variant="outline"
-                  size="sm"
+              <Button size="sm"
                   className="min-w-[72px]"
                   onClick={() => {
                     const state = crypto.randomUUID();
@@ -871,7 +940,6 @@ export function Account() {
                 >
                   Link
                 </Button>
-              </>
             )}
           </div>
         </div>
@@ -898,9 +966,8 @@ export function Account() {
             ) : walletsError ? (
               <div className="text-xs text-destructive py-3 flex items-center gap-2">
                 Failed to load wallets.{" "}
-                <Button
+                <Button size="sm"
                   variant="outline"
-                  size="sm"
                   onClick={() =>
                     queryClient.invalidateQueries({ queryKey: ["wallets"] })
                   }
@@ -917,7 +984,7 @@ export function Account() {
                     promotedWalletId === w.id && "animate-promoted",
                   )}
                 >
-                  <span className="text-sm text-fg-1 font-mono">
+                  <span className="text-xs text-fg-1 font-mono font-medium">
                     {shortenAddress(w.address)}
                   </span>
                   {w.chainId && (
@@ -932,9 +999,8 @@ export function Account() {
                   )}
                   <div className="ml-auto flex items-center gap-2">
                     {!w.isPrimary && (
-                      <Button
+                      <Button size="sm"
                         variant="outline"
-                        size="sm"
                         disabled={walletActionPending === w.id}
                         onClick={() => {
                           setWalletActionPending(w.id);
@@ -947,9 +1013,8 @@ export function Account() {
                           : "Set primary"}
                       </Button>
                     )}
-                    <Button
-                      variant="danger-tonal"
-                      size="sm"
+                    <Button size="sm"
+                      variant="outline"
                       className="min-w-[76px]"
                       disabled={walletActionPending === w.id}
                       onClick={() => {
@@ -986,11 +1051,7 @@ export function Account() {
               value={walletInput}
               onChange={(e) => setWalletInput(e.target.value)}
             />
-            <Button
-              type="submit"
-              variant="outline"
-              disabled={linkWallet.isPending}
-            >
+            <Button size="sm" type="submit" disabled={linkWallet.isPending}>
               {linkWallet.isPending ? "Linking\u2026" : "Link wallet"}
             </Button>
           </form>
@@ -1021,9 +1082,8 @@ function FiatPayoutSection() {
           <span className="text-sm text-fg-3">
             Stripe Connect integration is under development.
           </span>
-          <Button
+          <Button size="sm"
             variant="outline"
-            size="sm"
             className="min-w-[72px]"
             onClick={() => setShowDetails(true)}
           >

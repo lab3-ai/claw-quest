@@ -135,6 +135,15 @@ function getMissingAccountWarning(task: any, profile: any): string | null {
   return null;
 }
 
+/** Check if user needs to link (not just grant token) for a task platform */
+function needsAccountLink(task: any, profile: any): boolean {
+  if (!profile) return false;
+  if (task.platform === "x" && !profile.xId) return true;
+  if (task.platform === "discord" && !profile.discordId) return true;
+  if (task.platform === "telegram" && !profile.telegramId) return true;
+  return false;
+}
+
 /** Get the external URL for a task based on its actionType and params */
 function getTaskActionUrl(task: any): string | undefined {
   const p = task.params || {};
@@ -1029,12 +1038,8 @@ export function QuestDetail() {
                             label={btnLabel}
                             onClick={() => {
                               if (!hasAccepted) return;
-                              // Check if account is linked for this task's platform
-                              const missingWarning = getMissingAccountWarning(
-                                task,
-                                meProfile,
-                              );
-                              if (missingWarning) {
+                              // Only show link dialog when account is truly NOT linked
+                              if (needsAccountLink(task, meProfile)) {
                                 setLinkAccountPlatform(task.platform);
                                 return;
                               }

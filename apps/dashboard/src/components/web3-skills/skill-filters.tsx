@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Search2Fill } from "@mingcute/react"
+import { Search2Fill, AZSortDescendingLettersLine, Filter2Line } from "@mingcute/react"
 import { TabBar, type TabItem } from "@/components/tab-bar"
 
 type SortValue = "popular" | "newest" | "stars"
@@ -46,11 +46,16 @@ export function SkillFilters({
   return (
     <div className="space-y-4">
       {/* Search + Sort/Source dropdowns */}
-      <div className="flex items-center gap-3 max-sm:flex-wrap">
+      <div className="flex items-center gap-3">
+        {/* Desktop: label + value */}
         <Select value={sort} onValueChange={(v) => onSortChange(v as SortValue)}>
-          <SelectTrigger size="lg" className="w-auto shrink-0">
+          <SelectTrigger size="lg" className="w-auto shrink-0 max-sm:hidden">
             <span className="text-fg-3 font-normal">Sort:</span>
             <SelectValue placeholder="Sort" />
+          </SelectTrigger>
+          {/* Mobile: icon-only */}
+          <SelectTrigger size="lg" className="w-9 h-9 shrink-0 sm:hidden justify-center [&>svg:last-child]:hidden px-0">
+            <AZSortDescendingLettersLine size={16} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="popular">Popular</SelectItem>
@@ -59,9 +64,13 @@ export function SkillFilters({
           </SelectContent>
         </Select>
         <Select value={source} onValueChange={(v) => onSourceChange(v as SourceValue)}>
-          <SelectTrigger size="lg" className="w-auto shrink-0">
+          <SelectTrigger size="lg" className="w-auto shrink-0 max-sm:hidden">
             <span className="text-fg-3 font-normal">Source:</span>
             <SelectValue placeholder="Source" />
+          </SelectTrigger>
+          {/* Mobile: icon-only */}
+          <SelectTrigger size="lg" className="w-9 h-9 shrink-0 sm:hidden justify-center [&>svg:last-child]:hidden px-0">
+            <Filter2Line size={16} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
@@ -69,7 +78,7 @@ export function SkillFilters({
             <SelectItem value="community">Community</SelectItem>
           </SelectContent>
         </Select>
-        <div className="relative flex-1 max-sm:w-full max-sm:basis-full">
+        <div className="relative flex-1">
           <Search2Fill size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-3" />
           <Input
             placeholder="Search skills..."

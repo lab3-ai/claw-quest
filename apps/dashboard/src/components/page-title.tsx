@@ -24,7 +24,7 @@ export function PageTitle({ title, description, actions, border, className, chil
                 )}
                 {children && <div className="mt-2">{children}</div>}
             </div>
-            {actions && <div className="flex gap-2 items-center max-sm:w-full max-sm:justify-end">{actions}</div>}
+            {actions && <div className="flex gap-2 items-center max-sm:w-full max-sm:justify-start">{actions}</div>}
         </div>
     )
 }

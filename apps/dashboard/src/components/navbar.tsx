@@ -23,8 +23,8 @@ import {
   Compass3Fill,
   CodeLine,
   CodeFill,
-  TrophyLine,
-  TrophyFill,
+  // TrophyLine,
+  // TrophyFill,
   Home4Line,
   Home4Fill,
   User3Line,
@@ -52,12 +52,13 @@ const NAV_ITEMS = [
     icon: CodeLine,
     iconActive: CodeFill,
   },
-  {
-    to: "/github-bounties",
-    label: "Bounties",
-    icon: TrophyLine,
-    iconActive: TrophyFill,
-  },
+  // TODO: re-enable bounties when ready
+  // {
+  //   to: "/github-bounties",
+  //   label: "Bounties",
+  //   icon: TrophyLine,
+  //   iconActive: TrophyFill,
+  // },
   {
     to: "/wallet",
     label: "Wallet",

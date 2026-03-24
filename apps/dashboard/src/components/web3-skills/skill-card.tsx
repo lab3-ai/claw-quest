@@ -37,11 +37,17 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(days / 365)}y ago`;
 }
 
-export function SkillCard({ skill }: { skill: Web3SkillItem }) {
+export function SkillCard({ skill, onSelect }: { skill: Web3SkillItem; onSelect?: (slug: string) => void }) {
   return (
     <a
       href={`/web3-skills/${skill.slug}`}
-      className="hover-shadow group flex flex-col rounded border border-border-2 bg-bg-1 p-4 max-sm:p-3 no-underline text-fg-1 hover:border-fg-1"
+      onClick={(e) => {
+        if (onSelect) {
+          e.preventDefault()
+          onSelect(skill.slug)
+        }
+      }}
+      className="hover-shadow group flex flex-col rounded border border-border-2 bg-bg-1 p-4 max-sm:p-3 no-underline text-fg-1 hover:border-fg-1 cursor-pointer"
     >
       {/* Top row: category + time — matches quest card top row spacing */}
       <div className="flex items-center justify-between mb-2">

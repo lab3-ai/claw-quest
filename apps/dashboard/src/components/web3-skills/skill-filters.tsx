@@ -47,15 +47,11 @@ export function SkillFilters({
     <div className="space-y-4">
       {/* Search + Sort/Source dropdowns */}
       <div className="flex items-center gap-3">
-        {/* Desktop: label + value */}
         <Select value={sort} onValueChange={(v) => onSortChange(v as SortValue)}>
-          <SelectTrigger size="lg" className="w-auto shrink-0 max-sm:hidden">
+          <SelectTrigger size="lg" className="shrink-0 w-auto max-sm:w-9 max-sm:h-9 max-sm:justify-center max-sm:px-0 max-sm:[&>svg:last-child]:hidden max-sm:[&>span]:hidden">
             <span className="text-fg-3 font-normal">Sort:</span>
             <SelectValue placeholder="Sort" />
-          </SelectTrigger>
-          {/* Mobile: icon-only */}
-          <SelectTrigger size="lg" className="w-9 h-9 shrink-0 sm:hidden justify-center [&>svg:last-child]:hidden px-0">
-            <AZSortDescendingLettersLine size={16} />
+            <AZSortDescendingLettersLine size={16} className="hidden max-sm:!block" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="popular">Popular</SelectItem>
@@ -64,13 +60,10 @@ export function SkillFilters({
           </SelectContent>
         </Select>
         <Select value={source} onValueChange={(v) => onSourceChange(v as SourceValue)}>
-          <SelectTrigger size="lg" className="w-auto shrink-0 max-sm:hidden">
+          <SelectTrigger size="lg" className="shrink-0 w-auto max-sm:w-9 max-sm:h-9 max-sm:justify-center max-sm:px-0 max-sm:[&>svg:last-child]:hidden max-sm:[&>span]:hidden">
             <span className="text-fg-3 font-normal">Source:</span>
             <SelectValue placeholder="Source" />
-          </SelectTrigger>
-          {/* Mobile: icon-only */}
-          <SelectTrigger size="lg" className="w-9 h-9 shrink-0 sm:hidden justify-center [&>svg:last-child]:hidden px-0">
-            <Filter2Line size={16} />
+            <Filter2Line size={16} className="hidden max-sm:!block" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>

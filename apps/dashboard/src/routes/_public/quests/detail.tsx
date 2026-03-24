@@ -15,10 +15,10 @@ import {
   User3Fill,
   AiFill,
   AlertLine,
-  ArrowRightUpLine,
   Sandglass2Line,
   TimeLine,
   CheckLine,
+  CheckFill,
   CloseCircleLine,
 } from "@mingcute/react";
 import { PlatformIcon } from "@/components/PlatformIcon";
@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/dialog";
 import { QuestTypeBadge, QuestStatusBadge } from "@/components/quest-badges";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { cn } from "@/lib/utils";
 import { QuestGridCard } from "@/components/QuestGridCard";
@@ -100,8 +101,8 @@ function platformLabel(platform: string) {
 function TaskCheck({ status }: { status: string }) {
   if (status === "done")
     return (
-      <span className="w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center text-xs bg-success border-success text-primary-foreground">
-        ✓
+      <span className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center bg-success text-white">
+        <CheckFill className="w-3 h-3" />
       </span>
     );
   if (status === "verifying")
@@ -901,7 +902,7 @@ export function QuestDetail() {
         {/* ── Left: main content ── */}
         <div className="flex flex-col gap-4 flex-1 min-w-0 py-8">
           {/* Description */}
-          <div className="mb-6">
+          <div className="mb-4">
             <h2 className="text-2xs font-normal uppercase tracking-widest text-fg-3 mb-2">
               About this Quest
             </h2>
@@ -1018,6 +1019,59 @@ export function QuestDetail() {
                     );
                     const actionUrl = getTaskActionUrl(task);
 
+                    const hasProofInput =
+                      (task.actionType === "post" ||
+                        task.actionType === "quote_post") &&
+                      hasAccepted &&
+                      !isVerified;
+
+                    const actionBtnEl = (
+                      <TaskActionBtn
+                        status={taskStatus}
+                        disabled={!hasAccepted}
+                        label={btnLabel}
+                        onClick={() => {
+                          if (!hasAccepted) return;
+                          if (needsAccountLink(task, meProfile)) {
+                            setLinkAccountPlatform(task.platform);
+                            return;
+                          }
+                          if (task.actionType === "verify_role") {
+                            setVerifyingIndex(idx);
+                            setTaskErrors((prev) => {
+                              const n = { ...prev };
+                              delete n[idx];
+                              return n;
+                            });
+                            verifyTaskMutation.mutate({ taskIndex: idx });
+                            return;
+                          }
+                          if (!isOpened && actionUrl) {
+                            window.open(actionUrl, "_blank");
+                            setOpenedTasks((prev) => new Set(prev).add(idx));
+                            return;
+                          }
+                          setVerifyingIndex(idx);
+                          setTaskErrors((prev) => {
+                            const n = { ...prev };
+                            delete n[idx];
+                            return n;
+                          });
+                          verifyTaskMutation.mutate({
+                            taskIndex: idx,
+                            proofUrl: proofUrls[idx]?.trim() || undefined,
+                          });
+                        }}
+                      />
+                    );
+
+                    const platformBadgeEl = (
+                      <span className="inline-flex items-center gap-1.5 h-7 px-2 text-2xs text-fg-3 border border-border-2 rounded font-medium uppercase tracking-wider shrink-0">
+                        <PlatformIcon name={task.platform} size={12} />
+                        {platformLabel(task.platform)}
+                      </span>
+                    );
+
                     return (
                       <div
                         key={idx}
@@ -1028,74 +1082,30 @@ export function QuestDetail() {
                           <span className="flex-1 font-medium">
                             {task.label}
                           </span>
-                          <span className="inline-flex items-center gap-1.5 h-7 px-2 text-2xs text-fg-3 border border-border-2 rounded font-medium uppercase tracking-wider shrink-0">
-                            <PlatformIcon name={task.platform} size={12} />
-                            {platformLabel(task.platform)}
-                          </span>
-                          <TaskActionBtn
-                            status={taskStatus}
-                            disabled={!hasAccepted}
-                            label={btnLabel}
-                            onClick={() => {
-                              if (!hasAccepted) return;
-                              // Only show link dialog when account is truly NOT linked
-                              if (needsAccountLink(task, meProfile)) {
-                                setLinkAccountPlatform(task.platform);
-                                return;
-                              }
-                              // verify_role: always trigger verify directly
-                              if (task.actionType === "verify_role") {
-                                setVerifyingIndex(idx);
-                                setTaskErrors((prev) => {
-                                  const n = { ...prev };
-                                  delete n[idx];
-                                  return n;
-                                });
-                                verifyTaskMutation.mutate({ taskIndex: idx });
-                                return;
-                              }
-                              // First click: open external link, mark as opened
-                              if (!isOpened && actionUrl) {
-                                window.open(actionUrl, "_blank");
-                                setOpenedTasks((prev) =>
-                                  new Set(prev).add(idx),
-                                );
-                                return;
-                              }
-                              // Second click (Verify): verify only this task
-                              setVerifyingIndex(idx);
-                              setTaskErrors((prev) => {
-                                const n = { ...prev };
-                                delete n[idx];
-                                return n;
-                              });
-                              verifyTaskMutation.mutate({
-                                taskIndex: idx,
-                                proofUrl: proofUrls[idx]?.trim() || undefined,
-                              });
-                            }}
-                          />
+                          {/* Show badge + button inline when no proof input */}
+                          {!hasProofInput && platformBadgeEl}
+                          {!hasProofInput && actionBtnEl}
                         </div>
-                        {/* Proof URL input for post/quote_post */}
-                        {(task.actionType === "post" ||
-                          task.actionType === "quote_post") &&
-                          hasAccepted &&
-                          !isVerified && (
-                            <div className="pt-1 pl-6">
-                              <input
-                                type="url"
-                                className="w-full px-2 py-1.5 text-xs border border-border-2 rounded bg-bg-base text-fg-1 focus:border-accent focus:outline-hidden"
-                                placeholder="Paste your tweet URL here..."
-                                value={proofUrls[idx] || ""}
-                                onChange={(e) =>
-                                  setProofUrls((prev) => ({
-                                    ...prev,
-                                    [idx]: e.target.value,
-                                  }))
-                                }
-                              />
-                            </div>
-                          )}
+                        {/* Proof input row: input + badge + button on same line */}
+                        {hasProofInput && (
+                          <div className="flex items-center gap-2 pt-2 pl-6">
+                            <Input
+                              type="url"
+                              inputSize="md"
+                              className="flex-1"
+                              placeholder="Paste your tweet URL here..."
+                              value={proofUrls[idx] || ""}
+                              onChange={(e) =>
+                                setProofUrls((prev) => ({
+                                  ...prev,
+                                  [idx]: e.target.value,
+                                }))
+                              }
+                            />
+                            {platformBadgeEl}
+                            {actionBtnEl}
+                          </div>
+                        )}
                         {hasFailed && (
                           <div className="text-xs text-error mt-1 pl-6">
                             {taskErrors[idx]}

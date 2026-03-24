@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -86,22 +86,21 @@ const STEPS = [
 
 function VerifiedScreen({ questId }: { questId: string | null }) {
   const navigate = useNavigate();
-  const [progress, setProgress] = useState(0);
+  const REDIRECT_SECONDS = 5;
+  const [secondsLeft, setSecondsLeft] = useState(REDIRECT_SECONDS);
 
   useEffect(() => {
-    const DURATION = 2500;
-    const TICK = 30;
-    let elapsed = 0;
+    if (!questId) return;
     const id = setInterval(() => {
-      elapsed += TICK;
-      setProgress(Math.min((elapsed / DURATION) * 100, 100));
-      if (elapsed >= DURATION) {
-        clearInterval(id);
-        if (questId) {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(id);
           navigate({ to: "/quests/$questId", params: { questId } });
+          return 0;
         }
-      }
-    }, TICK);
+        return prev - 1;
+      });
+    }, 1000);
     return () => clearInterval(id);
   }, [questId, navigate]);
 
@@ -159,17 +158,16 @@ function VerifiedScreen({ questId }: { questId: string | null }) {
         </p>
       </div>
 
-      <div className="cq-fadein2 w-full space-y-1.5">
-        <div className="h-2 w-full bg-bg-3 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-success rounded-full transition-none"
-            style={{ width: `${progress}%` }}
-          />
+      {questId && (
+        <div className="cq-fadein2 text-center space-y-2">
+          <p className="text-xs text-fg-3">
+            Redirecting in {secondsLeft}s…{" "}
+            <Link to="/quests/$questId" params={{ questId }} className="text-accent hover:underline">
+              Go now
+            </Link>
+          </p>
         </div>
-        <p className="text-xs text-fg-3 text-center mt-2">
-          {questId ? "Redirecting to your quest…" : "Verification complete"}
-        </p>
-      </div>
+      )}
     </div>
   );
 }
@@ -240,6 +238,7 @@ export function VerifyChallenge({ token }: { token: string }) {
   }
 
   // --- Verified state ---
+  // --- Verified state ---
   if (verifiedQuestId !== false) {
     return <VerifiedScreen questId={verifiedQuestId} />;
   }
@@ -308,7 +307,7 @@ export function VerifyChallenge({ token }: { token: string }) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded border border-accent/30 bg-accent-light flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded border border-accent/30 bg-accent/10 flex items-center justify-center shrink-0">
                 <TerminalFill className="w-4 h-4 text-accent" />
               </div>
               <h1 className="text-2xl font-semibold text-fg-1 font-heading">
@@ -380,7 +379,7 @@ export function VerifyChallenge({ token }: { token: string }) {
               key={i}
               className="flex flex-col items-start gap-2 rounded border border-border-2 bg-bg-1 px-4 py-3"
             >
-              <div className="px-2 w-auto h-6 rounded border border-accent/30 bg-accent-light flex items-center justify-center shrink-0 mt-0.5">
+              <div className="px-2 w-auto h-6 rounded border border-accent/30 bg-accent/10 flex items-center justify-center shrink-0 mt-0.5">
                 <span className="text-2xs font-medium text-accent">
                   Step {i + 1}
                 </span>

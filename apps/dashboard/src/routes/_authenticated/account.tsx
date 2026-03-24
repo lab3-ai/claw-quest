@@ -684,10 +684,10 @@ export function Account() {
                   telegramLinked ? (
                     <>
                       <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
-                        <span className="text-success text-sm font-semibold">
+                        {/* <span className="text-success text-sm font-semibold">
                           Connected
-                        </span>
-                        <span className="text-fg-3 text-sm">
+                        </span> */}
+                        <span className="text-fg-1 text-sm">
                           {profile?.telegramUsername
                             ? `@${profile.telegramUsername}`
                             : ""}
@@ -719,11 +719,11 @@ export function Account() {
                 ) : isLinked ? (
                   <>
                     <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
-                      <span className="text-success text-sm font-semibold">
+                      {/* <span className="text-success text-sm font-semibold">
                         Connected
-                      </span>
+                      </span> */}
                       {detail && (
-                        <span className="text-fg-3 text-sm">{detail}</span>
+                        <span className="text-fg-1 text-sm">{detail}</span>
                       )}
                       {/* X read access button: show when X linked but no read token yet */}
                       {p.key === "x" && profile?.xId && !profile?.hasXToken && (
@@ -787,11 +787,11 @@ export function Account() {
                 </span>
                 <span className="font-semibold min-w-[90px]">{info.label}</span>
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <span className="text-success text-sm font-semibold">
+                  {/* <span className="text-success text-sm font-semibold">
                     Connected
-                  </span>
+                  </span> */}
                   {detail && (
-                    <span className="text-fg-3 text-sm">{detail}</span>
+                    <span className="text-fg-1 text-sm">{detail}</span>
                   )}
                 </div>
                 <Button
@@ -832,10 +832,10 @@ export function Account() {
             {profile?.githubHandle ? (
               <>
                 <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
-                  <span className="text-success text-sm font-semibold">
+                  {/* <span className="text-success text-sm font-semibold">
                     Connected
-                  </span>
-                  <span className="text-fg-3 text-sm font-mono">
+                  </span> */}
+                  <span className="text-fg-1 text-sm font-mono">
                     @{profile.githubHandle}
                   </span>
                 </div>
@@ -1070,7 +1070,9 @@ function FiatPayoutSection() {
           <DialogHeader align="left" className="border-none px-0 py-0">
             <DialogTitle className="text-lg font-semibold text-fg-1 flex items-center gap-2">
               Stripe Payout Account
-              <Badge variant="outline-warning" size="sm">Coming Soon</Badge>
+              <Badge variant="outline-warning" size="sm">
+                Coming Soon
+              </Badge>
             </DialogTitle>
           </DialogHeader>
           <p className="text-sm text-fg-3 mt-1 mb-5">

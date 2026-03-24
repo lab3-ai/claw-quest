@@ -23,14 +23,13 @@ const buttonVariants = cva(
         "primary-tonal": "bg-primary/12 text-primary hover:bg-primary/20",
         "danger-tonal":
           "bg-destructive/12 text-destructive hover:bg-destructive/20",
-        "success-tonal":
-          "bg-success/12 text-success hover:bg-success/20",
+        "success-tonal": "bg-success/12 text-success hover:bg-success/20",
         "warning-tonal": "bg-warning/12 text-warning hover:bg-warning/20",
         "info-tonal": "bg-info/12 text-info hover:bg-info/20",
         /* Outline: border + bg shift on hover */
-        outline: "border border-border-2 bg-transparent hover:bg-bg-2",
+        outline: "border border-border-2 bg-transparent hover:bg-fg-1/5",
         "default-outline":
-          "border border-border-2 bg-transparent hover:bg-bg-2",
+          "border border-border-2 bg-transparent hover:bg-fg-1/5",
         "primary-outline":
           "border border-primary bg-transparent text-primary hover:bg-primary/10",
         "danger-outline":

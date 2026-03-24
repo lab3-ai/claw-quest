@@ -968,10 +968,10 @@ export function QuestDetail() {
                       return (
                         <Link
                           to="/account"
-                          className="text-xs mb-3 mx-4 flex items-center gap-1.5 px-4 py-2.5 bg-warning-light text-warning border border-warning/20 rounded no-underline hover:bg-warning/15 transition-colors"
+                          className="text-xs mb-3 mx-4 flex items-center gap-3 px-4 py-2.5 bg-warning-light text-warning border border-warning/20 rounded no-underline hover:bg-warning/15 transition-colors"
                         >
                           <AlertLine
-                            size={14}
+                            size={20}
                             className="shrink-0 text-warning"
                           />
                           <span className="flex-1">

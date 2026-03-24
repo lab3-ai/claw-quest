@@ -17,7 +17,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CloseLine } from "@mingcute/react";
+import { CloseLine, ArrowLeftLine } from "@mingcute/react";
+import { useRouter } from "@tanstack/react-router";
 import { PlatformIcon } from "@/components/PlatformIcon";
 import { GitHubIcon } from "@/components/github-icon";
 
@@ -88,6 +89,7 @@ const PROVIDER_LABELS: Record<string, { label: string; icon: string }> = {
 export function Account() {
   const { session, user: supabaseUser } = useAuth();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const token = session?.access_token;
 
   const [walletInput, setWalletInput] = useState("");
@@ -464,6 +466,15 @@ export function Account() {
 
   return (
     <div className="max-w-3xl mx-auto">
+      {new URLSearchParams(window.location.search).has("from") && (
+        <button
+          onClick={() => router.history.back()}
+          className="flex items-center gap-1.5 text-xs text-fg-3 hover:text-accent transition-colors cursor-pointer"
+        >
+          <ArrowLeftLine className="w-3.5 h-3.5" />
+          Go back
+        </button>
+      )}
       <PageTitle title="Account" className="mb-4" />
 
       {/* Profile */}
@@ -496,7 +507,8 @@ export function Account() {
           ) : profileError ? (
             <div className="text-xs text-destructive py-3 flex items-center gap-2">
               Failed to load profile.{" "}
-              <Button size="sm"
+              <Button
+                size="sm"
                 variant="outline"
                 onClick={() =>
                   queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
@@ -527,13 +539,15 @@ export function Account() {
                           if (e.key === "Escape") setEditingField(null);
                         }}
                       />
-                      <Button size="sm"
+                      <Button
+                        size="sm"
                         onClick={handleSaveEdit}
                         disabled={updateProfile.isPending}
                       >
                         {updateProfile.isPending ? "…" : "Save"}
                       </Button>
-                      <Button size="sm"
+                      <Button
+                        size="sm"
                         variant="outline"
                         onClick={() => setEditingField(null)}
                       >
@@ -559,7 +573,8 @@ export function Account() {
                   )}
                 </span>
                 {editingField !== "displayName" && (
-                  <Button size="sm"
+                  <Button
+                    size="sm"
                     variant="outline"
                     className="min-w-[72px] shrink-0"
                     onClick={() => startEdit("displayName")}
@@ -591,13 +606,15 @@ export function Account() {
                             if (e.key === "Escape") setEditingField(null);
                           }}
                         />
-                        <Button size="sm"
+                        <Button
+                          size="sm"
                           onClick={handleSaveEdit}
                           disabled={updateProfile.isPending}
                         >
                           {updateProfile.isPending ? "…" : "Save"}
                         </Button>
-                        <Button size="sm"
+                        <Button
+                          size="sm"
                           variant="outline"
                           onClick={() => setEditingField(null)}
                         >
@@ -627,7 +644,8 @@ export function Account() {
                   )}
                 </span>
                 {editingField !== "username" && (
-                  <Button size="sm"
+                  <Button
+                    size="sm"
                     variant="outline"
                     className="min-w-[72px] shrink-0"
                     onClick={() => startEdit("username")}
@@ -756,7 +774,8 @@ export function Account() {
                 {/* Action buttons */}
                 {isTelegram ? (
                   telegramLinked ? (
-                    <Button size="sm"
+                    <Button
+                      size="sm"
                       variant="outline"
                       className="min-w-[72px]"
                       disabled={unlinkPending === "telegram"}
@@ -765,7 +784,8 @@ export function Account() {
                       {unlinkPending === "telegram" ? "Unlinking…" : "Unlink"}
                     </Button>
                   ) : (
-                    <Button size="sm"
+                    <Button
+                      size="sm"
                       className="min-w-[72px]"
                       onClick={() => startTelegramLogin("link")}
                     >
@@ -775,7 +795,8 @@ export function Account() {
                 ) : isLinked ? (
                   <span className="flex items-center gap-2">
                     {p.key === "x" && profile?.xId && !profile?.hasXToken && (
-                      <Button size="sm"
+                      <Button
+                        size="sm"
                         variant="outline"
                         disabled={xAuthPending}
                         onClick={handleXReadAccess}
@@ -783,7 +804,8 @@ export function Account() {
                         {xAuthPending ? "Redirecting…" : "Authorize"}
                       </Button>
                     )}
-                    <Button size="sm"
+                    <Button
+                      size="sm"
                       variant="outline"
                       className="min-w-[72px]"
                       disabled={!canUnlinkOAuth || unlinkPending === p.key}
@@ -793,7 +815,8 @@ export function Account() {
                     </Button>
                   </span>
                 ) : (
-                  <Button size="sm"
+                  <Button
+                    size="sm"
                     className="min-w-[72px]"
                     disabled={linkPending === p.supabaseProvider}
                     onClick={() => handleLinkProvider(p.supabaseProvider!)}
@@ -833,7 +856,8 @@ export function Account() {
                     </span>
                   )}
                 </div>
-                <Button size="sm"
+                <Button
+                  size="sm"
                   variant="outline"
                   className="min-w-[72px]"
                   disabled={
@@ -857,8 +881,8 @@ export function Account() {
           <div className="text-sm font-semibold text-fg-1">
             GitHub for Bounties
           </div>
-          <p className="text-xs text-fg-3 mt-0.5">
-            Required to submit PRs for GitHub bounties.
+          <p className="text-xs text-fg-3 mt-1">
+            Required to submit PRs for GitHub bounties
           </p>
         </div>
         <div className="px-4 py-1">
@@ -900,7 +924,8 @@ export function Account() {
             </span>
             {profile?.githubHandle ? (
               <>
-                <Button size="sm"
+                <Button
+                  size="sm"
                   variant="outline"
                   className="min-w-[72px]"
                   onClick={async () => {
@@ -926,20 +951,18 @@ export function Account() {
                 </Button>
               </>
             ) : (
-              <Button size="sm"
-                  className="min-w-[72px]"
-                  onClick={() => {
-                    const state = crypto.randomUUID();
-                    sessionStorage.setItem("github_oauth_state", state);
-                    sessionStorage.setItem(
-                      "github_oauth_return_to",
-                      "/account",
-                    );
-                    window.location.href = `${API_BASE}/auth/github/authorize?scope=read:user&state=${state}`;
-                  }}
-                >
-                  Link
-                </Button>
+              <Button
+                size="sm"
+                className="min-w-[72px]"
+                onClick={() => {
+                  const state = crypto.randomUUID();
+                  sessionStorage.setItem("github_oauth_state", state);
+                  sessionStorage.setItem("github_oauth_return_to", "/account");
+                  window.location.href = `${API_BASE}/auth/github/authorize?scope=read:user&state=${state}`;
+                }}
+              >
+                Link
+              </Button>
             )}
           </div>
         </div>
@@ -966,7 +989,8 @@ export function Account() {
             ) : walletsError ? (
               <div className="text-xs text-destructive py-3 flex items-center gap-2">
                 Failed to load wallets.{" "}
-                <Button size="sm"
+                <Button
+                  size="sm"
                   variant="outline"
                   onClick={() =>
                     queryClient.invalidateQueries({ queryKey: ["wallets"] })
@@ -999,7 +1023,8 @@ export function Account() {
                   )}
                   <div className="ml-auto flex items-center gap-2">
                     {!w.isPrimary && (
-                      <Button size="sm"
+                      <Button
+                        size="sm"
                         variant="outline"
                         disabled={walletActionPending === w.id}
                         onClick={() => {
@@ -1013,7 +1038,8 @@ export function Account() {
                           : "Set primary"}
                       </Button>
                     )}
-                    <Button size="sm"
+                    <Button
+                      size="sm"
                       variant="outline"
                       className="min-w-[76px]"
                       disabled={walletActionPending === w.id}
@@ -1074,15 +1100,16 @@ function FiatPayoutSection() {
       <div className="border border-border-2 rounded mb-6 bg-bg-base overflow-hidden">
         <div className="px-4 py-3 border-b border-border-2 bg-bg-2">
           <div className="text-sm font-semibold text-fg-1">Fiat Payout</div>
-          <p className="text-xs text-fg-3 mt-0.5">
-            Coming soon — receive quest rewards via Stripe.
+          <p className="text-xs text-fg-3 mt-1">
+            Coming soon — receive quest rewards via Stripe
           </p>
         </div>
         <div className="px-4 py-3 flex items-center justify-between">
           <span className="text-sm text-fg-3">
             Stripe Connect integration is under development.
           </span>
-          <Button size="sm"
+          <Button
+            size="sm"
             variant="outline"
             className="min-w-[72px]"
             onClick={() => setShowDetails(true)}

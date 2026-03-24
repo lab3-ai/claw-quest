@@ -31,7 +31,7 @@ function Separator({ urgent }: { urgent: boolean }) {
   return (
     <span
       className={cn(
-        "text-lg font-light px-3 pt-0.5",
+        "text-lg font-light px-2 pt-0.5",
         urgent ? "text-error" : "text-fg-3",
       )}
     >

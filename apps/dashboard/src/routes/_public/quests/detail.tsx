@@ -967,7 +967,7 @@ export function QuestDetail() {
                         .map((p) => p.charAt(0).toUpperCase() + p.slice(1));
                       return (
                         <Link
-                          to="/account"
+                          to="/account" search={{ from: "quest" }}
                           className="text-xs mb-3 mx-4 flex items-center gap-3 px-4 py-2.5 bg-warning-light text-warning border border-warning/20 rounded no-underline hover:bg-warning/15 transition-colors"
                         >
                           <AlertLine
@@ -1113,7 +1113,7 @@ export function QuestDetail() {
                               <>
                                 {" "}
                                 —{" "}
-                                <Link to="/account" className="text-primary">
+                                <Link to="/account" search={{ from: "quest" }} className="text-primary">
                                   Go to Settings
                                 </Link>
                               </>
@@ -1122,7 +1122,7 @@ export function QuestDetail() {
                               <>
                                 {" "}
                                 —{" "}
-                                <Link to="/account" className="text-primary">
+                                <Link to="/account" search={{ from: "quest" }} className="text-primary">
                                   Go to Settings
                                 </Link>
                               </>
@@ -2012,7 +2012,7 @@ export function QuestDetail() {
             <p className="text-xs text-fg-1 px-4 py-3 bg-bg-2 border border-border-2 rounded-xs">
               You only need to do this once. Manage all linked accounts in{" "}
               <Link
-                to="/account"
+                to="/account" search={{ from: "quest" }}
                 className="underline hover:text-fg-1 transition-colors"
                 onClick={() => setLinkAccountPlatform(null)}
               >

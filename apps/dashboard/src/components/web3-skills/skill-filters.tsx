@@ -46,7 +46,7 @@ export function SkillFilters({
   return (
     <div className="space-y-4">
       {/* Search + Sort/Source dropdowns */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 max-sm:flex-wrap">
         <Select value={sort} onValueChange={(v) => onSortChange(v as SortValue)}>
           <SelectTrigger size="lg" className="w-auto shrink-0">
             <span className="text-fg-3 font-normal">Sort:</span>
@@ -69,7 +69,7 @@ export function SkillFilters({
             <SelectItem value="community">Community</SelectItem>
           </SelectContent>
         </Select>
-        <div className="relative flex-1">
+        <div className="relative flex-1 max-sm:w-full max-sm:basis-full">
           <Search2Fill size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-3" />
           <Input
             placeholder="Search skills..."

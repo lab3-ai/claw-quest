@@ -157,7 +157,7 @@ export function TabBar<
     return (
       <div
         className={cn(
-          "flex items-center gap-1.5 pb-3 overflow-x-auto scrollbar-hide flex-wrap",
+          "flex items-center gap-1.5 pb-3 overflow-x-auto scrollbar-hide sm:flex-wrap",
           className,
         )}
       >

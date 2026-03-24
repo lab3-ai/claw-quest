@@ -4,18 +4,22 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/context/AuthContext";
 import { QuestGridCard } from "@/components/QuestGridCard";
 import { SkillCard } from "@/components/web3-skills/skill-card";
+import { SkillDetailContent } from "@/components/web3-skills/skill-detail-content";
 import { SeoHead } from "@/components/seo-head";
-import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
+import { XIcon } from "@/components/ui/icons";
+// import { Badge } from "@/components/ui/badge";
 import { HomeBanner } from "@/components/animated-banner";
 import {
+  ArrowLeftLine,
   ArrowRightLine,
   FlashFill,
   ShieldFill,
   AddLine,
   CloseLine,
-  GitBranchFill,
+  // GitBranchFill,
 } from "@mingcute/react";
-import { GitHubIcon } from "@/components/github-icon";
+// import { GitHubIcon } from "@/components/github-icon";
 import { cn } from "@/lib/utils";
 import type { Quest } from "@clawquest/shared";
 import type { Web3SkillItem } from "@/hooks/useWeb3Skills";
@@ -87,6 +91,7 @@ function FeaturedQuests({
 ═══════════════════════════════════════════ */
 
 function PopularSkills() {
+  const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
   const { data, isLoading } = useQuery({
     queryKey: ["web3-skills-home"],
     queryFn: async () => {
@@ -99,6 +104,8 @@ function PopularSkills() {
   });
 
   const skills = data?.items ?? [];
+  const slugs = skills.map(s => s.slug);
+  const idx = slugs.indexOf(selectedSkill ?? "");
 
   return (
     <section>
@@ -113,20 +120,57 @@ function PopularSkills() {
       ) : skills.length > 0 ? (
         <div className="grid grid-cols-1 gap-3 md:gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {skills.slice(0, 6).map((skill) => (
-            <SkillCard key={skill.slug} skill={skill} />
+            <SkillCard key={skill.slug} skill={skill} onSelect={setSelectedSkill} />
           ))}
         </div>
       ) : (
         <EmptyState message="No skills listed yet." />
       )}
+
+      <Dialog open={!!selectedSkill} onOpenChange={(open) => { if (!open) setSelectedSkill(null) }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto top-[10%] translate-y-0 max-sm:max-w-[calc(100%-1.5rem)] max-sm:max-h-[calc(100%-1.5rem)]">
+          <div className="flex items-center border-b border-border-2 px-6 py-3">
+            <span className="flex-1 text-xs text-fg-3 font-mono truncate">
+              skills/{selectedSkill}
+            </span>
+            {slugs.length > 1 && (
+              <span className="flex items-center gap-1">
+                <button
+                  disabled={idx <= 0}
+                  onClick={() => idx > 0 && setSelectedSkill(slugs[idx - 1])}
+                  className="inline-flex items-center justify-center h-7 w-7 rounded border border-border-2 text-fg-3 hover:text-fg-1 hover:border-fg-3 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ArrowLeftLine size={14} />
+                </button>
+                <button
+                  disabled={idx >= slugs.length - 1}
+                  onClick={() => idx < slugs.length - 1 && setSelectedSkill(slugs[idx + 1])}
+                  className="inline-flex items-center justify-center h-7 w-7 rounded border border-border-2 text-fg-3 hover:text-fg-1 hover:border-fg-3 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ArrowRightLine size={14} />
+                </button>
+              </span>
+            )}
+            <span className="mx-2 h-4 w-px bg-border-2" />
+            <DialogClose className="inline-flex items-center justify-center h-7 w-7 rounded border border-border-2 text-fg-3 hover:text-fg-1 hover:border-fg-3 transition-colors">
+              <XIcon className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogClose>
+          </div>
+          <div className="px-6 py-4">
+            {selectedSkill && <SkillDetailContent skillSlug={selectedSkill} />}
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
 
 /* ═══════════════════════════════════════════
-   Section 4 — Latest Bounties
+   Section 4 — Latest Bounties (temporarily disabled)
 ═══════════════════════════════════════════ */
 
+/*
 interface BountyPreview {
   id: string;
   repoOwner: string;
@@ -204,6 +248,7 @@ function LatestBounties() {
     </section>
   );
 }
+*/
 
 /* ═══════════════════════════════════════════
    Section 5 — How It Works (features)
@@ -422,7 +467,7 @@ function SkillCardSkeleton() {
   );
 }
 
-/** Skeleton matching bounty row: icon + title/subtitle + badge */
+/*
 function BountyRowSkeleton() {
   return (
     <div className="flex items-center gap-3 rounded border border-border-2 bg-bg-1 px-4 py-3 animate-pulse">
@@ -435,6 +480,7 @@ function BountyRowSkeleton() {
     </div>
   );
 }
+*/
 
 function CardGridSkeleton({
   count,
@@ -498,8 +544,8 @@ export function HomePage() {
         {/* 4. Leaderboard — temporarily disabled, pending API data */}
         {/* <LeaderboardSection /> */}
 
-        {/* 5. Latest Bounties */}
-        <LatestBounties />
+        {/* 5. Latest Bounties — temporarily disabled */}
+        {/* <LatestBounties /> */}
 
         {/* 6. How It Works + FAQs — side by side on desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-2 border border-border-2 rounded divide-y lg:divide-y-0 lg:divide-x divide-border">

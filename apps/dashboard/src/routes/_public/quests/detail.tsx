@@ -900,7 +900,7 @@ export function QuestDetail() {
       {/* 2-column grid */}
       <div className="flex flex-col md:flex-row items-start gap-10">
         {/* ── Left: main content ── */}
-        <div className="flex flex-col gap-4 flex-1 min-w-0 py-8">
+        <div className="flex flex-col gap-4 md:gap-8 flex-1 min-w-0 py-4 md:py-8">
           {/* Description */}
           <div className="mb-4">
             <h2 className="text-2xs font-normal uppercase tracking-widest text-fg-3 mb-2">
@@ -1092,7 +1092,7 @@ export function QuestDetail() {
                             <Input
                               type="url"
                               inputSize="md"
-                              className="flex-1"
+                              className="flex-1 !h-7 text-xs"
                               placeholder="Paste your tweet URL here..."
                               value={proofUrls[idx] || ""}
                               onChange={(e) =>
@@ -1177,9 +1177,12 @@ export function QuestDetail() {
                             >
                               <div className="flex items-center gap-2 text-sm">
                                 <TaskCheck status={status} />
-                                <span className="flex-1 font-medium flex items-center gap-2">
+                                <span className="flex-1 font-medium">
                                   Requires skill:
-                                  <Badge variant="outline-strong">
+                                  <Badge
+                                    variant="outline-strong"
+                                    className="ml-2 max-sm:hidden"
+                                  >
                                     {skill}
                                   </Badge>
                                 </span>
@@ -1207,6 +1210,10 @@ export function QuestDetail() {
                                     {isLoading ? "Loading…" : "Verify"}
                                   </Button>
                                 )}
+                              </div>
+                              {/* Mobile: skill badge below title */}
+                              <div className="sm:hidden pl-6">
+                                <Badge variant="outline-strong">{skill}</Badge>
                               </div>
                             </div>
                           );
@@ -1352,7 +1359,7 @@ export function QuestDetail() {
         </div>
 
         {/* ── Right: sidebar ── */}
-        <div className="w-full md:min-w-80 md:max-w-xs shrink-0 py-8">
+        <div className="w-full md:min-w-80 md:max-w-xs shrink-0 pt-0 pb-4 md:py-8">
           {/* Countdown timer card */}
           {isLive && quest.expiresAt && (
             <div className="border border-border-2 rounded mb-4 bg-bg-1">

@@ -497,7 +497,7 @@ export function Account() {
             <div className="text-xs text-destructive py-3 flex items-center gap-2">
               Failed to load profile.{" "}
               <Button
-                variant="default-tonal"
+                variant="outline"
                 size="sm"
                 onClick={() =>
                   queryClient.invalidateQueries({ queryKey: ["auth", "me"] })
@@ -508,11 +508,11 @@ export function Account() {
             </div>
           ) : (
             <>
-              <div className="flex items-center min-h-12 py-2 text-sm justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                <span className="sm:w-30 shrink-0 text-fg-1 text-sm">
+              <div className="flex items-center min-h-12 py-2 text-sm gap-2">
+                <span className="max-sm:hidden sm:w-30 shrink-0 text-fg-1 text-sm">
                   Display Name
                 </span>
-                <span className="text-fg-1 w-full sm:w-auto">
+                <span className="text-fg-1 flex-1 min-w-0 max-sm:flex max-sm:flex-col">
                   {editingField === "displayName" ? (
                     <span className="flex gap-1.5 items-center flex-wrap">
                       <input
@@ -536,7 +536,7 @@ export function Account() {
                         {updateProfile.isPending ? "…" : "Save"}
                       </Button>
                       <Button
-                        variant="default-tonal"
+                        variant="outline"
                         size="sm"
                         onClick={() => setEditingField(null)}
                       >
@@ -544,29 +544,30 @@ export function Account() {
                       </Button>
                     </span>
                   ) : (
-                    <span className="flex gap-2 items-center">
-                      {profile?.displayName || (
-                        <span className="text-fg-3 italic">Not set</span>
-                      )}
-                      <Button
-                        variant="default-tonal"
-                        size="sm"
-                        className="min-w-[72px]"
-                        onClick={() => startEdit("displayName")}
-                      >
-                        Edit
-                      </Button>
-                    </span>
+                    <>
+                      <span className="sm:hidden text-fg-3 text-xs">Display Name</span>
+                      <span className="truncate">{profile?.displayName || <span className="text-fg-3 italic">Not set</span>}</span>
+                    </>
                   )}
                 </span>
+                {editingField !== "displayName" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="min-w-[72px] shrink-0"
+                    onClick={() => startEdit("displayName")}
+                  >
+                    Edit
+                  </Button>
+                )}
               </div>
-              <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                <span className="sm:w-30 shrink-0 text-fg-1 text-sm">
+              <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 gap-2">
+                <span className="max-sm:hidden sm:w-30 shrink-0 text-fg-1 text-sm">
                   Username
                 </span>
-                <span className="text-fg-1 w-full sm:w-auto">
+                <span className="text-fg-1 flex-1 min-w-0 max-sm:flex max-sm:flex-col">
                   {editingField === "username" ? (
-                    <span className="flex gap-1.5 items-center flex-wrap max-sm:justify-start sm:justify-end">
+                    <span className="flex gap-1.5 items-center flex-wrap">
                       <input
                         type="text"
                         value={editValue}
@@ -590,53 +591,52 @@ export function Account() {
                         {updateProfile.isPending ? "…" : "Save"}
                       </Button>
                       <Button
-                        variant="default-tonal"
+                        variant="outline"
                         size="sm"
                         onClick={() => setEditingField(null)}
                       >
                         Cancel
                       </Button>
-                      <span className="text-xs text-fg-3 w-full text-right">
+                      <span className="text-xs text-fg-3 w-full">
                         3-20 chars, lowercase letters, numbers, hyphens
                       </span>
                     </span>
                   ) : (
-                    <span className="flex gap-2 items-center">
-                      {profile?.username ? (
-                        `@${profile.username}`
-                      ) : (
-                        <span className="text-fg-3 italic">Not set</span>
-                      )}
-                      <Button
-                        variant="default-tonal"
-                        size="sm"
-                        className="min-w-[72px]"
-                        onClick={() => startEdit("username")}
-                      >
-                        Edit
-                      </Button>
-                    </span>
+                    <>
+                      <span className="sm:hidden text-fg-3 text-xs">Username</span>
+                      <span className="truncate">{profile?.username ? `@${profile.username}` : <span className="text-fg-3 italic">Not set</span>}</span>
+                    </>
                   )}
                 </span>
+                {editingField !== "username" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="min-w-[72px] shrink-0"
+                    onClick={() => startEdit("username")}
+                  >
+                    Edit
+                  </Button>
+                )}
               </div>
-              <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                <span className="sm:w-30 shrink-0 text-fg-1 text-sm">
-                  Email
-                </span>
-                <span className="text-fg-1">
-                  {profile?.email?.match(/^tg_\d+@tg\.clawquest\.ai$/) ? (
-                    <span className="text-fg-3 italic">No email linked</span>
-                  ) : (
-                    (profile?.email ?? supabaseUser?.email ?? "—")
-                  )}
+              <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 gap-2">
+                <span className="max-sm:hidden sm:w-30 shrink-0 text-fg-1 text-sm">Email</span>
+                <span className="text-fg-1 flex-1 min-w-0 max-sm:flex max-sm:flex-col">
+                  <span className="sm:hidden text-fg-3 text-xs">Email</span>
+                  <span className="truncate">
+                    {profile?.email?.match(/^tg_\d+@tg\.clawquest\.ai$/) ? (
+                      <span className="text-fg-3 italic">No email linked</span>
+                    ) : (
+                      (profile?.email ?? supabaseUser?.email ?? "—")
+                    )}
+                  </span>
                 </span>
               </div>
-              <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 justify-between max-sm:flex-col max-sm:items-start max-sm:gap-2">
-                <span className="sm:w-30 shrink-0 text-fg-1 text-sm">
-                  Member since
-                </span>
-                <span className="text-fg-1">
-                  {profile?.createdAt ? formatDate(profile.createdAt) : "—"}
+              <div className="flex items-center min-h-12 py-2 text-sm border-t border-border-2 gap-2">
+                <span className="max-sm:hidden sm:w-30 shrink-0 text-fg-1 text-sm">Member since</span>
+                <span className="text-fg-1 flex-1 min-w-0 max-sm:flex max-sm:flex-col">
+                  <span className="sm:hidden text-fg-3 text-xs">Member since</span>
+                  <span>{profile?.createdAt ? formatDate(profile.createdAt) : "—"}</span>
                 </span>
               </div>
             </>
@@ -678,69 +678,59 @@ export function Account() {
                     size={16}
                   />
                 </span>
-                <span className="font-semibold min-w-[90px]">{p.label}</span>
+                <span className="font-semibold min-w-[90px]">
+                  {/* Mobile: show account name when linked, desktop: always show label */}
+                  <span className="sm:hidden">{(isLinked || (isTelegram && telegramLinked)) && detail ? detail : p.label}</span>
+                  <span className="max-sm:hidden">{p.label}</span>
+                </span>
 
+                {/* Detail text: left-aligned after label */}
+                <span className="flex-1 text-sm text-fg-3 max-sm:hidden">
+                  {isTelegram
+                    ? telegramLinked
+                      ? (profile?.telegramUsername ? `@${profile.telegramUsername}` : "Linked")
+                      : "Not linked"
+                    : isLinked
+                      ? (detail || "Linked")
+                      : "Not linked"}
+                </span>
+
+                {/* Action buttons */}
                 {isTelegram ? (
                   telegramLinked ? (
-                    <>
-                      <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
-                        {/* <span className="text-success text-sm font-semibold">
-                          Connected
-                        </span> */}
-                        <span className="text-fg-1 text-sm">
-                          {profile?.telegramUsername
-                            ? `@${profile.telegramUsername}`
-                            : ""}
-                        </span>
-                      </div>
-                      <Button
-                        variant="default-tonal"
-                        size="sm"
-                        className="min-w-[72px]"
-                        disabled={unlinkPending === "telegram"}
-                        onClick={() => handleUnlinkTelegram()}
-                      >
-                        {unlinkPending === "telegram" ? "Unlinking…" : "Unlink"}
-                      </Button>
-                    </>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="min-w-[72px]"
+                      disabled={unlinkPending === "telegram"}
+                      onClick={() => handleUnlinkTelegram()}
+                    >
+                      {unlinkPending === "telegram" ? "Unlinking…" : "Unlink"}
+                    </Button>
                   ) : (
-                    <>
-                      <div className="flex-1" />
-                      <Button
-                        variant="default-tonal"
-                        size="sm"
-                        className="min-w-[72px]"
-                        onClick={() => startTelegramLogin("link")}
-                      >
-                        Link
-                      </Button>
-                    </>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="min-w-[72px]"
+                      onClick={() => startTelegramLogin("link")}
+                    >
+                      Link
+                    </Button>
                   )
                 ) : isLinked ? (
-                  <>
-                    <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
-                      {/* <span className="text-success text-sm font-semibold">
-                        Connected
-                      </span> */}
-                      {detail && (
-                        <span className="text-fg-1 text-sm">{detail}</span>
-                      )}
-                      {/* X read access button: show when X linked but no read token yet */}
-                      {p.key === "x" && profile?.xId && !profile?.hasXToken && (
-                        <Button
-                          variant="default-tonal"
-                          size="sm"
-                          disabled={xAuthPending}
-                          onClick={handleXReadAccess}
-                        >
-                          {xAuthPending
-                            ? "Redirecting…"
-                            : "Authorize read access"}
-                        </Button>
-                      )}
-                    </div>
+                  <span className="flex items-center gap-2">
+                    {p.key === "x" && profile?.xId && !profile?.hasXToken && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={xAuthPending}
+                        onClick={handleXReadAccess}
+                      >
+                        {xAuthPending ? "Redirecting…" : "Authorize"}
+                      </Button>
+                    )}
                     <Button
-                      variant="default-tonal"
+                      variant="outline"
                       size="sm"
                       className="min-w-[72px]"
                       disabled={!canUnlinkOAuth || unlinkPending === p.key}
@@ -748,20 +738,17 @@ export function Account() {
                     >
                       {unlinkPending === p.key ? "Unlinking…" : "Unlink"}
                     </Button>
-                  </>
+                  </span>
                 ) : (
-                  <>
-                    <div className="flex-1" />
-                    <Button
-                      variant="default-tonal"
-                      size="sm"
-                      className="min-w-[72px]"
-                      disabled={linkPending === p.supabaseProvider}
-                      onClick={() => handleLinkProvider(p.supabaseProvider!)}
-                    >
-                      {linkPending === p.supabaseProvider ? "Linking…" : "Link"}
-                    </Button>
-                  </>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="min-w-[72px]"
+                    disabled={linkPending === p.supabaseProvider}
+                    onClick={() => handleLinkProvider(p.supabaseProvider!)}
+                  >
+                    {linkPending === p.supabaseProvider ? "Linking…" : "Link"}
+                  </Button>
                 )}
               </div>
             );
@@ -795,7 +782,7 @@ export function Account() {
                   )}
                 </div>
                 <Button
-                  variant="default-tonal"
+                  variant="outline"
                   size="sm"
                   className="min-w-[72px]"
                   disabled={
@@ -840,7 +827,7 @@ export function Account() {
                   </span>
                 </div>
                 <Button
-                  variant="default-tonal"
+                  variant="outline"
                   size="sm"
                   className="min-w-[72px]"
                   onClick={async () => {
@@ -869,7 +856,7 @@ export function Account() {
               <>
                 <div className="flex-1" />
                 <Button
-                  variant="default-tonal"
+                  variant="outline"
                   size="sm"
                   className="min-w-[72px]"
                   onClick={() => {
@@ -912,7 +899,7 @@ export function Account() {
               <div className="text-xs text-destructive py-3 flex items-center gap-2">
                 Failed to load wallets.{" "}
                 <Button
-                  variant="default-tonal"
+                  variant="outline"
                   size="sm"
                   onClick={() =>
                     queryClient.invalidateQueries({ queryKey: ["wallets"] })
@@ -946,7 +933,7 @@ export function Account() {
                   <div className="ml-auto flex items-center gap-2">
                     {!w.isPrimary && (
                       <Button
-                        variant="default-tonal"
+                        variant="outline"
                         size="sm"
                         disabled={walletActionPending === w.id}
                         onClick={() => {
@@ -1001,7 +988,7 @@ export function Account() {
             />
             <Button
               type="submit"
-              variant="default-tonal"
+              variant="outline"
               disabled={linkWallet.isPending}
             >
               {linkWallet.isPending ? "Linking\u2026" : "Link wallet"}
@@ -1035,7 +1022,7 @@ function FiatPayoutSection() {
             Stripe Connect integration is under development.
           </span>
           <Button
-            variant="default-tonal"
+            variant="outline"
             size="sm"
             className="min-w-[72px]"
             onClick={() => setShowDetails(true)}

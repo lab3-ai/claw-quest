@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "eb095ebd94f4",
+  "session_id": "7c799f0f-e718-4b6e-ad33-aa9e3288d3f2",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-25T09:54:12.42074Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "docs/llm-reward-pricing.md",
+    "docs/xlayer-deploy-guide.md",
+    ".claude/settings.json",
+    "docs/LOCAL_SETUP.md"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "a585ab44b213",
+  "token_usage": {
+    "input_tokens": 7,
+    "cache_creation_tokens": 33698,
+    "cache_read_tokens": 95868,
+    "output_tokens": 840,
+    "api_call_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-25T09:54:12.413314Z",
+    "agent_lines": 146,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 146,
+    "agent_percentage": 100
+  }
+}

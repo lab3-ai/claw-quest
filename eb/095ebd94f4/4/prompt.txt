@@ -1,0 +1,1 @@
+/brainstorming "giờ tôi cần public repo ra, nên sẽ cần làm 1 việc convert toàn bộ login từ Vietnamese qua English"

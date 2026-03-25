@@ -97,7 +97,7 @@ export function Account() {
   const [promotedWalletId, setPromotedWalletId] = useState(""); // animates newly-promoted wallet
   const [unlinkPending, setUnlinkPending] = useState("");
   const [linkPending, setLinkPending] = useState("");
-  const [xAuthPending, setXAuthPending] = useState(false);
+
 
   // Profile editing state
   const [editingField, setEditingField] = useState<
@@ -434,25 +434,6 @@ export function Account() {
     }
   }
 
-  async function handleXReadAccess() {
-    setXAuthPending(true);
-    try {
-      const res = await fetch(`${API_BASE}/auth/x/authorize`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error?.message ?? "Failed to get X authorize URL");
-      }
-      const { url, state, codeVerifier } = await res.json();
-      localStorage.setItem("x_code_verifier", codeVerifier);
-      localStorage.setItem("x_oauth_state", state);
-      window.location.href = url;
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to authorize X");
-      setXAuthPending(false);
-    }
-  }
 
   function handleLinkWallet(e: React.FormEvent) {
     e.preventDefault();
@@ -793,17 +774,15 @@ export function Account() {
                     </Button>
                   )
                 ) : isLinked ? (
-                  <span className="flex items-center gap-2">
-                    {p.key === "x" && profile?.xId && !profile?.hasXToken && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={xAuthPending}
-                        onClick={handleXReadAccess}
-                      >
-                        {xAuthPending ? "Redirecting…" : "Authorize"}
-                      </Button>
-                    )}
+                  <>
+                    <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
+                      <span className="text-success text-sm font-semibold">
+                        Connected
+                      </span>
+                      {detail && (
+                        <span className="text-fg-3 text-sm">{detail}</span>
+                      )}
+                    </div>
                     <Button
                       size="sm"
                       variant="outline"
@@ -813,7 +792,7 @@ export function Account() {
                     >
                       {unlinkPending === p.key ? "Unlinking…" : "Unlink"}
                     </Button>
-                  </span>
+                  </>
                 ) : (
                   <Button
                     size="sm"
@@ -1033,7 +1012,7 @@ export function Account() {
                         }}
                       >
                         {setPrimaryWallet.isPending &&
-                        walletActionPending === w.id
+                          walletActionPending === w.id
                           ? "Setting…"
                           : "Set primary"}
                       </Button>

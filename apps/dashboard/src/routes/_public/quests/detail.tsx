@@ -121,8 +121,6 @@ function getMissingAccountWarning(task: any, profile: any): string | null {
   if (!profile) return null;
   if (task.platform === "x" && !profile.xId)
     return "Link your X account in Settings to verify";
-  if (task.platform === "x" && profile.xId && !profile.hasXToken)
-    return "Grant X verification access in Settings";
   if (task.platform === "discord" && !profile.discordId)
     return "Link your Discord account in Settings to verify";
   if (
@@ -958,13 +956,9 @@ export function QuestDetail() {
                         ),
                       ];
                       if (missingPlatforms.length === 0) return null;
-                      const needsXGrant =
-                        missingPlatforms.includes("x") &&
-                        meProfile?.xId &&
-                        !meProfile?.hasXToken;
-                      const linkPlatforms = missingPlatforms
-                        .filter((p) => !(p === "x" && meProfile?.xId))
-                        .map((p) => p.charAt(0).toUpperCase() + p.slice(1));
+                      const linkPlatforms = missingPlatforms.map(
+                        (p) => p.charAt(0).toUpperCase() + p.slice(1),
+                      );
                       return (
                         <Link
                           to="/account" search={{ from: "quest" }}
@@ -975,20 +969,14 @@ export function QuestDetail() {
                             className="shrink-0 text-warning"
                           />
                           <span className="flex-1">
-                            {linkPlatforms.length > 0 && (
-                              <>
-                                Link your{" "}
-                                <span className="font-semibold">
-                                  {linkPlatforms.join(", ")}
-                                </span>{" "}
-                                {linkPlatforms.length === 1
-                                  ? "account"
-                                  : "accounts"}{" "}
-                                to verify
-                              </>
-                            )}
-                            {linkPlatforms.length > 0 && needsXGrant && " · "}
-                            {needsXGrant && "Grant X verification access"}
+                            Link your{" "}
+                            <span className="font-semibold">
+                              {linkPlatforms.join(", ")}
+                            </span>{" "}
+                            {linkPlatforms.length === 1
+                              ? "account"
+                              : "accounts"}{" "}
+                            to verify
                           </span>
                           <span className="text-fg-3 flex items-center gap-1 shrink-0">
                             Go to Settings →

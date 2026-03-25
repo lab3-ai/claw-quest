@@ -1,0 +1,24 @@
+name: notify telegram
+
+on:
+  push:
+    branches: 
+     - main
+     - fixbug/**
+     - '*'
+
+jobs:
+  notifyTelegram:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_TO: ${{ secrets.TELEGRAM_TO }}
+          TELEGRAM_TOPIC_ID: ${{ secrets.TELEGRAM_TOPIC_ID }}
+        run: |
+          curl -s -X POST https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage \
+          -d chat_id=$TELEGRAM_TO \
+          -d message_thread_id=$TELEGRAM_TOPIC_ID \
+          -d parse_mode=Markdown \
+          -d text="🚀 *GitHub Notification*%0A📂 *Branch*: ${{ github.ref }}%0A👤 *Pushed By*: ${{ github.actor }}%0A📦 *Repository*: ${{ github.repository }}%0A🔗 *Commit*: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"

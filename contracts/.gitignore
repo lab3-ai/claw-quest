@@ -1,0 +1,9 @@
+# Foundry
+cache/
+out/
+lib/
+broadcast/
+
+# Secrets — never commit private keys
+.env
+.env.*

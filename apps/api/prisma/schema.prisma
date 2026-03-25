@@ -1,0 +1,522 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                       String                   @id @default(uuid())
+  email                    String                   @unique
+  password                 String?
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
+  supabaseId               String?                  @unique
+  role                     String                   @default("user")
+  username                 String?                  @unique
+  telegramId               String?                  @unique
+  telegramUsername         String?
+  discordHandle            String?
+  discordId                String?                  @unique
+  xHandle                  String?
+  xId                      String?                  @unique
+  discordAccessToken       String?
+  discordRefreshToken      String?
+  discordTokenExpiry       DateTime?
+  xAccessToken             String?
+  xRefreshToken            String?
+  xTokenExpiry             DateTime?
+  displayName              String?
+  stripeConnectedAccountId String?                  @unique
+  stripeConnectedOnboarded Boolean                  @default(false)
+  stripeCustomerId         String?                  @unique
+  xp                       Int                      @default(0)
+  rank                     Int                      @default(0)
+  userType                 String                   @default("standard")
+  githubId                 String?                  @unique
+  githubHandle             String?
+  githubAccessToken        String?
+  agents                   Agent[]
+  githubBounties           GitHubBounty[]
+  githubBountySubmissions  GitHubBountySubmission[]
+  Quest                    Quest[]
+  collaborations           QuestCollaborator[]
+  questDeposits            QuestDeposit[]
+  participations           QuestParticipation[]
+  waitlistEntry            WaitlistEntry?
+  wallets                  WalletLink[]
+  skillReviews             web3_skill_submissions[] @relation("SkillReviewer")
+  skillSubmissions         web3_skill_submissions[] @relation("SkillSubmitter")
+  skillChallenges          SkillChallenge[]
+
+  @@index([xp(sort: Desc)])
+}
+
+model Agent {
+  id                      String                   @id @default(uuid())
+  ownerId                 String?
+  agentname               String
+  status                  String                   @default("idle")
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  agentApiKey             String?                  @unique
+  isActive                Boolean                  @default(false)
+  owner                   User?                    @relation(fields: [ownerId], references: [id])
+  logs                    AgentLog[]
+  skills                  AgentSkill[]
+  githubBountySubmissions GitHubBountySubmission[]
+  participations          QuestParticipation[]
+  TelegramLink            TelegramLink?
+
+  @@index([ownerId])
+  @@index([agentApiKey])
+  @@index([ownerId, isActive])
+}
+
+model TelegramLink {
+  id         String   @id @default(uuid())
+  agentId    String   @unique
+  telegramId BigInt
+  username   String?
+  firstName  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  agent      Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([telegramId])
+}
+
+model Quest {
+  id                   String               @id @default(uuid())
+  description          String
+  createdAt            DateTime             @default(now())
+  expiresAt            DateTime?
+  filledSlots          Int                  @default(0)
+  rewardAmount         Decimal              @default(0) @db.Decimal(36, 18)
+  rewardType           String               @default("USDC")
+  sponsor              String               @default("System")
+  status               String               @default("draft")
+  tags                 String[]             @default([])
+  title                String
+  totalSlots           Int                  @default(100)
+  type                 String               @default("FCFS")
+  updatedAt            DateTime             @updatedAt
+  requiredSkills       String[]             @default([])
+  creatorTelegramId    BigInt?
+  creatorEmail         String?
+  creatorUserId        String?
+  claimToken           String?              @unique
+  claimTokenExpiresAt  DateTime?
+  claimedAt            DateTime?
+  escrowQuestId        String?
+  sponsorWallet        String?
+  tokenAddress         String?
+  tokenDecimals        Int?
+  creatorAgentId       String?
+  cryptoChainId        Int?
+  cryptoTxHash         String?
+  fundedAmount         Int?
+  fundedAt             DateTime?
+  fundingMethod        String?
+  fundingStatus        String               @default("unfunded")
+  previewToken         String?              @unique
+  refundAmount         Int?
+  refundStatus         String?
+  refundTxHash         String?
+  refundedAt           DateTime?
+  startAt              DateTime?
+  stripePaymentId      String?
+  stripeSessionId      String?              @unique
+  tasks                Json                 @default("[]")
+  rewardTiers          Json?
+  drawTime             DateTime?
+  network              String?
+  totalFunded          Decimal              @default(0) @db.Decimal(36, 18)
+  requireVerified      Boolean              @default(false)
+  tokenProvider        String?
+  tokenAmount          Decimal?             @db.Decimal(36, 18)
+  earlyAccessAt        DateTime?
+  llmKeyRewardEnabled  Boolean              @default(false)
+  llmKeyTokenLimit     Int?                 @default(1000000)
+  llmModelId           String?
+  tokenBudgetPerWinner Decimal?             @db.Decimal(18, 6)
+  sponsorId            String?
+  llmModel             LlmModel?            @relation(fields: [llmModelId], references: [id])
+  User                 User?                @relation(fields: [sponsorId], references: [id])
+  collaborators        QuestCollaborator[]
+  deposits             QuestDeposit[]
+  participations       QuestParticipation[]
+  skillChallenges      SkillChallenge[]
+
+  @@index([claimToken])
+  @@index([llmModelId])
+  @@index([previewToken])
+  @@index([creatorTelegramId])
+  @@index([creatorAgentId])
+  @@index([creatorUserId])
+  @@index([status, createdAt])
+  @@index([earlyAccessAt])
+  @@index([sponsorId])
+}
+
+model LlmModel {
+  id               String   @id @default(uuid())
+  openrouterId     String   @unique
+  name             String
+  provider         String
+  tier             String   @default("standard")
+  inputPricePer1M  Decimal  @db.Decimal(10, 4)
+  outputPricePer1M Decimal  @db.Decimal(10, 4)
+  contextWindow    Int
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  quests           Quest[]
+
+  @@index([isActive, outputPricePer1M])
+}
+
+model QuestCollaborator {
+  id          String    @id @default(uuid())
+  questId     String
+  userId      String?
+  inviteToken String    @unique
+  invitedBy   String?
+  acceptedAt  DateTime?
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  quest       Quest     @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([questId])
+  @@index([inviteToken])
+}
+
+model QuestDeposit {
+  id            String   @id @default(uuid())
+  questId       String
+  escrowQuestId String
+  userId        String
+  amount        Decimal  @db.Decimal(36, 18)
+  tokenAddress  String
+  chainId       Int
+  txHash        String?
+  walletAddress String   @default("")
+  status        String   @default("pending")
+  createdAt     DateTime @default(now())
+  quest         Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id])
+
+  @@index([questId])
+  @@index([escrowQuestId])
+  @@index([userId])
+}
+
+model QuestParticipation {
+  id                   String    @id @default(uuid())
+  questId              String
+  agentId              String?
+  status               String    @default("in_progress")
+  proof                Json?
+  tasksCompleted       Int       @default(0)
+  tasksTotal           Int       @default(5)
+  payoutAmount         Float?
+  payoutStatus         String    @default("na")
+  joinedAt             DateTime  @default(now())
+  completedAt          DateTime?
+  payoutTxHash         String?
+  payoutWallet         String?
+  userId               String?
+  payoutTokenProvider  String?
+  payoutTokenAmount    Decimal?  @db.Decimal(36, 18)
+  payoutTokenApiKey    String?
+  payoutTokenKeyId     String?
+  payoutTokenExpiresAt DateTime?
+  payoutTokenStatus    String?
+  llmRewardApiKey      String?
+  llmRewardIssuedAt    DateTime?
+  agent                Agent?    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  quest                Quest     @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user                 User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([questId, userId])
+  @@unique([questId, agentId])
+}
+
+model AgentSkill {
+  id         String    @id @default(uuid())
+  agentId    String
+  name       String
+  version    String?
+  source     String    @default("unknown")
+  publisher  String?
+  meta       Json?
+  lastSeenAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
+  verified   Boolean   @default(false)
+  platform   String?
+  scannedAt  DateTime?
+  agent      Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, name])
+  @@index([agentId])
+  @@index([name])
+}
+
+model AgentLog {
+  id        String   @id @default(uuid())
+  agentId   String
+  type      String
+  message   String
+  meta      Json?
+  createdAt DateTime @default(now())
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId])
+  @@index([createdAt])
+}
+
+model WalletLink {
+  id        String   @id @default(uuid())
+  userId    String
+  address   String
+  chainId   Int?
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, address])
+  @@index([userId])
+  @@index([address])
+}
+
+model EscrowCursor {
+  chainId   Int      @id
+  lastBlock BigInt
+  updatedAt DateTime @updatedAt
+}
+
+model Chain {
+  id              Int              @id
+  name            String
+  shortName       String
+  nativeCurrency  Json
+  explorerUrl     String
+  isTestnet       Boolean          @default(false)
+  isEscrowEnabled Boolean          @default(false)
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  rpcs            ChainRpc[]
+  contracts       EscrowContract[]
+}
+
+model ChainRpc {
+  id        String   @id @default(uuid())
+  chainId   Int
+  url       String
+  provider  String?
+  priority  Int      @default(10)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chain     Chain    @relation(fields: [chainId], references: [id])
+
+  @@unique([chainId, url])
+  @@index([chainId, isActive, priority])
+}
+
+model EscrowContract {
+  id         String    @id @default(uuid())
+  chainId    Int
+  address    String
+  isActive   Boolean   @default(true)
+  deployedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  chain      Chain     @relation(fields: [chainId], references: [id])
+
+  @@unique([chainId, address])
+  @@index([chainId, isActive])
+}
+
+model WaitlistEntry {
+  id                String   @id @default(uuid())
+  telegramId        BigInt?  @unique
+  telegramHandle    String?
+  firstName         String?
+  role              String?
+  referralCode      String   @unique
+  referredBy        String?
+  referralCount     Int      @default(0)
+  position          Int      @default(0)
+  createdAt         DateTime @default(now())
+  positionBonus     Int      @default(0)
+  referralBonus     Int      @default(0)
+  effectivePosition Int      @default(0)
+  userId            String?  @unique
+  accessToken       String?  @unique
+  email             String?  @unique
+  user              User?    @relation(fields: [userId], references: [id])
+
+  @@index([referralCode])
+  @@index([referredBy])
+  @@index([position])
+  @@index([effectivePosition])
+  @@index([userId])
+  @@index([accessToken])
+}
+
+model BotChatLog {
+  id         String   @id @default(uuid())
+  telegramId BigInt
+  direction  String
+  type       String
+  text       String
+  meta       Json?
+  createdAt  DateTime @default(now())
+
+  @@index([telegramId, createdAt])
+  @@index([type])
+}
+
+model GitHubBounty {
+  id               String                   @id @default(uuid())
+  creatorUserId    String
+  repoOwner        String
+  repoName         String
+  issueNumber      Int?
+  issueUrl         String?
+  title            String
+  description      String
+  rewardAmount     Decimal                  @db.Decimal(18, 6)
+  rewardType       String
+  status           String                   @default("draft")
+  questType        String                   @default("fcfs")
+  maxWinners       Int                      @default(1)
+  deadline         DateTime?
+  fundingStatus    String                   @default("unfunded")
+  stripeSessionId  String?                  @unique
+  stripePaymentId  String?
+  escrowQuestId    String?
+  llmKeyTokenLimit Int?                     @default(1000000)
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+  creator          User                     @relation(fields: [creatorUserId], references: [id])
+  submissions      GitHubBountySubmission[]
+
+  @@index([creatorUserId])
+  @@index([status])
+  @@index([repoOwner, repoName])
+}
+
+model GitHubBountySubmission {
+  id                String       @id @default(uuid())
+  bountyId          String
+  userId            String?
+  agentId           String?
+  prUrl             String
+  prNumber          Int
+  status            String       @default("pending")
+  llmRewardApiKey   String?
+  llmRewardIssuedAt DateTime?
+  createdAt         DateTime     @default(now())
+  agent             Agent?       @relation(fields: [agentId], references: [id])
+  bounty            GitHubBounty @relation(fields: [bountyId], references: [id], onDelete: Cascade)
+  user              User?        @relation(fields: [userId], references: [id])
+
+  @@unique([bountyId, userId])
+  @@unique([bountyId, agentId])
+  @@index([bountyId])
+  @@index([userId])
+}
+
+model clawhub_skills {
+  id                  String    @id @default(uuid()) @db.Uuid
+  clawhub_id          String    @unique
+  slug                String    @unique
+  display_name        String
+  summary             String?
+  downloads           Int       @default(0)
+  installs_all_time   Int       @default(0)
+  installs_current    Int       @default(0)
+  stars               Int       @default(0)
+  comments            Int       @default(0)
+  versions            Int       @default(0)
+  owner_handle        String?
+  owner_display_name  String?
+  owner_image         String?
+  latest_version      String?
+  latest_version_id   String?
+  badges              Json      @default("{}")
+  tags                Json      @default("{}")
+  parsed_clawdis      Json?
+  clawhub_created_at  DateTime? @db.Timestamptz(6)
+  clawhub_updated_at  DateTime? @db.Timestamptz(6)
+  crawled_at          DateTime  @default(now()) @db.Timestamptz(6)
+  is_web3             Boolean   @default(false)
+  web3_auto_detected  Boolean   @default(false)
+  web3_admin_override Boolean?
+  web3_category       String?
+  featured            Boolean   @default(false)
+  featured_order      Int?
+  verification_config Json?
+
+  @@index([downloads(sort: Desc)])
+  @@index([stars(sort: Desc)])
+  @@index([owner_handle])
+  @@index([crawled_at])
+  @@index([is_web3, downloads(sort: Desc)])
+  @@map("clawhub_skills")
+}
+
+model web3_skill_submissions {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  slug         String    @unique
+  summary      String
+  description  String?
+  website_url  String?
+  github_url   String?
+  logo_url     String?
+  category     String
+  tags         String[]  @default([])
+  submitted_by String
+  status       String    @default("pending")
+  review_note  String?
+  reviewed_by  String?
+  reviewed_at  DateTime? @db.Timestamptz(6)
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime  @updatedAt @db.Timestamptz(6)
+  reviewer     User?     @relation("SkillReviewer", fields: [reviewed_by], references: [id])
+  submitter    User      @relation("SkillSubmitter", fields: [submitted_by], references: [id])
+
+  @@index([status])
+  @@index([category])
+  @@index([submitted_by])
+  @@map("web3_skill_submissions")
+}
+
+model SkillChallenge {
+  id           String    @id @default(uuid())
+  token        String    @unique
+  skillSlug    String
+  questId      String?
+  userId       String?
+  params       Json
+  expiresAt    DateTime  @db.Timestamptz(6)
+  verifiedAt   DateTime? @db.Timestamptz(6)
+  result       Json?
+  passed       Boolean?
+  createdAt    DateTime  @default(now()) @db.Timestamptz(6)
+
+  quest        Quest?    @relation(fields: [questId], references: [id])
+  user         User?     @relation(fields: [userId], references: [id])
+
+  @@index([token])
+  @@index([skillSlug])
+  @@index([userId])
+}

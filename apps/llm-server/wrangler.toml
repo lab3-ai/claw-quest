@@ -1,0 +1,21 @@
+name = "clawquest-llm-server"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "clawquest-llm"
+database_id = "26009ae6-052a-4982-85fc-512d58e4c7c9"
+
+[observability]
+[observability.logs]
+enabled = false
+invocation_logs = true
+
+# Secrets (set via: wrangler secret put <NAME>)
+# SECRET_KEY            - Secret for POST /api/v1/keys
+# ADMIN_SECRET_KEY      - Secret for admin upstream URL management
+# UPSTREAM_BASE_URL     - Default upstream LLM API base URL
+# UPSTREAM_API_KEY      - Default upstream LLM API key
+# DEFAULT_MODEL         - Default model name (optional)

@@ -1,0 +1,10 @@
+/* Topbar — ClawQuest shared */
+.topbar { background: var(--fg); color: #fff; height: 36px; display: flex; align-items: center; padding: 0 16px; font-size: 12px; border-bottom: 3px solid var(--accent); position: sticky; top: 0; z-index: 100; }
+.topbar-logo { font-weight: 700; font-size: 15px; letter-spacing: -0.5px; margin-right: 24px; color: #fff; text-decoration: none; }
+.topbar-logo span { color: var(--accent); }
+.topbar-nav { display: flex; gap: 2px; }
+.topbar-nav a { color: #bbc0c4; text-decoration: none; padding: 7px 10px; border-radius: 3px; font-size: 13px; }
+.topbar-nav a:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.topbar-nav a.active { color: #fff; background: rgba(255,255,255,0.12); }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 16px; color: #bbc0c4; font-size: 12px; }
+.topbar-right a { color: #bbc0c4; text-decoration: none; }

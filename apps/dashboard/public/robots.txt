@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /account
+Disallow: /agents
+Disallow: /auth/
+Disallow: /verify
+Disallow: /stripe-connect
+
+Sitemap: https://clawquest.ai/sitemap.xml

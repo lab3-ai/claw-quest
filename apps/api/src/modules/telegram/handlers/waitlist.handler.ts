@@ -1,0 +1,318 @@
+import { Composer } from 'grammy';
+import { FastifyInstance } from 'fastify';
+import { randomBytes } from 'crypto';
+import { BotContext } from '../types';
+import { MSG } from '../content/messages';
+
+const WAITLIST_URL = process.env.FRONTEND_URL
+    ? `${process.env.FRONTEND_URL}/waitlist`
+    : 'https://clawquest.ai/waitlist';
+
+const REFERRAL_BONUS_PER_FRIEND = 10;
+
+function generateReferralCode(): string {
+    return randomBytes(4).toString('hex'); // 8 hex chars e.g. "a3f9b2c1"
+}
+
+function buildReferralLink(code: string): string {
+    return `${WAITLIST_URL}?ref=${code}`;
+}
+
+/**
+ * Recalculate effectivePosition for entries that have joined via Telegram (telegramId set, position > 0).
+ * Rank = order by (position - referralBonus) ascending. Pending entries (position 0) keep effectivePosition 0.
+ */
+async function recalculateEffectivePositions(prisma: any): Promise<void> {
+    const joined = await prisma.waitlistEntry.findMany({
+        where: { telegramId: { not: null }, position: { gt: 0 } },
+        select: { id: true, position: true, referralBonus: true },
+    });
+
+    const sorted = joined
+        .map((entry: any) => ({
+            ...entry,
+            adjustedPosition: (entry.position ?? 0) - (entry.referralBonus ?? 0),
+        }))
+        .sort((a: any, b: any) => a.adjustedPosition - b.adjustedPosition)
+        .map((entry: any, index: number) => ({ id: entry.id, effectivePosition: index + 1 }));
+
+    await prisma.$transaction([
+        ...sorted.map((entry: { id: string; effectivePosition: number }) =>
+            prisma.waitlistEntry.update({
+                where: { id: entry.id },
+                data: { effectivePosition: entry.effectivePosition },
+            })
+        ),
+        prisma.waitlistEntry.updateMany({
+            where: { OR: [{ telegramId: null }, { position: 0 }] },
+            data: { effectivePosition: 0 },
+        }),
+    ]);
+}
+
+/**
+ * Called when user joins via web access token (wl_<token> deep link).
+ * Finds the pending entry by accessToken and links it to the Telegram user.
+ */
+export async function handleWaitlistJoinByToken(
+    server: FastifyInstance,
+    ctx: BotContext,
+    accessToken: string
+): Promise<void> {
+    const tgId = ctx.from?.id;
+    if (!tgId) return;
+
+    const telegramHandle = ctx.from?.username ?? null;
+    const firstName = ctx.from?.first_name ?? null;
+
+    try {
+        // Check if this Telegram user already has an entry
+        const existingByTg = await server.prisma.waitlistEntry.findUnique({
+            where: { telegramId: BigInt(tgId) },
+        });
+
+        if (existingByTg) {
+            const link = buildReferralLink(existingByTg.referralCode);
+            return void ctx.reply(
+                MSG.waitlistAlreadyJoined(existingByTg.effectivePosition ?? 0, link),
+                { parse_mode: 'Markdown' }
+            );
+        }
+
+        // Find the pending entry by accessToken
+        const pendingEntry = await server.prisma.waitlistEntry.findUnique({
+            where: { accessToken },
+        });
+
+        if (!pendingEntry) {
+            // Token not found — fall back to normal join
+            return handleWaitlistJoin(server, ctx);
+        }
+
+        if (pendingEntry.telegramId) {
+            // Already claimed by someone else
+            const link = buildReferralLink(pendingEntry.referralCode);
+            return void ctx.reply(
+                MSG.waitlistAlreadyJoined(pendingEntry.effectivePosition ?? 0, link),
+                { parse_mode: 'Markdown' }
+            );
+        }
+
+        // Resolve referrer from the pending entry's referredBy
+        const referrer = pendingEntry.referredBy
+            ? await server.prisma.waitlistEntry.findUnique({
+                where: { referralCode: pendingEntry.referredBy },
+            })
+            : null;
+
+        const joinerBonus = referrer ? REFERRAL_BONUS_PER_FRIEND : 0;
+
+        const joinedCount = await server.prisma.waitlistEntry.count({
+            where: { telegramId: { not: null } },
+        });
+        const basePosition = joinedCount + 1;
+
+        await server.prisma.waitlistEntry.update({
+            where: { id: pendingEntry.id },
+            data: {
+                telegramId: BigInt(tgId),
+                telegramHandle,
+                firstName,
+                referralBonus: joinerBonus,
+                position: basePosition,
+            },
+        });
+
+        // Reward referrer
+        if (referrer) {
+            await server.prisma.waitlistEntry.update({
+                where: { id: referrer.id },
+                data: {
+                    referralCount: { increment: 1 },
+                    referralBonus: { increment: REFERRAL_BONUS_PER_FRIEND },
+                },
+            });
+        }
+
+        await recalculateEffectivePositions(server.prisma);
+
+        const updated = await server.prisma.waitlistEntry.findUnique({
+            where: { id: pendingEntry.id },
+            select: { effectivePosition: true },
+        });
+
+        const link = buildReferralLink(pendingEntry.referralCode);
+        const effectivePos = updated?.effectivePosition ?? basePosition;
+
+        if (referrer) {
+            const referrerName = referrer.firstName || referrer.telegramHandle || 'a friend';
+            await ctx.reply(
+                MSG.waitlistJoinedViaReferral(effectivePos, link, referrerName),
+                { parse_mode: 'Markdown' }
+            );
+
+            if (server.telegram?.bot) {
+                const updatedReferrer = await server.prisma.waitlistEntry.findUnique({
+                    where: { id: referrer.id },
+                    select: { effectivePosition: true, referralCount: true },
+                });
+                const joinerName = firstName || telegramHandle || 'Someone';
+                try {
+                    await server.telegram.bot.api.sendMessage(
+                        String(referrer.telegramId),
+                        MSG.waitlistReferralReward(
+                            joinerName,
+                            updatedReferrer?.effectivePosition ?? referrer.position ?? 0,
+                            updatedReferrer?.referralCount ?? referrer.referralCount ?? 0
+                        ),
+                        { parse_mode: 'Markdown' }
+                    );
+                } catch (err) {
+                    server.log.debug({ err, telegramId: String(referrer.telegramId) }, 'Failed to notify referrer');
+                }
+            }
+        } else {
+            await ctx.reply(
+                MSG.waitlistJoined(effectivePos, link),
+                { parse_mode: 'Markdown' }
+            );
+        }
+    } catch (err) {
+        server.log.error({ err }, 'Waitlist join by token error');
+        await ctx.reply(MSG.genericError);
+    }
+}
+
+export async function handleWaitlistJoin(
+    server: FastifyInstance,
+    ctx: BotContext,
+    referredByCode?: string
+): Promise<void> {
+    const tgId = ctx.from?.id;
+    if (!tgId) return;
+
+    const telegramHandle = ctx.from?.username ?? null;
+    const firstName = ctx.from?.first_name ?? null;
+
+    try {
+        // Check if already on waitlist
+        const existing = await server.prisma.waitlistEntry.findUnique({
+            where: { telegramId: BigInt(tgId) },
+        });
+
+        if (existing) {
+            const link = buildReferralLink(existing.referralCode);
+            return void ctx.reply(
+                MSG.waitlistAlreadyJoined(existing.effectivePosition ?? 0, link),
+                { parse_mode: 'Markdown' }
+            );
+        }
+
+        // Resolve referrer (if any)
+        let referrer = referredByCode
+            ? await server.prisma.waitlistEntry.findUnique({
+                where: { referralCode: referredByCode },
+            })
+            : null;
+
+        // Assign base position: current count + 1
+        const count = await server.prisma.waitlistEntry.count({
+            where: { telegramId: { not: null } },
+        });
+        const basePosition = count + 1;
+
+        // New joiner gets a 10-spot bonus if they came via referral link
+        const joinerBonus = referrer ? REFERRAL_BONUS_PER_FRIEND : 0;
+
+        const referralCode = generateReferralCode();
+
+        // Create new entry (effectivePosition will be recalculated)
+        await server.prisma.waitlistEntry.create({
+            data: {
+                telegramId: BigInt(tgId),
+                telegramHandle,
+                firstName,
+                referralCode,
+                referredBy: referrer?.referralCode ?? null,
+                position: basePosition,
+                referralBonus: joinerBonus,
+                effectivePosition: basePosition,
+            },
+        });
+
+        // Reward referrer: +10 bonus spots per friend who joins
+        if (referrer) {
+            await server.prisma.waitlistEntry.update({
+                where: { id: referrer.id },
+                data: {
+                    referralCount: { increment: 1 },
+                    referralBonus: { increment: REFERRAL_BONUS_PER_FRIEND },
+                },
+            });
+        }
+
+        // Recalculate effectivePosition for all entries to ensure accurate ranking
+        await recalculateEffectivePositions(server.prisma);
+
+        // Get the updated entry to get the correct effectivePosition
+        const newEntry = await server.prisma.waitlistEntry.findUnique({
+            where: { telegramId: BigInt(tgId) },
+            select: { effectivePosition: true },
+        });
+
+        const link = buildReferralLink(referralCode);
+        const effectivePos = newEntry?.effectivePosition ?? basePosition;
+
+        // Send different message if joined via referral
+        if (referrer) {
+            const referrerName = referrer.firstName || referrer.telegramHandle || 'a friend';
+            await ctx.reply(
+                MSG.waitlistJoinedViaReferral(effectivePos, link, referrerName),
+                { parse_mode: 'Markdown' }
+            );
+
+            // Notify referrer that someone joined via their link
+            if (server.telegram?.bot) {
+                const updatedReferrer = await server.prisma.waitlistEntry.findUnique({
+                    where: { id: referrer.id },
+                    select: { effectivePosition: true, referralCount: true },
+                });
+
+                const joinerName = firstName || telegramHandle || 'Someone';
+                try {
+                    await server.telegram.bot.api.sendMessage(
+                        String(referrer.telegramId),
+                        MSG.waitlistReferralReward(
+                            joinerName,
+                            updatedReferrer?.effectivePosition ?? referrer.position ?? 0,
+                            updatedReferrer?.referralCount ?? referrer.referralCount ?? 0
+                        ),
+                        { parse_mode: 'Markdown' }
+                    );
+                } catch (err) {
+                    // Silently fail if can't notify referrer (user might have blocked bot)
+                    server.log.debug({ err, telegramId: String(referrer.telegramId) }, 'Failed to notify referrer');
+                }
+            }
+        } else {
+            await ctx.reply(
+                MSG.waitlistJoined(effectivePos, link),
+                { parse_mode: 'Markdown' }
+            );
+        }
+    } catch (err) {
+        server.log.error({ err }, 'Waitlist join error');
+        await ctx.reply(MSG.genericError);
+    }
+}
+
+export function waitlistHandler(server: FastifyInstance): Composer<BotContext> {
+    const composer = new Composer<BotContext>();
+
+    // /waitlist command — direct join without referral
+    composer.command('waitlist', async (ctx) => {
+        await handleWaitlistJoin(server, ctx);
+    });
+
+    return composer;
+}

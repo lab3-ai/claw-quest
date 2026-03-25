@@ -1,0 +1,29 @@
+/* Forms — ClawQuest shared */
+.form-section { margin-bottom: 24px; }
+.form-section-title { font-size: 14px; font-weight: 600; color: var(--fg); padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 3px; color: var(--fg); }
+.form-hint { font-size: 11px; color: var(--fg-muted); margin-bottom: 4px; line-height: 1.4; }
+.form-input, .form-select, .form-textarea { width: 100%; padding: 7px 9px; font-size: 13px; border: 1px solid var(--border-heavy); border-radius: 3px; font-family: var(--font); background: #fff; color: var(--fg); }
+.form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--link); box-shadow: 0 0 0 3px rgba(0,116,204,0.15); }
+.form-textarea { resize: vertical; min-height: 72px; }
+.form-select { appearance: auto; }
+.form-input-mono { font-family: var(--font-mono); font-size: 12px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.form-calc { font-size: 12px; color: var(--fg-muted); margin-top: 6px; padding: 6px 10px; background: var(--sidebar-bg); border-radius: 3px; border: 1px solid var(--border); }
+.form-calc strong { color: var(--green); font-family: var(--font-mono); }
+.radio-group { display: flex; gap: 0; border: 1px solid var(--border-heavy); border-radius: 3px; overflow: hidden; }
+.radio-option { flex: 1; text-align: center; }
+.radio-option input { display: none; }
+.radio-option label { display: block; padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer; color: var(--fg-muted); border-right: 1px solid var(--border); transition: background 0.1s; }
+.radio-option:last-child label { border-right: none; }
+.radio-option label:hover { background: var(--sidebar-bg); color: var(--fg); }
+.radio-option input:checked + label { background: var(--tag-bg); color: var(--tag-fg); }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; font-size: 12px; color: var(--fg); }
+.toggle-switch { position: relative; width: 34px; height: 18px; background: var(--border-heavy); border-radius: 9px; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
+.toggle-switch.on { background: var(--link); }
+.toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background: #fff; border-radius: 50%; transition: left 0.2s; }
+.toggle-switch.on::after { left: 18px; }
+.textarea-wrapper { position: relative; }
+.textarea-wrapper .char-count { position: absolute; bottom: 6px; right: 8px; font-size: 10px; color: var(--fg-muted); font-family: var(--font-mono); pointer-events: none; }

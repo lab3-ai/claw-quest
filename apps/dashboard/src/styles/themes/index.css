@@ -1,0 +1,13 @@
+/* ──────────────────────────────────────────────
+   ClawQuest Multi-Theme System
+   Each theme defines light (default) + dark variants
+   Applied via [data-theme="name"] + .dark on <html>
+   ────────────────────────────────────────────── */
+
+@import "./terminal.css";
+/* TODO: re-enable after polishing each theme
+@import "./glass.css";
+@import "./brutalist.css";
+@import "./minimal.css";
+@import "./bauhaus.css";
+*/

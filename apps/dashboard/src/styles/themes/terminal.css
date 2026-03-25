@@ -1,0 +1,106 @@
+/* ═══════════════════════════════════════════════
+   THEME: Terminal (default) — monospace, flat, high-contrast
+   ═══════════════════════════════════════════════ */
+[data-theme="terminal"] {
+  --font:
+    "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas",
+    monospace;
+  --font-heading: "D-DIN Exp", ui-monospace, "Cascadia Mono", monospace;
+  --font-mono:
+    "Geist Mono", ui-monospace, "Cascadia Mono", "Fira Code", "Consolas",
+    monospace;
+  --radius-base: 2px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-button: 2px;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-accent: none;
+}
+
+[data-theme="terminal"].dark {
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-accent: 0 0 8px rgba(255, 87, 75, 0.25);
+
+  --bg-base: #040404;
+  --bg-1: #0a0a0a;
+  --bg-2: #171717;
+  --bg-3: #262626;
+  --bg-4: #404040;
+  --fg-1: #e5e5e5;
+  --fg-2: #d4d4d4;
+  --fg-3: #a3a3a3;
+  --fg-4: #737373;
+  --border-1: #171717;
+  --border-2: #262626;
+  --border-3: #404040;
+  --border-4: #525252;
+
+  --color-bg-base: var(--bg-base);
+  --color-bg-1: var(--bg-1);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-bg-4: var(--bg-4);
+  --color-fg-1: var(--fg-1);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-fg-4: var(--fg-4);
+  --color-border-1: var(--border-1);
+  --color-border-2: var(--border-2);
+  --color-border-3: var(--border-3);
+  --color-border-4: var(--border-4);
+
+  --surface-dark: #111111;
+  --surface-dark-subtle: #1a1a1a;
+  --surface-dark-fg: #ffffff;
+  --surface-dark-muted: #777777;
+
+  --accent: #ff574b;
+  --accent-hover: #e64a3f;
+  --accent-light: #fff0ef;
+  --accent-border: #ff574b;
+  --accent-fg: #ffffff;
+
+  --primary: #ff574b;
+  --primary-hover: #e64a3f;
+  --primary-fg: #ffffff;
+
+  --link: #ff6b61;
+  --link-visited: #ff8a82;
+
+  --success: #22c55e;
+  --success-hover: color-mix(in srgb, #22c55e, black 12%);
+  --success-light: color-mix(in srgb, var(--success) 20%, transparent);
+  --success-border: #86efac;
+  --error: #f43f5e;
+  --error-hover: color-mix(in srgb, #f43f5e, black 12%);
+  --error-light: color-mix(in srgb, var(--error) 20%, transparent);
+  --error-border: #ff8888;
+  --warning: #f59e0b;
+  --warning-hover: color-mix(in srgb, #f59e0b, black 12%);
+  --warning-light: color-mix(in srgb, var(--warning) 20%, transparent);
+  --warning-border: #b45309;
+  --info: #4488ff;
+  --info-hover: color-mix(in srgb, #4488ff, black 12%);
+  --info-light: color-mix(in srgb, var(--info) 20%, transparent);
+  --info-border: #88bbff;
+
+  --human-fg: #a0a0a0;
+  --human-bg: #1a1a1a;
+  --human-border: #333333;
+  --agent-fg: #ff6b61;
+  --agent-bg: #3d1512;
+  --agent-border: #ff574b;
+  --skill-fg: #a0a0a0;
+  --skill-bg: #1a1a1a;
+  --skill-border: #333333;
+  --social-fg: #a0a0a0;
+  --social-bg: #1a1a1a;
+}

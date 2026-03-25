@@ -1,0 +1,658 @@
+import { randomBytes, randomUUID } from 'crypto';
+import { PrismaClient } from '@prisma/client';
+import type { QuestTask } from '@clawquest/shared';
+import { REWARD_TYPE } from '@clawquest/shared';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const QUEST_TASK_ACTION_TYPES = [
+    'follow_account', 'like_post', 'repost', 'post', 'quote_post',
+    'join_server', 'verify_role', 'join_channel',
+] as const;
+const QUEST_TASK_PLATFORMS = ['x', 'discord', 'telegram'] as const;
+
+/** Normalize raw tasks from DB (legacy or partial shape) to QuestTaskSchema shape for response. */
+function normalizeQuestTasks(raw: unknown): QuestTask[] {
+    if (!Array.isArray(raw)) return [];
+    return raw.map((t: any) => {
+        const id = typeof t?.id === 'string' && UUID_RE.test(t.id) ? t.id : randomUUID();
+        const platform = t?.platform && QUEST_TASK_PLATFORMS.includes(t.platform) ? t.platform : 'x';
+        const actionType = t?.actionType && QUEST_TASK_ACTION_TYPES.includes(t.actionType) ? t.actionType : 'follow_account';
+        const label = typeof t?.label === 'string' && t.label.length > 0 ? t.label.slice(0, 100) : 'Task';
+        const params = t?.params && typeof t.params === 'object' && !Array.isArray(t.params)
+            ? Object.fromEntries(Object.entries(t.params).filter(([, v]) => typeof v === 'string').map(([k, v]) => [String(k), v as string]))
+            : {};
+        const requireTagFriends = typeof t?.requireTagFriends === 'boolean' ? t.requireTagFriends : false;
+        return { id, platform, actionType, label, params, requireTagFriends };
+    });
+}
+import { resolveInvite } from '../discord/discord-rest-client';
+import { validatePublishRequirements } from './quests.publish-validator';
+
+// ─── Regex patterns for task param validation ────────────────────────────────
+export const X_POST_URL_RE = /^https?:\/\/(x\.com|twitter\.com)\/\w+\/status\/\d+/i;
+export const X_USERNAME_RE = /^@?[\w]{1,15}$/;
+export const DISCORD_INVITE_RE = /^https?:\/\/(discord\.gg|discord\.com\/invite)\/[\w-]+$/i;
+export const TELEGRAM_CHANNEL_RE = /^(@[\w]{5,32}|https?:\/\/t\.me\/[\w]+)$/i;
+
+/** Validate task params based on platform + actionType. Returns error string or null. */
+export function validateTaskParams(task: QuestTask): string | null {
+    const p = task.params;
+    switch (task.actionType) {
+        case 'follow_account':
+            if (!p.username || !X_USERNAME_RE.test(p.username))
+                return `Task "${task.label}": invalid X username "${p.username || ''}"`;
+            break;
+        case 'like_post':
+        case 'repost':
+        case 'quote_post':
+            if (!p.postUrl || !X_POST_URL_RE.test(p.postUrl))
+                return `Task "${task.label}": invalid X post URL "${p.postUrl || ''}"`;
+            break;
+        case 'post':
+            if (!p.content || p.content.length > 280)
+                return `Task "${task.label}": post content required (max 280 chars)`;
+            break;
+        case 'join_server':
+            if (!p.inviteUrl || !DISCORD_INVITE_RE.test(p.inviteUrl))
+                return `Task "${task.label}": invalid Discord invite URL "${p.inviteUrl || ''}"`;
+            break;
+        case 'verify_role':
+            if (!p.inviteUrl || !DISCORD_INVITE_RE.test(p.inviteUrl))
+                return `Task "${task.label}": invalid Discord invite URL "${p.inviteUrl || ''}"`;
+            if (!p.roleId)
+                return `Task "${task.label}": role ID is required`;
+            if (!p.roleName)
+                return `Task "${task.label}": role name is required`;
+            break;
+        case 'join_channel':
+            if (!p.channelUrl || !TELEGRAM_CHANNEL_RE.test(p.channelUrl))
+                return `Task "${task.label}": invalid Telegram channel "${p.channelUrl || ''}"`;
+            break;
+        default:
+            return `Task "${task.label}": unknown action type "${task.actionType}"`;
+    }
+    return null;
+}
+
+/** Validate all tasks in an array. Returns first error or null. */
+export function validateAllTasks(tasks: QuestTask[]): string | null {
+    for (const task of tasks) {
+        const err = validateTaskParams(task);
+        if (err) return err;
+    }
+    return null;
+}
+
+// ─── Token generators ─────────────────────────────────────────────────────────
+
+export function generateClaimToken(): string {
+    return 'quest_' + randomBytes(32).toString('hex');
+}
+
+export function generatePreviewToken(): string {
+    return 'pv_' + randomBytes(24).toString('hex');
+}
+
+export function generateCollabToken(): string {
+    return 'collab_' + randomBytes(32).toString('hex');
+}
+
+// ─── Sponsor / Collaboration Helpers ────────────────────────────────────────
+
+/** Check if a user is an accepted sponsor on a quest. */
+export async function isQuestSponsor(
+    prisma: PrismaClient,
+    questId: string,
+    userId: string,
+): Promise<boolean> {
+    const collab = await prisma.questCollaborator.findUnique({
+        where: { questId_userId: { questId, userId } },
+        select: { acceptedAt: true },
+    });
+    return collab?.acceptedAt != null;
+}
+
+/** Check if user is the quest owner, an accepted sponsor, or admin. */
+export async function isQuestOwnerOrSponsor(
+    prisma: PrismaClient,
+    questId: string,
+    userId: string,
+    userRole: string,
+): Promise<{ allowed: boolean; isOwner: boolean; quest: any }> {
+    const quest = await prisma.quest.findUnique({ where: { id: questId } });
+    if (!quest) throw new QuestNotFoundError();
+    const isOwner = quest.creatorUserId === userId || userRole === 'admin';
+    const isSponsor = isOwner ? false : await isQuestSponsor(prisma, questId, userId);
+    return { allowed: isOwner || isSponsor, isOwner, quest };
+}
+
+// ─── Quest creation ───────────────────────────────────────────────────────────
+
+export interface CreateQuestInput {
+    title: string;
+    description: string;
+    sponsor?: string;
+    type?: string;
+    status?: string;
+    rewardAmount: number;
+    rewardType?: string;
+    totalSlots?: number;
+    tags?: string[];
+    requiredSkills?: string[];
+    requireVerified?: boolean;
+    tasks?: QuestTask[];
+    expiresAt?: string;
+    startAt?: string;
+    network?: string;
+    drawTime?: string;
+    fundingMethod?: 'crypto' | 'stripe';
+    llmKeyRewardEnabled?: boolean;
+    llmKeyTokenLimit?: number;
+    creatorTelegramId?: bigint;
+    // LLM Model Reward (LLMTOKEN_OPENROUTER)
+    llmModelId?: string;
+    tokenBudgetPerWinner?: number;
+}
+
+export interface QuestCreator {
+    agentId?: string;   // set when agent creates via API
+    userId?: string;    // set when human creates via dashboard
+    email?: string;     // human email
+}
+
+export async function createQuest(
+    prisma: PrismaClient,
+    input: CreateQuestInput,
+    creator?: QuestCreator,
+) {
+    const tasks: QuestTask[] = input.tasks ?? [];
+
+    // Auto-resolve Discord invite → guildId for join_server tasks missing guildId
+    for (const task of tasks) {
+        if (task.actionType === 'join_server' && task.params?.inviteUrl && !task.params.guildId) {
+            const code = task.params.inviteUrl.replace(/^https?:\/\/(discord\.gg|discord\.com\/invite)\//, '');
+            const guild = await resolveInvite(code);
+            if (guild) {
+                task.params.guildId = guild.guildId;
+            }
+        }
+    }
+
+    // Validate publish requirements for non-draft quests (agent flow creates with status='live')
+    if (input.status !== 'draft') {
+        const taskErr = validateAllTasks(tasks);
+        if (taskErr) throw new QuestValidationError(taskErr);
+
+        // Build a quest-like object for publish validation
+        const { validatePublishRequirements } = await import('./quests.publish-validator');
+        const publishErr = validatePublishRequirements({
+            ...input,
+            tasks,
+            fundingStatus: input.rewardType === 'LLM_KEY' ? 'confirmed' : 'pending',
+            totalFunded: 0,
+        });
+        if (publishErr) {
+            const messages = Object.values(publishErr.fields).join('; ');
+            throw new QuestValidationError(`Cannot publish: ${messages}`);
+        }
+    }
+
+    // ── LLM Model Reward: server-side cost computation ────────────────────────
+    let computedRewardAmount = input.rewardAmount;
+    let llmModelId: string | null = null;
+    let tokenBudgetPerWinner: number | null = null;
+    let tokenProvider: string | null = null;
+    let tokenAmount: number | null = null;
+    let fundingMethod: 'crypto' | 'stripe' | null = input.fundingMethod || null;
+
+    if (input.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER) {
+        if (!input.llmModelId || !input.tokenBudgetPerWinner) {
+            throw new QuestValidationError('LLM reward quests require llmModelId and tokenBudgetPerWinner');
+        }
+        const model = await prisma.llmModel.findUnique({ where: { id: input.llmModelId } });
+        if (!model || !model.isActive) {
+            throw new QuestValidationError('Selected LLM model is not available');
+        }
+        const totalSlots = input.totalSlots || 100;
+        computedRewardAmount = Math.round(input.tokenBudgetPerWinner * totalSlots * 100) / 100;
+        llmModelId = model.id;
+        tokenBudgetPerWinner = input.tokenBudgetPerWinner;
+        tokenProvider = 'openrouter';
+        tokenAmount = input.tokenBudgetPerWinner;
+        fundingMethod = 'crypto'; // Only crypto allowed for LLM reward quests
+    }
+
+    const claimToken = generateClaimToken();
+    const claimTokenExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h
+    const previewToken = generatePreviewToken();
+
+    const quest = await prisma.quest.create({
+        data: {
+            title: input.title,
+            description: input.description,
+            sponsor: input.sponsor || 'System',
+            type: input.type || 'FCFS',
+            status: input.status || 'draft',
+            rewardAmount: computedRewardAmount,
+            rewardType: input.rewardType || REWARD_TYPE.USDC,
+            tokenProvider,
+            tokenAmount,
+            totalSlots: input.totalSlots || 100,
+            filledSlots: 0,
+            tags: input.tags || [],
+            requiredSkills: input.requiredSkills || [],
+            requireVerified: input.requireVerified ?? false,
+            tasks: tasks as any,
+            expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
+            startAt: input.startAt ? new Date(input.startAt) : null,
+            network: input.network || null,
+            drawTime: input.drawTime ? new Date(input.drawTime) : null,
+            fundingMethod,
+            llmKeyRewardEnabled: input.llmKeyRewardEnabled ?? false,
+            llmKeyTokenLimit: input.llmKeyTokenLimit ?? 1000000,
+            llmModelId,
+            tokenBudgetPerWinner,
+            // Tokens
+            claimToken,
+            claimTokenExpiresAt,
+            previewToken,
+            // Creator
+            creatorAgentId: creator?.agentId || null,
+            creatorUserId: creator?.userId || null,
+            creatorEmail: creator?.email || null,
+            creatorTelegramId: input.creatorTelegramId || null,
+            // When human creates directly, mark as claimed immediately
+            claimedAt: creator?.userId ? new Date() : null,
+        },
+    });
+
+    const botUsername = process.env.TELEGRAM_BOT_USERNAME || 'ClawQuest_aibot';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+    return {
+        quest,
+        claimToken,
+        previewToken,
+        telegramDeeplink: `https://t.me/${botUsername}?start=${claimToken}`,
+        previewUrl: `${frontendUrl}/quests/${quest.id}?token=${previewToken}&claim=${claimToken}`,
+        fundUrl: `${frontendUrl}/quests/${quest.id}/fund`,
+    };
+}
+
+// ─── Quest update (draft only) ────────────────────────────────────────────────
+
+export interface UpdateQuestInput {
+    title?: string;
+    description?: string;
+    sponsor?: string;
+    type?: string;
+    status?: string;
+    rewardAmount?: number;
+    rewardType?: string;
+    totalSlots?: number;
+    tags?: string[];
+    requiredSkills?: string[];
+    requireVerified?: boolean;
+    tasks?: QuestTask[];
+    expiresAt?: string | null;
+    startAt?: string | null;
+    network?: string;
+    drawTime?: string | null;
+    fundingMethod?: 'crypto' | 'stripe';
+    llmKeyRewardEnabled?: boolean;
+    llmKeyTokenLimit?: number;
+    // LLM Model Reward (LLMTOKEN_OPENROUTER)
+    llmModelId?: string;
+    tokenBudgetPerWinner?: number;
+}
+
+export async function updateQuest(
+    prisma: PrismaClient,
+    questId: string,
+    creatorUserId: string,
+    input: UpdateQuestInput,
+    /** When true, skip ownership check (caller already verified via isQuestOwnerOrSponsor). */
+    skipAuthCheck = false,
+) {
+    const quest = await prisma.quest.findUnique({ where: { id: questId } });
+    if (!quest) throw new QuestNotFoundError();
+    if (quest.status !== 'draft') throw new QuestNotEditableError();
+    if (!skipAuthCheck && quest.creatorUserId !== creatorUserId) throw new QuestForbiddenError();
+
+    const data: any = {};
+    if (input.title !== undefined) data.title = input.title;
+    if (input.description !== undefined) data.description = input.description;
+    if (input.sponsor !== undefined) data.sponsor = input.sponsor;
+    if (input.type !== undefined) data.type = input.type;
+    if (input.rewardAmount !== undefined) data.rewardAmount = input.rewardAmount;
+    if (input.rewardType !== undefined) data.rewardType = input.rewardType;
+    if (input.totalSlots !== undefined) data.totalSlots = input.totalSlots;
+    if (input.tags !== undefined) data.tags = input.tags;
+    if (input.requiredSkills !== undefined) data.requiredSkills = input.requiredSkills;
+    if (input.requireVerified !== undefined) data.requireVerified = input.requireVerified;
+    // Auto-resolve Discord invite → guildId for join_server tasks missing guildId (same as createQuest)
+    if (input.tasks !== undefined) {
+        for (const task of input.tasks as QuestTask[]) {
+            if (task.actionType === 'join_server' && task.params?.inviteUrl && !task.params.guildId) {
+                const code = (task.params.inviteUrl as string).replace(/^https?:\/\/(discord\.gg|discord\.com\/invite)\//, '')
+                const guild = await resolveInvite(code)
+                if (guild) task.params.guildId = guild.guildId
+            }
+        }
+        data.tasks = input.tasks as any
+    }
+    if (input.expiresAt !== undefined) data.expiresAt = input.expiresAt ? new Date(input.expiresAt) : null;
+    if (input.startAt !== undefined) data.startAt = input.startAt ? new Date(input.startAt) : null;
+    if (input.network !== undefined) data.network = input.network;
+    if (input.drawTime !== undefined) data.drawTime = input.drawTime ? new Date(input.drawTime) : null;
+    if (input.fundingMethod !== undefined) data.fundingMethod = input.fundingMethod;
+    if (input.llmKeyRewardEnabled !== undefined) data.llmKeyRewardEnabled = input.llmKeyRewardEnabled;
+    if (input.llmKeyTokenLimit !== undefined) data.llmKeyTokenLimit = input.llmKeyTokenLimit;
+
+    // LLM model reward: re-compute rewardAmount server-side when llmModelId or tokenBudgetPerWinner changes
+    const effectiveRewardType = input.rewardType ?? quest.rewardType;
+    if (effectiveRewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER) {
+        const newModelId = input.llmModelId ?? (quest as any).llmModelId;
+        const newBudget = input.tokenBudgetPerWinner ?? Number((quest as any).tokenBudgetPerWinner ?? 0);
+        if (newModelId && newBudget) {
+            const model = await prisma.llmModel.findUnique({ where: { id: newModelId } });
+            if (!model || !model.isActive) throw new QuestValidationError('Selected LLM model is not available');
+            const totalSlots = input.totalSlots ?? quest.totalSlots;
+            data.rewardAmount = Math.round(newBudget * totalSlots * 100) / 100;
+            data.llmModelId = newModelId;
+            data.tokenBudgetPerWinner = newBudget;
+            data.tokenProvider = 'openrouter';
+            data.tokenAmount = newBudget;
+            data.fundingMethod = 'crypto';
+        }
+    } else {
+        if (input.llmModelId !== undefined) data.llmModelId = input.llmModelId;
+        if (input.tokenBudgetPerWinner !== undefined) data.tokenBudgetPerWinner = input.tokenBudgetPerWinner;
+    }
+
+    // Recalculate fundingStatus when rewardAmount changes (quest has deposits, not yet distributed/refunded)
+    const newRewardAmount = data.rewardAmount != null ? Number(data.rewardAmount) : Number(quest.rewardAmount);
+    const totalFunded = Number(quest.totalFunded ?? 0);
+    if (
+        data.rewardAmount !== undefined &&
+        totalFunded > 0 &&
+        quest.fundingStatus !== 'distributed' &&
+        quest.fundingStatus !== 'refunded'
+    ) {
+        const newFundingStatus = totalFunded >= newRewardAmount ? 'confirmed' : 'partial';
+        data.fundingStatus = newFundingStatus;
+        // If now fully funded and still draft, transition to live/scheduled (same as escrow handler)
+        if (
+            newFundingStatus === 'confirmed' &&
+            quest.status === 'draft' &&
+            input.status === undefined
+        ) {
+            data.status = quest.startAt && quest.startAt > new Date() ? 'scheduled' : 'live';
+        }
+    }
+
+    // Handle status changes with validation
+    if (input.status !== undefined) {
+        if (!isValidTransition(quest.status, input.status)) {
+            throw new QuestValidationError(`Invalid status transition: ${quest.status} → ${input.status}`);
+        }
+
+        // Validate publish requirements when going draft → live
+        if (quest.status === 'draft' && input.status === 'live') {
+            // Merge input changes with existing quest for validation
+            const questForValidation = { ...quest, ...data };
+            const publishErr = validatePublishRequirements(questForValidation);
+            if (publishErr) {
+                throw new QuestValidationError(`Quest does not meet publish requirements: ${JSON.stringify(publishErr.fields)}`);
+            }
+        }
+
+        data.status = input.status;
+    }
+
+    return prisma.quest.update({ where: { id: questId }, data });
+}
+
+// ─── Status transitions ───────────────────────────────────────────────────────
+
+const VALID_TRANSITIONS: Record<string, string[]> = {
+    draft: ['live', 'scheduled', 'cancelled'],
+    live: ['completed', 'expired', 'cancelled'],
+    scheduled: ['live', 'cancelled'],
+    // terminal states — no transitions out
+    completed: [],
+    cancelled: [],
+    expired: [],
+};
+
+export function isValidTransition(from: string, to: string): boolean {
+    return (VALID_TRANSITIONS[from] ?? []).includes(to);
+}
+
+// ─── Identity helpers ────────────────────────────────────────────────────────
+
+/** Resolve human-readable handle from a participation's user relation.
+ *  Requires participation to include `user` with select: { username, email, telegramUsername, xHandle, discordHandle }.
+ *  Falls back through linked identities before defaulting to 'anonymous'. */
+export function resolveHumanHandle(p: { user?: any; agent?: any }): string {
+    const u = p.user;
+    if (u) {
+        return u.displayName ?? u.username ?? u.telegramUsername ?? u.xHandle ?? u.discordHandle ?? u.email?.split('@')[0] ?? 'anonymous';
+    }
+    // Legacy fallback: agent.owner path (for pre-migrated queries)
+    const owner = p.agent?.owner;
+    if (owner) {
+        return owner.displayName ?? owner.username ?? owner.email?.split('@')[0] ?? 'anonymous';
+    }
+    return 'anonymous';
+}
+
+/** Standard Prisma select for user identity fields on participation. */
+export const USER_IDENTITY_SELECT = {
+    displayName: true, username: true, email: true, telegramUsername: true, xHandle: true, discordHandle: true,
+} as const;
+
+// ─── Response helpers ─────────────────────────────────────────────────────────
+
+/** Format a raw Prisma quest (with includes) into the API response shape.
+ *  Strips internal DB fields (claimToken, claimTokenExpiresAt, claimedAt, previewToken)
+ *  that must not be exposed in public responses.
+ */
+export function formatQuestResponse(
+    quest: any,
+    participations?: any[],
+    count?: number,
+    /** Accepted collaborators with user relation (for sponsorNames). */
+    collaborators?: any[],
+) {
+    const questers = count ?? 0;
+    const names = participations?.map((p: any) => p.agent?.agentname ?? 'anonymous') ?? [];
+    const details = participations?.map((p: any) => ({
+        agentName: p.agent?.agentname ?? 'anonymous',
+        humanHandle: resolveHumanHandle(p),
+    })) ?? [];
+
+    // Destructure out internal fields before spreading (avoid leaking BigInt/private fields)
+    const {
+        claimToken: _claimToken,
+        claimTokenExpiresAt: _claimTokenExpiresAt,
+        claimedAt: _claimedAt,
+        previewToken: _previewToken,
+        creatorTelegramId: _creatorTelegramId,
+        ...safeQuest
+    } = quest;
+
+    const rewardAmount =
+        quest.rewardAmount != null ? Number(quest.rewardAmount) : 0;
+
+    // QuestSchema expects llmKeyTokenLimit to be positive or null (not 0)
+    const llmKeyTokenLimit =
+        quest.llmKeyTokenLimit != null && Number(quest.llmKeyTokenLimit) > 0
+            ? Number(quest.llmKeyTokenLimit)
+            : null;
+
+    // Collaboration fields
+    const sponsorNames = collaborators?.map((c: any) =>
+        c.user?.displayName ?? c.user?.username ?? 'Sponsor'
+    ) ?? quest.sponsorNames ?? [];
+
+    // Serialize llmModel Decimal fields if present
+    const llmModel = quest.llmModel ? {
+        ...quest.llmModel,
+        inputPricePer1M: Number(quest.llmModel.inputPricePer1M),
+        outputPricePer1M: Number(quest.llmModel.outputPricePer1M),
+    } : null;
+
+    return {
+        ...safeQuest,
+        rewardAmount,
+        tokenBudgetPerWinner: quest.tokenBudgetPerWinner != null ? Number(quest.tokenBudgetPerWinner) : null,
+        llmModel,
+        llmKeyTokenLimit,
+        tags: quest.tags ?? [],
+        requiredSkills: quest.requiredSkills ?? [],
+        tasks: normalizeQuestTasks(quest.tasks),
+        questers,
+        questerNames: names,
+        questerDetails: details,
+        network: quest.network ?? null,
+        drawTime: quest.drawTime ? quest.drawTime.toISOString() : null,
+        startAt: quest.startAt ? quest.startAt.toISOString() : null,
+        expiresAt: quest.expiresAt ? quest.expiresAt.toISOString() : null,
+        createdAt: quest.createdAt.toISOString(),
+        updatedAt: quest.updatedAt.toISOString(),
+        totalFunded: quest.totalFunded != null ? Number(quest.totalFunded) : null,
+        collaboratorCount: collaborators?.length ?? quest.collaboratorCount ?? null,
+        sponsorNames,
+    };
+}
+
+// ─── Proof Verification ──────────────────────────────────────────────────
+
+/** Check if a user is the quest creator or admin. */
+export async function isQuestCreatorOrAdmin(
+    prisma: PrismaClient,
+    questId: string,
+    userId: string,
+    userRole: string,
+): Promise<{ allowed: boolean; quest: any }> {
+    const quest = await prisma.quest.findUnique({ where: { id: questId } });
+    if (!quest) throw new QuestNotFoundError();
+    const allowed = quest.creatorUserId === userId || userRole === 'admin';
+    return { allowed, quest };
+}
+
+/** Approve or reject a single participation proof. */
+export async function verifyParticipation(
+    prisma: PrismaClient,
+    questId: string,
+    participationId: string,
+    action: 'approve' | 'reject',
+    reason?: string,
+) {
+    const participation = await prisma.questParticipation.findUnique({
+        where: { id: participationId },
+    });
+    if (!participation || participation.questId !== questId) {
+        throw new QuestValidationError('Participation not found for this quest');
+    }
+    if (participation.status !== 'submitted') {
+        throw new QuestValidationError(`Can only verify submitted proofs (current: ${participation.status})`);
+    }
+
+    const newStatus = action === 'approve' ? 'verified' : 'rejected';
+    const proofData = (participation.proof as any) ?? {};
+    const updatedProof = action === 'reject'
+        ? { ...proofData, rejectionReason: reason }
+        : proofData;
+
+    return prisma.questParticipation.update({
+        where: { id: participationId },
+        data: {
+            status: newStatus,
+            proof: updatedProof,
+        },
+    });
+}
+
+/** Approve or reject multiple participations at once. */
+export async function bulkVerifyParticipations(
+    prisma: PrismaClient,
+    questId: string,
+    items: Array<{ participationId: string; action: 'approve' | 'reject'; reason?: string }>,
+) {
+    // Load all participations in one query
+    const ids = items.map(i => i.participationId);
+    const participations = await prisma.questParticipation.findMany({
+        where: { id: { in: ids }, questId },
+    });
+    const pMap = new Map(participations.map(p => [p.id, p]));
+
+    const errors: string[] = [];
+    const operations: any[] = [];
+
+    for (const item of items) {
+        const p = pMap.get(item.participationId);
+        if (!p) {
+            errors.push(`${item.participationId}: not found`);
+            continue;
+        }
+        if (p.status !== 'submitted') {
+            errors.push(`${item.participationId}: status is ${p.status}, expected submitted`);
+            continue;
+        }
+
+        const newStatus = item.action === 'approve' ? 'verified' : 'rejected';
+        const proofData = (p.proof as any) ?? {};
+        const updatedProof = item.action === 'reject'
+            ? { ...proofData, rejectionReason: item.reason }
+            : proofData;
+
+        operations.push(
+            prisma.questParticipation.update({
+                where: { id: item.participationId },
+                data: { status: newStatus, proof: updatedProof },
+            })
+        );
+    }
+
+    if (operations.length > 0) {
+        await prisma.$transaction(operations);
+    }
+
+    return { updated: operations.length, errors };
+}
+
+// ─── Error classes ────────────────────────────────────────────────────────────
+
+export class QuestValidationError extends Error {
+    code = 'INVALID_TASK_PARAMS';
+    constructor(message: string) {
+        super(message);
+        this.name = 'QuestValidationError';
+    }
+}
+
+export class QuestNotFoundError extends Error {
+    code = 'NOT_FOUND';
+    constructor() {
+        super('Quest not found');
+        this.name = 'QuestNotFoundError';
+    }
+}
+
+export class QuestNotEditableError extends Error {
+    code = 'NOT_EDITABLE';
+    constructor() {
+        super('Quest can only be edited in draft status');
+        this.name = 'QuestNotEditableError';
+    }
+}
+
+export class QuestForbiddenError extends Error {
+    code = 'FORBIDDEN';
+    constructor() {
+        super('You do not have permission to edit this quest');
+        this.name = 'QuestForbiddenError';
+    }
+}

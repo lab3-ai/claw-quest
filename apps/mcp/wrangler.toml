@@ -1,0 +1,17 @@
+name = "clawquest-mcp"
+main = "src/index.ts"
+compatibility_date = "2024-11-27"
+compatibility_flags = ["nodejs_compat"]
+
+[env.production]
+name = "clawquest-mcp-production"
+routes = [
+  { pattern = "mcp.clawquest.ai/*", zone_name = "clawquest.ai" }
+]
+
+[env.staging]
+name = "clawquest-mcp-staging"
+
+# Environment variables (set via wrangler secret put)
+# CLAWQUEST_API_URL - ClawQuest API base URL
+# CLAWQUEST_API_KEY - Optional API key for backend auth

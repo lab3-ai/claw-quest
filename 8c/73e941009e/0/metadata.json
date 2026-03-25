@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "8c73e941009e",
+  "session_id": "7c799f0f-e718-4b6e-ad33-aa9e3288d3f2",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-25T11:08:28.449294Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "apps/api/src/modules/escrow/escrow.config.ts",
+    "contracts/foundry.toml",
+    "docs/superpowers/specs/2026-03-25-xlayer-chain-integration-design.md",
+    "docs/xlayer-deploy-guide.md",
+    "packages/shared/src/__tests__/chains.test.ts",
+    "packages/shared/src/chains.ts",
+    ".env.example",
+    "apps/dashboard/src/lib/wagmi.ts",
+    "docs/superpowers/plans/2026-03-25-xlayer-chain-integration.md"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "a585ab44b213",
+  "checkpoint_transcript_start": 18,
+  "transcript_lines_at_start": 18,
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-25T11:08:28.420094Z",
+    "agent_lines": 754,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 754,
+    "agent_percentage": 100
+  }
+}

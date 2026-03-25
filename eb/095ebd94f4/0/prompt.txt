@@ -1,0 +1,13 @@
+"giờ tôi cần public repo ra, nên sẽ cần làm 1 việc convert toàn bộ login từ Vietnamese qua English"
+
+---
+
+Bạn đã kiểm tra tất cả các file chưa? ví dụ '/Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/docs/xlayer-deploy-guide.md'\
+folder: '/Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/docs' 
+Vì tôi public toàn bộ project (repo) nên bạn cần rà soát tất cả các file trong tất cả folder (trừ các folder bị .gitignore nhé)
+
+---
+
+bước 1: Có, hãy xoá .env nếu chưa ignore nhé, và thêm .gitignore nếu chưa có. 
+bước 2: không cần nhé 
+bước 3: oke

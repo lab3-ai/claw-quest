@@ -1,0 +1,26 @@
+/brainstorming TÔi đang muốn tích hợp thêm chain X-layer vào project, tham khảo docs @docs/xlayer-deploy-guide.md 
+chỉ support như BSC là 2 token USDC: REDACTED và USDT:  0x1E4a5963aBFD975d8c9021ce480b42188849D41d
+Về phần deployment contract, chỉ viết guide hướng dẫn tôi setup các bước thôi (đẩy đủ từ PrivateKey, Operator, RPC,..)
+
+---
+
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/docs/PRODUCT_DISTRIBUTION.md in the IDE. This may or may not be related to the current task.</ide_opened_file>
+A
+
+---
+
+A
+
+---
+
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/.env in the IDE. This may or may not be related to the current task.</ide_opened_file>
+TÔi hỏi chút, thế address của 2 chain BSC vs BASE đều là 0xF86f5498165D62E044964740F30540D6c5675b99 thì đang dùng cơ chế deploy nào?
+Nếu deploy thường thì chắc vẫn deploy thường, ta cần cắn số nonce chắc sẽ ra địa chỉ giống nhau nhỉ?
+
+---
+
+Approach A, tuy nhiên tôi muốn deploy thử lên Testnet để kiểm tra address trước.
+
+---
+
+Ổn nhé

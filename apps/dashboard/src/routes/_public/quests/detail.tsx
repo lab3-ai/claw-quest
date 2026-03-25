@@ -792,7 +792,7 @@ export function QuestDetail() {
     allAgentTasksDone &&
     (humanTasksTotal === 0 ||
       (quest.myParticipation?.proof?.verifiedIndices?.length ?? 0) >=
-        humanTasksTotal);
+      humanTasksTotal);
 
   return (
     <div className="">
@@ -814,7 +814,7 @@ export function QuestDetail() {
             quest.fundingMethod === FUNDING_METHOD.STRIPE
               ? REWARD_TYPE.USD
               : quest.rewardType === REWARD_TYPE.USDC ||
-                  quest.rewardType === REWARD_TYPE.USDT
+                quest.rewardType === REWARD_TYPE.USDT
                 ? quest.rewardType
                 : quest.rewardType,
         }}
@@ -922,329 +922,329 @@ export function QuestDetail() {
           {/* Tasks section */}
           {((quest.tasks && quest.tasks.length > 0) ||
             (quest.requiredSkills && quest.requiredSkills.length > 0)) && (
-            <div className="">
-              <h2 className="text-2xs font-normal uppercase tracking-widest text-fg-3 mb-2">
-                Complete below tasks to earn reward
-              </h2>
+              <div className="">
+                <h2 className="text-2xs font-normal uppercase tracking-widest text-fg-3 mb-2">
+                  Complete below tasks to earn reward
+                </h2>
 
-              {/* Human Tasks (from quest.tasks) */}
-              {quest.tasks && quest.tasks.length > 0 && (
-                <div className="mb-4 bg-bg-1 border border-border-2">
-                  <div className="flex items-center gap-2 text-sm font-semibold py-3 px-4">
-                    <User3Fill size={16} className="text-(--human-fg)" />
-                    Human Tasks
-                    <span className="font-normal text-xs text-fg-3 ml-auto">
-                      Complete these yourself
-                    </span>
-                  </div>
+                {/* Human Tasks (from quest.tasks) */}
+                {quest.tasks && quest.tasks.length > 0 && (
+                  <div className="mb-4 bg-bg-1 border border-border-2">
+                    <div className="flex items-center gap-2 text-sm font-semibold py-3 px-4">
+                      <User3Fill size={16} className="text-(--human-fg)" />
+                      Human Tasks
+                      <span className="font-normal text-xs text-fg-3 ml-auto">
+                        Complete these yourself
+                      </span>
+                    </div>
 
-                  {/* Consolidated account linking warning */}
-                  {quest.myParticipation &&
-                    quest.tasks &&
-                    (() => {
-                      const missingPlatforms = [
-                        ...new Set(
-                          quest.tasks
-                            .map((task: any) => {
-                              const warning = getMissingAccountWarning(
-                                task,
-                                meProfile,
-                              );
-                              return warning ? task.platform : null;
-                            })
-                            .filter(Boolean) as string[],
-                        ),
-                      ];
-                      if (missingPlatforms.length === 0) return null;
-                      const linkPlatforms = missingPlatforms.map(
-                        (p) => p.charAt(0).toUpperCase() + p.slice(1),
+                    {/* Consolidated account linking warning */}
+                    {quest.myParticipation &&
+                      quest.tasks &&
+                      (() => {
+                        const missingPlatforms = [
+                          ...new Set(
+                            quest.tasks
+                              .map((task: any) => {
+                                const warning = getMissingAccountWarning(
+                                  task,
+                                  meProfile,
+                                );
+                                return warning ? task.platform : null;
+                              })
+                              .filter(Boolean) as string[],
+                          ),
+                        ];
+                        if (missingPlatforms.length === 0) return null;
+                        const linkPlatforms = missingPlatforms.map(
+                          (p) => p.charAt(0).toUpperCase() + p.slice(1),
+                        );
+                        return (
+                          <Link
+                            to="/account" search={{ from: "quest" }}
+                            className="text-xs mb-3 mx-4 flex items-center gap-3 px-4 py-2.5 bg-warning-light text-warning border border-warning/20 rounded no-underline hover:bg-warning/15 transition-colors"
+                          >
+                            <AlertLine
+                              size={20}
+                              className="shrink-0 text-warning"
+                            />
+                            <span className="flex-1">
+                              Link your{" "}
+                              <span className="font-semibold">
+                                {linkPlatforms.join(", ")}
+                              </span>{" "}
+                              {linkPlatforms.length === 1
+                                ? "account"
+                                : "accounts"}{" "}
+                              to verify
+                            </span>
+                            <span className="text-fg-3 flex items-center gap-1 shrink-0">
+                              Go to Settings →
+                            </span>
+                          </Link>
+                        );
+                      })()}
+
+                    {quest.tasks.map((task: any, idx: number) => {
+                      const hasAccepted = !!quest.myParticipation;
+                      const isVerified =
+                        quest.myParticipation?.proof?.verifiedIndices?.includes(
+                          idx,
+                        );
+                      const isVerifying = verifyingIndex === idx;
+                      const isOpened = openedTasks.has(idx);
+                      const hasFailed = !!taskErrors[idx];
+                      const taskStatus = isVerified
+                        ? "done"
+                        : isVerifying
+                          ? "verifying"
+                          : hasFailed
+                            ? "failed"
+                            : "pending";
+                      const btnLabel = getTaskBtnLabel(
+                        task.actionType,
+                        isOpened && !isVerified,
                       );
-                      return (
-                        <Link
-                          to="/account" search={{ from: "quest" }}
-                          className="text-xs mb-3 mx-4 flex items-center gap-3 px-4 py-2.5 bg-warning-light text-warning border border-warning/20 rounded no-underline hover:bg-warning/15 transition-colors"
-                        >
-                          <AlertLine
-                            size={20}
-                            className="shrink-0 text-warning"
-                          />
-                          <span className="flex-1">
-                            Link your{" "}
-                            <span className="font-semibold">
-                              {linkPlatforms.join(", ")}
-                            </span>{" "}
-                            {linkPlatforms.length === 1
-                              ? "account"
-                              : "accounts"}{" "}
-                            to verify
-                          </span>
-                          <span className="text-fg-3 flex items-center gap-1 shrink-0">
-                            Go to Settings →
-                          </span>
-                        </Link>
-                      );
-                    })()}
+                      const actionUrl = getTaskActionUrl(task);
 
-                  {quest.tasks.map((task: any, idx: number) => {
-                    const hasAccepted = !!quest.myParticipation;
-                    const isVerified =
-                      quest.myParticipation?.proof?.verifiedIndices?.includes(
-                        idx,
-                      );
-                    const isVerifying = verifyingIndex === idx;
-                    const isOpened = openedTasks.has(idx);
-                    const hasFailed = !!taskErrors[idx];
-                    const taskStatus = isVerified
-                      ? "done"
-                      : isVerifying
-                        ? "verifying"
-                        : hasFailed
-                          ? "failed"
-                          : "pending";
-                    const btnLabel = getTaskBtnLabel(
-                      task.actionType,
-                      isOpened && !isVerified,
-                    );
-                    const actionUrl = getTaskActionUrl(task);
+                      const hasProofInput =
+                        (task.actionType === "post" ||
+                          task.actionType === "quote_post") &&
+                        hasAccepted &&
+                        !isVerified;
 
-                    const hasProofInput =
-                      (task.actionType === "post" ||
-                        task.actionType === "quote_post") &&
-                      hasAccepted &&
-                      !isVerified;
-
-                    const actionBtnEl = (
-                      <TaskActionBtn
-                        status={taskStatus}
-                        disabled={!hasAccepted}
-                        label={btnLabel}
-                        onClick={() => {
-                          if (!hasAccepted) return;
-                          if (needsAccountLink(task, meProfile)) {
-                            setLinkAccountPlatform(task.platform);
-                            return;
-                          }
-                          if (task.actionType === "verify_role") {
+                      const actionBtnEl = (
+                        <TaskActionBtn
+                          status={taskStatus}
+                          disabled={!hasAccepted}
+                          label={btnLabel}
+                          onClick={() => {
+                            if (!hasAccepted) return;
+                            if (needsAccountLink(task, meProfile)) {
+                              setLinkAccountPlatform(task.platform);
+                              return;
+                            }
+                            if (task.actionType === "verify_role") {
+                              setVerifyingIndex(idx);
+                              setTaskErrors((prev) => {
+                                const n = { ...prev };
+                                delete n[idx];
+                                return n;
+                              });
+                              verifyTaskMutation.mutate({ taskIndex: idx });
+                              return;
+                            }
+                            if (!isOpened && actionUrl) {
+                              window.open(actionUrl, "_blank");
+                              setOpenedTasks((prev) => new Set(prev).add(idx));
+                              return;
+                            }
                             setVerifyingIndex(idx);
                             setTaskErrors((prev) => {
                               const n = { ...prev };
                               delete n[idx];
                               return n;
                             });
-                            verifyTaskMutation.mutate({ taskIndex: idx });
-                            return;
-                          }
-                          if (!isOpened && actionUrl) {
-                            window.open(actionUrl, "_blank");
-                            setOpenedTasks((prev) => new Set(prev).add(idx));
-                            return;
-                          }
-                          setVerifyingIndex(idx);
-                          setTaskErrors((prev) => {
-                            const n = { ...prev };
-                            delete n[idx];
-                            return n;
-                          });
-                          verifyTaskMutation.mutate({
-                            taskIndex: idx,
-                            proofUrl: proofUrls[idx]?.trim() || undefined,
-                          });
-                        }}
-                      />
-                    );
+                            verifyTaskMutation.mutate({
+                              taskIndex: idx,
+                              proofUrl: proofUrls[idx]?.trim() || undefined,
+                            });
+                          }}
+                        />
+                      );
 
-                    const platformBadgeEl = (
-                      <span className="inline-flex items-center gap-1.5 h-7 px-2 text-2xs text-fg-3 border border-border-2 rounded font-medium uppercase tracking-wider shrink-0">
-                        <PlatformIcon name={task.platform} size={12} />
-                        {platformLabel(task.platform)}
-                      </span>
+                      const platformBadgeEl = (
+                        <span className="inline-flex items-center gap-1.5 h-7 px-2 text-2xs text-fg-3 border border-border-2 rounded font-medium uppercase tracking-wider shrink-0">
+                          <PlatformIcon name={task.platform} size={12} />
+                          {platformLabel(task.platform)}
+                        </span>
+                      );
+
+                      return (
+                        <div
+                          key={idx}
+                          className="group/task bg-bg-1 rounded px-4 py-3 overflow-hidden last:mb-0 border-t border-border-2"
+                        >
+                          <div className="flex items-center gap-2 text-sm">
+                            <TaskCheck status={taskStatus} />
+                            <span className="flex-1 font-medium">
+                              {task.label}
+                            </span>
+                            {/* Show badge + button inline when no proof input */}
+                            {!hasProofInput && platformBadgeEl}
+                            {!hasProofInput && actionBtnEl}
+                          </div>
+                          {/* Proof input row: input + badge + button on same line */}
+                          {hasProofInput && (
+                            <div className="flex items-center gap-2 pt-2 pl-6">
+                              <Input
+                                type="url"
+                                inputSize="md"
+                                className="flex-1 !h-7 text-xs"
+                                placeholder="Paste your tweet URL here..."
+                                value={proofUrls[idx] || ""}
+                                onChange={(e) =>
+                                  setProofUrls((prev) => ({
+                                    ...prev,
+                                    [idx]: e.target.value,
+                                  }))
+                                }
+                              />
+                              {platformBadgeEl}
+                              {actionBtnEl}
+                            </div>
+                          )}
+                          {hasFailed && (
+                            <div className="text-xs text-error mt-1 pl-6">
+                              {taskErrors[idx]}
+                              {taskErrors[idx]?.includes("re-link") && (
+                                <>
+                                  {" "}
+                                  —{" "}
+                                  <Link to="/account" search={{ from: "quest" }} className="text-primary">
+                                    Go to Settings
+                                  </Link>
+                                </>
+                              )}
+                              {taskErrors[idx]?.includes("Link your") && (
+                                <>
+                                  {" "}
+                                  —{" "}
+                                  <Link to="/account" search={{ from: "quest" }} className="text-primary">
+                                    Go to Settings
+                                  </Link>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Agent Tasks (from quest.requiredSkills) */}
+                {quest.requiredSkills &&
+                  quest.requiredSkills.length > 0 &&
+                  (() => {
+                    const verifiedSkills = new Set(
+                      quest.myParticipation?.verifiedSkills ?? [],
                     );
 
                     return (
-                      <div
-                        key={idx}
-                        className="group/task bg-bg-1 rounded px-4 py-3 overflow-hidden last:mb-0 border-t border-border-2"
-                      >
-                        <div className="flex items-center gap-2 text-sm">
-                          <TaskCheck status={taskStatus} />
-                          <span className="flex-1 font-medium">
-                            {task.label}
+                      <div className="mb-4 bg-bg-1 border border-border-2">
+                        <div className="flex items-center gap-2 text-sm font-semibold py-3 px-4">
+                          <AiFill size={16} className="text-(--agent-fg)" />
+                          Agent Tasks
+                          {quest.requireVerified && (
+                            <Badge variant="filled-warning">Verified Only</Badge>
+                          )}
+                          <span className="font-normal text-xs text-fg-3 ml-auto">
+                            Your AI agent handles these
                           </span>
-                          {/* Show badge + button inline when no proof input */}
-                          {!hasProofInput && platformBadgeEl}
-                          {!hasProofInput && actionBtnEl}
                         </div>
-                        {/* Proof input row: input + badge + button on same line */}
-                        {hasProofInput && (
-                          <div className="flex items-center gap-2 pt-2 pl-6">
-                            <Input
-                              type="url"
-                              inputSize="md"
-                              className="flex-1 !h-7 text-xs"
-                              placeholder="Paste your tweet URL here..."
-                              value={proofUrls[idx] || ""}
-                              onChange={(e) =>
-                                setProofUrls((prev) => ({
-                                  ...prev,
-                                  [idx]: e.target.value,
-                                }))
-                              }
-                            />
-                            {platformBadgeEl}
-                            {actionBtnEl}
-                          </div>
+                        {quest.requiredSkills.map(
+                          (skill: string, idx: number) => {
+                            const skillSlug = skill.includes("/")
+                              ? skill.slice(skill.indexOf("/") + 1)
+                              : skill;
+                            const isVerified =
+                              verifiedSkills.has(skill) ||
+                              verifiedSkills.has(skillSlug);
+                            const status = !quest.myParticipation
+                              ? "pending"
+                              : isVerified
+                                ? "done"
+                                : "pending";
+                            const isLoading = challengeLoading === skill;
+
+                            return (
+                              <div
+                                key={idx}
+                                className="group/task bg-bg-1 rounded overflow-hidden last:mb-0 px-4 py-3 border-t border-border-2"
+                              >
+                                <div className="flex items-center gap-2 text-sm">
+                                  <TaskCheck status={status} />
+                                  <span className="flex-1 font-medium">
+                                    Requires skill:
+                                    <Badge
+                                      variant="outline-strong"
+                                      className="ml-2 max-sm:hidden"
+                                    >
+                                      {skill}
+                                    </Badge>
+                                  </span>
+                                  {quest.myParticipation && (
+                                    <Badge
+                                      variant={
+                                        isVerified
+                                          ? "filled-success"
+                                          : "filled-warning"
+                                      }
+                                      className="h-7 px-3"
+                                    >
+                                      {isVerified ? "Verified" : "Pending"}
+                                    </Badge>
+                                  )}
+                                  {!isVerified && (
+                                    <Button
+                                      size="sm"
+                                      className="min-w-20 group-hover/task:!bg-primary group-hover/task:!text-primary-foreground transition-colors"
+                                      disabled={isLoading}
+                                      onClick={() =>
+                                        openVerifyChallenge(skill, quest.id)
+                                      }
+                                    >
+                                      {isLoading ? "Loading…" : "Verify"}
+                                    </Button>
+                                  )}
+                                </div>
+                                {/* Mobile: skill badge below title */}
+                                <div className="sm:hidden pl-6">
+                                  <Badge variant="outline-strong">{skill}</Badge>
+                                </div>
+                              </div>
+                            );
+                          },
                         )}
-                        {hasFailed && (
-                          <div className="text-xs text-error mt-1 pl-6">
-                            {taskErrors[idx]}
-                            {taskErrors[idx]?.includes("re-link") && (
-                              <>
-                                {" "}
-                                —{" "}
-                                <Link to="/account" search={{ from: "quest" }} className="text-primary">
-                                  Go to Settings
-                                </Link>
-                              </>
-                            )}
-                            {taskErrors[idx]?.includes("Link your") && (
-                              <>
-                                {" "}
-                                —{" "}
-                                <Link to="/account" search={{ from: "quest" }} className="text-primary">
-                                  Go to Settings
-                                </Link>
-                              </>
-                            )}
-                          </div>
-                        )}
+
+                        {/* Scan guide when skills missing or unverified */}
+                        {needsVerifiedScan &&
+                          (() => {
+                            const scanCmd = `npx @clawquest/scan --key <your-agent-api-key> --server ${API_BASE}`;
+                            return (
+                              <div className="mt-2 rounded border border-warning/30 bg-warning/10 px-3 py-3 text-xs">
+                                <div className="font-semibold mb-1">
+                                  Verify your skills to join this quest
+                                </div>
+                                <div className="text-fg-3 leading-relaxed mb-1.5">
+                                  Run this in your terminal:
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <code className="flex-1 bg-bg-3 px-2 py-1.5 rounded font-mono text-xs select-all overflow-x-auto">
+                                    {scanCmd}
+                                  </code>
+                                  <button
+                                    type="button"
+                                    className="shrink-0 px-2 py-1.5 rounded bg-bg-3 hover:bg-bg-3/80 text-xs font-medium transition-colors"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(scanCmd);
+                                    }}
+                                  >
+                                    Copy
+                                  </button>
+                                </div>
+                                <div className="text-fg-3 mt-1.5">
+                                  After scan, refresh this page.
+                                </div>
+                              </div>
+                            );
+                          })()}
                       </div>
                     );
-                  })}
-                </div>
-              )}
-
-              {/* Agent Tasks (from quest.requiredSkills) */}
-              {quest.requiredSkills &&
-                quest.requiredSkills.length > 0 &&
-                (() => {
-                  const verifiedSkills = new Set(
-                    quest.myParticipation?.verifiedSkills ?? [],
-                  );
-
-                  return (
-                    <div className="mb-4 bg-bg-1 border border-border-2">
-                      <div className="flex items-center gap-2 text-sm font-semibold py-3 px-4">
-                        <AiFill size={16} className="text-(--agent-fg)" />
-                        Agent Tasks
-                        {quest.requireVerified && (
-                          <Badge variant="filled-warning">Verified Only</Badge>
-                        )}
-                        <span className="font-normal text-xs text-fg-3 ml-auto">
-                          Your AI agent handles these
-                        </span>
-                      </div>
-                      {quest.requiredSkills.map(
-                        (skill: string, idx: number) => {
-                          const skillSlug = skill.includes("/")
-                            ? skill.slice(skill.indexOf("/") + 1)
-                            : skill;
-                          const isVerified =
-                            verifiedSkills.has(skill) ||
-                            verifiedSkills.has(skillSlug);
-                          const status = !quest.myParticipation
-                            ? "pending"
-                            : isVerified
-                              ? "done"
-                              : "pending";
-                          const isLoading = challengeLoading === skill;
-
-                          return (
-                            <div
-                              key={idx}
-                              className="group/task bg-bg-1 rounded overflow-hidden last:mb-0 px-4 py-3 border-t border-border-2"
-                            >
-                              <div className="flex items-center gap-2 text-sm">
-                                <TaskCheck status={status} />
-                                <span className="flex-1 font-medium">
-                                  Requires skill:
-                                  <Badge
-                                    variant="outline-strong"
-                                    className="ml-2 max-sm:hidden"
-                                  >
-                                    {skill}
-                                  </Badge>
-                                </span>
-                                {quest.myParticipation && (
-                                  <Badge
-                                    variant={
-                                      isVerified
-                                        ? "filled-success"
-                                        : "filled-warning"
-                                    }
-                                    className="h-7 px-3"
-                                  >
-                                    {isVerified ? "Verified" : "Pending"}
-                                  </Badge>
-                                )}
-                                {!isVerified && (
-                                  <Button
-                                    size="sm"
-                                    className="min-w-20 group-hover/task:!bg-primary group-hover/task:!text-primary-foreground transition-colors"
-                                    disabled={isLoading}
-                                    onClick={() =>
-                                      openVerifyChallenge(skill, quest.id)
-                                    }
-                                  >
-                                    {isLoading ? "Loading…" : "Verify"}
-                                  </Button>
-                                )}
-                              </div>
-                              {/* Mobile: skill badge below title */}
-                              <div className="sm:hidden pl-6">
-                                <Badge variant="outline-strong">{skill}</Badge>
-                              </div>
-                            </div>
-                          );
-                        },
-                      )}
-
-                      {/* Scan guide when skills missing or unverified */}
-                      {needsVerifiedScan &&
-                        (() => {
-                          const scanCmd = `npx @clawquest/scan --key <your-agent-api-key> --server ${API_BASE}`;
-                          return (
-                            <div className="mt-2 rounded border border-warning/30 bg-warning/10 px-3 py-3 text-xs">
-                              <div className="font-semibold mb-1">
-                                Verify your skills to join this quest
-                              </div>
-                              <div className="text-fg-3 leading-relaxed mb-1.5">
-                                Run this in your terminal:
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <code className="flex-1 bg-bg-3 px-2 py-1.5 rounded font-mono text-xs select-all overflow-x-auto">
-                                  {scanCmd}
-                                </code>
-                                <button
-                                  type="button"
-                                  className="shrink-0 px-2 py-1.5 rounded bg-bg-3 hover:bg-bg-3/80 text-xs font-medium transition-colors"
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(scanCmd);
-                                  }}
-                                >
-                                  Copy
-                                </button>
-                              </div>
-                              <div className="text-fg-3 mt-1.5">
-                                After scan, refresh this page.
-                              </div>
-                            </div>
-                          );
-                        })()}
-                    </div>
-                  );
-                })()}
-            </div>
-          )}
+                  })()}
+              </div>
+            )}
 
           {/* No tasks fallback */}
           {(!quest.tasks || quest.tasks.length === 0) &&
@@ -1370,10 +1370,10 @@ export function QuestDetail() {
                 {
                   label: string;
                   variant:
-                    | "outline-warning"
-                    | "outline-success"
-                    | "outline-error"
-                    | "outline-muted";
+                  | "outline-warning"
+                  | "outline-success"
+                  | "outline-error"
+                  | "outline-muted";
                   icon: React.ElementType;
                 }
               > = {
@@ -1447,7 +1447,7 @@ export function QuestDetail() {
                 {quest.rewardType === REWARD_TYPE.LLM_KEY
                   ? (quest.llmKeyTokenLimit ?? 0).toLocaleString()
                   : quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER &&
-                      llmTokenBudget
+                    llmTokenBudget
                     ? Math.round(llmTokenBudget.total).toLocaleString()
                     : quest.rewardAmount.toLocaleString()}
                 <span className="text-2xl">
@@ -1460,7 +1460,7 @@ export function QuestDetail() {
               </div>
               <div className="text-xs text-fg-3 mt-1">
                 {quest.rewardType === REWARD_TYPE.LLMTOKEN_OPENROUTER &&
-                llmTokenBudget
+                  llmTokenBudget
                   ? "total LLM tokens"
                   : "total reward pool"}
               </div>
@@ -1728,8 +1728,8 @@ export function QuestDetail() {
                         size="xl"
                         variant={
                           !acceptMutation.isPending &&
-                          slotsLeft > 0 &&
-                          !needsVerifiedScan
+                            slotsLeft > 0 &&
+                            !needsVerifiedScan
                             ? "primary"
                             : "secondary"
                         }
@@ -1981,7 +1981,7 @@ export function QuestDetail() {
               Link your{" "}
               {linkAccountPlatform
                 ? linkAccountPlatform.charAt(0).toUpperCase() +
-                  linkAccountPlatform.slice(1)
+                linkAccountPlatform.slice(1)
                 : ""}{" "}
               account
             </DialogTitle>
@@ -1992,7 +1992,7 @@ export function QuestDetail() {
               <span className="font-semibold">
                 {linkAccountPlatform
                   ? linkAccountPlatform.charAt(0).toUpperCase() +
-                    linkAccountPlatform.slice(1)
+                  linkAccountPlatform.slice(1)
                   : ""}
               </span>{" "}
               account before you can complete this task.
@@ -2079,7 +2079,7 @@ const response = await client.chat.completions.create({
 })`;
 
   function copyText(text: string) {
-    navigator.clipboard.writeText(text).catch(() => {});
+    navigator.clipboard.writeText(text).catch(() => { });
   }
 
   return (

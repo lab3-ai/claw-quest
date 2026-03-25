@@ -774,25 +774,15 @@ export function Account() {
                     </Button>
                   )
                 ) : isLinked ? (
-                  <>
-                    <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">
-                      <span className="text-success text-sm font-semibold">
-                        Connected
-                      </span>
-                      {detail && (
-                        <span className="text-fg-3 text-sm">{detail}</span>
-                      )}
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="min-w-[72px]"
-                      disabled={!canUnlinkOAuth || unlinkPending === p.key}
-                      onClick={() => handleUnlinkProvider(p.key)}
-                    >
-                      {unlinkPending === p.key ? "Unlinking…" : "Unlink"}
-                    </Button>
-                  </>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="min-w-[72px]"
+                    disabled={!canUnlinkOAuth || unlinkPending === p.key}
+                    onClick={() => handleUnlinkProvider(p.key)}
+                  >
+                    {unlinkPending === p.key ? "Unlinking…" : "Unlink"}
+                  </Button>
                 ) : (
                   <Button
                     size="sm"

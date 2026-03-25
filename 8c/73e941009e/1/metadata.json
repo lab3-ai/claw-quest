@@ -1,7 +1,9 @@
 {
   "cli_version": "0.5.0",
   "checkpoint_id": "8c73e941009e",
+  "session_id": "eeef2c59-c533-428e-9a94-aa7cb06df6ad",
   "strategy": "manual-commit",
+  "created_at": "2026-03-25T11:08:28.891841Z",
   "branch": "main",
   "checkpoints_count": 7,
   "files_touched": [
@@ -15,25 +17,27 @@
     "packages/shared/src/__tests__/chains.test.ts",
     "packages/shared/src/chains.ts"
   ],
-  "sessions": [
-    {
-      "metadata": "/8c/73e941009e/0/metadata.json",
-      "transcript": "/8c/73e941009e/0/full.jsonl",
-      "content_hash": "/8c/73e941009e/0/content_hash.txt",
-      "prompt": ""
-    },
-    {
-      "metadata": "/8c/73e941009e/1/metadata.json",
-      "transcript": "/8c/73e941009e/1/full.jsonl",
-      "content_hash": "/8c/73e941009e/1/content_hash.txt",
-      "prompt": "/8c/73e941009e/1/prompt.txt"
-    }
-  ],
+  "agent": "Claude Code",
+  "turn_id": "f020316ab493",
+  "checkpoint_transcript_start": 161,
+  "transcript_lines_at_start": 161,
   "token_usage": {
     "input_tokens": 73,
     "cache_creation_tokens": 74373,
     "cache_read_tokens": 4568200,
     "output_tokens": 22835,
     "api_call_count": 45
+  },
+  "session_metrics": {
+    "turn_count": 15
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-25T11:08:28.483547Z",
+    "agent_lines": 754,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 754,
+    "agent_percentage": 100
   }
 }

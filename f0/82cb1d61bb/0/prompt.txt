@@ -1,0 +1,5 @@
+<ide_selection>The user selected the lines 151 to 151 from /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/packages/shared/src/chains.ts:
+0x1E4a5963aBFD975d8c9021ce480b42188849D41d
+
+This may or may not be related to the current task.</ide_selection>
+Chỉ default 3 chain (Base, BNB và Xlayer thôi nhé)

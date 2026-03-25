@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "f082cb1d61bb",
+  "session_id": "09f2b7f0-97bb-41fa-8467-18a4e04f7d00",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-25T13:58:10.76765Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/dashboard/src/routes/_authenticated/quests/create-quest/StepReward.tsx",
+    "apps/dashboard/src/routes/_authenticated/quests/create-quest/constants.ts",
+    "packages/shared/src/chains.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "6c930202c29a",
+  "token_usage": {
+    "input_tokens": 24,
+    "cache_creation_tokens": 74859,
+    "cache_read_tokens": 1238682,
+    "output_tokens": 13074,
+    "api_call_count": 22
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-25T13:58:10.595781Z",
+    "agent_lines": 57,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 57,
+    "agent_percentage": 100
+  }
+}

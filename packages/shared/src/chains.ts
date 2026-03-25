@@ -29,15 +29,6 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
         explorerUrl: 'https://sepolia.basescan.org',
         isTestnet: true,
     },
-    ethereum: {
-        id: 1,
-        name: 'Ethereum',
-        shortName: 'eth',
-        nativeCurrency: { symbol: 'ETH', name: 'Ether', decimals: 18 },
-        rpcUrl: 'https://eth.llamarpc.com',
-        explorerUrl: 'https://etherscan.io',
-        isTestnet: false,
-    },
     bnb: {
         id: 56,
         name: 'BNB Smart Chain',
@@ -45,15 +36,6 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
         nativeCurrency: { symbol: 'BNB', name: 'BNB', decimals: 18 },
         rpcUrl: 'https://bsc-dataseed.binance.org',
         explorerUrl: 'https://bscscan.com',
-        isTestnet: false,
-    },
-    arbitrum: {
-        id: 42161,
-        name: 'Arbitrum One',
-        shortName: 'arb',
-        nativeCurrency: { symbol: 'ETH', name: 'Ether', decimals: 18 },
-        rpcUrl: 'https://arb1.arbitrum.io/rpc',
-        explorerUrl: 'https://arbiscan.io',
         isTestnet: false,
     },
     bscTestnet: {
@@ -64,15 +46,6 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
         rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545',
         explorerUrl: 'https://testnet.bscscan.com',
         isTestnet: true,
-    },
-    polygon: {
-        id: 137,
-        name: 'Polygon',
-        shortName: 'matic',
-        nativeCurrency: { symbol: 'POL', name: 'POL', decimals: 18 },
-        rpcUrl: 'https://polygon-rpc.com',
-        explorerUrl: 'https://polygonscan.com',
-        isTestnet: false,
     },
     xlayer: {
         id: 196,
@@ -91,6 +64,34 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
         rpcUrl: 'https://testrpc.xlayer.tech',
         explorerUrl: 'https://www.okx.com/web3/explorer/xlayer-test',
         isTestnet: true,
+    },
+    // Legacy chains — kept for backward compatibility with existing quests
+    ethereum: {
+        id: 1,
+        name: 'Ethereum',
+        shortName: 'eth',
+        nativeCurrency: { symbol: 'ETH', name: 'Ether', decimals: 18 },
+        rpcUrl: 'https://eth.llamarpc.com',
+        explorerUrl: 'https://etherscan.io',
+        isTestnet: false,
+    },
+    arbitrum: {
+        id: 42161,
+        name: 'Arbitrum One',
+        shortName: 'arb',
+        nativeCurrency: { symbol: 'ETH', name: 'Ether', decimals: 18 },
+        rpcUrl: 'https://arb1.arbitrum.io/rpc',
+        explorerUrl: 'https://arbiscan.io',
+        isTestnet: false,
+    },
+    polygon: {
+        id: 137,
+        name: 'Polygon',
+        shortName: 'matic',
+        nativeCurrency: { symbol: 'POL', name: 'POL', decimals: 18 },
+        rpcUrl: 'https://polygon-rpc.com',
+        explorerUrl: 'https://polygonscan.com',
+        isTestnet: false,
     },
 } as const;
 
@@ -116,34 +117,16 @@ export const TOKEN_REGISTRY: Record<number, Record<string, TokenInfo>> = {
         USDC: { address: '0xAA87A3f8E6017F1f02af0f306B765FCfBeCac3E4', decimals: 6, symbol: 'USDC', name: 'USD Coin' },
         NATIVE: { address: '0x0000000000000000000000000000000000000000', decimals: 18, symbol: 'ETH', name: 'Ether' },
     },
-    // Ethereum
-    1: {
-        USDC: { address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', decimals: 6, symbol: 'USDC', name: 'USD Coin' },
-        USDT: { address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', decimals: 6, symbol: 'USDT', name: 'Tether USD' },
-        NATIVE: { address: '0x0000000000000000000000000000000000000000', decimals: 18, symbol: 'ETH', name: 'Ether' },
-    },
     // BNB Smart Chain
     56: {
         USDC: { address: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d', decimals: 18, symbol: 'USDC', name: 'USD Coin' },
         USDT: { address: '0x55d398326f99059fF775485246999027B3197955', decimals: 18, symbol: 'USDT', name: 'Tether USD' },
         NATIVE: { address: '0x0000000000000000000000000000000000000000', decimals: 18, symbol: 'BNB', name: 'BNB' },
     },
-    // Arbitrum One
-    42161: {
-        USDC: { address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', decimals: 6, symbol: 'USDC', name: 'USD Coin' },
-        USDT: { address: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', decimals: 6, symbol: 'USDT', name: 'Tether USD' },
-        NATIVE: { address: '0x0000000000000000000000000000000000000000', decimals: 18, symbol: 'ETH', name: 'Ether' },
-    },
     // BSC Testnet
     97: {
         USDT: { address: '0x337610d27c682E347C9cD60BD4b3b107C9d34dDd', decimals: 18, symbol: 'USDT', name: 'Tether USD' },
         NATIVE: { address: '0x0000000000000000000000000000000000000000', decimals: 18, symbol: 'tBNB', name: 'Test BNB' },
-    },
-    // Polygon
-    137: {
-        USDC: { address: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359', decimals: 6, symbol: 'USDC', name: 'USD Coin' },
-        USDT: { address: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', decimals: 6, symbol: 'USDT', name: 'Tether USD' },
-        NATIVE: { address: '0x0000000000000000000000000000000000000000', decimals: 18, symbol: 'POL', name: 'POL' },
     },
     // X Layer
     196: {
@@ -154,6 +137,22 @@ export const TOKEN_REGISTRY: Record<number, Record<string, TokenInfo>> = {
     // X Layer Testnet
     1952: {
         NATIVE: { address: '0x0000000000000000000000000000000000000000', decimals: 18, symbol: 'OKB', name: 'OKB' },
+    },
+    // Legacy chains — kept for backward compatibility with existing quests
+    1: {
+        USDC: { address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', decimals: 6, symbol: 'USDC', name: 'USD Coin' },
+        USDT: { address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', decimals: 6, symbol: 'USDT', name: 'Tether USD' },
+        NATIVE: { address: '0x0000000000000000000000000000000000000000', decimals: 18, symbol: 'ETH', name: 'Ether' },
+    },
+    42161: {
+        USDC: { address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', decimals: 6, symbol: 'USDC', name: 'USD Coin' },
+        USDT: { address: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', decimals: 6, symbol: 'USDT', name: 'Tether USD' },
+        NATIVE: { address: '0x0000000000000000000000000000000000000000', decimals: 18, symbol: 'ETH', name: 'Ether' },
+    },
+    137: {
+        USDC: { address: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359', decimals: 6, symbol: 'USDC', name: 'USD Coin' },
+        USDT: { address: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F', decimals: 6, symbol: 'USDT', name: 'Tether USD' },
+        NATIVE: { address: '0x0000000000000000000000000000000000000000', decimals: 18, symbol: 'POL', name: 'POL' },
     },
 };
 

@@ -170,12 +170,12 @@ export function StepReward({
                                 <div className="flex-1 flex flex-col gap-2">
                                     <Label>Network</Label>
                                     <select className="flex h-9 w-full rounded border border-border-2-2 bg-transparent px-3 py-1 text-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring" value={form.network} onChange={e => onFieldChange("network", e.target.value)}>
-                                        <optgroup label="Primary">
-                                            {NETWORKS_PRIMARY.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
-                                        </optgroup>
-                                        <optgroup label="Other Networks">
-                                            {NETWORKS_OTHER.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
-                                        </optgroup>
+                                        {NETWORKS_PRIMARY.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
+                                        {NETWORKS_OTHER.length > 0 && (
+                                            <optgroup label="Other Networks">
+                                                {NETWORKS_OTHER.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
+                                            </optgroup>
+                                        )}
                                     </select>
                                 </div>
                                 <div className="flex-1 flex flex-col gap-2">

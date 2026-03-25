@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "4c0883ca4f68",
+  "session_id": "02720dcb-adeb-4582-b4c5-7145a1ea9ae3",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-19T11:02:45.390946Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/api/src/modules/escrow/escrow.routes.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "f4815ede8286",
+  "token_usage": {
+    "input_tokens": 37,
+    "cache_creation_tokens": 83531,
+    "cache_read_tokens": 2282899,
+    "output_tokens": 6668,
+    "api_call_count": 29
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-19T11:02:45.224629Z",
+    "agent_lines": 31,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 31,
+    "agent_percentage": 100
+  }
+}

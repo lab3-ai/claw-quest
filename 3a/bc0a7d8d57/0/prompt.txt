@@ -1,0 +1,31 @@
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/.env in the IDE. This may or may not be related to the current task.</ide_opened_file>
+Giờ tôi tạo draf 1 quest, tôi muốn replace id của quest đó sang 1 id khác
+=> tôi cần maunal update những table nào? record nào?
+bạn có thể tạo 1 scrips ở /apps/api/prisma giúp tôi không?
+
+---
+
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/modules/challenges/challenge-generator.ts in the IDE. This may or may not be related to the current task.</ide_opened_file>
+npx tsx prisma/replace-quest-id.ts 88603bdf-8ef5-4b96-8c84-014687c38ccc b29d6d3e-9145-4927-be17-9ad0b32b9190
+Replacing quest ID: 88603bdf-8ef5-4b96-8c84-014687c38ccc → b29d6d3e-9145-4927-be17-9ad0b32b9190
+Quest: "CheckAgentVerify3" (status: live)
+Related records: collaborators=0, deposits=1, participations=1, challenges=1, escrowDeposits=0
+Failed: PrismaClientKnownRequestError: 
+Invalid `prisma.$executeRaw()` invocation:
+
+
+Raw query failed. Code: `23503`. Message: `insert or update on table "QuestDeposit" violates foreign key constraint "QuestDeposit_questId_fkey"`
+    at $n.handleRequestError (/Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js:121:7315)
+    at $n.handleAndLogRequestError (/Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js:121:6623)
+    at $n.request (/Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js:121:6307)
+    at async l (/Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async <anonymous> (/Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/prisma/replace-quest-id.ts:67:7)
+    at async Proxy._transactionWithCallback (/Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js:130:8000)
+    at async main (/Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/prisma/replace-quest-id.ts:56:3) {
+  code: 'P2010',
+  clientVersion: '5.22.0',
+  meta: {
+    code: '23503',
+    message: 'insert or update on table "QuestDeposit" violates foreign key constraint "QuestDeposit_questId_fkey"'
+  }
+}

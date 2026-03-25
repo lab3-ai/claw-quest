@@ -1,0 +1,36 @@
+/brainstorming Brian là sếp, CQ là clawquest, là project ta đang làm. Hãy dùng đoạn hội thoại dưới đây và brainstormin cùng tôi hướng xử lí nhé 
+[20/03/2026 10:42] Brian: 2) Multiple payment methods natively supported
+
+MPP allows clients to pay in stablecoins, Stripe cards, or evening Lightning Bitcoin. I'm personally a huge fan of stablecoin payments, but different API providers will have different needs. Allowing agents to pay in both crypto and fiat (via Stripe) will give MPP the highest chance of adoption amongst service providers. The native integration with existing Stripe infra makes onboarding frictionless.
+[20/03/2026 10:43] Brian: Tình hình clawquest làm trên Tempo luôn ae :))
+[20/03/2026 10:44] Brian: Nghĩa là payment crypto hay stripe đều đc này @vincent_xbt
+[20/03/2026 10:44] Brian: https://x.com/0xcygaar/status/2034689648023183524?s=46
+[20/03/2026 10:44] Brian: @ssarah_xbt châm cứu a con tempo với nha
+[20/03/2026 10:45] Brian: Tempo mainnet đc 3 hôm rồi mà a bận quá chưa kịp đu trend :))
+[20/03/2026 10:46] Brian: Nhiều cái mới phết
+[20/03/2026 10:46] Ryan: anh fomo tempo từ thời MN 😂
+[20
+One of the limitations of x402 is that you have to transact onchain for every single API call. This makes it slow and expensive if you want to make many calls in succession. With MPP, you can create a session, load in funds, and then make multiple API calls that get batched into a single payment. This will help agentic payments really scale.
+[20/03/2026 10:48] TG-Agent Reply anh em: Voice từ @BrianZK (55s):
+
+Anh thấy có một vụ Verify là một skill có được sử dụng hay không, thì dùng payment này cũng hay phết VINCENT nha. Tức là phải trả 0,001 đô cho một transaction như thế này, có nghĩa là valid bằng tiền, thì coi như là chuẩn mẹn luôn. Tức là ý ở đây là người ta không phải là để chạc tiền khách hàng, mà chỉ muốn làm một payment rất là bé, kiểu như là không đến 1.000 đồng ấy. Thì coi như là cái số tiền này nó cũng random ấy, ví dụ 1.1000, kiểu 0.013, 0.012, kiểu như thế thì cánt_xbt @ssarah_xbt
+[20/03/2026 10:50] Brian: Cái này hoàn toàn làm trên layer của clawquest mà ko cần đến skill của bên khách hàng của CQ
+[20/03/2026 10:52] Brian: Nghĩa là quester phải bảo con agent của nó làm 1 cái skill call + 1 tx qua tempo của CQ giá trị $0.001
+[20/03/2026 10:53] Brian: ae thử ping pong với claude kỹ chỗ này có gì hay rồi ae làm cái meet nhá
+
+---
+
+B
+
+---
+
+B nhé (vì khi tạo quest có gắn thêm agent skill, bắt quester sẽ phải install skill đó) \
+Tuy nhiênần plan xem cách mà verify như nào? solution là sẽ bắt agent cần phải call 1 transaction, tuy nhiên transaction đó là gì? xử lí ra sao? tôi chưa biết
+
+---
+
+Tôi thấy A khá hợp lí. Tuy nhiên tôi chưa biết Tempo là gì? hoạt động như nào?
+
+---
+
+Tempo là 1 chain à? Hiện tại chúng ta đang có 2 chain mainnet là BNB và BASE. Vậy bạn nghĩ sao nhỉ?

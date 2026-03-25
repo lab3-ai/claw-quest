@@ -1,0 +1,25 @@
+entire
+
+---
+
+entire enable
+
+---
+
+brew install entireio/tap/entire
+
+---
+
+entire enable
+
+---
+
+dau phien
+
+---
+
+1
+
+---
+
+solved conflict make sure build sucess

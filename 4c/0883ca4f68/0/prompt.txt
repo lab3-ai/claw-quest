@@ -1,0 +1,14 @@
+<ide_selection>The user selected the lines 98 to 98 from /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/src/modules/escrow/escrow.client.ts:
+getOperatorWalletClient
+
+This may or may not be related to the current task.</ide_selection>
+Tạo sao admin call distribution vẫn lỗi này nhỉ
+""Distribution failed: Token LLMTOKEN_OPENROUTER not found for chain 84532""
+
+---
+
+Tốt, vậy bạn nói logic escrow/distribute dành cho LLM_KEY sẽ làm gì đi
+
+---
+
+Tốt. hãy fix nhé

@@ -1,0 +1,1 @@
+Deploy dashboard submodule go to cloudflare pages error, check log at @logerror.txt

@@ -1,0 +1,12 @@
+Tôi đang muốn triển theo 2 option A và B
+
+---
+
+1. Ngày trước chưa có logic này, nên hiện tại minWalletBalance = 0 nhé.
+2. tổng USD value + top 5 tokens cho dễ
+3.  chỉ hiện trên quest card/detail thôi 
+Hãy luôn làm tối giản và đơn giản nhất nhé
+
+---
+
+Tạm thời triển option B trước nhé.. OptionA để dạng plan thôi

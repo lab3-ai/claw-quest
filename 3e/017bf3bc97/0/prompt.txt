@@ -1,0 +1,2 @@
+/brainstorming "Hiện tại logic detail quests đang lỗi, user đã linked X rồi mà vẫn show Link
+Hãy check nếu user đã linked X rồi thì bỏ logic link nhé"

@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "c385544091f6",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "apps/api/prisma/seed.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c3/85544091f6/0/metadata.json",
+      "transcript": "/c3/85544091f6/0/full.jsonl",
+      "content_hash": "/c3/85544091f6/0/content_hash.txt",
+      "prompt": "/c3/85544091f6/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 68952,
+    "cache_read_tokens": 453776,
+    "output_tokens": 2754,
+    "api_call_count": 10
+  }
+}

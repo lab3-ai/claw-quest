@@ -1,0 +1,1 @@
+tại sao lại thêm alllow vào .claude/settings.json, nó phải được ghi vào settings.local.json chứ? hãy setup lại config để khi ask permission, sẽ ghi chẩn vào settings.local.json (không phải settings.json)

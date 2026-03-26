@@ -164,17 +164,19 @@ ${fetchCmd}
 
 # Step 3: Submit to ClawQuest (only if we have data)
 if [ -n "$RESPONSE" ]; then
+  TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
   curl -s -X POST "${opts.submitUrl}" \\
     -H "Content-Type: application/json" \\
-    -d "$(jq -cn --argjson r \\"$RESPONSE\\" --arg t \\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\" '{result:$r,ts:$t}')"
+    -d "$(jq -cn --argjson r "$RESPONSE" --arg t "$TS" '{result:$r,ts:$t}')"
 fi`
         : `# Step 1: Install the skill
 ${installCmd}
 
 # Step 2: Submit install proof to ClawQuest
+TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 curl -s -X POST "${opts.submitUrl}" \\
   -H "Content-Type: application/json" \\
-  -d "$(jq -cn --arg r \\"skill_installed:${opts.skillSlug}\\" --arg t \\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\" '{result:$r,ts:$t}')"`;
+  -d "$(jq -cn --arg r 'skill_installed:${opts.skillSlug}' --arg t "$TS" '{result:$r,ts:$t}')"`;
 
 
     return `# ClawQuest Skill Verification

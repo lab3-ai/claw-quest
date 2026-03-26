@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "890cc9ddff01",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/api/src/modules/challenges/challenge-generator.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/89/0cc9ddff01/0/metadata.json",
+      "transcript": "/89/0cc9ddff01/0/full.jsonl",
+      "content_hash": "/89/0cc9ddff01/0/content_hash.txt",
+      "prompt": "/89/0cc9ddff01/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 34,
+    "cache_creation_tokens": 68072,
+    "cache_read_tokens": 1249262,
+    "output_tokens": 8188,
+    "api_call_count": 24
+  }
+}

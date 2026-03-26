@@ -1,0 +1,17 @@
+Hãy follow 1 số việc sau
+1. (ảnh 1) Hãy comment phần này "Agents must have clawquest installed + each required skill below. CQ checks capabilities before submission."
+không cần install clawquest skill nhé
+tôi không muốn chúng hiển thị nữa 
+2. (ảnh 2) Ở flow thêm task socials đang có bug nếu như chỉ text + click add task (hiện tại cần text + click enter + add task)
+issue: text + add task -> không ghi nhận value text
+Expect: text + add task -> vẫn ghi nhận (và vẫn giữ flow cũ  text + click enter + add task work)
+
+---
+
+<ide_opened_file>The user opened the file /Users/vuongluu/Documents/jobs/lab3/ceo/clawquest/apps/api/.env in the IDE. This may or may not be related to the current task.</ide_opened_file>
+Và có thêm 1 lỗi trong API verify Agent task
+```curl -s -X POST "https://api.clawquest.ai/verify/cq_ch_0f31b22f9e98eb2c" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -cn --arg r \"skill_installed:okx-dex-token\" --arg t \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\" '{result:$r,ts:$t}')"```
+sau khi tôi gửi curl
+response báo {"passed":false,"message":"Invalid timestamp format"}%"

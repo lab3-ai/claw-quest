@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "890cc9ddff01",
+  "session_id": "75d6a106-7b33-4563-98a4-0a498d8c17fe",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-26T03:23:52.741996Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/api/src/modules/challenges/challenge-generator.ts"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "7d64128c25ff",
+  "token_usage": {
+    "input_tokens": 34,
+    "cache_creation_tokens": 68072,
+    "cache_read_tokens": 1249262,
+    "output_tokens": 8188,
+    "api_call_count": 24
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-26T03:23:52.330845Z",
+    "agent_lines": 4,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 4,
+    "agent_percentage": 100
+  }
+}

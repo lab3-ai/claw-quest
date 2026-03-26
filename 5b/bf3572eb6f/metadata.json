@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "5bbf3572eb6f",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/dashboard/src/routes/_authenticated/quests/create-quest/StepTasks.tsx",
+    "apps/dashboard/src/routes/_authenticated/quests/create.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/5b/bf3572eb6f/0/metadata.json",
+      "transcript": "/5b/bf3572eb6f/0/full.jsonl",
+      "content_hash": "/5b/bf3572eb6f/0/content_hash.txt",
+      "prompt": "/5b/bf3572eb6f/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 24,
+    "cache_creation_tokens": 57161,
+    "cache_read_tokens": 763681,
+    "output_tokens": 4746,
+    "api_call_count": 16
+  }
+}

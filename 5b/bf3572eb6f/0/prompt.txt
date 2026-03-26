@@ -1,0 +1,7 @@
+Hãy follow 1 số việc sau
+1. (ảnh 1) Hãy comment phần này "Agents must have clawquest installed + each required skill below. CQ checks capabilities before submission."
+không cần install clawquest skill nhé
+tôi không muốn chúng hiển thị nữa 
+2. (ảnh 2) Ở flow thêm task socials đang có bug nếu như chỉ text + click add task (hiện tại cần text + click enter + add task)
+issue: text + add task -> không ghi nhận value text
+Expect: text + add task -> vẫn ghi nhận (và vẫn giữ flow cũ  text + click enter + add task work)

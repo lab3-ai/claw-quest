@@ -398,27 +398,31 @@ function ChipInput({
   const [error, setError] = useState<string | null>(null);
   const atMax = maxChips !== undefined && chips.length >= maxChips;
 
+  const commitValue = () => {
+    const trimmed = input.trim();
+    if (!trimmed) return;
+    if (atMax) return;
+    if (validate) {
+      const err = validate(trimmed);
+      if (err) {
+        setError(err);
+        return;
+      }
+    }
+    const norm = trimmed.replace(/^@/, "").toLowerCase();
+    if (chips.some((c) => c.replace(/^@/, "").toLowerCase() === norm)) {
+      setError("Already added");
+      return;
+    }
+    onAdd(trimmed);
+    setInput("");
+    setError(null);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const trimmed = input.trim();
-      if (!trimmed) return;
-      if (atMax) return;
-      if (validate) {
-        const err = validate(trimmed);
-        if (err) {
-          setError(err);
-          return;
-        }
-      }
-      const norm = trimmed.replace(/^@/, "").toLowerCase();
-      if (chips.some((c) => c.replace(/^@/, "").toLowerCase() === norm)) {
-        setError("Already added");
-        return;
-      }
-      onAdd(trimmed);
-      setInput("");
-      setError(null);
+      commitValue();
     } else if (e.key === "Backspace" && input === "" && chips.length > 0) {
       onRemove(chips.length - 1);
     }
@@ -478,6 +482,7 @@ function ChipInput({
             setError(null);
           }}
           onKeyDown={handleKeyDown}
+          onBlur={commitValue}
         />
       )}
       {!atMax && !displayError && input.length === 0 && chips.length === 0 && (

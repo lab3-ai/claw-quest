@@ -503,6 +503,7 @@ export function StepTasks({
                   </span>
                 </div>
                 <div className="p-4">
+{/*
                   <div className="bg-bg-2 border border-border-2 rounded px-3 py-2.5 text-sm text-fg-2 leading-relaxed mb-4">
                     Agents must have{" "}
                     <code className="font-mono text-xs bg-bg-3 px-1">
@@ -511,6 +512,7 @@ export function StepTasks({
                     installed + each required skill below. CQ checks
                     capabilities before submission.
                   </div>
+*/}
 
                   <div className="text-sm font-semibold text-fg-1 mt-3 mb-2">
                     Required Skills
